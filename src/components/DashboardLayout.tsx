@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { KeyRound, FileText, Clock, Receipt, User, HelpCircle, LogOut, Settings, Users } from 'lucide-react';
+import { KeyRound, FileText, Clock, Receipt, User, HelpCircle, LogOut, Settings, Users, FolderKanban } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import FooterControls from '@/components/FooterControls';
@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 const navItems = [
   { key: 'passwords', icon: KeyRound, path: '/dashboard/passwords' },
   { key: 'clients', icon: Users, path: '/dashboard/clients' },
+  { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
   { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
@@ -22,6 +23,7 @@ const navItems = [
 const labelMap: Record<string, (t: any) => string> = {
   passwords: (t) => t.passwordGenerator,
   clients: (t) => t.clients,
+  projects: (t) => t.projects,
   budgets: (t) => t.budgets,
   time: (t) => t.timeTracking,
   invoices: (t) => t.invoices,
