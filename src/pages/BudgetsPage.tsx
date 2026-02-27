@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import ClientSelect from '@/components/ClientSelect';
+import { useClients } from '@/hooks/useClients';
 
 interface BudgetItem {
   description: string;
@@ -17,6 +19,7 @@ interface BudgetItem {
 interface Budget {
   id: string;
   client_id: string | null;
+  client_name?: string;
   items: BudgetItem[];
   total: number;
   status: string;
@@ -35,8 +38,9 @@ const BudgetsPage = () => {
   const { user } = useAuth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [creating, setCreating] = useState(false);
-  const [client, setClient] = useState('');
+  const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<BudgetItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
+  const { clients } = useClients();
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
@@ -47,12 +51,16 @@ const BudgetsPage = () => {
       .select('*')
       .order('created_at', { ascending: false });
     if (data) {
-      setBudgets(data.map(b => ({
-        ...b,
-        items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
-      })));
+      setBudgets(data.map(b => {
+        const cl = clients.find(c => c.id === b.client_id);
+        return {
+          ...b,
+          client_name: cl?.name,
+          items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
+        };
+      }));
     }
-  }, [user]);
+  }, [user, clients]);
 
   useEffect(() => { loadBudgets(); }, [loadBudgets]);
 
@@ -66,6 +74,7 @@ const BudgetsPage = () => {
     if (!user) return;
     const { error } = await supabase.from('budgets').insert({
       user_id: user.id,
+      client_id: clientId || null,
       items: items as unknown as Json,
       total,
       status: 'draft',
@@ -74,7 +83,7 @@ const BudgetsPage = () => {
     else {
       toast.success(t.save + '!');
       setCreating(false);
-      setClient('');
+      setClientId('');
       setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
       loadBudgets();
     }
@@ -111,7 +120,7 @@ const BudgetsPage = () => {
 
       {creating && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <input placeholder={t.client} value={client} onChange={(e) => setClient(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
           <div className="space-y-2">
             {items.map((item, idx) => (
               <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
@@ -143,7 +152,7 @@ const BudgetsPage = () => {
           {budgets.map((b) => (
             <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{b.items.length} itens</p>
+                <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
                 <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-3">

@@ -4,6 +4,14 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useClients } from '@/hooks/useClients';
+
+interface Project {
+  id: string;
+  name: string;
+  client_id: string | null;
+  hourly_rate: number;
+}
 
 interface TimeEntry {
   id: string;
@@ -29,7 +37,16 @@ const TimeTrackingPage = () => {
   const [startTime, setStartTime] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [description, setDescription] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const { clients } = useClients();
   const intervalRef = useRef<number>();
+
+  const loadProjects = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('projects').select('*').order('name');
+    if (data) setProjects(data);
+  }, [user]);
 
   const loadEntries = useCallback(async () => {
     if (!user) return;
@@ -42,6 +59,7 @@ const TimeTrackingPage = () => {
   }, [user]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
+  useEffect(() => { loadProjects(); }, [loadProjects]);
 
   useEffect(() => {
     if (running) {
@@ -67,6 +85,7 @@ const TimeTrackingPage = () => {
     const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
     const { error } = await supabase.from('time_entries').insert({
       user_id: user.id,
+      project_id: projectId || null,
       description: description || null,
       start_time: start.toISOString(),
       end_time: end.toISOString(),
@@ -103,6 +122,16 @@ const TimeTrackingPage = () => {
           onChange={(e) => setDescription(e.target.value)}
           className="flex-1 px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
+        <select
+          value={projectId}
+          onChange={(e) => setProjectId(e.target.value)}
+          className="w-40 px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="">{t.project}</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
         <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
           {formatDuration(elapsed)}
         </span>
