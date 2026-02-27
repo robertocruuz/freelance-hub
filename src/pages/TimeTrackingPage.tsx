@@ -115,17 +115,17 @@ const TimeTrackingPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4 p-4 rounded-2xl border border-border bg-card">
+      <div className="flex items-center gap-4 p-4 rounded-3xl glass">
         <input
           placeholder={t.description}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
         />
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
         >
           <option value="">{t.project}</option>
           {projects.map((p) => {
@@ -145,28 +145,28 @@ const TimeTrackingPage = () => {
             <Square className="w-4 h-4" /> {t.stopTimer}
           </button>
         ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
+          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
             <Play className="w-4 h-4" /> {t.startTimer}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl border border-border bg-card text-center">
+        <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
           <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card text-center">
+        <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{t.weekTotal}</p>
           <p className="text-xl font-bold font-display text-foreground">{formatDuration(weekTotal)}</p>
         </div>
-        <div className="p-4 rounded-xl border border-border bg-card text-center">
+        <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{t.billable}</p>
           <p className="text-xl font-bold font-display text-foreground">{formatDuration(weekTotal)}</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="rounded-3xl glass overflow-hidden">
         <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
           <div className="p-2" />
           {weekDays.map((d, i) => (
@@ -204,7 +204,7 @@ const TimeTrackingPage = () => {
         <div className="space-y-2">
           <h2 className="text-lg font-bold font-display">{t.timeTracking}</h2>
           {entries.map((entry) => (
-            <div key={entry.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+            <div key={entry.id} className="flex items-center justify-between p-3 rounded-2xl glass text-sm">
               <span className="text-foreground">{entry.description || '-'}</span>
               <div className="flex items-center gap-3 text-muted-foreground">
                 <span>{new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</span>

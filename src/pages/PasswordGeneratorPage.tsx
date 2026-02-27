@@ -134,8 +134,8 @@ const PasswordGeneratorPage = () => {
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       <h1 className="text-2xl font-bold font-display">{t.passwordGenerator}</h1>
 
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-sm">
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-muted font-mono text-lg break-all min-h-[56px]">
+      <div className="glass rounded-3xl p-6 space-y-6">
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-background/50 font-mono text-lg break-all min-h-[56px]">
           <span className="flex-1 text-foreground">{password || '...'}</span>
           <button onClick={() => password && copyToClipboard(password)} className="text-muted-foreground hover:text-foreground transition-colors">
             {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
@@ -179,7 +179,7 @@ const PasswordGeneratorPage = () => {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={generate} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity">
+          <button onClick={generate} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-glow text-primary-foreground font-semibold">
             <RefreshCw className="w-4 h-4" /> {t.generate}
           </button>
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
@@ -222,7 +222,7 @@ const PasswordGeneratorPage = () => {
         ) : (
           <div className="space-y-2">
             {filteredVault.map((entry) => (
-              <div key={entry.id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card">
+              <div key={entry.id} className="flex items-center gap-4 p-4 rounded-2xl glass">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate">{entry.title}</p>
                   <p className="text-xs text-muted-foreground">{entry.category} · {entry.username}</p>
