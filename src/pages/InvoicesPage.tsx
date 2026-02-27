@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import ClientSelect from '@/components/ClientSelect';
+import { useClients } from '@/hooks/useClients';
 
 interface InvoiceItem {
   description: string;
@@ -17,6 +19,7 @@ interface InvoiceItem {
 interface Invoice {
   id: string;
   client_id: string | null;
+  client_name?: string;
   items: InvoiceItem[];
   total: number;
   taxes: number;
@@ -37,10 +40,12 @@ const InvoicesPage = () => {
   const { user } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
+  const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [dueDate, setDueDate] = useState('');
+  const { clients } = useClients();
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const total = subtotal + (subtotal * taxes) / 100 - discount;
@@ -52,12 +57,16 @@ const InvoicesPage = () => {
       .select('*')
       .order('created_at', { ascending: false });
     if (data) {
-      setInvoices(data.map(inv => ({
-        ...inv,
-        items: (Array.isArray(inv.items) ? inv.items : []) as unknown as InvoiceItem[],
-      })));
+      setInvoices(data.map(inv => {
+        const cl = clients.find(c => c.id === inv.client_id);
+        return {
+          ...inv,
+          client_name: cl?.name,
+          items: (Array.isArray(inv.items) ? inv.items : []) as unknown as InvoiceItem[],
+        };
+      }));
     }
-  }, [user]);
+  }, [user, clients]);
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
 
@@ -71,6 +80,7 @@ const InvoicesPage = () => {
     if (!user) return;
     const { error } = await supabase.from('invoices').insert({
       user_id: user.id,
+      client_id: clientId || null,
       items: items as unknown as Json,
       total,
       taxes,
@@ -82,6 +92,7 @@ const InvoicesPage = () => {
     else {
       toast.success(t.save + '!');
       setCreating(false);
+      setClientId('');
       setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
       setTaxes(0);
       setDiscount(0);
@@ -125,7 +136,7 @@ const InvoicesPage = () => {
       {creating && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <input placeholder={t.client} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
             <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
           <div className="space-y-2">
@@ -169,7 +180,7 @@ const InvoicesPage = () => {
           {invoices.map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{inv.items.length} itens</p>
+                <p className="font-semibold text-foreground">{inv.client_name || 'Sem cliente'} · {inv.items.length} itens</p>
                 <p className="text-xs text-muted-foreground">Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-3">

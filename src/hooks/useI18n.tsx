@@ -75,6 +75,14 @@ const translations = {
     discount: 'Desconto',
     paymentMethod: 'Forma de pagamento',
     dueDate: 'Data de vencimento',
+    // Clients
+    clients: 'Clientes',
+    newClient: 'Novo Cliente',
+    editClient: 'Editar Cliente',
+    clientName: 'Nome do cliente',
+    phone: 'Telefone',
+    document: 'CPF/CNPJ',
+    noClients: 'Nenhum cliente cadastrado ainda.',
   },
   'en': {
     heroTitle: 'Your complete\nplatform for\nfreelancers',
@@ -144,6 +152,13 @@ const translations = {
     discount: 'Discount',
     paymentMethod: 'Payment method',
     dueDate: 'Due date',
+    clients: 'Clients',
+    newClient: 'New Client',
+    editClient: 'Edit Client',
+    clientName: 'Client name',
+    phone: 'Phone',
+    document: 'Document',
+    noClients: 'No clients registered yet.',
   },
 };
 

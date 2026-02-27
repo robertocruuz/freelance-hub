@@ -14,6 +14,7 @@ import PasswordGeneratorPage from "./pages/PasswordGeneratorPage";
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
 import InvoicesPage from "./pages/InvoicesPage";
+import ClientsPage from "./pages/ClientsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                   <Route index element={<Navigate to="/dashboard/passwords" replace />} />
                   <Route path="passwords" element={<PasswordGeneratorPage />} />
+                  <Route path="clients" element={<ClientsPage />} />
                   <Route path="budgets" element={<BudgetsPage />} />
                   <Route path="time" element={<TimeTrackingPage />} />
                   <Route path="invoices" element={<InvoicesPage />} />
