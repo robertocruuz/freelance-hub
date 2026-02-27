@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { KeyRound, FileText, Clock, Receipt, User, HelpCircle, LogOut, Settings } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
 import FooterControls from '@/components/FooterControls';
 import {
   DropdownMenu,
@@ -26,8 +27,14 @@ const labelMap: Record<string, (t: any) => string> = {
 
 const DashboardLayout = () => {
   const { t, lang, setLang } = useI18n();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-sidebar">
@@ -35,7 +42,6 @@ const DashboardLayout = () => {
       <header className="h-14 flex items-center justify-between px-6 border-b border-sidebar-border">
         <h2 className="text-lg font-bold font-display text-sidebar-foreground">Logo</h2>
 
-        {/* Center nav icons */}
         <nav className="flex items-center gap-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -59,7 +65,6 @@ const DashboardLayout = () => {
           })}
         </nav>
 
-        {/* Profile dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="w-9 h-9 rounded-full border border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent transition-colors">
@@ -73,19 +78,17 @@ const DashboardLayout = () => {
             <DropdownMenuItem>
               <Settings className="w-4 h-4 mr-2" /> {t.settings}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/')}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" /> {t.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
 
-      {/* Content */}
       <main className="flex-1 p-6 overflow-auto bg-background">
         <Outlet />
       </main>
 
-      {/* Footer */}
       <footer className="h-12 flex items-center justify-between px-6 border-t border-sidebar-border bg-sidebar">
         <FooterControls />
         <span className="text-xs text-sidebar-foreground/40">{t.copyright}</span>

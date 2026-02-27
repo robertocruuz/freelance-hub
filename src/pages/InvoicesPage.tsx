@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Receipt } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 
 interface InvoiceItem {
   description: string;
@@ -11,13 +15,14 @@ interface InvoiceItem {
 
 interface Invoice {
   id: string;
-  client: string;
+  client_id: string | null;
   items: InvoiceItem[];
+  total: number;
   taxes: number;
   discount: number;
-  status: 'pending' | 'paid' | 'overdue';
-  dueDate: string;
-  createdAt: string;
+  status: string;
+  due_date: string | null;
+  created_at: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -28,9 +33,9 @@ const statusColors: Record<string, string> = {
 
 const InvoicesPage = () => {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
-  const [client, setClient] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
@@ -39,24 +44,54 @@ const InvoicesPage = () => {
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const total = subtotal + (subtotal * taxes) / 100 - discount;
 
+  const loadInvoices = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (data) {
+      setInvoices(data.map(inv => ({
+        ...inv,
+        items: (Array.isArray(inv.items) ? inv.items : []) as unknown as InvoiceItem[],
+      })));
+    }
+  }, [user]);
+
+  useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
   const addItem = () => setItems((prev) => [...prev, { description: '', quantity: 1, unitPrice: 0 }]);
   const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx: number, field: keyof InvoiceItem, value: string | number) => {
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
   };
 
-  const saveInvoice = () => {
-    if (!client) return;
-    setInvoices((prev) => [
-      { id: Date.now().toString(), client, items, taxes, discount, status: 'pending', dueDate, createdAt: new Date().toLocaleDateString() },
-      ...prev,
-    ]);
-    setCreating(false);
-    setClient('');
-    setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
-    setTaxes(0);
-    setDiscount(0);
-    setDueDate('');
+  const saveInvoice = async () => {
+    if (!user) return;
+    const { error } = await supabase.from('invoices').insert({
+      user_id: user.id,
+      items: items as unknown as Json,
+      total,
+      taxes,
+      discount,
+      status: 'pending',
+      due_date: dueDate || null,
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t.save + '!');
+      setCreating(false);
+      setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
+      setTaxes(0);
+      setDiscount(0);
+      setDueDate('');
+      loadInvoices();
+    }
+  };
+
+  const deleteInvoice = async (id: string) => {
+    await supabase.from('invoices').delete().eq('id', id);
+    loadInvoices();
   };
 
   const statusLabel = (s: string) => (t as any)[s] || s;
@@ -75,8 +110,8 @@ const InvoicesPage = () => {
       {creating && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <input placeholder={t.client} value={client} onChange={(e) => setClient(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input type="date" placeholder={t.dueDate} value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <input placeholder={t.client} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
           <div className="space-y-2">
             {items.map((item, idx) => (
@@ -100,7 +135,7 @@ const InvoicesPage = () => {
             </div>
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">{t.total}: R$ {total.toFixed(2)}</span>
+            <span className="font-semibold">R$ {total.toFixed(2)}</span>
             <div className="flex gap-2">
               <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
               <button onClick={saveInvoice} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
@@ -119,12 +154,13 @@ const InvoicesPage = () => {
           {invoices.map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{inv.client}</p>
-                <p className="text-xs text-muted-foreground">Venc: {inv.dueDate} · {inv.createdAt}</p>
+                <p className="font-semibold text-foreground">{inv.items.length} itens</p>
+                <p className="text-xs text-muted-foreground">Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {(inv.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (1 + inv.taxes / 100) - inv.discount).toFixed(2)}</span>
+                <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
                 <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
+                <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))}

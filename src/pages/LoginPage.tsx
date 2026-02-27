@@ -1,21 +1,43 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 
 const LoginPage = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: integrate with Lovable Cloud auth
-    navigate('/dashboard/passwords');
+    setLoading(true);
+    try {
+      if (isRegister) {
+        const { error } = await signUp(email, password, name);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Conta criada! Verifique seu email para confirmar.');
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          navigate('/dashboard/passwords');
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +72,7 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring pr-12"
               required
+              minLength={6}
             />
             <button
               type="button"
@@ -61,9 +84,10 @@ const LoginPage = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isRegister ? t.register : t.login}
+            {loading ? '...' : isRegister ? t.register : t.login}
           </button>
         </form>
         <button
