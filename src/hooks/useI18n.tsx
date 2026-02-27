@@ -83,6 +83,13 @@ const translations = {
     phone: 'Telefone',
     document: 'CPF/CNPJ',
     noClients: 'Nenhum cliente cadastrado ainda.',
+    // Projects
+    projects: 'Projetos',
+    newProject: 'Novo Projeto',
+    editProject: 'Editar Projeto',
+    projectName: 'Nome do projeto',
+    hourlyRate: 'Valor hora (R$)',
+    noProjects: 'Nenhum projeto cadastrado ainda.',
   },
   'en': {
     heroTitle: 'Your complete\nplatform for\nfreelancers',
@@ -159,6 +166,13 @@ const translations = {
     phone: 'Phone',
     document: 'Document',
     noClients: 'No clients registered yet.',
+    // Projects
+    projects: 'Projects',
+    newProject: 'New Project',
+    editProject: 'Edit Project',
+    projectName: 'Project name',
+    hourlyRate: 'Hourly rate',
+    noProjects: 'No projects registered yet.',
   },
 };
 

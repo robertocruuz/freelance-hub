@@ -125,12 +125,17 @@ const TimeTrackingPage = () => {
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          className="w-40 px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-52 px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="">{t.project}</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
+          {projects.map((p) => {
+            const client = clients.find(c => c.id === p.client_id);
+            return (
+              <option key={p.id} value={p.id}>
+                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
+              </option>
+            );
+          })}
         </select>
         <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
           {formatDuration(elapsed)}
