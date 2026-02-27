@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Receipt } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download } from 'lucide-react';
+import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,6 +97,20 @@ const InvoicesPage = () => {
 
   const statusLabel = (s: string) => (t as any)[s] || s;
 
+  const exportInvoicePdf = (inv: Invoice) => {
+    generateDocumentPdf({
+      title: t.invoices,
+      type: 'invoice',
+      items: inv.items,
+      total: inv.total,
+      status: statusLabel(inv.status),
+      createdAt: inv.created_at,
+      taxes: inv.taxes,
+      discount: inv.discount,
+      dueDate: inv.due_date,
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -160,6 +175,7 @@ const InvoicesPage = () => {
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
                 <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
+                <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
                 <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>

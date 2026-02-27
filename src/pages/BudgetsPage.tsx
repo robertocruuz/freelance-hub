@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, FileText } from 'lucide-react';
+import { Plus, Trash2, FileText, Download } from 'lucide-react';
+import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,6 +87,17 @@ const BudgetsPage = () => {
 
   const statusLabel = (s: string) => (t as any)[s] || s;
 
+  const exportBudgetPdf = (b: Budget) => {
+    generateDocumentPdf({
+      title: t.budgets,
+      type: 'budget',
+      items: b.items,
+      total: b.total,
+      status: statusLabel(b.status),
+      createdAt: b.created_at,
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -137,6 +149,7 @@ const BudgetsPage = () => {
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
                 <Badge className={statusColors[b.status]}>{statusLabel(b.status)}</Badge>
+                <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
                 <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
