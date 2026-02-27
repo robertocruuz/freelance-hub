@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { I18nProvider } from "@/hooks/useI18n";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { AuthProvider } from "@/hooks/useAuth";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./components/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import PasswordGeneratorPage from "./pages/PasswordGeneratorPage";
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
@@ -20,24 +22,26 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <I18nProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<Navigate to="/dashboard/passwords" replace />} />
-                <Route path="passwords" element={<PasswordGeneratorPage />} />
-                <Route path="budgets" element={<BudgetsPage />} />
-                <Route path="time" element={<TimeTrackingPage />} />
-                <Route path="invoices" element={<InvoicesPage />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                  <Route index element={<Navigate to="/dashboard/passwords" replace />} />
+                  <Route path="passwords" element={<PasswordGeneratorPage />} />
+                  <Route path="budgets" element={<BudgetsPage />} />
+                  <Route path="time" element={<TimeTrackingPage />} />
+                  <Route path="invoices" element={<InvoicesPage />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </I18nProvider>
     </ThemeProvider>
   </QueryClientProvider>
