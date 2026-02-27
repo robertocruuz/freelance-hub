@@ -1,0 +1,174 @@
+import React, { createContext, useContext, useState, useCallback } from 'react';
+
+type Language = 'pt-BR' | 'en';
+
+const translations = {
+  'pt-BR': {
+    heroTitle: 'Sua plataforma\ncompleta para\nautônomos',
+    heroSubtitle: 'Gerencie senhas, orçamentos, tempo e faturas em um só lugar.',
+    cta: 'Começar agora',
+    login: 'Entrar',
+    register: 'Criar conta',
+    passwordGenerator: 'Gerador de Senhas',
+    budgets: 'Orçamentos',
+    timeTracking: 'Time Tracking',
+    invoices: 'Faturas',
+    profile: 'Perfil',
+    settings: 'Configurações',
+    logout: 'Sair',
+    help: 'Ajuda',
+    copyright: '©2026 Nome',
+    darkMode: 'Modo escuro',
+    language: 'Idioma',
+    // Password generator
+    passwordLength: 'Tamanho da senha',
+    uppercase: 'Maiúsculas',
+    lowercase: 'Minúsculas',
+    numbers: 'Números',
+    symbols: 'Símbolos',
+    generate: 'Gerar',
+    copy: 'Copiar',
+    copied: 'Copiado!',
+    strength: 'Força',
+    weak: 'Fraca',
+    medium: 'Média',
+    strong: 'Forte',
+    veryStrong: 'Muito forte',
+    saveToVault: 'Salvar no cofre',
+    vault: 'Cofre de Senhas',
+    title: 'Título',
+    category: 'Categoria',
+    username: 'Usuário/Login',
+    password: 'Senha',
+    url: 'URL',
+    notes: 'Observações',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    search: 'Buscar...',
+    noPasswords: 'Nenhuma senha salva ainda.',
+    // Budgets
+    newBudget: 'Novo Orçamento',
+    client: 'Cliente',
+    description: 'Descrição',
+    quantity: 'Quantidade',
+    unitPrice: 'Valor unitário',
+    subtotal: 'Subtotal',
+    total: 'Total',
+    addItem: 'Adicionar item',
+    draft: 'Rascunho',
+    sent: 'Enviado',
+    approved: 'Aprovado',
+    rejected: 'Recusado',
+    // Time
+    startTimer: 'Iniciar',
+    stopTimer: 'Parar',
+    project: 'Projeto',
+    weekTotal: 'Total da semana',
+    todayTotal: 'Total hoje',
+    billable: 'Faturável',
+    // Invoice
+    newInvoice: 'Nova Fatura',
+    pending: 'Pendente',
+    paid: 'Pago',
+    overdue: 'Atrasado',
+    taxes: 'Impostos',
+    discount: 'Desconto',
+    paymentMethod: 'Forma de pagamento',
+    dueDate: 'Data de vencimento',
+  },
+  'en': {
+    heroTitle: 'Your complete\nplatform for\nfreelancers',
+    heroSubtitle: 'Manage passwords, budgets, time and invoices in one place.',
+    cta: 'Get started',
+    login: 'Sign in',
+    register: 'Sign up',
+    passwordGenerator: 'Password Generator',
+    budgets: 'Budgets',
+    timeTracking: 'Time Tracking',
+    invoices: 'Invoices',
+    profile: 'Profile',
+    settings: 'Settings',
+    logout: 'Sign out',
+    help: 'Help',
+    copyright: '©2026 Name',
+    darkMode: 'Dark mode',
+    language: 'Language',
+    passwordLength: 'Password length',
+    uppercase: 'Uppercase',
+    lowercase: 'Lowercase',
+    numbers: 'Numbers',
+    symbols: 'Symbols',
+    generate: 'Generate',
+    copy: 'Copy',
+    copied: 'Copied!',
+    strength: 'Strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    veryStrong: 'Very strong',
+    saveToVault: 'Save to vault',
+    vault: 'Password Vault',
+    title: 'Title',
+    category: 'Category',
+    username: 'Username',
+    password: 'Password',
+    url: 'URL',
+    notes: 'Notes',
+    save: 'Save',
+    cancel: 'Cancel',
+    search: 'Search...',
+    noPasswords: 'No passwords saved yet.',
+    newBudget: 'New Budget',
+    client: 'Client',
+    description: 'Description',
+    quantity: 'Quantity',
+    unitPrice: 'Unit price',
+    subtotal: 'Subtotal',
+    total: 'Total',
+    addItem: 'Add item',
+    draft: 'Draft',
+    sent: 'Sent',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    startTimer: 'Start',
+    stopTimer: 'Stop',
+    project: 'Project',
+    weekTotal: 'Week total',
+    todayTotal: 'Today total',
+    billable: 'Billable',
+    newInvoice: 'New Invoice',
+    pending: 'Pending',
+    paid: 'Paid',
+    overdue: 'Overdue',
+    taxes: 'Taxes',
+    discount: 'Discount',
+    paymentMethod: 'Payment method',
+    dueDate: 'Due date',
+  },
+};
+
+type Translations = typeof translations['pt-BR'];
+
+interface I18nContextType {
+  lang: Language;
+  setLang: (lang: Language) => void;
+  t: Translations;
+}
+
+const I18nContext = createContext<I18nContextType>({
+  lang: 'pt-BR',
+  setLang: () => {},
+  t: translations['pt-BR'],
+});
+
+export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [lang, setLang] = useState<Language>('pt-BR');
+
+  return (
+    <I18nContext.Provider value={{ lang, setLang, t: translations[lang] }}>
+      {children}
+    </I18nContext.Provider>
+  );
+};
+
+export const useI18n = () => useContext(I18nContext);
