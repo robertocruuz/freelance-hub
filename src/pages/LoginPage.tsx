@@ -40,9 +40,11 @@ const LoginPage = () => {
     }
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl glass-input text-foreground placeholder:text-muted-foreground focus:outline-none";
+
   return (
     <div className="min-h-screen hero-gradient flex items-center justify-center px-4">
-      <div className="w-full max-w-sm glass-card rounded-2xl p-8 animate-fade-in">
+      <div className="w-full max-w-sm glass rounded-3xl p-8 animate-fade-in">
         <h2 className="text-2xl font-bold font-display text-center mb-6 text-foreground">
           {isRegister ? t.register : t.login}
         </h2>
@@ -53,7 +55,7 @@ const LoginPage = () => {
               placeholder={t.title}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className={inputClass}
             />
           )}
           <input
@@ -61,7 +63,7 @@ const LoginPage = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className={inputClass}
             required
           />
           <div className="relative">
@@ -70,7 +72,7 @@ const LoginPage = () => {
               placeholder={t.password}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring pr-12"
+              className={inputClass + " pr-12"}
               required
               minLength={6}
             />
@@ -85,7 +87,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-3 rounded-xl btn-glow text-primary-foreground font-semibold disabled:opacity-50"
           >
             {loading ? '...' : isRegister ? t.register : t.login}
           </button>
