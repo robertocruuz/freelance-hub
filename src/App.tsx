@@ -16,6 +16,7 @@ import TimeTrackingPage from "./pages/TimeTrackingPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +34,7 @@ const App = () => (
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route index element={<Navigate to="/dashboard/passwords" replace />} />
+                  <Route index element={<HomePage />} />
                   <Route path="passwords" element={<PasswordGeneratorPage />} />
                   <Route path="clients" element={<ClientsPage />} />
                   <Route path="projects" element={<ProjectsPage />} />

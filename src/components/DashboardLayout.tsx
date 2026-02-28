@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun } from 'lucide-react';
+import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -12,6 +12,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navItems = [
+  { key: 'home', icon: Home, path: '/dashboard' },
   { key: 'passwords', icon: KeyRound, path: '/dashboard/passwords' },
   { key: 'clients', icon: Users, path: '/dashboard/clients' },
   { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
@@ -21,6 +22,7 @@ const navItems = [
 ] as const;
 
 const labelMap: Record<string, (t: any) => string> = {
+  home: () => 'Home',
   passwords: (t) => t.passwordGenerator,
   clients: (t) => t.clients,
   projects: (t) => t.projects,
@@ -49,7 +51,7 @@ const DashboardLayout = () => {
 
         <nav className="glass-pill flex items-center gap-1 px-2 py-1.5 rounded-2xl">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
             return (
               <Tooltip key={item.key}>
                 <TooltipTrigger asChild>
