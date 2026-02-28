@@ -43,8 +43,8 @@ const LoginPage = () => {
   const inputClass = "w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 focus:outline-none dark:border-white dark:bg-black dark:text-white dark:placeholder:text-white/40";
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md brand-card p-10 animate-fade-in bg-brand-offwhite">
+    <div className="min-h-screen bg-[#e9e8e0] dark:bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-md brand-card p-10 animate-fade-in bg-white dark:bg-black">
         <h2 className="text-4xl font-black italic tracking-tighter uppercase text-center mb-8">
           {isRegister ? t.register : t.login}
         </h2>

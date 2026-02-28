@@ -11,32 +11,29 @@ const LandingPage = () => {
   const { isDark, toggle } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
-      <div className="window-container flex-1 flex flex-col">
+    <div className="min-h-screen bg-[#e9e8e0] dark:bg-background p-4 md:p-8 flex flex-col">
+      <div className="window-container flex-1 flex flex-col bg-transparent border-none shadow-none">
         {/* Header */}
         <header className="window-header justify-between">
           <div className="window-tab">
-            <h2 className="text-xl font-black italic tracking-tighter uppercase">Logo</h2>
+            <h2 className="text-2xl uppercase">Logo</h2>
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={toggle} className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-brand-neon transition-colors dark:border-white">
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm hover:bg-brand-pink transition-colors dark:border-white">
+            <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="px-3 py-1 font-black text-xs hover:text-brand-pink transition-colors">
               {lang === 'pt-BR' ? 'PT' : 'EN'}
             </button>
             <button
               onClick={() => navigate('/login')}
-              className="px-6 py-1.5 rounded-full bg-black text-white font-bold hover:bg-brand-blue transition-colors dark:bg-white dark:text-black"
+              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 transition-transform dark:bg-white dark:text-black"
             >
-              Sign In
+              <User className="w-5 h-5" />
             </button>
           </div>
         </header>
 
         {/* Hero */}
-        <main className="flex-1 flex flex-col items-center justify-center px-8 text-center bg-[#e9e8e0] dark:bg-black/20">
+        <main className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="animate-fade-in max-w-4xl">
             <div className="relative inline-block mb-8">
               <SparkleIcon className="absolute -left-16 top-1/2 -translate-y-1/2 w-10 h-10 text-brand-blue" />
@@ -58,8 +55,14 @@ const LandingPage = () => {
         </main>
 
         {/* Footer */}
-        <footer className="h-12 border-t-[3px] border-black flex items-center justify-center px-8 dark:border-white">
-          <span className="text-xs font-bold uppercase tracking-widest">{t.copyright}</span>
+        <footer className="h-16 flex items-end justify-between px-2">
+          <button
+            onClick={toggle}
+            className="w-12 h-12 rounded-2xl border-[3px] border-black flex items-center justify-center hover:bg-brand-neon transition-all active:scale-95 bg-white dark:border-white dark:bg-black"
+          >
+            {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+          </button>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">{t.copyright}</span>
         </footer>
       </div>
     </div>

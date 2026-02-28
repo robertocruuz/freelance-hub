@@ -119,19 +119,15 @@
   }
 
   .window-header {
-    @apply h-14 border-b-[3px] border-black flex items-center px-6 bg-background relative;
-  }
-
-  .dark .window-header {
-    @apply border-white;
+    @apply h-14 flex items-center px-6 relative;
   }
 
   .window-tab {
-    @apply absolute -top-[3px] left-10 h-[calc(100%+6px)] px-8 flex items-center bg-black text-white rounded-t-2xl z-10;
+    @apply relative h-full px-0 flex items-center text-black font-black italic tracking-tighter;
   }
 
   .dark .window-tab {
-    @apply bg-white text-black;
+    @apply text-white;
   }
 
   .brand-card {
