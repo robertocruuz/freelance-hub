@@ -213,106 +213,113 @@ const TimeTrackingPage = () => {
     return selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
+  const inputClass = "px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white";
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
       {/* Timer bar */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-3xl glass">
+      <div className="brand-card p-6 flex flex-wrap items-center gap-6 bg-brand-offwhite">
         <input
           placeholder={t.description}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+          className={inputClass + " flex-1 min-w-[200px]"}
         />
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
+          className={inputClass + " w-64"}
         >
           <option value="">{t.project}</option>
           {projects.map((p) => {
             const client = clients.find(c => c.id === p.client_id);
             return (
               <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
+                {p.name}{client ? ` (${client.name})` : ''}
               </option>
             );
           })}
         </select>
-        <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
-          {formatDuration(elapsed)}
-        </span>
-        {running ? (
-          <button onClick={stopTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm">
-            <Square className="w-4 h-4" /> {t.stopTimer}
-          </button>
-        ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
-            <Play className="w-4 h-4" /> {t.startTimer}
-          </button>
-        )}
+        <div className="flex items-center gap-6 ml-auto">
+          <span className="font-black italic text-4xl tracking-tighter w-40 text-center">
+            {formatDuration(elapsed)}
+          </span>
+          {running ? (
+            <button onClick={stopTimer} className="w-14 h-14 rounded-full border-[3px] border-black bg-destructive flex items-center justify-center hover:scale-105 transition-transform dark:border-white">
+              <Square className="w-6 h-6 text-white fill-white" />
+            </button>
+          ) : (
+            <button onClick={startTimer} className="w-14 h-14 rounded-full border-[3px] border-black bg-brand-neon flex items-center justify-center hover:scale-105 transition-transform dark:border-white">
+              <Play className="w-6 h-6 text-black fill-black ml-1" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="brand-card p-6 text-center bg-white dark:bg-black">
+          <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">{t.todayTotal}</p>
+          <p className="text-3xl font-black italic">{formatDuration(todayTotal)}</p>
         </div>
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="brand-card p-6 text-center bg-brand-blue text-white">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
+          <p className="text-3xl font-black italic">{formatDuration(totalFiltered)}</p>
         </div>
-        <div className="p-4 rounded-2xl glass text-center hidden sm:block">
-          <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="brand-card p-6 text-center bg-brand-pink text-black">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{t.billable}</p>
+          <p className="text-3xl font-black italic">{formatDuration(totalFiltered)}</p>
         </div>
       </div>
 
       {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl glass-pill">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-2 p-1.5 border-[3px] border-black rounded-2xl bg-white dark:bg-black dark:border-white">
           {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all ${viewMode === mode ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-foreground/40 hover:text-foreground'}`}
             >
               {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className="capitalize">{dateLabel()}</span>
-          </button>
-          <button onClick={() => navigate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><ChevronLeft className="w-5 h-5" /></button>
+          <div className="px-6 py-2 border-[3px] border-black rounded-full font-black uppercase italic text-sm dark:border-white">
+            {dateLabel()}
+          </div>
+          <button onClick={() => navigate(1)} className="w-10 h-10 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><ChevronRight className="w-5 h-5" /></button>
         </div>
       </div>
 
       {/* Daily view: clean list */}
       {viewMode === 'daily' && (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {filteredEntries.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t.noEntries}</p>
+            <div className="brand-card py-24 text-center">
+              <Calendar className="w-16 h-16 mx-auto mb-6 opacity-20" />
+              <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">{t.noEntries}</p>
             </div>
           ) : (
             filteredEntries.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
+              <div key={entry.id} className="brand-card flex items-center justify-between p-6 bg-white dark:bg-black">
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+                  <p className="text-xl font-black italic uppercase tracking-tight truncate">{entry.description || '—'}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue">{getProjectName(entry.project_id) || 'NO PROJECT'}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                  <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="font-black text-xl italic">{formatDuration(entry.duration || 0)}</p>
+                    <p className="text-[10px] font-bold uppercase text-foreground/40">
+                      {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 border-l-[3px] border-black/10 dark:border-white/10 pl-6 ml-4">
+                    <button onClick={() => openEdit(entry)} className="w-10 h-10 btn-brand bg-brand-offwhite p-0 flex items-center justify-center dark:bg-black"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteEntry(entry.id)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-4 h-4" /></button>
+                  </div>
                 </div>
               </div>
             ))
@@ -322,35 +329,35 @@ const TimeTrackingPage = () => {
 
       {/* Weekly view: compact grid */}
       {viewMode === 'weekly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border">
+        <div className="window-container">
+          <div className="grid grid-cols-7 bg-brand-offwhite dark:bg-black/40 border-b-[3px] border-black dark:border-white">
             {weekDays.map((d, i) => {
               const isToday = isSameDay(d, new Date());
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
               const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
               return (
-                <div key={i} className={`p-3 text-center border-l first:border-l-0 border-border ${isToday ? 'bg-primary/5' : ''}`}>
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  <p className="text-lg font-bold text-foreground">{d.getDate()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{formatDuration(dayTotal)}</p>
+                <div key={i} className={`p-4 text-center border-l-[3px] first:border-l-0 border-black dark:border-white ${isToday ? 'bg-brand-neon text-black' : ''}`}>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                  <p className="text-2xl font-black italic">{d.getDate()}</p>
+                  <p className="text-[10px] font-black mt-2">{formatDuration(dayTotal)}</p>
                 </div>
               );
             })}
           </div>
-          <div className="divide-y divide-border/50 max-h-[350px] overflow-y-auto">
+          <div className="divide-y-[3px] divide-black dark:divide-white bg-white dark:bg-black max-h-[500px] overflow-y-auto">
             {filteredEntries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">{t.noEntries}</div>
+              <div className="p-12 text-center font-black uppercase text-foreground/40">{t.noEntries}</div>
             ) : (
               filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
+                <div key={entry.id} className="flex items-center justify-between px-8 py-4 hover:bg-brand-offwhite dark:hover:bg-white/5 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="text-lg font-black italic uppercase tracking-tight truncate">{entry.description || '—'}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue">{getProjectName(entry.project_id)} • {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                    <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <div className="flex items-center gap-6">
+                    <span className="font-black text-xl italic">{formatDuration(entry.duration || 0)}</span>
+                    <button onClick={() => openEdit(entry)} className="w-8 h-8 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => deleteEntry(entry.id)} className="w-8 h-8 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               ))
@@ -361,16 +368,15 @@ const TimeTrackingPage = () => {
 
       {/* Monthly view: calendar grid */}
       {viewMode === 'monthly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 text-center border-b border-border">
+        <div className="window-container">
+          <div className="grid grid-cols-7 bg-brand-offwhite dark:bg-black/40 border-b-[3px] border-black dark:border-white text-[10px] font-black uppercase tracking-widest text-center">
             {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-              <div key={d} className="p-2 text-xs font-medium text-muted-foreground">{d}</div>
+              <div key={d} className="p-3 border-l-[3px] first:border-l-0 border-black dark:border-white">{d}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7">
-            {/* Empty cells before month starts */}
+          <div className="grid grid-cols-7 bg-white dark:bg-black">
             {Array.from({ length: monthStart.getDay() }, (_, i) => (
-              <div key={`empty-${i}`} className="p-2 min-h-[70px] border-t border-l first:border-l-0 border-border/30" />
+              <div key={`empty-${i}`} className="min-h-[100px] border-t-[3px] border-l-[3px] first:border-l-0 border-black dark:border-white bg-brand-offwhite/50 dark:bg-white/5" />
             ))}
             {monthDays.map((d) => {
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
@@ -380,18 +386,17 @@ const TimeTrackingPage = () => {
                 <button
                   key={d.getDate()}
                   onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
-                  className={`p-2 min-h-[70px] border-t border-l border-border/30 text-left hover:bg-accent/20 transition-colors ${isToday ? 'bg-primary/5' : ''}`}
+                  className={`p-4 min-h-[100px] border-t-[3px] border-l-[3px] border-black dark:border-white text-left hover:bg-brand-neon transition-colors group ${isToday ? 'bg-brand-blue text-white' : ''}`}
                 >
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-foreground'}`}>{d.getDate()}</p>
+                  <p className="text-xl font-black italic">{d.getDate()}</p>
                   {dayTotal > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1 font-mono">{formatDuration(dayTotal)}</p>
+                    <p className={`text-[10px] font-black mt-2 ${isToday ? 'text-white' : 'text-brand-pink'}`}>{formatDuration(dayTotal)}</p>
                   )}
                   {dayEntries.length > 0 && (
-                    <div className="mt-1 flex gap-0.5">
-                      {dayEntries.slice(0, 3).map((_, i) => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+                    <div className="mt-3 flex gap-1">
+                      {dayEntries.slice(0, 4).map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full border border-black ${isToday ? 'bg-white' : 'bg-black'} dark:border-white dark:bg-white`} />
                       ))}
-                      {dayEntries.length > 3 && <span className="text-[9px] text-muted-foreground">+{dayEntries.length - 3}</span>}
                     </div>
                   )}
                 </button>
@@ -403,35 +408,35 @@ const TimeTrackingPage = () => {
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="glass border-border">
+        <DialogContent className="border-[3px] border-black rounded-3xl p-8 dark:border-white max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t.editEntry}</DialogTitle>
+            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">{t.editEntry}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-6">
             <div>
-              <label className="text-xs text-muted-foreground">{t.description}</label>
-              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+              <label className="text-[10px] font-black uppercase tracking-widest ml-1">{t.description}</label>
+              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={inputClass + " w-full mt-1"} />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">{t.project}</label>
-              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none">
+              <label className="text-[10px] font-black uppercase tracking-widest ml-1">{t.project}</label>
+              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className={inputClass + " w-full mt-1"}>
                 <option value="">{t.project}</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground">Início</label>
-                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+                <label className="text-[10px] font-black uppercase tracking-widest ml-1">Início</label>
+                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className={inputClass + " w-full mt-1"} />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Fim</label>
-                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+                <label className="text-[10px] font-black uppercase tracking-widest ml-1">Fim</label>
+                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className={inputClass + " w-full mt-1"} />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setEditingEntry(null)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveEdit} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+            <div className="flex gap-4 pt-4">
+              <button onClick={() => setEditingEntry(null)} className="flex-1 btn-brand bg-white text-black dark:bg-black dark:text-white uppercase">{t.cancel}</button>
+              <button onClick={saveEdit} className="flex-1 btn-brand bg-brand-blue text-white uppercase">{t.save}</button>
             </div>
           </div>
         </DialogContent>

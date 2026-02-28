@@ -11,52 +11,57 @@ const LandingPage = () => {
   const { isDark, toggle } = useTheme();
 
   return (
-    <div className="relative min-h-screen flex flex-col hero-gradient overflow-hidden">
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-8 py-6">
-        <h2 className="text-xl font-bold font-display text-foreground tracking-tight">Logo</h2>
-        <div className="flex items-center gap-2">
-          <button onClick={toggle} className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center">
-            {isDark ? <Sun className="w-4 h-4 text-foreground" /> : <Moon className="w-4 h-4 text-foreground" />}
-          </button>
-          <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="h-9 px-3 rounded-xl glass-pill text-xs font-semibold text-foreground">
-            {lang === 'pt-BR' ? 'PT' : 'EN'}
-          </button>
-          <button
-            onClick={() => navigate('/login')}
-            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center"
-          >
-            <User className="w-4 h-4 text-foreground" />
-          </button>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
-        <div className="animate-fade-in">
-          <div className="relative inline-block">
-            <SparkleIcon className="absolute -left-12 top-1/2 -translate-y-1/2" />
-            <SparkleIcon className="absolute -right-12 top-1/2 -translate-y-1/2 delay-300" />
-            <h1 className="text-5xl md:text-7xl font-bold font-display text-gradient-hero leading-tight whitespace-pre-line">
-              {t.heroTitle}
-            </h1>
+    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
+      <div className="window-container flex-1 flex flex-col">
+        {/* Header */}
+        <header className="window-header justify-between">
+          <div className="window-tab">
+            <h2 className="text-xl font-black italic tracking-tighter uppercase">Logo</h2>
           </div>
-          <p className="mt-6 text-lg text-muted-foreground max-w-md mx-auto">
-            {t.heroSubtitle}
-          </p>
-          <button
-            onClick={() => navigate('/login')}
-            className="mt-8 px-8 py-3.5 rounded-2xl btn-glow text-primary-foreground font-semibold text-lg"
-          >
-            {t.cta}
-          </button>
-        </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 flex items-center justify-center px-8 py-6">
-        <span className="text-xs text-muted-foreground/50">{t.copyright}</span>
-      </footer>
+          <div className="flex items-center gap-4">
+            <button onClick={toggle} className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-brand-neon transition-colors dark:border-white">
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm hover:bg-brand-pink transition-colors dark:border-white">
+              {lang === 'pt-BR' ? 'PT' : 'EN'}
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="px-6 py-1.5 rounded-full bg-black text-white font-bold hover:bg-brand-blue transition-colors dark:bg-white dark:text-black"
+            >
+              Sign In
+            </button>
+          </div>
+        </header>
+
+        {/* Hero */}
+        <main className="flex-1 flex flex-col items-center justify-center px-8 text-center bg-[#e9e8e0] dark:bg-black/20">
+          <div className="animate-fade-in max-w-4xl">
+            <div className="relative inline-block mb-8">
+              <SparkleIcon className="absolute -left-16 top-1/2 -translate-y-1/2 w-10 h-10 text-brand-blue" />
+              <SparkleIcon className="absolute -right-16 top-1/2 -translate-y-1/2 delay-300 w-10 h-10 text-brand-pink" />
+              <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.9]">
+                {t.heroTitle}
+              </h1>
+            </div>
+            <p className="text-xl font-bold text-foreground/70 uppercase tracking-widest max-w-2xl mx-auto mb-10">
+              {t.heroSubtitle}
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="btn-brand bg-brand-neon text-2xl px-12 py-4 uppercase italic font-black"
+            >
+              {t.cta}
+            </button>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="h-12 border-t-[3px] border-black flex items-center justify-center px-8 dark:border-white">
+          <span className="text-xs font-bold uppercase tracking-widest">{t.copyright}</span>
+        </footer>
+      </div>
     </div>
   );
 };

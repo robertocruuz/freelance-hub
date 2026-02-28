@@ -122,72 +122,82 @@ const InvoicesPage = () => {
     });
   };
 
+  const inputClass = "w-full px-4 py-2 border-[3px] border-black rounded-xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white";
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.invoices}</h1>
+        <h1 className="text-4xl font-black italic tracking-tighter uppercase">{t.invoices}</h1>
         {!creating && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newInvoice}
+          <button onClick={() => setCreating(true)} className="btn-brand bg-brand-neon flex items-center gap-2 uppercase italic font-black">
+            <Plus className="w-5 h-5" /> {t.newInvoice}
           </button>
         )}
       </div>
 
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="brand-card p-8 space-y-6 bg-brand-offwhite">
+          <div className="grid grid-cols-2 gap-6">
             <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputClass} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-3 items-center">
+                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className={inputClass} />
+                <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className={inputClass + " text-center px-1"} />
+                <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className={inputClass + " text-right px-1"} />
+                <button onClick={() => removeItem(idx)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black">
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
             ))}
           </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.taxes} (%)</span>
-              <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className="w-20 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
+          <button onClick={addItem} className="text-xs font-black uppercase underline decoration-2 underline-offset-4 hover:text-brand-blue">{t.addItem}</button>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-black uppercase">{t.taxes} (%)</span>
+              <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className={inputClass + " w-24 text-center"} />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.discount}</span>
-              <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className="w-24 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-black uppercase">{t.discount}</span>
+              <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className={inputClass + " w-32 text-right"} />
             </div>
           </div>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
-              <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveInvoice} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+          <div className="flex items-center justify-between pt-6 border-t-[3px] border-black/10 dark:border-white/10">
+            <span className="text-2xl font-black italic">R$ {total.toFixed(2)}</span>
+            <div className="flex gap-4">
+              <button onClick={() => setCreating(false)} className="btn-brand bg-white text-black uppercase dark:bg-black dark:text-white">{t.cancel}</button>
+              <button onClick={saveInvoice} className="btn-brand bg-brand-blue text-white uppercase">{t.save}</button>
             </div>
           </div>
         </div>
       )}
 
       {invoices.length === 0 && !creating ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhuma fatura criada ainda.</p>
+        <div className="brand-card py-24 text-center">
+          <Receipt className="w-16 h-16 mx-auto mb-6 opacity-20" />
+          <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">Nenhuma fatura criada ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-6">
           {invoices.map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{inv.client_name || 'Sem cliente'} · {inv.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}</p>
+            <div key={inv.id} className="brand-card flex items-center justify-between bg-white dark:bg-black p-6">
+              <div className="min-w-0">
+                <p className="text-xl font-black italic uppercase tracking-tight truncate">{inv.client_name || 'Sem cliente'}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1">
+                  VENC: {inv.due_date || '-'} • {new Date(inv.created_at).toLocaleDateString()}
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
-                <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
-                <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-4">
+                <span className="text-xl font-black italic mr-4">R$ {inv.total.toFixed(2)}</span>
+                <Badge className={`border-2 border-black font-black uppercase tracking-tighter rounded-full px-4 py-1.5 ${statusColors[inv.status]} dark:border-white`}>
+                  {statusLabel(inv.status)}
+                </Badge>
+                <div className="flex gap-2 ml-4">
+                   <button onClick={() => exportInvoicePdf(inv)} className="w-10 h-10 btn-brand bg-brand-neon p-0 flex items-center justify-center"><Download className="w-4 h-4 text-black" /></button>
+                   <button onClick={() => deleteInvoice(inv.id)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-4 h-4" /></button>
+                </div>
               </div>
             </div>
           ))}

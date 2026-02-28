@@ -44,77 +44,76 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col hero-gradient">
-      {/* Top bar - glass */}
-      <header className="relative z-20 h-16 flex items-center justify-between px-6">
-        <h2 className="text-lg font-bold font-display text-foreground tracking-tight">Logo</h2>
+    <div className="min-h-screen flex flex-col bg-background p-4 md:p-8">
+      <div className="window-container flex-1 flex flex-col">
+        {/* Top bar - Tab style */}
+        <header className="window-header justify-between">
+          <div className="window-tab">
+            <h2 className="text-xl font-black italic tracking-tighter">Logo</h2>
+          </div>
 
-        <nav className="glass-pill flex items-center gap-1 px-2 py-1.5 rounded-2xl">
-          {navItems.map((item) => {
-            const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
-            return (
-              <Tooltip key={item.key}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => navigate(item.path)}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
-                    }`}
-                  >
-                    <item.icon className="w-[18px] h-[18px]" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="glass text-foreground border-none">{labelMap[item.key](t)}</TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </nav>
+          <div className="flex-1 flex justify-center gap-6 text-sm font-bold uppercase tracking-widest px-4">
+            {navItems.map((item) => {
+              const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => navigate(item.path)}
+                  className={`transition-colors hover:text-brand-blue ${isActive ? 'text-brand-blue underline underline-offset-4 decoration-2' : 'text-foreground/60'}`}
+                >
+                  {labelMap[item.key](t)}
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggle}
-            className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center"
-          >
-            {isDark ? <Sun className="w-4 h-4 text-foreground" /> : <Moon className="w-4 h-4 text-foreground" />}
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggle}
+              className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center hover:bg-brand-neon transition-colors dark:border-white"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
 
-          <button
-            onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-            className="h-9 px-3 rounded-xl glass-pill text-xs font-semibold text-foreground"
-          >
-            {lang === 'pt-BR' ? 'PT' : 'EN'}
-          </button>
+            <button
+              onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
+              className="px-4 py-1.5 rounded-full border-2 border-black font-bold text-sm hover:bg-brand-pink transition-colors dark:border-white"
+            >
+              {lang === 'pt-BR' ? 'PT' : 'EN'}
+            </button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-9 h-9 rounded-full glass-pill flex items-center justify-center">
-                <User className="w-4 h-4 text-foreground" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 glass border-none">
-              <DropdownMenuItem>
-                <User className="w-4 h-4 mr-2" /> {t.profile}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="w-4 h-4 mr-2" /> {t.settings}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" /> {t.logout}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="px-6 py-1.5 rounded-full bg-black text-white font-bold hover:bg-brand-blue transition-colors dark:bg-white dark:text-black">
+                  Join Us
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 border-2 border-black rounded-2xl mt-2 dark:border-white">
+                <DropdownMenuItem className="font-bold">
+                  <User className="w-4 h-4 mr-2" /> {t.profile}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="font-bold">
+                  <Settings className="w-4 h-4 mr-2" /> {t.settings}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="font-bold text-destructive">
+                  <LogOut className="w-4 h-4 mr-2" /> {t.logout}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
 
-      <main className="relative z-10 flex-1 p-6 overflow-auto">
-        <Outlet />
-      </main>
+        <main className="flex-1 p-8 overflow-auto relative bg-[#e9e8e0] dark:bg-black/20">
+           {/* Decorative folder tab if needed or just content */}
+           <div className="max-w-7xl mx-auto">
+              <Outlet />
+           </div>
+        </main>
 
-      <footer className="relative z-20 h-10 flex items-center justify-center px-6">
-        <span className="text-[11px] text-muted-foreground/50">{t.copyright}</span>
-      </footer>
+        <footer className="h-12 border-t-[3px] border-black flex items-center justify-center px-6 dark:border-white">
+          <span className="text-xs font-bold uppercase tracking-widest">{t.copyright}</span>
+        </footer>
+      </div>
     </div>
   );
 };

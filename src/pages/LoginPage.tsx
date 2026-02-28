@@ -40,15 +40,15 @@ const LoginPage = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl glass-input text-foreground placeholder:text-muted-foreground focus:outline-none";
+  const inputClass = "w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 focus:outline-none dark:border-white dark:bg-black dark:text-white dark:placeholder:text-white/40";
 
   return (
-    <div className="min-h-screen hero-gradient flex items-center justify-center px-4">
-      <div className="w-full max-w-sm glass rounded-3xl p-8 animate-fade-in">
-        <h2 className="text-2xl font-bold font-display text-center mb-6 text-foreground">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-md brand-card p-10 animate-fade-in bg-brand-offwhite">
+        <h2 className="text-4xl font-black italic tracking-tighter uppercase text-center mb-8">
           {isRegister ? t.register : t.login}
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {isRegister && (
             <input
               type="text"
@@ -79,7 +79,7 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:text-brand-blue dark:text-white"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -87,14 +87,14 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl btn-glow text-primary-foreground font-semibold disabled:opacity-50"
+            className="w-full btn-brand bg-brand-neon text-xl uppercase font-black italic h-14 disabled:opacity-50"
           >
             {loading ? '...' : isRegister ? t.register : t.login}
           </button>
         </form>
         <button
           onClick={() => setIsRegister(!isRegister)}
-          className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors text-center"
+          className="w-full mt-6 text-sm font-black uppercase underline decoration-2 underline-offset-4 hover:text-brand-blue transition-colors text-center"
         >
           {isRegister ? t.login : t.register}
         </button>

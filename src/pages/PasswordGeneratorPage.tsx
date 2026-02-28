@@ -139,75 +139,75 @@ const PasswordGeneratorPage = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-      <h1 className="text-2xl font-bold font-display">{t.passwordGenerator}</h1>
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
+      <h1 className="text-4xl font-black italic tracking-tighter uppercase">{t.passwordGenerator}</h1>
 
-      <div className="glass rounded-3xl p-6 space-y-6">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-background/50 font-mono text-lg break-all min-h-[56px]">
-          <span className="flex-1 text-foreground">{password || '...'}</span>
-          <button onClick={generate} className="text-muted-foreground hover:text-foreground transition-colors">
-            <RefreshCw className="w-5 h-5" />
+      <div className="brand-card p-8 space-y-8 bg-brand-offwhite">
+        <div className="flex items-center gap-4 p-6 border-[3px] border-black rounded-3xl bg-white font-black italic text-2xl break-all min-h-[80px] dark:border-white dark:bg-black">
+          <span className="flex-1 text-black dark:text-white">{password || '...'}</span>
+          <button onClick={generate} className="text-black hover:text-brand-blue transition-colors dark:text-white">
+            <RefreshCw className="w-6 h-6" />
           </button>
-          <button onClick={() => password && copyToClipboard(password)} className="text-muted-foreground hover:text-foreground transition-colors">
-            {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
+          <button onClick={() => password && copyToClipboard(password)} className="text-black hover:text-brand-blue transition-colors dark:text-white">
+            {copied ? <Check className="w-6 h-6 text-brand-dark-green" /> : <Copy className="w-6 h-6" />}
           </button>
         </div>
 
         {strength && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="space-y-3">
+            <div className="flex justify-between text-xs font-black uppercase tracking-widest">
               <span>{t.strength}</span>
               <span>{(t as any)[strength.label]}</span>
             </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden flex gap-1">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className={`flex-1 rounded-full transition-colors ${i <= strength.level ? strengthColors[strength.level] : 'bg-muted'}`} />
-              ))}
+            <div className="h-6 rounded-full bg-black/10 border-[3px] border-black overflow-hidden flex dark:bg-white/10 dark:border-white">
+              <div
+                className={`h-full border-r-[3px] border-black transition-all ${strengthColors[strength.level]}`}
+                style={{ width: `${(strength.level / 4) * 100}%` }}
+              />
             </div>
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t.passwordLength}</span>
-            <span className="font-semibold text-foreground">{length}</span>
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm font-black uppercase">
+            <span>{t.passwordLength}</span>
+            <span className="text-brand-blue">{length}</span>
           </div>
-          <Slider value={[length]} onValueChange={(v) => setLength(v[0])} min={4} max={64} step={1} />
+          <Slider value={[length]} onValueChange={(v) => setLength(v[0])} min={4} max={64} step={1} className="py-4" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-6">
           {[
             { label: t.uppercase, checked: upper, set: setUpper },
             { label: t.lowercase, checked: lower, set: setLower },
             { label: t.numbers, checked: numbers, set: setNumbers },
             { label: t.symbols, checked: symbols, set: setSymbols },
           ].map((opt) => (
-            <label key={opt.label} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-              <Checkbox checked={opt.checked} onCheckedChange={(c) => opt.set(!!c)} />
+            <label key={opt.label} className="flex items-center gap-3 text-sm font-black uppercase cursor-pointer">
+              <Checkbox checked={opt.checked} onCheckedChange={(c) => opt.set(!!c)} className="w-6 h-6 border-[3px] border-black dark:border-white" />
               {opt.label}
             </label>
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-4 pt-4">
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
             <DialogTrigger asChild>
-              <button disabled={!password} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-glow text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-40">
-                <Save className="w-4 h-4" /> {t.saveToVault}
+              <button disabled={!password} className="flex-1 btn-brand bg-brand-neon text-xl uppercase font-black italic h-14 disabled:opacity-40">
+                <Save className="w-5 h-5 mr-2 inline" /> {t.saveToVault}
               </button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>{t.saveToVault}</DialogTitle></DialogHeader>
-              <div className="space-y-3 mt-2">
-                <input placeholder={t.title} value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input placeholder={t.category} value={saveCategory} onChange={(e) => setSaveCategory(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input placeholder={t.username} value={saveUsername} onChange={(e) => setSaveUsername(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input placeholder={t.url} value={saveUrl} onChange={(e) => setSaveUrl(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <textarea placeholder={t.notes} value={saveNotes} onChange={(e) => setSaveNotes(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" rows={3} />
-                <div className="p-3 rounded-lg bg-muted font-mono text-sm text-foreground break-all">{password}</div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setSaveOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-                  <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+            <DialogContent className="border-[3px] border-black rounded-3xl p-8 dark:border-white max-w-lg">
+              <DialogHeader><DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">{t.saveToVault}</DialogTitle></DialogHeader>
+              <div className="space-y-4 mt-6">
+                <input placeholder={t.title} value={saveTitle} onChange={(e) => setSaveTitle(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+                <input placeholder={t.category} value={saveCategory} onChange={(e) => setSaveCategory(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+                <input placeholder={t.username} value={saveUsername} onChange={(e) => setSaveUsername(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+                <textarea placeholder={t.notes} value={saveNotes} onChange={(e) => setSaveNotes(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white resize-none" rows={3} />
+                <div className="p-4 rounded-2xl border-[3px] border-black bg-black text-white font-black italic dark:border-white dark:bg-white dark:text-black">{password}</div>
+                <div className="flex gap-4 pt-4">
+                  <button onClick={() => setSaveOpen(false)} className="flex-1 btn-brand bg-white text-black uppercase dark:bg-black dark:text-white">{t.cancel}</button>
+                  <button onClick={handleSave} className="flex-1 btn-brand bg-brand-blue text-white uppercase">{t.save}</button>
                 </div>
               </div>
             </DialogContent>
@@ -216,39 +216,55 @@ const PasswordGeneratorPage = () => {
       </div>
 
       {/* Vault */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold font-display">{t.vault}</h2>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h2 className="text-3xl font-black italic tracking-tighter uppercase">{t.vault}</h2>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} className="pl-9 pr-4 py-2 text-sm rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/50 dark:text-white/50" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t.search}
+              className="pl-12 pr-6 py-3 border-[3px] border-black rounded-full bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white"
+            />
           </div>
         </div>
 
         {filteredVault.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">{t.noPasswords}</p>
+          <div className="brand-card p-12 text-center">
+            <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">{t.noPasswords}</p>
+          </div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredVault.map((entry) => (
-              <div key={entry.id} className="flex items-center gap-4 p-4 rounded-2xl glass">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">{entry.title}</p>
-                  <p className="text-xs text-muted-foreground">{entry.category} · {entry.username}</p>
+              <div key={entry.id} className="brand-card flex flex-col justify-between p-6 bg-white dark:bg-black">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="min-w-0">
+                    <p className="font-black italic text-xl uppercase tracking-tight truncate">{entry.title}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue">{entry.category || 'NO CATEGORY'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                     <button onClick={() => deleteEntry(entry.id)} className="w-8 h-8 rounded-full border-2 border-black flex items-center justify-center hover:bg-destructive hover:text-white transition-colors dark:border-white">
+                        <Trash2 className="w-4 h-4" />
+                     </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 font-mono text-sm text-foreground">
-                  <span className="max-w-[120px] truncate">
+
+                <div className="flex items-center justify-between p-4 border-[3px] border-black rounded-2xl bg-brand-offwhite dark:bg-black/50 dark:border-white">
+                  <span className="font-black italic tracking-widest truncate mr-4">
                     {showVaultPasswords[entry.id] ? decryptPassword(entry.encrypted_password) : '••••••••'}
                   </span>
-                  <button onClick={() => setShowVaultPasswords((prev) => ({ ...prev, [entry.id]: !prev[entry.id] }))} className="text-muted-foreground hover:text-foreground">
-                    {showVaultPasswords[entry.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                  <button onClick={() => copyToClipboard(decryptPassword(entry.encrypted_password))} className="text-muted-foreground hover:text-foreground">
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowVaultPasswords((prev) => ({ ...prev, [entry.id]: !prev[entry.id] }))} className="text-black hover:text-brand-blue dark:text-white">
+                      {showVaultPasswords[entry.id] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                    <button onClick={() => copyToClipboard(decryptPassword(entry.encrypted_password))} className="text-black hover:text-brand-blue dark:text-white">
+                      <Copy className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
+
+                <p className="mt-4 text-[10px] font-bold uppercase text-black/60 dark:text-white/60 truncate">{entry.username || 'NO USERNAME'}</p>
               </div>
             ))}
           </div>

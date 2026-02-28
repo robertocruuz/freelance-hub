@@ -84,48 +84,52 @@ const ProjectsPage = () => {
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
   );
 
-  const inputClass = "w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring";
+  const inputClass = "w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display text-foreground">{t.projects}</h1>
+        <h1 className="text-4xl font-black italic tracking-tighter uppercase">{t.projects}</h1>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
+          className="btn-brand bg-brand-neon flex items-center gap-2 uppercase italic font-black"
         >
-          <Plus className="w-4 h-4" /> {t.newProject}
+          <Plus className="w-5 h-5" /> {t.newProject}
         </button>
       </div>
 
-      <input
-        placeholder={t.search}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className={inputClass + " max-w-sm"}
-      />
+      <div className="relative">
+        <input
+          placeholder={t.search}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={inputClass + " max-w-md"}
+        />
+      </div>
 
       {showForm && (
-        <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
-          <h2 className="text-lg font-bold font-display text-foreground">
+        <div className="brand-card p-8 space-y-6 bg-brand-offwhite">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter">
             {editingId ? t.editProject : t.newProject}
           </h2>
-          <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-          <ClientSelect value={clientId} onChange={setClientId} />
-          <input
-            placeholder={t.hourlyRate}
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourlyRate}
-            onChange={e => setHourlyRate(e.target.value)}
-            className={inputClass}
-          />
-          <div className="flex gap-2">
-            <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
+            <ClientSelect value={clientId} onChange={setClientId} />
+            <input
+              placeholder={t.hourlyRate}
+              type="number"
+              min="0"
+              step="0.01"
+              value={hourlyRate}
+              onChange={e => setHourlyRate(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex gap-4 pt-4">
+            <button onClick={handleSave} className="flex-1 btn-brand bg-brand-blue text-white uppercase font-black italic h-12">
               {t.save}
             </button>
-            <button onClick={resetForm} className="px-5 py-2 rounded-xl bg-muted text-muted-foreground font-semibold text-sm">
+            <button onClick={resetForm} className="flex-1 btn-brand bg-white text-black uppercase font-black italic h-12 dark:bg-black dark:text-white">
               {t.cancel}
             </button>
           </div>
@@ -133,26 +137,27 @@ const ProjectsPage = () => {
       )}
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <FolderKanban className="w-12 h-12 mb-3 opacity-40" />
-          <p className="text-sm">{t.noProjects}</p>
+        <div className="brand-card py-24 text-center">
+          <FolderKanban className="w-16 h-16 mx-auto mb-6 opacity-20" />
+          <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">{t.noProjects}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map(p => (
-            <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{p.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {clientName(p.client_id)} · R$ {p.hourly_rate.toFixed(2)}/h
+            <div key={p.id} className="brand-card flex flex-col justify-between bg-white dark:bg-black p-6">
+              <div className="min-w-0">
+                <p className="text-2xl font-black italic uppercase tracking-tight mb-4">{p.name}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-pink mb-1">
+                  CLIENT: {clientName(p.client_id)}
+                </p>
+                <p className="text-xs font-black uppercase text-brand-dark-green">
+                   RATE: R$ {p.hourly_rate.toFixed(2)}/h
                 </p>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4 text-destructive" />
+              <div className="flex items-center gap-4 mt-8 pt-6 border-t-[3px] border-black/10 dark:border-white/10">
+                <button onClick={() => handleEdit(p)} className="flex-1 btn-brand bg-brand-offwhite text-xs dark:bg-black dark:text-white">EDIT</button>
+                <button onClick={() => handleDelete(p.id)} className="w-12 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black">
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>

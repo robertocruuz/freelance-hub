@@ -92,41 +92,57 @@ const ClientsPage = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.clients}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> {t.newClient}
+        <h1 className="text-4xl font-black italic tracking-tighter uppercase">{t.clients}</h1>
+        <button onClick={openCreate} className="btn-brand bg-brand-neon flex items-center gap-2 uppercase italic font-black">
+          <Plus className="w-5 h-5" /> {t.newClient}
         </button>
       </div>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder={t.search}
-        className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      />
+      <div className="relative">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t.search}
+          className="w-full pl-6 pr-6 py-4 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white"
+        />
+      </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Users className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">{t.noClients}</p>
+        <div className="brand-card py-24 text-center">
+          <Users className="w-16 h-16 mx-auto mb-6 opacity-20" />
+          <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">{t.noClients}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
+            <div key={c.id} className="brand-card flex flex-col justify-between bg-white dark:bg-black p-6">
               <div className="min-w-0">
-                <p className="font-semibold text-foreground">{c.name}</p>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                  {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
-                  {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{c.phone}</span>}
-                  {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{c.document}</span>}
+                <p className="text-2xl font-black italic uppercase tracking-tight mb-4">{c.name}</p>
+                <div className="space-y-2">
+                  {c.email && (
+                    <div className="flex items-center gap-3 text-xs font-bold uppercase text-brand-blue">
+                      <Mail className="w-4 h-4" /> {c.email}
+                    </div>
+                  )}
+                  {c.phone && (
+                    <div className="flex items-center gap-3 text-xs font-bold uppercase text-brand-pink">
+                      <Phone className="w-4 h-4" /> {c.phone}
+                    </div>
+                  )}
+                  {c.document && (
+                    <div className="flex items-center gap-3 text-xs font-bold uppercase text-brand-dark-green">
+                      <DocIcon className="w-4 h-4" /> {c.document}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => openEdit(c)} className="text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => deleteClient(c.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-4 mt-8 pt-6 border-t-[3px] border-black/10 dark:border-white/10">
+                <button onClick={() => openEdit(c)} className="flex-1 btn-brand bg-brand-offwhite text-xs dark:bg-black dark:text-white">EDIT</button>
+                <button onClick={() => deleteClient(c.id)} className="w-12 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black">
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
             </div>
           ))}
@@ -134,18 +150,18 @@ const ClientsPage = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-[3px] border-black rounded-3xl p-8 dark:border-white max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? t.editClient : t.newClient}</DialogTitle>
+            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">{editing ? t.editClient : t.newClient}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 mt-2">
-            <input placeholder={t.clientName} value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder={t.document} value={document} onChange={(e) => setDocument(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setDialogOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-              <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+          <div className="space-y-4 mt-6">
+            <input placeholder={t.clientName} value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+            <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+            <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+            <input placeholder={t.document} value={document} onChange={(e) => setDocument(e.target.value)} className="w-full px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none dark:border-white dark:bg-black dark:text-white" />
+            <div className="flex gap-4 pt-4">
+              <button onClick={() => setDialogOpen(false)} className="flex-1 btn-brand bg-white text-black dark:bg-black dark:text-white">{t.cancel}</button>
+              <button onClick={handleSave} className="flex-1 btn-brand bg-brand-blue text-white">{t.save}</button>
             </div>
           </div>
         </DialogContent>
