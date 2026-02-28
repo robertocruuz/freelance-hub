@@ -90,6 +90,14 @@ const translations = {
     projectName: 'Nome do projeto',
     hourlyRate: 'Valor hora (R$)',
     noProjects: 'Nenhum projeto cadastrado ainda.',
+    // Time views
+    dailyView: 'Diário',
+    weeklyView: 'Semanal',
+    monthlyView: 'Mensal',
+    editEntry: 'Editar registro',
+    deleteEntry: 'Excluir registro',
+    noEntries: 'Nenhum registro ainda.',
+    entries: 'Registros',
   },
   'en': {
     heroTitle: 'Your complete\nplatform for\nfreelancers',
@@ -173,6 +181,14 @@ const translations = {
     projectName: 'Project name',
     hourlyRate: 'Hourly rate',
     noProjects: 'No projects registered yet.',
+    // Time views
+    dailyView: 'Daily',
+    weeklyView: 'Weekly',
+    monthlyView: 'Monthly',
+    editEntry: 'Edit entry',
+    deleteEntry: 'Delete entry',
+    noEntries: 'No entries yet.',
+    entries: 'Entries',
   },
 };
 
