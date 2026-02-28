@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, FileText, Download } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,12 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
 import { useClients } from '@/hooks/useClients';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface BudgetItem {
   description: string;
@@ -26,6 +32,8 @@ interface Budget {
   created_at: string;
 }
 
+const statuses = ['draft', 'sent', 'approved', 'rejected'] as const;
+
 const statusColors: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
   sent: 'bg-accent text-accent-foreground',
@@ -38,6 +46,7 @@ const BudgetsPage = () => {
   const { user } = useAuth();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [creating, setCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<BudgetItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
   const { clients } = useClients();
@@ -72,19 +81,55 @@ const BudgetsPage = () => {
 
   const saveBudget = async () => {
     if (!user) return;
-    const { error } = await supabase.from('budgets').insert({
-      user_id: user.id,
-      client_id: clientId || null,
-      items: items as unknown as Json,
-      total,
-      status: 'draft',
-    });
+
+    if (editingId) {
+      const { error } = await supabase.from('budgets').update({
+        client_id: clientId || null,
+        items: items as unknown as Json,
+        total,
+      }).eq('id', editingId);
+      if (error) toast.error(error.message);
+      else {
+        toast.success(t.save + '!');
+        resetForm();
+        loadBudgets();
+      }
+    } else {
+      const { error } = await supabase.from('budgets').insert({
+        user_id: user.id,
+        client_id: clientId || null,
+        items: items as unknown as Json,
+        total,
+        status: 'draft',
+      });
+      if (error) toast.error(error.message);
+      else {
+        toast.success(t.save + '!');
+        resetForm();
+        loadBudgets();
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setCreating(false);
+    setEditingId(null);
+    setClientId('');
+    setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
+  };
+
+  const startEditing = (b: Budget) => {
+    setEditingId(b.id);
+    setClientId(b.client_id || '');
+    setItems(b.items.length > 0 ? b.items : [{ description: '', quantity: 1, unitPrice: 0 }]);
+    setCreating(true);
+  };
+
+  const changeStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('budgets').update({ status }).eq('id', id);
     if (error) toast.error(error.message);
     else {
-      toast.success(t.save + '!');
-      setCreating(false);
-      setClientId('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
+      toast.success(statusLabel(status));
       loadBudgets();
     }
   };
@@ -107,18 +152,20 @@ const BudgetsPage = () => {
     });
   };
 
+  const isFormOpen = creating || editingId;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold font-display">{t.budgets}</h1>
-        {!creating && (
+        {!isFormOpen && (
           <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" /> {t.newBudget}
           </button>
         )}
       </div>
 
-      {creating && (
+      {isFormOpen && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
           <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
           <div className="space-y-2">
@@ -135,14 +182,14 @@ const BudgetsPage = () => {
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <span className="font-semibold">R$ {total.toFixed(2)}</span>
             <div className="flex gap-2">
-              <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
+              <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
               <button onClick={saveBudget} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
             </div>
           </div>
         </div>
       )}
 
-      {budgets.length === 0 && !creating ? (
+      {budgets.length === 0 && !isFormOpen ? (
         <div className="text-center py-16 text-muted-foreground">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p className="text-sm">Nenhum orçamento criado ainda.</p>
@@ -157,7 +204,28 @@ const BudgetsPage = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
-                <Badge className={statusColors[b.status]}>{statusLabel(b.status)}</Badge>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="focus:outline-none">
+                      <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
+                        {statusLabel(b.status)}
+                        <ChevronDown className="w-3 h-3" />
+                      </Badge>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {statuses.map((s) => (
+                      <DropdownMenuItem
+                        key={s}
+                        onClick={() => changeStatus(b.id, s)}
+                        className={b.status === s ? 'font-bold' : ''}
+                      >
+                        {statusLabel(s)}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
                 <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
