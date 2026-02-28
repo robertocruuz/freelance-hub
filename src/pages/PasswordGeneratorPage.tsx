@@ -89,6 +89,14 @@ const PasswordGeneratorPage = () => {
     setCopied(false);
   }, [length, upper, lower, numbers, symbols]);
 
+  useEffect(() => {
+    generate();
+  }, [generate]);
+
+  useEffect(() => {
+    setCopied(false);
+  }, [password]);
+
   const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -137,6 +145,9 @@ const PasswordGeneratorPage = () => {
       <div className="glass rounded-3xl p-6 space-y-6">
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-background/50 font-mono text-lg break-all min-h-[56px]">
           <span className="flex-1 text-foreground">{password || '...'}</span>
+          <button onClick={generate} className="text-muted-foreground hover:text-foreground transition-colors">
+            <RefreshCw className="w-5 h-5" />
+          </button>
           <button onClick={() => password && copyToClipboard(password)} className="text-muted-foreground hover:text-foreground transition-colors">
             {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
           </button>
@@ -179,12 +190,9 @@ const PasswordGeneratorPage = () => {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={generate} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-glow text-primary-foreground font-semibold">
-            <RefreshCw className="w-4 h-4" /> {t.generate}
-          </button>
           <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
             <DialogTrigger asChild>
-              <button disabled={!password} className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-40">
+              <button disabled={!password} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-glow text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-40">
                 <Save className="w-4 h-4" /> {t.saveToVault}
               </button>
             </DialogTrigger>
