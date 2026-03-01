@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Receipt, Download } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, Calendar, User, FileText, Percent, Tag, MoreVertical } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
 import { useClients } from '@/hooks/useClients';
+import { cn } from '@/lib/utils';
 
 interface InvoiceItem {
   description: string;
@@ -30,9 +31,9 @@ interface Invoice {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-accent text-accent-foreground',
-  paid: 'bg-primary/10 text-primary',
-  overdue: 'bg-destructive/10 text-destructive',
+  pending: 'bg-brand-blue/10 text-brand-blue',
+  paid: 'bg-brand-darkgreen/10 text-brand-darkgreen',
+  overdue: 'bg-red-50 text-red-500',
 };
 
 const InvoicesPage = () => {
@@ -122,81 +123,194 @@ const InvoicesPage = () => {
     });
   };
 
-  const inputClass = "w-full px-4 py-2 border-[3px] border-black rounded-xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white";
-
   return (
-    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-black italic tracking-tighter uppercase">{t.invoices}</h1>
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-slate-900">{t.invoices}</h1>
+          <p className="text-slate-500 font-medium">Issue invoices and track your payments.</p>
+        </div>
         {!creating && (
-          <button onClick={() => setCreating(true)} className="btn-brand bg-brand-neon flex items-center gap-2 uppercase italic font-black">
+          <button
+            onClick={() => setCreating(true)}
+            className="btn-primary flex items-center gap-2 justify-center"
+          >
             <Plus className="w-5 h-5" /> {t.newInvoice}
           </button>
         )}
       </div>
 
       {creating && (
-        <div className="brand-card p-8 space-y-6 bg-brand-offwhite">
-          <div className="grid grid-cols-2 gap-6">
-            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputClass} />
-          </div>
-          <div className="space-y-3">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-3 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className={inputClass} />
-                <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className={inputClass + " text-center px-1"} />
-                <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className={inputClass + " text-right px-1"} />
-                <button onClick={() => removeItem(idx)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black">
-                  <Trash2 className="w-5 h-5" />
+        <div className="clean-card bg-slate-50/50 border-dashed border-2 border-slate-200">
+           <div className="max-w-3xl mx-auto space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">{t.newInvoice}</h2>
+              <button onClick={() => setCreating(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                {t.cancel}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+              <div className="space-y-2">
+                 <label className="text-sm font-bold text-slate-700 ml-1">Due Date</label>
+                 <input
+                   type="date"
+                   value={dueDate}
+                   onChange={(e) => setDueDate(e.target.value)}
+                   className="w-full px-5 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all shadow-sm"
+                 />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between ml-1">
+                <span className="text-sm font-bold text-slate-700">Service Items</span>
+                <button
+                  onClick={addItem}
+                  className="text-xs font-bold text-brand-blue hover:underline"
+                >
+                  {t.addItem}
                 </button>
               </div>
-            ))}
-          </div>
-          <button onClick={addItem} className="text-xs font-black uppercase underline decoration-2 underline-offset-4 hover:text-brand-blue">{t.addItem}</button>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-black uppercase">{t.taxes} (%)</span>
-              <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className={inputClass + " w-24 text-center"} />
+
+              <div className="space-y-3">
+                {items.map((item, idx) => (
+                  <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_80px_120px_auto] gap-3">
+                    <input
+                      placeholder={t.description}
+                      value={item.description}
+                      onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                      className="px-5 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all shadow-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Qty"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', +e.target.value)}
+                      className="px-4 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-bold text-center transition-all shadow-sm"
+                    />
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">R$</span>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        value={item.unitPrice}
+                        onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-bold text-right transition-all shadow-sm"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeItem(idx)}
+                      className="w-12 h-12 rounded-2xl bg-white border border-slate-100 text-red-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all shadow-sm"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-black uppercase">{t.discount}</span>
-              <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className={inputClass + " w-32 text-right"} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+              <div className="space-y-2">
+                 <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                   <Percent className="w-4 h-4" /> {t.taxes} (%)
+                 </label>
+                 <input
+                   type="number"
+                   value={taxes}
+                   onChange={(e) => setTaxes(+e.target.value)}
+                   className="w-full px-5 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-bold text-center transition-all shadow-sm"
+                 />
+              </div>
+              <div className="space-y-2">
+                 <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                   <Tag className="w-4 h-4" /> {t.discount} (Fixed)
+                 </label>
+                 <div className="relative">
+                   <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">R$</span>
+                   <input
+                     type="number"
+                     value={discount}
+                     onChange={(e) => setDiscount(+e.target.value)}
+                     className="w-full pl-12 pr-5 py-3 rounded-2xl bg-white border border-slate-100 focus:ring-2 focus:ring-brand-blue/20 outline-none font-bold text-right transition-all shadow-sm"
+                   />
+                 </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center justify-between pt-6 border-t-[3px] border-black/10 dark:border-white/10">
-            <span className="text-2xl font-black italic">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-4">
-              <button onClick={() => setCreating(false)} className="btn-brand bg-white text-black uppercase dark:bg-black dark:text-white">{t.cancel}</button>
-              <button onClick={saveInvoice} className="btn-brand bg-brand-blue text-white uppercase">{t.save}</button>
+
+            <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-slate-200 gap-6">
+              <div className="text-center md:text-left">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Final Invoice Amount</p>
+                <span className="text-3xl font-display font-bold text-slate-900">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex gap-4 w-full md:w-auto">
+                <button onClick={() => setCreating(false)} className="flex-1 md:flex-none btn-outline px-8">{t.cancel}</button>
+                <button onClick={saveInvoice} className="flex-1 md:flex-none btn-primary px-8">{t.save}</button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {invoices.length === 0 && !creating ? (
-        <div className="brand-card py-24 text-center">
-          <Receipt className="w-16 h-16 mx-auto mb-6 opacity-20" />
-          <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">Nenhuma fatura criada ainda.</p>
+        <div className="clean-card py-24 text-center">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Receipt className="w-10 h-10 text-slate-300" />
+          </div>
+          <p className="font-bold text-slate-400 tracking-tight">No invoices issued yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {invoices.map((inv) => (
-            <div key={inv.id} className="brand-card flex items-center justify-between bg-white dark:bg-black p-6">
-              <div className="min-w-0">
-                <p className="text-xl font-black italic uppercase tracking-tight truncate">{inv.client_name || 'Sem cliente'}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1">
-                  VENC: {inv.due_date || '-'} • {new Date(inv.created_at).toLocaleDateString()}
-                </p>
+            <div key={inv.id} className="clean-card group hover:border-brand-blue/20 transition-all duration-300 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-brand-blue/5 transition-colors">
+                  <Receipt className="w-7 h-7 text-slate-400 group-hover:text-brand-blue transition-colors" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">{inv.client_name || 'No Client'}</h3>
+                  <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      Due: {inv.due_date || 'N/A'}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-slate-300 hidden md:block" />
+                    <span className="text-slate-400">Created {new Date(inv.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xl font-black italic mr-4">R$ {inv.total.toFixed(2)}</span>
-                <Badge className={`border-2 border-black font-black uppercase tracking-tighter rounded-full px-4 py-1.5 ${statusColors[inv.status]} dark:border-white`}>
-                  {statusLabel(inv.status)}
-                </Badge>
-                <div className="flex gap-2 ml-4">
-                   <button onClick={() => exportInvoicePdf(inv)} className="w-10 h-10 btn-brand bg-brand-neon p-0 flex items-center justify-center"><Download className="w-4 h-4 text-black" /></button>
-                   <button onClick={() => deleteInvoice(inv.id)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-4 h-4" /></button>
+
+              <div className="flex flex-wrap items-center justify-between md:justify-end gap-6">
+                <div className="text-right">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                  <p className="text-xl font-bold text-slate-900">R$ {inv.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Badge className={cn(
+                    "font-bold uppercase tracking-wider rounded-xl px-4 py-2 border-none shadow-sm",
+                    statusColors[inv.status]
+                  )}>
+                    {statusLabel(inv.status)}
+                  </Badge>
+
+                  <div className="flex gap-1 ml-2">
+                     <button
+                       onClick={() => exportInvoicePdf(inv)}
+                       className="p-3 rounded-xl bg-brand-neon/10 text-brand-darkgreen hover:bg-brand-neon/20 transition-all"
+                       title="Download PDF"
+                     >
+                       <Download className="w-4 h-4" />
+                     </button>
+                     <button
+                       onClick={() => deleteInvoice(inv.id)}
+                       className="p-3 rounded-xl bg-red-50 text-red-400 hover:text-red-500 hover:bg-red-100 transition-all"
+                       title="Delete"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, Moon, Sun, Globe, ArrowRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import SparkleIcon from '@/components/SparkleIcon';
-import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { cn } from '@/lib/utils';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -11,60 +11,106 @@ const LandingPage = () => {
   const { isDark, toggle } = useTheme();
 
   return (
-    <div className="min-h-screen bg-[#e9e8e0] dark:bg-background p-4 md:p-8 flex flex-col">
-      <div className="window-container flex-1 flex flex-col bg-transparent border-none shadow-none">
-        {/* Header */}
-        <header className="window-header justify-between">
-          <div className="window-tab">
-            <h2 className="text-2xl uppercase">Logo</h2>
+    <div className="min-h-screen bg-brand-offwhite dark:bg-background p-4 md:p-8 flex flex-col font-sans selection:bg-brand-blue/10 selection:text-brand-blue">
+      {/* Top Header Navigation */}
+      <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/')}>
+          <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/20 group-hover:scale-110 transition-transform">
+            <span className="text-white font-black text-xl italic">F</span>
+          </div>
+          <h1 className="text-xl font-display font-bold tracking-tight text-slate-900 hidden sm:block">FreelanceHub</h1>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all"
+          >
+            <Globe className="w-4 h-4 text-brand-blue" />
+            {lang === 'pt-BR' ? 'PT-BR' : 'EN-US'}
+          </button>
+
+          <div className="h-6 w-[1px] bg-slate-200" />
+
+          <button
+            onClick={() => navigate('/login')}
+            className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-slate-900 text-white hover:bg-brand-blue transition-all shadow-lg shadow-slate-900/10 active:scale-95 group"
+          >
+            <User className="w-4 h-4" />
+            <span className="text-sm font-bold">{t.login}</span>
+            <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+          </button>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center px-8 text-center max-w-7xl mx-auto">
+        <div className="animate-fade-in relative">
+          {/* Background Decorative Elements */}
+          <div className="absolute -top-20 -left-20 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl -z-10 animate-pulse" />
+          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-brand-pink/5 rounded-full blur-3xl -z-10 animate-pulse delay-1000" />
+
+          <div className="relative inline-block mb-12">
+            <SparkleIcon className="absolute -left-12 top-0 md:-left-20 md:top-4 w-10 h-10 text-brand-blue animate-float" />
+            <SparkleIcon className="absolute -right-12 bottom-0 md:-right-20 md:bottom-4 delay-300 w-10 h-10 text-brand-pink animate-float" />
+
+            <h1 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-slate-900 leading-[0.85] uppercase">
+              {t.heroTitle}
+            </h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="px-3 py-1 font-black text-xs hover:text-brand-pink transition-colors">
-              {lang === 'pt-BR' ? 'PT' : 'EN'}
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 transition-transform dark:bg-white dark:text-black"
-            >
-              <User className="w-5 h-5" />
-            </button>
-          </div>
-        </header>
+          <p className="text-lg md:text-2xl font-medium text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed">
+            {t.heroSubtitle}
+          </p>
 
-        {/* Hero */}
-        <main className="flex-1 flex flex-col items-center justify-center px-8 text-center">
-          <div className="animate-fade-in max-w-4xl">
-            <div className="relative inline-block mb-8">
-              <SparkleIcon className="absolute -left-16 top-1/2 -translate-y-1/2 w-10 h-10 text-brand-blue" />
-              <SparkleIcon className="absolute -right-16 top-1/2 -translate-y-1/2 delay-300 w-10 h-10 text-brand-pink" />
-              <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.9]">
-                {t.heroTitle}
-              </h1>
-            </div>
-            <p className="text-xl font-bold text-foreground/70 uppercase tracking-widest max-w-2xl mx-auto mb-10">
-              {t.heroSubtitle}
-            </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => navigate('/login')}
-              className="btn-brand bg-brand-neon text-2xl px-12 py-4 uppercase italic font-black"
+              className="btn-primary text-xl px-12 py-5 h-auto shadow-xl shadow-brand-blue/20 flex items-center gap-3"
             >
               {t.cta}
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <button className="btn-outline text-xl px-12 py-5 h-auto bg-white hover:bg-slate-50">
+               Learn More
             </button>
           </div>
-        </main>
 
-        {/* Footer */}
-        <footer className="h-16 flex items-end justify-between px-2">
-          <button
-            onClick={toggle}
-            className="w-12 h-12 rounded-2xl border-[3px] border-black flex items-center justify-center hover:bg-brand-neon transition-all active:scale-95 bg-white dark:border-white dark:bg-black"
-          >
-            {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-          </button>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">{t.copyright}</span>
-        </footer>
-      </div>
+          {/* Social Proof / Features Preview */}
+          <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-slate-100 pt-12">
+             {[
+               { label: 'Trusted by', value: '1,000+ Pros' },
+               { label: 'Uptime', value: '99.9%' },
+               { label: 'Secure', value: 'Vault Encrypted' },
+               { label: 'Total Control', value: 'All-in-one' }
+             ].map((stat, i) => (
+               <div key={i} className="text-center">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                  <p className="text-lg font-bold text-slate-900">{stat.value}</p>
+               </div>
+             ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer Section */}
+      <footer className="flex flex-col md:flex-row items-center justify-between px-6 py-8 max-w-7xl mx-auto w-full border-t border-slate-100 mt-12 gap-6">
+        <button
+          onClick={toggle}
+          className="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:shadow-md hover:text-brand-blue transition-all active:scale-95 group"
+        >
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+          {t.copyright}
+        </p>
+
+        <div className="flex gap-8">
+           <span className="text-xs font-bold text-slate-400 hover:text-brand-blue cursor-pointer transition-colors">Privacy Policy</span>
+           <span className="text-xs font-bold text-slate-400 hover:text-brand-blue cursor-pointer transition-colors">Terms of Service</span>
+        </div>
+      </footer>
     </div>
   );
 };

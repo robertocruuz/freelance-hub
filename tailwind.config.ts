@@ -62,18 +62,21 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         brand: {
-          black: "hsl(var(--brand-black))",
-          blue: "hsl(var(--brand-blue))",
-          offwhite: "hsl(var(--brand-offwhite))",
-          pink: "hsl(var(--brand-pink))",
-          neon: "hsl(var(--brand-neon))",
-          "dark-green": "hsl(var(--brand-dark-green))",
+          black: "#000000",
+          offwhite: "#f8f7f9",
+          blue: "#1369db",
+          pink: "#ff88db",
+          neon: "#d7ff73",
+          darkgreen: "#3b9166",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "1.5rem",
+        "2xl": "2rem",
+        "3xl": "2.5rem",
       },
       keyframes: {
         "accordion-down": {
@@ -109,6 +112,10 @@ export default {
         "fade-in": "fade-in 0.5s ease-out forwards",
         "shimmer": "shimmer 2s linear infinite",
       },
+      boxShadow: {
+        'folder': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+        'folder-active': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],

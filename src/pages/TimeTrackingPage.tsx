@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight, Clock, Briefcase, User, MoreVertical, LayoutGrid, List } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 interface Project {
   id: string;
@@ -160,7 +161,7 @@ const TimeTrackingPage = () => {
   };
 
   // Navigation
-  const navigate = (dir: number) => {
+  const navigateDate = (dir: number) => {
     const d = new Date(selectedDate);
     if (viewMode === 'daily') d.setDate(d.getDate() + dir);
     else if (viewMode === 'weekly') d.setDate(d.getDate() + dir * 7);
@@ -213,112 +214,185 @@ const TimeTrackingPage = () => {
     return selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
-  const inputClass = "px-4 py-3 border-[3px] border-black rounded-2xl bg-white text-black placeholder:text-black/40 outline-none font-bold dark:border-white dark:bg-black dark:text-white";
-
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
-      {/* Timer bar */}
-      <div className="brand-card p-6 flex flex-wrap items-center gap-6 bg-brand-offwhite">
-        <input
-          placeholder={t.description}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={inputClass + " flex-1 min-w-[200px]"}
-        />
-        <select
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          className={inputClass + " w-64"}
-        >
-          <option value="">{t.project}</option>
-          {projects.map((p) => {
-            const client = clients.find(c => c.id === p.client_id);
-            return (
-              <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''}
-              </option>
-            );
-          })}
-        </select>
-        <div className="flex items-center gap-6 ml-auto">
-          <span className="font-black italic text-4xl tracking-tighter w-40 text-center">
-            {formatDuration(elapsed)}
-          </span>
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-slate-900">{t.timeTracking}</h1>
+          <p className="text-slate-500 font-medium">Log your hours and stay productive.</p>
+        </div>
+      </div>
+
+      {/* Modern Timer bar */}
+      <div className="clean-card p-4 md:p-6 bg-slate-900 text-white flex flex-col lg:flex-row items-center gap-6 shadow-xl">
+        <div className="flex-1 w-full lg:w-auto">
+          <input
+            placeholder="What are you working on?"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full bg-slate-800 border-none rounded-xl px-5 py-3 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-brand-blue/50 outline-none font-semibold transition-all"
+          />
+        </div>
+        <div className="w-full lg:w-72">
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="w-full bg-slate-800 border-none rounded-xl px-5 py-3 text-white focus:ring-2 focus:ring-brand-blue/50 outline-none font-semibold transition-all appearance-none cursor-pointer"
+          >
+            <option value="" className="text-slate-400">{t.project}</option>
+            {projects.map((p) => {
+              const client = clients.find(c => c.id === p.client_id);
+              return (
+                <option key={p.id} value={p.id} className="text-slate-900">
+                  {p.name}{client ? ` (${client.name})` : ''}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div className="flex items-center gap-8 ml-auto">
+          <div className="text-center min-w-[120px]">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Time Elapsed</p>
+            <span className="font-display font-bold text-4xl tracking-tighter tabular-nums">
+              {formatDuration(elapsed)}
+            </span>
+          </div>
           {running ? (
-            <button onClick={stopTimer} className="w-14 h-14 rounded-full border-[3px] border-black bg-destructive flex items-center justify-center hover:scale-105 transition-transform dark:border-white">
+            <button
+              onClick={stopTimer}
+              className="w-16 h-16 rounded-2xl bg-red-500 hover:bg-red-600 flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-red-500/20"
+            >
               <Square className="w-6 h-6 text-white fill-white" />
             </button>
           ) : (
-            <button onClick={startTimer} className="w-14 h-14 rounded-full border-[3px] border-black bg-brand-neon flex items-center justify-center hover:scale-105 transition-transform dark:border-white">
-              <Play className="w-6 h-6 text-black fill-black ml-1" />
+            <button
+              onClick={startTimer}
+              className="w-16 h-16 rounded-2xl bg-brand-blue hover:bg-brand-blue/90 flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-brand-blue/20"
+            >
+              <Play className="w-6 h-6 text-white fill-white ml-1" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="brand-card p-6 text-center bg-white dark:bg-black">
-          <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">{t.todayTotal}</p>
-          <p className="text-3xl font-black italic">{formatDuration(todayTotal)}</p>
+        <div className="clean-card group">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t.todayTotal}</p>
+          <div className="flex items-center justify-between">
+            <h3 className="text-2xl font-bold text-slate-900 tabular-nums">{formatDuration(todayTotal)}</h3>
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-brand-blue/10 group-hover:text-brand-blue transition-colors">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
         </div>
-        <div className="brand-card p-6 text-center bg-brand-blue text-white">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-3xl font-black italic">{formatDuration(totalFiltered)}</p>
+        <div className="clean-card group bg-brand-blue text-white border-none shadow-brand-blue/10">
+          <p className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
+            {viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}
+          </p>
+          <div className="flex items-center justify-between">
+            <h3 className="text-2xl font-bold text-white tabular-nums">{formatDuration(totalFiltered)}</h3>
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/80">
+              <Calendar className="w-5 h-5" />
+            </div>
+          </div>
         </div>
-        <div className="brand-card p-6 text-center bg-brand-pink text-black">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{t.billable}</p>
-          <p className="text-3xl font-black italic">{formatDuration(totalFiltered)}</p>
+        <div className="clean-card group bg-brand-pink text-slate-900 border-none">
+          <p className="text-xs font-bold text-slate-900/40 uppercase tracking-widest mb-2">{t.billable}</p>
+          <div className="flex items-center justify-between">
+            <h3 className="text-2xl font-bold text-slate-900 tabular-nums">{formatDuration(totalFiltered)}</h3>
+            <div className="w-10 h-10 rounded-xl bg-slate-900/5 flex items-center justify-center text-slate-900/40">
+              <Briefcase className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-6">
-        <div className="flex items-center gap-2 p-1.5 border-[3px] border-black rounded-2xl bg-white dark:bg-black dark:border-white">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-4">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
           {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-6 py-2 rounded-xl text-xs font-black uppercase transition-all ${viewMode === mode ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-foreground/40 hover:text-foreground'}`}
+              className={cn(
+                "px-5 py-2 rounded-lg text-xs font-bold uppercase transition-all",
+                viewMode === mode
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              )}
             >
               {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
             </button>
           ))}
         </div>
+
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><ChevronLeft className="w-5 h-5" /></button>
-          <div className="px-6 py-2 border-[3px] border-black rounded-full font-black uppercase italic text-sm dark:border-white">
+          <button
+            onClick={() => navigateDate(-1)}
+            className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:shadow-md transition-all text-slate-400 hover:text-brand-blue"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="text-sm font-bold text-slate-700 bg-slate-50 px-6 py-2 rounded-full border border-slate-100">
             {dateLabel()}
           </div>
-          <button onClick={() => navigate(1)} className="w-10 h-10 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><ChevronRight className="w-5 h-5" /></button>
+          <button
+            onClick={() => navigateDate(1)}
+            className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center hover:shadow-md transition-all text-slate-400 hover:text-brand-blue"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
       {/* Daily view: clean list */}
       {viewMode === 'daily' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredEntries.length === 0 ? (
-            <div className="brand-card py-24 text-center">
-              <Calendar className="w-16 h-16 mx-auto mb-6 opacity-20" />
-              <p className="font-black uppercase tracking-widest text-black/40 dark:text-white/40">{t.noEntries}</p>
+            <div className="clean-card py-24 text-center">
+              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-10 h-10 text-slate-300" />
+              </div>
+              <p className="font-bold text-slate-400 tracking-tight">{t.noEntries}</p>
             </div>
           ) : (
             filteredEntries.map((entry) => (
-              <div key={entry.id} className="brand-card flex items-center justify-between p-6 bg-white dark:bg-black">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black italic uppercase tracking-tight truncate">{entry.description || '—'}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue">{getProjectName(entry.project_id) || 'NO PROJECT'}</p>
+              <div key={entry.id} className="clean-card group hover:border-brand-blue/20 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 p-5">
+                <div className="flex items-center gap-5 flex-1">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold text-slate-900 truncate mb-1">{entry.description || '—'}</h3>
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      <Briefcase className="w-3 h-3" />
+                      {getProjectName(entry.project_id) || 'NO PROJECT'}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-6">
+
+                <div className="flex items-center gap-8">
                   <div className="text-right">
-                    <p className="font-black text-xl italic">{formatDuration(entry.duration || 0)}</p>
-                    <p className="text-[10px] font-bold uppercase text-foreground/40">
+                    <p className="font-bold text-xl text-slate-900 tabular-nums">{formatDuration(entry.duration || 0)}</p>
+                    <p className="text-[10px] font-bold text-slate-400">
                       {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                     </p>
                   </div>
-                  <div className="flex gap-2 border-l-[3px] border-black/10 dark:border-white/10 pl-6 ml-4">
-                    <button onClick={() => openEdit(entry)} className="w-10 h-10 btn-brand bg-brand-offwhite p-0 flex items-center justify-center dark:bg-black"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="w-10 h-10 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-4 h-4" /></button>
+
+                  <div className="flex gap-1 border-l border-slate-100 pl-6">
+                    <button
+                      onClick={() => openEdit(entry)}
+                      className="p-3 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-brand-blue transition-all"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteEntry(entry.id)}
+                      className="p-3 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -329,35 +403,46 @@ const TimeTrackingPage = () => {
 
       {/* Weekly view: compact grid */}
       {viewMode === 'weekly' && (
-        <div className="window-container">
-          <div className="grid grid-cols-7 bg-brand-offwhite dark:bg-black/40 border-b-[3px] border-black dark:border-white">
+        <div className="clean-card p-0 overflow-hidden border-none shadow-xl">
+          <div className="grid grid-cols-7 bg-slate-900 text-white">
             {weekDays.map((d, i) => {
               const isToday = isSameDay(d, new Date());
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
               const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
               return (
-                <div key={i} className={`p-4 text-center border-l-[3px] first:border-l-0 border-black dark:border-white ${isToday ? 'bg-brand-neon text-black' : ''}`}>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  <p className="text-2xl font-black italic">{d.getDate()}</p>
-                  <p className="text-[10px] font-black mt-2">{formatDuration(dayTotal)}</p>
+                <div key={i} className={cn(
+                  "p-4 text-center border-r border-slate-800 last:border-r-0",
+                  isToday ? 'bg-brand-blue text-white' : ''
+                )}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">
+                    {d.toLocaleDateString('pt-BR', { weekday: 'short' })}
+                  </p>
+                  <p className="text-xl font-bold">{d.getDate()}</p>
+                  <p className="text-[10px] font-bold mt-2 opacity-80">{formatDuration(dayTotal)}</p>
                 </div>
               );
             })}
           </div>
-          <div className="divide-y-[3px] divide-black dark:divide-white bg-white dark:bg-black max-h-[500px] overflow-y-auto">
+          <div className="divide-y divide-slate-50 bg-white max-h-[500px] overflow-y-auto">
             {filteredEntries.length === 0 ? (
-              <div className="p-12 text-center font-black uppercase text-foreground/40">{t.noEntries}</div>
+              <div className="p-16 text-center font-bold text-slate-300">{t.noEntries}</div>
             ) : (
               filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between px-8 py-4 hover:bg-brand-offwhite dark:hover:bg-white/5 transition-colors">
+                <div key={entry.id} className="flex items-center justify-between px-8 py-4 hover:bg-slate-50 transition-colors group">
                   <div className="flex-1 min-w-0">
-                    <p className="text-lg font-black italic uppercase tracking-tight truncate">{entry.description || '—'}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue">{getProjectName(entry.project_id)} • {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="font-bold text-slate-900 truncate">{entry.description || '—'}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[10px] font-bold text-brand-blue uppercase tracking-wider">{getProjectName(entry.project_id)}</span>
+                      <span className="text-[10px] font-bold text-slate-300">•</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">{new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <span className="font-black text-xl italic">{formatDuration(entry.duration || 0)}</span>
-                    <button onClick={() => openEdit(entry)} className="w-8 h-8 btn-brand bg-white p-0 flex items-center justify-center dark:bg-black"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="w-8 h-8 btn-brand bg-white text-destructive p-0 flex items-center justify-center dark:bg-black"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <div className="flex items-center gap-8">
+                    <span className="font-bold text-lg text-slate-900 tabular-nums">{formatDuration(entry.duration || 0)}</span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button onClick={() => openEdit(entry)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-brand-blue transition-all"><Pencil className="w-3.5 h-3.5" /></button>
+                       <button onClick={() => deleteEntry(entry.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-red-500 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -368,15 +453,15 @@ const TimeTrackingPage = () => {
 
       {/* Monthly view: calendar grid */}
       {viewMode === 'monthly' && (
-        <div className="window-container">
-          <div className="grid grid-cols-7 bg-brand-offwhite dark:bg-black/40 border-b-[3px] border-black dark:border-white text-[10px] font-black uppercase tracking-widest text-center">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-              <div key={d} className="p-3 border-l-[3px] first:border-l-0 border-black dark:border-white">{d}</div>
+        <div className="clean-card p-0 overflow-hidden border-none shadow-xl bg-white">
+          <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d} className="p-4">{d}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 bg-white dark:bg-black">
+          <div className="grid grid-cols-7">
             {Array.from({ length: monthStart.getDay() }, (_, i) => (
-              <div key={`empty-${i}`} className="min-h-[100px] border-t-[3px] border-l-[3px] first:border-l-0 border-black dark:border-white bg-brand-offwhite/50 dark:bg-white/5" />
+              <div key={`empty-${i}`} className="min-h-[120px] bg-slate-50/30 border-b border-r border-slate-50" />
             ))}
             {monthDays.map((d) => {
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
@@ -386,17 +471,29 @@ const TimeTrackingPage = () => {
                 <button
                   key={d.getDate()}
                   onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
-                  className={`p-4 min-h-[100px] border-t-[3px] border-l-[3px] border-black dark:border-white text-left hover:bg-brand-neon transition-colors group ${isToday ? 'bg-brand-blue text-white' : ''}`}
-                >
-                  <p className="text-xl font-black italic">{d.getDate()}</p>
-                  {dayTotal > 0 && (
-                    <p className={`text-[10px] font-black mt-2 ${isToday ? 'text-white' : 'text-brand-pink'}`}>{formatDuration(dayTotal)}</p>
+                  className={cn(
+                    "p-4 min-h-[120px] border-b border-r border-slate-50 text-left transition-all group relative",
+                    isToday ? 'bg-brand-blue/5' : 'hover:bg-slate-50'
                   )}
-                  {dayEntries.length > 0 && (
-                    <div className="mt-3 flex gap-1">
-                      {dayEntries.slice(0, 4).map((_, i) => (
-                        <div key={i} className={`w-2 h-2 rounded-full border border-black ${isToday ? 'bg-white' : 'bg-black'} dark:border-white dark:bg-white`} />
-                      ))}
+                >
+                  <span className={cn(
+                    "text-lg font-bold",
+                    isToday ? 'text-brand-blue' : 'text-slate-900'
+                  )}>{d.getDate()}</span>
+
+                  {dayTotal > 0 && (
+                    <div className="mt-2">
+                       <p className="text-[10px] font-bold text-slate-500 tabular-nums">
+                         {formatDuration(dayTotal)}
+                       </p>
+                       <div className="mt-2 flex gap-1 flex-wrap">
+                        {dayEntries.slice(0, 3).map((_, i) => (
+                          <div key={i} className="w-1.5 h-1.5 rounded-full bg-brand-pink" />
+                        ))}
+                        {dayEntries.length > 3 && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                        )}
+                      </div>
                     </div>
                   )}
                 </button>
@@ -408,35 +505,60 @@ const TimeTrackingPage = () => {
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="border-[3px] border-black rounded-3xl p-8 dark:border-white max-w-lg">
+        <DialogContent className="rounded-[2rem] p-8 max-w-lg border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">{t.editEntry}</DialogTitle>
+            <DialogTitle className="text-2xl font-display font-bold text-slate-900">{t.editEntry}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-6">
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest ml-1">{t.description}</label>
-              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={inputClass + " w-full mt-1"} />
+          <div className="space-y-5 mt-6">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">{t.description}</label>
+              <input
+                value={editDesc}
+                onChange={(e) => setEditDesc(e.target.value)}
+                className="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all"
+              />
             </div>
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest ml-1">{t.project}</label>
-              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className={inputClass + " w-full mt-1"}>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">{t.project}</label>
+              <select
+                value={editProjectId}
+                onChange={(e) => setEditProjectId(e.target.value)}
+                className="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all appearance-none cursor-pointer"
+              >
                 <option value="">{t.project}</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest ml-1">Início</label>
-                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className={inputClass + " w-full mt-1"} />
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 ml-1">Start Time</label>
+                <input
+                  type="time"
+                  value={editStartTime}
+                  onChange={(e) => setEditStartTime(e.target.value)}
+                  className="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all"
+                />
               </div>
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest ml-1">Fim</label>
-                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className={inputClass + " w-full mt-1"} />
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 ml-1">End Time</label>
+                <input
+                  type="time"
+                  value={editEndTime}
+                  onChange={(e) => setEditEndTime(e.target.value)}
+                  className="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-brand-blue/20 outline-none font-semibold transition-all"
+                />
               </div>
             </div>
-            <div className="flex gap-4 pt-4">
-              <button onClick={() => setEditingEntry(null)} className="flex-1 btn-brand bg-white text-black dark:bg-black dark:text-white uppercase">{t.cancel}</button>
-              <button onClick={saveEdit} className="flex-1 btn-brand bg-brand-blue text-white uppercase">{t.save}</button>
+
+            <div className="flex gap-4 pt-6">
+              <button onClick={() => setEditingEntry(null)} className="flex-1 btn-outline">
+                {t.cancel}
+              </button>
+              <button onClick={saveEdit} className="flex-1 btn-primary">
+                {t.save}
+              </button>
             </div>
           </div>
         </DialogContent>

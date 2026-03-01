@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun } from 'lucide-react';
+import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, Globe } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
@@ -44,72 +44,99 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#e9e8e0] dark:bg-background p-4 md:p-8">
-      <div className="window-container flex-1 flex flex-col bg-transparent shadow-none border-none">
-        {/* Top bar - Cleaned style */}
-        <header className="window-header justify-between">
-          <div className="window-tab">
-            <h2 className="text-2xl uppercase">Logo</h2>
-          </div>
-
-          <div className="flex-1 flex justify-center gap-8 text-xs font-black uppercase tracking-widest px-4">
-            {navItems.map((item) => {
-              const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => navigate(item.path)}
-                  className={`transition-colors hover:text-brand-blue ${isActive ? 'text-brand-blue border-b-2 border-brand-blue' : 'text-foreground/60'}`}
-                >
-                  {labelMap[item.key](t)}
-                </button>
-              );
-            })}
+    <div className="min-h-screen bg-[#f1f0ee] dark:bg-background transition-colors duration-300">
+      <div className="max-w-[1400px] mx-auto p-4 md:p-8">
+        {/* Top Header Section */}
+        <header className="flex items-center justify-between mb-8 px-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/20">
+              <span className="text-white font-black text-xl italic">F</span>
+            </div>
+            <h1 className="text-xl font-display font-bold tracking-tight">FreelanceHub</h1>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-              className="px-3 py-1 font-black text-xs hover:text-brand-pink transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-full bg-white shadow-sm hover:shadow-md transition-all"
             >
+              <Globe className="w-4 h-4 text-brand-blue" />
               {lang === 'pt-BR' ? 'PT' : 'EN'}
             </button>
 
+            <button
+              onClick={toggle}
+              className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:shadow-md transition-all"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5 text-slate-700" />}
+            </button>
+
+            <div className="h-6 w-[1px] bg-slate-200 mx-1" />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 transition-transform dark:bg-white dark:text-black">
-                  <User className="w-5 h-5" />
+                <button className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full bg-white shadow-sm hover:shadow-md transition-all">
+                  <div className="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm font-bold text-slate-700 hidden sm:inline">Account</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 border-[3px] border-black rounded-2xl mt-2 dark:border-white">
-                <DropdownMenuItem className="font-bold">
-                  <User className="w-4 h-4 mr-2" /> {t.profile}
+              <DropdownMenuContent align="end" className="w-56 mt-2 rounded-2xl border-none shadow-xl p-2">
+                <DropdownMenuItem className="rounded-xl font-semibold py-3 cursor-pointer">
+                  <User className="w-4 h-4 mr-3" /> {t.profile}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="font-bold">
-                  <Settings className="w-4 h-4 mr-2" /> {t.settings}
+                <DropdownMenuItem className="rounded-xl font-semibold py-3 cursor-pointer">
+                  <Settings className="w-4 h-4 mr-3" /> {t.settings}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="font-bold text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" /> {t.logout}
+                <div className="h-[1px] bg-slate-100 my-1 mx-2" />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-xl font-semibold py-3 cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="w-4 h-4 mr-3" /> {t.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
-        <main className="flex-1 p-8 overflow-auto relative">
-           <div className="max-w-7xl mx-auto">
-              <Outlet />
-           </div>
-        </main>
+        {/* Folder Layout Container */}
+        <div className="relative">
+          {/* Navigation Tabs (Folder Tabs) */}
+          <nav className="flex items-end px-4 overflow-x-auto no-scrollbar scroll-smooth">
+            {navItems.map((item) => {
+              const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => navigate(item.path)}
+                  className={cn(
+                    "folder-tab whitespace-nowrap group",
+                    isActive
+                      ? "folder-tab-active"
+                      : "folder-tab-inactive"
+                  )}
+                >
+                  <item.icon className={cn(
+                    "w-4 h-4 mr-2 transition-colors",
+                    isActive ? "text-brand-blue" : "text-slate-400 group-hover:text-slate-600"
+                  )} />
+                  {labelMap[item.key](t)}
+                </button>
+              );
+            })}
+          </nav>
 
-        <footer className="h-16 flex items-end justify-between px-2">
-          <button
-            onClick={toggle}
-            className="w-12 h-12 rounded-2xl border-[3px] border-black flex items-center justify-center hover:bg-brand-neon transition-all active:scale-95 bg-white dark:border-white dark:bg-black"
-          >
-            {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-          </button>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">{t.copyright}</span>
+          {/* Folder Body (Content Area) */}
+          <div className="folder-body">
+            <Outlet />
+          </div>
+        </div>
+
+        <footer className="mt-8 flex justify-between items-center px-6">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t.copyright}</p>
+          <div className="flex gap-4">
+             <span className="text-xs font-bold text-slate-400 hover:text-brand-blue cursor-pointer transition-colors">Privacy</span>
+             <span className="text-xs font-bold text-slate-400 hover:text-brand-blue cursor-pointer transition-colors">Support</span>
+          </div>
         </footer>
       </div>
     </div>

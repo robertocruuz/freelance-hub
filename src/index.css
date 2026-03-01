@@ -6,72 +6,64 @@
 
 @layer base {
   :root {
-    --background: 260 14% 97%; /* Offwhite #f8f7f9 */
-    --foreground: 0 0% 0%; /* Black #000000 */
+    --background: 260 14% 97%; /* #f8f7f9 */
+    --foreground: 0 0% 0%; /* #000000 */
 
-    --card: 260 14% 97%;
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
 
-    --popover: 260 14% 97%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 214 84% 47%; /* Blue #1369db */
-    --primary-foreground: 260 14% 97%;
+    --primary: 214 84% 47%; /* #1369db */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 0 0% 0%;
-    --secondary-foreground: 260 14% 97%;
+    --secondary: 260 14% 97%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 260 10% 90%;
-    --muted-foreground: 0 0% 20%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 77 100% 73%; /* Neon Green #d7ff73 */
+    --accent: 77 100% 73%; /* #d7ff73 */
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 0%; /* Black borders as per image */
-    --input: 0 0% 0%;
-    --ring: 214 84% 47%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 214.3 84% 47%;
 
-    --radius: 2rem;
+    --radius: 1rem;
 
     --sidebar-background: 260 14% 97%;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-primary: 214 84% 47%;
-    --sidebar-primary-foreground: 260 14% 97%;
+    --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 77 100% 73%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 0%;
-    --sidebar-ring: 214 84% 47%;
-
-    /* New Palette Tokens */
-    --brand-black: 0 0% 0%;
-    --brand-blue: 214 84% 47%;
-    --brand-offwhite: 260 14% 97%;
-    --brand-pink: 318 100% 77%;
-    --brand-neon: 77 100% 73%;
-    --brand-dark-green: 150 42% 40%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 214.3 84% 47%;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 260 14% 97%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 260 14% 97%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 260 14% 97%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
     --primary: 214 84% 47%;
-    --primary-foreground: 260 14% 97%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 260 14% 97%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
     --accent: 318 100% 77%;
     --accent-foreground: 0 0% 0%;
@@ -79,18 +71,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 260 14% 97%;
-    --input: 260 14% 97%;
-    --ring: 214 84% 47%;
-
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 260 14% 97%;
-    --sidebar-primary: 214 84% 47%;
-    --sidebar-primary-foreground: 260 14% 97%;
-    --sidebar-accent: 318 100% 77%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 260 14% 97%;
-    --sidebar-ring: 214 84% 47%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 214.3 84% 47%;
   }
 }
 
@@ -105,49 +88,49 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+    @apply font-display tracking-tight;
   }
 }
 
-@layer utilities {
-  .window-container {
-    @apply border-[3px] border-black rounded-[2.5rem] overflow-hidden bg-background shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
+@layer components {
+  .folder-tab {
+    @apply relative h-10 px-6 pt-2 pb-0 flex items-center justify-center font-bold text-sm transition-all cursor-pointer;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 1.5rem;
+    margin-right: -10px;
+    z-index: 1;
   }
 
-  .dark .window-container {
-    @apply border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)];
+  .folder-tab-active {
+    @apply bg-white text-black shadow-[-4px_0_10px_-4px_rgba(0,0,0,0.1),4px_0_10px_-4px_rgba(0,0,0,0.1)];
+    z-index: 2;
   }
 
-  .window-header {
-    @apply h-14 flex items-center px-6 relative;
+  .folder-tab-inactive {
+    @apply bg-brand-offwhite/50 text-foreground/40 hover:bg-brand-offwhite;
   }
 
-  .window-tab {
-    @apply relative h-full px-0 flex items-center text-black font-black italic tracking-tighter;
+  .folder-body {
+    @apply bg-white rounded-[2rem] rounded-tl-none p-6 md:p-10 shadow-folder min-h-[70vh] relative z-10;
   }
 
-  .dark .window-tab {
-    @apply text-white;
+  .clean-card {
+    @apply bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow;
   }
 
-  .brand-card {
-    @apply border-[3px] border-black rounded-3xl p-6 bg-white transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
+  .btn-modern {
+    @apply px-6 py-2 rounded-full font-semibold transition-all active:scale-95 disabled:opacity-50;
   }
 
-  .dark .brand-card {
-    @apply border-white bg-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)];
+  .btn-primary {
+    @apply btn-modern bg-brand-blue text-white hover:bg-brand-blue/90;
   }
 
-  .btn-brand {
-    @apply border-[3px] border-black px-6 py-2 rounded-full font-bold transition-all active:translate-x-0.5 active:translate-y-0.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none;
+  .btn-accent {
+    @apply btn-modern bg-brand-neon text-black hover:bg-brand-neon/90;
   }
 
-  .dark .btn-brand {
-    @apply border-white shadow-[3px_3px_0px_0px_rgba(255,255,255,1)];
+  .btn-outline {
+    @apply btn-modern border border-gray-200 bg-transparent hover:bg-gray-50;
   }
-
-  .bg-brand-blue { background-color: hsl(var(--brand-blue)); }
-  .bg-brand-pink { background-color: hsl(var(--brand-pink)); }
-  .bg-brand-neon { background-color: hsl(var(--brand-neon)); }
-  .bg-brand-dark-green { background-color: hsl(var(--brand-dark-green)); }
 }
