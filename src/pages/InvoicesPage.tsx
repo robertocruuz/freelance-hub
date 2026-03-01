@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Receipt, Download } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, Calendar, DollarSign, Tag, Percent } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,9 +30,9 @@ interface Invoice {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-accent text-accent-foreground',
-  paid: 'bg-primary/10 text-primary',
-  overdue: 'bg-destructive/10 text-destructive',
+  pending: 'bg-accent border-foreground text-foreground',
+  paid: 'bg-secondary border-foreground text-foreground',
+  overdue: 'bg-destructive border-foreground text-destructive-foreground',
 };
 
 const InvoicesPage = () => {
@@ -123,71 +123,121 @@ const InvoicesPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.invoices}</h1>
+    <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-foreground pb-8">
+        <div>
+          <h1 className="text-5xl font-black font-display text-foreground tracking-tighter uppercase italic leading-[0.8]">
+            {t.invoices}
+          </h1>
+          <p className="text-xl font-bold text-muted-foreground mt-4 uppercase tracking-widest italic">Fature com profissionalismo</p>
+        </div>
         {!creating && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newInvoice}
+          <button onClick={() => setCreating(true)} className="brutalist-button-primary flex items-center gap-3 px-8 py-4 text-lg italic">
+            <Plus className="w-6 h-6" /> {t.newInvoice}
           </button>
         )}
       </div>
 
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-          </div>
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            ))}
-          </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.taxes} (%)</span>
-              <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className="w-20 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
+        <div className="brutalist-card p-8 bg-card border-4 space-y-8 rotate-[0.5deg]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">Cliente</label>
+              <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.discount}</span>
-              <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className="w-24 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">Vencimento</label>
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="brutalist-input w-full" />
             </div>
           </div>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
-              <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveInvoice} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase tracking-widest">Itens da Fatura</label>
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_100px_150px_auto] gap-3">
+                  <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="brutalist-input" />
+                  <input type="number" placeholder="Qtd" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="brutalist-input text-center" />
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+                    <input type="number" placeholder="Preço" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="brutalist-input pl-10 text-right" />
+                  </div>
+                  <button onClick={() => removeItem(idx)} className="w-12 h-12 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
             </div>
+            <button onClick={addItem} className="brutalist-button bg-secondary/30 px-6 py-2 text-xs uppercase font-black flex items-center gap-2">
+              <Plus className="w-4 h-4" /> {t.addItem}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="flex flex-wrap gap-4">
+               <div className="space-y-1 flex-1 min-w-[120px]">
+                 <label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Percent className="w-3 h-3" /> {t.taxes} (%)</label>
+                 <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className="brutalist-input w-full text-center" />
+               </div>
+               <div className="space-y-1 flex-1 min-w-[120px]">
+                 <label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Tag className="w-3 h-3" /> {t.discount}</label>
+                 <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className="brutalist-input w-full text-right" />
+               </div>
+            </div>
+
+            <div className="bg-secondary p-6 border-4 border-foreground rotate-[-1deg] flex flex-col items-end">
+              <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Total a Faturar</span>
+              <span className="text-4xl font-black italic">R$ {total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-4 border-foreground">
+            <button onClick={saveInvoice} className="brutalist-button-primary px-10 py-4 text-xl italic uppercase font-black">{t.save}</button>
+            <button onClick={() => setCreating(false)} className="brutalist-button bg-background px-10 py-4 text-xl italic uppercase font-black">{t.cancel}</button>
           </div>
         </div>
       )}
 
       {invoices.length === 0 && !creating ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhuma fatura criada ainda.</p>
+        <div className="brutalist-card p-20 text-center bg-muted/20 border-dashed rotate-[-1deg]">
+          <Receipt className="w-16 h-16 mx-auto mb-6 opacity-40" />
+          <p className="font-black uppercase tracking-widest text-muted-foreground">Nenhuma fatura criada ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {invoices.map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{inv.client_name || 'Sem cliente'} · {inv.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}</p>
+        <div className="grid grid-cols-1 gap-6">
+          {invoices.map((inv, idx) => (
+            <div key={inv.id} className={`brutalist-card p-6 flex flex-col md:flex-row items-center gap-8 bg-card ${idx % 2 === 0 ? 'rotate-[-0.3deg]' : 'rotate-[0.3deg]'}`}>
+              <div className="w-16 h-16 bg-primary text-primary-foreground border-4 border-foreground rounded flex items-center justify-center shrink-0 rotate-[-5deg] shadow-brutalist">
+                 <Receipt className="w-8 h-8" />
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
-                <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
-                <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+
+              <div className="flex-1 min-w-0 text-center md:text-left">
+                <p className="text-2xl font-black uppercase tracking-tighter italic leading-none truncate">{inv.client_name || 'Sem cliente'}</p>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Venc: <span className="text-foreground">{inv.due_date || 'N/A'}</span>
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {inv.items.length} itens
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center md:items-end gap-2">
+                 <span className="text-3xl font-black italic leading-none">R$ {inv.total.toFixed(2)}</span>
+                 <Badge className={`${statusColors[inv.status]} border-2 font-black uppercase tracking-widest text-[10px] px-3 py-1 rounded-none`}>
+                   {statusLabel(inv.status)}
+                 </Badge>
+              </div>
+
+              <div className="flex gap-3 pt-4 md:pt-0 md:border-l-4 border-foreground/10 md:pl-8">
+                <button onClick={() => exportInvoicePdf(inv)} className="w-12 h-12 brutalist-button bg-secondary flex items-center justify-center p-0" title="Exportar PDF">
+                  <Download className="w-5 h-5" />
+                </button>
+                <button onClick={() => deleteInvoice(inv.id)} className="w-12 h-12 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0" title="Excluir">
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
             </div>
           ))}

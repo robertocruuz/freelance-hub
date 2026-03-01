@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, FolderKanban } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, Search, DollarSign } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -84,48 +84,69 @@ const ProjectsPage = () => {
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
   );
 
-  const inputClass = "w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring";
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display text-foreground">{t.projects}</h1>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-        >
-          <Plus className="w-4 h-4" /> {t.newProject}
-        </button>
+    <div className="max-w-5xl mx-auto space-y-12 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-foreground pb-8">
+        <div>
+          <h1 className="text-5xl font-black font-display text-foreground tracking-tighter uppercase italic leading-[0.8]">
+            {t.projects}
+          </h1>
+          <p className="text-xl font-bold text-muted-foreground mt-4 uppercase tracking-widest italic">Controle seus jobs e entregas</p>
+        </div>
+        {!showForm && (
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="brutalist-button-primary flex items-center gap-3 px-8 py-4 text-lg italic"
+          >
+            <Plus className="w-6 h-6" /> {t.newProject}
+          </button>
+        )}
       </div>
 
-      <input
-        placeholder={t.search}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className={inputClass + " max-w-sm"}
-      />
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-foreground" />
+        <input
+          placeholder={t.search}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full brutalist-input pl-14 h-14 text-lg"
+        />
+      </div>
 
       {showForm && (
-        <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
-          <h2 className="text-lg font-bold font-display text-foreground">
+        <div className="brutalist-card p-8 bg-card border-4 space-y-6 rotate-[-0.5deg]">
+          <h2 className="text-3xl font-black font-display text-foreground uppercase italic tracking-tighter border-b-4 border-foreground pb-2">
             {editingId ? t.editProject : t.newProject}
           </h2>
-          <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-          <ClientSelect value={clientId} onChange={setClientId} />
-          <input
-            placeholder={t.hourlyRate}
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourlyRate}
-            onChange={e => setHourlyRate(e.target.value)}
-            className={inputClass}
-          />
-          <div className="flex gap-2">
-            <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">{t.projectName}</label>
+              <input value={name} onChange={e => setName(e.target.value)} className="w-full brutalist-input" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">Cliente</label>
+              <ClientSelect value={clientId} onChange={setClientId} />
+            </div>
+          </div>
+          <div className="space-y-1 max-w-xs">
+            <label className="text-[10px] font-black uppercase tracking-widest">{t.hourlyRate}</label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={hourlyRate}
+                onChange={e => setHourlyRate(e.target.value)}
+                className="w-full brutalist-input pl-10"
+              />
+            </div>
+          </div>
+          <div className="flex gap-4 pt-4">
+            <button onClick={handleSave} className="brutalist-button-primary px-8 py-3 italic">
               {t.save}
             </button>
-            <button onClick={resetForm} className="px-5 py-2 rounded-xl bg-muted text-muted-foreground font-semibold text-sm">
+            <button onClick={resetForm} className="brutalist-button bg-background px-8 py-3 italic">
               {t.cancel}
             </button>
           </div>
@@ -133,27 +154,34 @@ const ProjectsPage = () => {
       )}
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <FolderKanban className="w-12 h-12 mb-3 opacity-40" />
-          <p className="text-sm">{t.noProjects}</p>
+        <div className="brutalist-card p-20 text-center bg-muted/20 border-dashed rotate-[-1deg]">
+          <FolderKanban className="w-16 h-16 mx-auto mb-6 opacity-40" />
+          <p className="font-black uppercase tracking-widest text-muted-foreground">{t.noProjects}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(p => (
-            <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{p.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {clientName(p.client_id)} · R$ {p.hourly_rate.toFixed(2)}/h
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filtered.map((p, idx) => (
+            <div key={p.id} className={`brutalist-card p-0 flex flex-col bg-card overflow-hidden ${idx % 2 === 0 ? 'rotate-1' : 'rotate-[-1]'}`}>
+              <div className="h-4 bg-primary border-b-2 border-foreground"></div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <p className="text-2xl font-black uppercase tracking-tighter italic leading-none">{p.name}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-2">
+                    {clientName(p.client_id)}
+                  </p>
+                </div>
+                <div className="bg-secondary/20 p-3 border-2 border-foreground rounded font-black italic text-lg text-foreground flex items-center justify-between">
+                   <span className="text-xs font-black uppercase not-italic tracking-widest">Taxa/h:</span>
+                   <span>R$ {p.hourly_rate.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                  <button onClick={() => handleEdit(p)} className="w-10 h-10 brutalist-button bg-background flex items-center justify-center p-0">
+                    <Pencil className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => handleDelete(p.id)} className="w-10 h-10 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

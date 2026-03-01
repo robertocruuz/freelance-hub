@@ -11,22 +11,22 @@ const LandingPage = () => {
   const { isDark, toggle } = useTheme();
 
   return (
-    <div className="relative min-h-screen flex flex-col hero-gradient overflow-hidden">
+    <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-8 py-6">
-        <h2 className="text-xl font-bold font-display text-foreground tracking-tight">Logo</h2>
-        <div className="flex items-center gap-2">
-          <button onClick={toggle} className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center">
-            {isDark ? <Sun className="w-4 h-4 text-foreground" /> : <Moon className="w-4 h-4 text-foreground" />}
+        <h2 className="text-xl font-black font-display text-foreground tracking-tighter uppercase italic">Logo</h2>
+        <div className="flex items-center gap-3">
+          <button onClick={toggle} className="w-10 h-10 brutalist-button flex items-center justify-center p-0">
+            {isDark ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
           </button>
-          <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="h-9 px-3 rounded-xl glass-pill text-xs font-semibold text-foreground">
+          <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="h-10 px-4 brutalist-button text-xs font-bold text-foreground">
             {lang === 'pt-BR' ? 'PT' : 'EN'}
           </button>
           <button
             onClick={() => navigate('/login')}
-            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center"
+            className="w-10 h-10 brutalist-button-primary rounded-full flex items-center justify-center p-0"
           >
-            <User className="w-4 h-4 text-foreground" />
+            <User className="w-5 h-5" />
           </button>
         </div>
       </header>
@@ -34,19 +34,31 @@ const LandingPage = () => {
       {/* Hero */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div className="animate-fade-in">
-          <div className="relative inline-block">
-            <SparkleIcon className="absolute -left-12 top-1/2 -translate-y-1/2" />
-            <SparkleIcon className="absolute -right-12 top-1/2 -translate-y-1/2 delay-300" />
-            <h1 className="text-5xl md:text-7xl font-bold font-display text-gradient-hero leading-tight whitespace-pre-line">
-              {t.heroTitle}
+          <div className="relative inline-block mb-8">
+            <div className="absolute -left-16 top-1/2 -translate-y-1/2 hidden md:block">
+              <SparkleIcon className="text-accent w-12 h-12" />
+            </div>
+            <div className="absolute -right-16 top-1/2 -translate-y-1/2 hidden md:block">
+              <SparkleIcon className="text-secondary w-12 h-12" />
+            </div>
+
+            <h1 className="text-5xl md:text-8xl font-black font-display text-foreground leading-[0.9] whitespace-pre-line uppercase tracking-tighter">
+              <span className="block">{t.heroTitle.split('\n')[0]}</span>
+              <span className="block text-primary bg-secondary inline-block px-4 py-2 border-4 border-foreground mt-2 rotate-[-2deg] shadow-brutalist">
+                {t.heroTitle.split('\n')[1] || ''}
+              </span>
             </h1>
           </div>
-          <p className="mt-6 text-lg text-muted-foreground max-w-md mx-auto">
-            {t.heroSubtitle}
-          </p>
+
+          <div className="brutalist-card bg-accent/10 max-w-lg mx-auto p-6 mt-8">
+            <p className="text-xl font-bold text-foreground italic">
+              {t.heroSubtitle}
+            </p>
+          </div>
+
           <button
             onClick={() => navigate('/login')}
-            className="mt-8 px-8 py-3.5 rounded-2xl btn-glow text-primary-foreground font-semibold text-lg"
+            className="mt-12 px-10 py-5 brutalist-button-primary text-xl uppercase tracking-widest italic"
           >
             {t.cta}
           </button>
@@ -54,8 +66,8 @@ const LandingPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 flex items-center justify-center px-8 py-6">
-        <span className="text-xs text-muted-foreground/50">{t.copyright}</span>
+      <footer className="relative z-10 flex items-center justify-center px-8 py-8 border-t-4 border-foreground bg-secondary/20 mt-12">
+        <span className="text-sm font-black uppercase tracking-widest text-foreground">{t.copyright}</span>
       </footer>
     </div>
   );

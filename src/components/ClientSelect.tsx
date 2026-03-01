@@ -1,4 +1,4 @@
-import { useClients, type Client } from '@/hooks/useClients';
+import { useClients } from '@/hooks/useClients';
 
 interface ClientSelectProps {
   value: string;
@@ -13,7 +13,7 @@ const ClientSelect = ({ value, onChange, placeholder = 'Cliente' }: ClientSelect
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+      className="brutalist-input w-full h-12"
     >
       <option value="">{placeholder}</option>
       {clients.map((c) => (

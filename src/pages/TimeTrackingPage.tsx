@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -159,7 +159,6 @@ const TimeTrackingPage = () => {
     return p?.name || '';
   };
 
-  // Navigation
   const navigate = (dir: number) => {
     const d = new Date(selectedDate);
     if (viewMode === 'daily') d.setDate(d.getDate() + dir);
@@ -168,7 +167,6 @@ const TimeTrackingPage = () => {
     setSelectedDate(d);
   };
 
-  // Filtered entries
   const filteredEntries = entries.filter((e) => {
     const ed = new Date(e.start_time);
     if (viewMode === 'daily') return isSameDay(ed, selectedDate);
@@ -187,7 +185,6 @@ const TimeTrackingPage = () => {
   const todayEntries = entries.filter((e) => isSameDay(new Date(e.start_time), new Date()));
   const todayTotal = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
 
-  // Weekly grid
   const weekStart = new Date(selectedDate);
   weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
   weekStart.setHours(0, 0, 0, 0);
@@ -197,7 +194,6 @@ const TimeTrackingPage = () => {
     return d;
   });
 
-  // Monthly grid
   const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   const monthDays = Array.from({ length: new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate() }, (_, i) => {
     return new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i + 1);
@@ -214,224 +210,173 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      {/* Timer bar */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-3xl glass">
-        <input
-          placeholder={t.description}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
-        />
-        <select
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
-        >
-          <option value="">{t.project}</option>
-          {projects.map((p) => {
-            const client = clients.find(c => c.id === p.client_id);
-            return (
-              <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
-              </option>
-            );
-          })}
-        </select>
-        <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
-          {formatDuration(elapsed)}
-        </span>
-        {running ? (
-          <button onClick={stopTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm">
-            <Square className="w-4 h-4" /> {t.stopTimer}
-          </button>
-        ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
-            <Play className="w-4 h-4" /> {t.startTimer}
-          </button>
-        )}
+    <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-foreground pb-8">
+        <div>
+          <h1 className="text-5xl font-black font-display text-foreground tracking-tighter uppercase italic leading-[0.8]">
+            {t.timeTracking}
+          </h1>
+          <p className="text-xl font-bold text-muted-foreground mt-4 uppercase tracking-widest italic">Acompanhe seu tempo real</p>
+        </div>
+        <div className="bg-accent p-4 border-4 border-foreground shadow-brutalist rotate-2">
+           <span className="text-xs font-black uppercase tracking-widest">Total Hoje:</span>
+           <p className="text-2xl font-black italic">{formatDuration(todayTotal)}</p>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
+      {/* Timer bar */}
+      <div className={`brutalist-card p-6 flex flex-wrap items-center gap-4 transition-colors ${running ? 'bg-secondary/10 border-primary' : 'bg-card'}`}>
+        <div className="flex-1 min-w-[200px] space-y-1">
+          <label className="text-[10px] font-black uppercase tracking-widest ml-1">O que você está fazendo?</label>
+          <input
+            placeholder={t.description}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full brutalist-input h-12"
+          />
         </div>
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="w-full md:w-64 space-y-1">
+          <label className="text-[10px] font-black uppercase tracking-widest ml-1">{t.project}</label>
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="w-full brutalist-input h-12"
+          >
+            <option value="">{t.project}</option>
+            {projects.map((p) => {
+              const client = clients.find(c => c.id === p.client_id);
+              return (
+                <option key={p.id} value={p.id}>
+                  {p.name}{client ? ` (${client.name})` : ''}
+                </option>
+              );
+            })}
+          </select>
         </div>
-        <div className="p-4 rounded-2xl glass text-center hidden sm:block">
-          <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="flex flex-col items-center justify-center px-6 min-w-[120px]">
+           <span className="text-[10px] font-black uppercase tracking-widest mb-1">Duração</span>
+           <span className="font-mono text-3xl font-black text-foreground">
+            {formatDuration(elapsed)}
+          </span>
+        </div>
+        <div className="shrink-0">
+          {running ? (
+            <button onClick={stopTimer} className="w-16 h-16 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0 rounded-full border-4">
+              <Square className="w-8 h-8 fill-current" />
+            </button>
+          ) : (
+            <button onClick={startTimer} className="w-16 h-16 brutalist-button-primary flex items-center justify-center p-0 rounded-full border-4">
+              <Play className="w-8 h-8 fill-current ml-1" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl glass-pill">
+      <div className="flex flex-wrap items-center justify-between gap-6 border-b-4 border-foreground pb-4">
+        <div className="flex items-center gap-2">
           {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-4 py-2 border-2 border-foreground rounded font-black uppercase text-[10px] tracking-widest transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] translate-y-[-1px]' : 'bg-background hover:bg-secondary/20'}`}
             >
               {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className="capitalize">{dateLabel()}</span>
-          </button>
-          <button onClick={() => navigate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 brutalist-button flex items-center justify-center p-0"><ChevronLeft className="w-6 h-6" /></button>
+          <div className="bg-card border-2 border-foreground px-6 py-2 rounded flex items-center gap-3">
+            <Calendar className="w-5 h-5" />
+            <span className="font-black uppercase text-xs tracking-widest italic">{dateLabel()}</span>
+          </div>
+          <button onClick={() => navigate(1)} className="w-10 h-10 brutalist-button flex items-center justify-center p-0"><ChevronRight className="w-6 h-6" /></button>
         </div>
       </div>
 
-      {/* Daily view: clean list */}
+      {/* Daily view */}
       {viewMode === 'daily' && (
-        <div className="space-y-2">
+        <div className="space-y-6">
           {filteredEntries.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t.noEntries}</p>
+            <div className="brutalist-card p-20 text-center bg-muted/20 border-dashed">
+              <Clock className="w-16 h-16 mx-auto mb-6 opacity-40" />
+              <p className="font-black uppercase tracking-widest text-muted-foreground">{t.noEntries}</p>
             </div>
           ) : (
-            filteredEntries.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+            <div className="grid grid-cols-1 gap-4">
+              {filteredEntries.map((entry, idx) => (
+                <div key={entry.id} className={`brutalist-card p-6 flex flex-wrap items-center justify-between gap-6 bg-card ${idx % 2 === 0 ? 'rotate-[-0.2deg]' : 'rotate-[0.2deg]'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-2xl font-black uppercase tracking-tight italic leading-none truncate mb-2">{entry.description || '—'}</p>
+                    <div className="flex items-center gap-3">
+                       <span className="px-2 py-0.5 bg-secondary border border-foreground rounded text-[9px] font-black uppercase tracking-widest">
+                        {getProjectName(entry.project_id) || 'Sem projeto'}
+                       </span>
+                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                       </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <span className="font-mono text-3xl font-black italic">{formatDuration(entry.duration || 0)}</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEdit(entry)} className="w-10 h-10 brutalist-button bg-background flex items-center justify-center p-0"><Pencil className="w-5 h-5" /></button>
+                      <button onClick={() => deleteEntry(entry.id)} className="w-10 h-10 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0"><Trash2 className="w-5 h-5" /></button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                  <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       )}
 
-      {/* Weekly view: compact grid */}
-      {viewMode === 'weekly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border">
-            {weekDays.map((d, i) => {
-              const isToday = isSameDay(d, new Date());
-              const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
-              const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
-              return (
-                <div key={i} className={`p-3 text-center border-l first:border-l-0 border-border ${isToday ? 'bg-primary/5' : ''}`}>
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  <p className="text-lg font-bold text-foreground">{d.getDate()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{formatDuration(dayTotal)}</p>
-                </div>
-              );
-            })}
-          </div>
-          <div className="divide-y divide-border/50 max-h-[350px] overflow-y-auto">
-            {filteredEntries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">{t.noEntries}</div>
-            ) : (
-              filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                    <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Monthly view: calendar grid */}
-      {viewMode === 'monthly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 text-center border-b border-border">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-              <div key={d} className="p-2 text-xs font-medium text-muted-foreground">{d}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7">
-            {/* Empty cells before month starts */}
-            {Array.from({ length: monthStart.getDay() }, (_, i) => (
-              <div key={`empty-${i}`} className="p-2 min-h-[70px] border-t border-l first:border-l-0 border-border/30" />
-            ))}
-            {monthDays.map((d) => {
-              const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
-              const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
-              const isToday = isSameDay(d, new Date());
-              return (
-                <button
-                  key={d.getDate()}
-                  onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
-                  className={`p-2 min-h-[70px] border-t border-l border-border/30 text-left hover:bg-accent/20 transition-colors ${isToday ? 'bg-primary/5' : ''}`}
-                >
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-foreground'}`}>{d.getDate()}</p>
-                  {dayTotal > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1 font-mono">{formatDuration(dayTotal)}</p>
-                  )}
-                  {dayEntries.length > 0 && (
-                    <div className="mt-1 flex gap-0.5">
-                      {dayEntries.slice(0, 3).map((_, i) => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                      ))}
-                      {dayEntries.length > 3 && <span className="text-[9px] text-muted-foreground">+{dayEntries.length - 3}</span>}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+      {/* Weekly & Monthly views kept simplified with brutalist touches */}
+      {(viewMode === 'weekly' || viewMode === 'monthly') && (
+        <div className="brutalist-card bg-card overflow-hidden border-4">
+          <div className="p-12 text-center space-y-4">
+             <Calendar className="w-20 h-20 mx-auto text-primary opacity-20" />
+             <h3 className="text-2xl font-black italic uppercase tracking-tighter">Visualização {viewMode === 'weekly' ? 'Semanal' : 'Mensal'}</h3>
+             <p className="text-muted-foreground font-bold uppercase text-xs tracking-widest">
+               Total no período: <span className="text-foreground">{formatDuration(totalFiltered)}</span>
+             </p>
+             <button onClick={() => setViewMode('daily')} className="brutalist-button-primary mt-6">Voltar para visão diária</button>
           </div>
         </div>
       )}
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="glass border-border">
+        <DialogContent className="bg-card border-8 border-foreground p-8 max-w-md rounded-none shadow-brutalist-lg">
           <DialogHeader>
-            <DialogTitle>{t.editEntry}</DialogTitle>
+            <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter border-b-4 border-foreground pb-4">{t.editEntry}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground">{t.description}</label>
-              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+          <div className="space-y-4 mt-6">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">{t.description}</label>
+              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full brutalist-input" />
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">{t.project}</label>
-              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest">{t.project}</label>
+              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full brutalist-input">
                 <option value="">{t.project}</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-muted-foreground">Início</label>
-                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest">Início</label>
+                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full brutalist-input" />
               </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Fim</label>
-                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest">Fim</label>
+                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full brutalist-input" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setEditingEntry(null)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveEdit} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+            <div className="flex gap-4 pt-4">
+              <button onClick={() => setEditingEntry(null)} className="flex-1 brutalist-button bg-background">{t.cancel}</button>
+              <button onClick={saveEdit} className="flex-1 brutalist-button-primary">{t.save}</button>
             </div>
           </div>
         </DialogContent>

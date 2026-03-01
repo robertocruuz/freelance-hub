@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, DollarSign, Calendar } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,10 +35,10 @@ interface Budget {
 const statuses = ['draft', 'sent', 'approved', 'rejected'] as const;
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  sent: 'bg-accent text-accent-foreground',
-  approved: 'bg-primary/10 text-primary',
-  rejected: 'bg-destructive/10 text-destructive',
+  draft: 'bg-muted border-foreground/20',
+  sent: 'bg-accent border-foreground',
+  approved: 'bg-secondary border-foreground',
+  rejected: 'bg-destructive text-destructive-foreground border-foreground',
 };
 
 const BudgetsPage = () => {
@@ -155,79 +155,124 @@ const BudgetsPage = () => {
   const isFormOpen = creating || editingId;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.budgets}</h1>
+    <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-8 border-foreground pb-8">
+        <div>
+          <h1 className="text-5xl font-black font-display text-foreground tracking-tighter uppercase italic leading-[0.8]">
+            {t.budgets}
+          </h1>
+          <p className="text-xl font-bold text-muted-foreground mt-4 uppercase tracking-widest italic">Crie propostas irrecusáveis</p>
+        </div>
         {!isFormOpen && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newBudget}
+          <button onClick={() => setCreating(true)} className="brutalist-button-primary flex items-center gap-3 px-8 py-4 text-lg italic">
+            <Plus className="w-6 h-6" /> {t.newBudget}
           </button>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.quantity} value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.unitPrice} value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+        <div className="brutalist-card p-8 bg-card border-4 space-y-8 rotate-[-0.5deg]">
+           <div className="flex flex-col md:flex-row justify-between gap-6">
+              <div className="flex-1 space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest">Cliente</label>
+                <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
               </div>
-            ))}
-          </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
-              <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveBudget} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+              <div className="bg-accent/20 border-4 border-foreground p-4 rotate-2 flex flex-col justify-center min-w-[200px]">
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Total Geral</span>
+                <span className="text-3xl font-black italic">R$ {total.toFixed(2)}</span>
+              </div>
+           </div>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase tracking-widest">Itens do Orçamento</label>
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_100px_150px_auto] gap-3 items-start">
+                  <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="brutalist-input" />
+                  <input type="number" placeholder="Qtd" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="brutalist-input text-center" />
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+                    <input type="number" placeholder="Preço" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="brutalist-input pl-10 text-right" />
+                  </div>
+                  <button onClick={() => removeItem(idx)} className="w-12 h-12 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
             </div>
+            <button onClick={addItem} className="brutalist-button bg-secondary/30 px-6 py-2 text-xs uppercase font-black flex items-center gap-2">
+              <Plus className="w-4 h-4" /> {t.addItem}
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-4 border-foreground">
+            <button onClick={saveBudget} className="brutalist-button-primary px-10 py-4 text-xl italic uppercase font-black">{t.save}</button>
+            <button onClick={resetForm} className="brutalist-button bg-background px-10 py-4 text-xl italic uppercase font-black">{t.cancel}</button>
           </div>
         </div>
       )}
 
       {budgets.length === 0 && !isFormOpen ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum orçamento criado ainda.</p>
+        <div className="brutalist-card p-20 text-center bg-muted/20 border-dashed rotate-[-1deg]">
+          <FileText className="w-16 h-16 mx-auto mb-6 opacity-40" />
+          <p className="font-black uppercase tracking-widest text-muted-foreground">Nenhum orçamento criado ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {budgets.map((b) => (
-            <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+        <div className="grid grid-cols-1 gap-6">
+          {budgets.map((b, idx) => (
+            <div key={b.id} className={`brutalist-card p-6 flex flex-col md:flex-row items-center gap-8 bg-card ${idx % 2 === 0 ? 'rotate-[0.3deg]' : 'rotate-[-0.3deg]'}`}>
+              <div className="w-16 h-16 bg-accent border-4 border-foreground rounded-full flex items-center justify-center shrink-0">
+                 <FileText className="w-8 h-8" />
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="focus:outline-none">
-                      <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
-                        {statusLabel(b.status)}
-                        <ChevronDown className="w-3 h-3" />
-                      </Badge>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {statuses.map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onClick={() => changeStatus(b.id, s)}
-                        className={b.status === s ? 'font-bold' : ''}
-                      >
-                        {statusLabel(s)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+
+              <div className="flex-1 min-w-0 text-center md:text-left">
+                <p className="text-2xl font-black uppercase tracking-tighter italic leading-none truncate">{b.client_name || 'Sem cliente'}</p>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {new Date(b.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {b.items.length} itens
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center md:items-end gap-2">
+                 <span className="text-3xl font-black italic leading-none">R$ {b.total.toFixed(2)}</span>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="focus:outline-none">
+                        <Badge className={`${statusColors[b.status]} border-2 font-black uppercase tracking-widest text-[10px] px-3 py-1 cursor-pointer flex items-center gap-2`}>
+                          {statusLabel(b.status)}
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </Badge>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-card border-4 border-foreground p-2 rounded-none shadow-brutalist">
+                      {statuses.map((s) => (
+                        <DropdownMenuItem
+                          key={s}
+                          onClick={() => changeStatus(b.id, s)}
+                          className={`font-black uppercase tracking-widest text-xs py-2 focus:bg-primary focus:text-primary-foreground ${b.status === s ? 'bg-secondary' : ''}`}
+                        >
+                          {statusLabel(s)}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+              </div>
+
+              <div className="flex gap-3 pt-4 md:pt-0 md:border-l-4 border-foreground/10 md:pl-8">
+                <button onClick={() => startEditing(b)} className="w-12 h-12 brutalist-button bg-background flex items-center justify-center p-0" title="Editar">
+                  <Pencil className="w-5 h-5" />
+                </button>
+                <button onClick={() => exportBudgetPdf(b)} className="w-12 h-12 brutalist-button bg-secondary flex items-center justify-center p-0" title="Exportar PDF">
+                  <Download className="w-5 h-5" />
+                </button>
+                <button onClick={() => deleteBudget(b.id)} className="w-12 h-12 brutalist-button bg-destructive text-destructive-foreground flex items-center justify-center p-0" title="Excluir">
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
             </div>
           ))}

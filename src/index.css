@@ -2,127 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
-    --background: 225 15% 95%;
-    --foreground: 225 25% 12%;
+    --background: 255 14% 98%;
+    --foreground: 0 0% 0%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 225 25% 12%;
+    --card: 255 14% 98%;
+    --card-foreground: 0 0% 0%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 225 25% 12%;
+    --popover: 255 14% 98%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 210 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 214 84% 47%;
+    --primary-foreground: 255 14% 98%;
 
-    --secondary: 225 12% 92%;
-    --secondary-foreground: 225 25% 12%;
+    --secondary: 77 100% 73%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 225 12% 93%;
-    --muted-foreground: 225 10% 48%;
+    --muted: 255 14% 90%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 210 80% 92%;
-    --accent-foreground: 210 90% 35%;
+    --accent: 318 100% 77%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 255 14% 98%;
 
-    --border: 225 15% 88%;
-    --input: 225 15% 88%;
-    --ring: 210 100% 50%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 214 84% 47%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 225 20% 97%;
-    --sidebar-foreground: 225 15% 30%;
-    --sidebar-primary: 210 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 60% 94%;
-    --sidebar-accent-foreground: 210 80% 40%;
-    --sidebar-border: 225 15% 90%;
-    --sidebar-ring: 210 100% 50%;
+    --shadow-color: 0 0% 0%;
 
-    /* Liquid Glass tokens */
-    --glass-bg: 0 0% 100% / 0.55;
-    --glass-border: 0 0% 100% / 0.45;
-    --glass-blur: 28px;
-    --glass-shadow: 0 8px 32px hsl(225 30% 20% / 0.08), 0 2px 8px hsl(225 30% 20% / 0.04);
-    --glass-shadow-lg: 0 16px 48px hsl(225 30% 20% / 0.12), 0 4px 12px hsl(225 30% 20% / 0.06);
-    --glass-highlight: linear-gradient(135deg, hsl(0 0% 100% / 0.7) 0%, hsl(0 0% 100% / 0.1) 50%, hsl(0 0% 100% / 0.3) 100%);
-    --glass-inner-glow: inset 0 1px 0 hsl(0 0% 100% / 0.6);
-
-    --hero-gradient: linear-gradient(160deg, hsl(225 30% 92%) 0%, hsl(210 60% 90%) 30%, hsl(280 30% 92%) 60%, hsl(330 30% 92%) 100%);
-    --mesh-1: hsl(210 100% 80% / 0.3);
-    --mesh-2: hsl(280 60% 80% / 0.2);
-    --mesh-3: hsl(330 60% 85% / 0.2);
-    --glow-green: 152 80% 55%;
-    --glow-pink: 330 80% 65%;
-    --surface-elevated: 0 0% 100%;
-    --surface-overlay: 225 15% 97%;
+    /* Custom colors */
+    --blue: 214 84% 47%;
+    --pink: 318 100% 77%;
+    --neon-green: 77 100% 73%;
+    --dark-green: 150 42% 40%;
   }
 
   .dark {
-    --background: 225 25% 7%;
-    --foreground: 225 10% 92%;
+    --background: 0 0% 0%;
+    --foreground: 255 14% 98%;
 
-    --card: 225 20% 12%;
-    --card-foreground: 225 10% 92%;
+    --card: 0 0% 5%;
+    --card-foreground: 255 14% 98%;
 
-    --popover: 225 20% 12%;
-    --popover-foreground: 225 10% 92%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 255 14% 98%;
 
-    --primary: 210 100% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 214 84% 47%;
+    --primary-foreground: 255 14% 98%;
 
-    --secondary: 225 18% 15%;
-    --secondary-foreground: 225 10% 92%;
+    --secondary: 77 100% 73%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 225 18% 14%;
-    --muted-foreground: 225 10% 50%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 210 40% 18%;
-    --accent-foreground: 210 80% 70%;
+    --accent: 318 100% 77%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 255 14% 98%;
 
-    --border: 225 15% 18%;
-    --input: 225 15% 18%;
-    --ring: 210 100% 55%;
+    --border: 255 14% 98%;
+    --input: 255 14% 98%;
+    --ring: 214 84% 47%;
 
-    --sidebar-background: 225 25% 9%;
-    --sidebar-foreground: 225 10% 70%;
-    --sidebar-primary: 210 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 20% 14%;
-    --sidebar-accent-foreground: 225 10% 85%;
-    --sidebar-border: 225 15% 14%;
-    --sidebar-ring: 210 100% 55%;
-
-    /* Liquid Glass dark */
-    --glass-bg: 225 20% 12% / 0.6;
-    --glass-border: 225 15% 25% / 0.5;
-    --glass-shadow: 0 8px 32px hsl(225 40% 4% / 0.3), 0 2px 8px hsl(225 40% 4% / 0.2);
-    --glass-shadow-lg: 0 16px 48px hsl(225 40% 4% / 0.4), 0 4px 12px hsl(225 40% 4% / 0.25);
-    --glass-highlight: linear-gradient(135deg, hsl(225 15% 25% / 0.5) 0%, hsl(225 15% 15% / 0.1) 50%, hsl(225 15% 20% / 0.3) 100%);
-    --glass-inner-glow: inset 0 1px 0 hsl(225 15% 30% / 0.3);
-
-    --hero-gradient: linear-gradient(160deg, hsl(225 30% 6%) 0%, hsl(210 40% 10%) 30%, hsl(280 25% 10%) 60%, hsl(225 30% 6%) 100%);
-    --mesh-1: hsl(210 100% 40% / 0.15);
-    --mesh-2: hsl(280 60% 40% / 0.1);
-    --mesh-3: hsl(330 60% 40% / 0.1);
-
-    --surface-elevated: 225 20% 12%;
-    --surface-overlay: 225 22% 9%;
+    --shadow-color: 255 14% 98%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-foreground;
   }
 
   body {
@@ -132,137 +90,54 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
+    @apply font-black tracking-tight uppercase;
   }
 }
 
 @layer utilities {
-  .hero-gradient {
-    background: var(--hero-gradient);
-    position: relative;
-  }
-
-  .hero-gradient::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 30%, var(--mesh-1), transparent),
-      radial-gradient(ellipse 50% 60% at 70% 60%, var(--mesh-2), transparent),
-      radial-gradient(ellipse 40% 40% at 80% 20%, var(--mesh-3), transparent);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Liquid Glass card */
-  .glass {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow), var(--glass-inner-glow);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-  }
-
-  .glass:hover {
-    box-shadow: var(--glass-shadow-lg), var(--glass-inner-glow);
-  }
-
-  .glass-card {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow), var(--glass-inner-glow);
-  }
-
-  .glass-highlight {
-    position: relative;
-  }
-
-  .glass-highlight::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: var(--glass-highlight);
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.5;
-  }
-
-  .glow-sparkle {
-    color: hsl(var(--glow-pink));
-    filter: drop-shadow(0 0 8px hsl(var(--glow-pink) / 0.5));
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .text-gradient-hero {
-    background: linear-gradient(135deg, hsl(225 25% 15%) 0%, hsl(210 80% 40%) 50%, hsl(280 50% 45%) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .dark .text-gradient-hero {
-    background: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 80% 70%) 50%, hsl(280 50% 75%) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .sidebar-glass {
-    background: hsl(var(--sidebar-background));
-  }
-
-  /* Pill button glass */
-  .glass-pill {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: var(--glass-shadow);
+  .brutalist-card {
+    @apply bg-card border-2 border-foreground rounded-xl;
+    box-shadow: 4px 4px 0px 0px hsl(var(--shadow-color));
     transition: all 0.2s ease;
   }
 
-  .glass-pill:hover {
-    background: hsl(var(--accent));
-    box-shadow: var(--glass-shadow-lg);
+  .brutalist-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px hsl(var(--shadow-color));
   }
 
-  /* Glass input */
-  .glass-input {
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--glass-border));
-    box-shadow: inset 0 1px 2px hsl(225 30% 20% / 0.04);
-    transition: all 0.2s ease;
+  .brutalist-button {
+    @apply border-2 border-foreground px-6 py-2 rounded-xl font-bold transition-all duration-200 active:translate-y-1 active:shadow-none;
+    box-shadow: 4px 4px 0px 0px hsl(var(--shadow-color));
   }
 
-  .glass-input:focus {
-    border-color: hsl(var(--ring));
-    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15), inset 0 1px 2px hsl(225 30% 20% / 0.04);
+  .brutalist-button:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px 0px hsl(var(--shadow-color));
   }
 
-  /* Primary button with glow */
-  .btn-glow {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(210 100% 60%) 100%);
-    box-shadow: 0 4px 16px hsl(var(--primary) / 0.35), 0 1px 3px hsl(var(--primary) / 0.2);
-    transition: all 0.2s ease;
+  .brutalist-button-primary {
+    @apply brutalist-button bg-primary text-primary-foreground;
   }
 
-  .btn-glow:hover {
-    box-shadow: 0 6px 24px hsl(var(--primary) / 0.45), 0 2px 6px hsl(var(--primary) / 0.3);
-    transform: translateY(-1px);
+  .brutalist-button-secondary {
+    @apply brutalist-button bg-secondary text-secondary-foreground;
   }
 
-  .btn-glow:active {
-    transform: translateY(0);
+  .brutalist-button-accent {
+    @apply brutalist-button bg-accent text-accent-foreground;
+  }
+
+  .brutalist-input {
+    @apply border-2 border-foreground bg-background px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all;
+    box-shadow: 2px 2px 0px 0px hsl(var(--shadow-color));
+  }
+
+  .brutalist-input:focus {
+    box-shadow: 4px 4px 0px 0px hsl(var(--shadow-color));
+  }
+
+  .text-shadow-brutalist {
+    text-shadow: 2px 2px 0px hsl(var(--secondary));
   }
 }
