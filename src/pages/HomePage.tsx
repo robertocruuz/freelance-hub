@@ -3,36 +3,81 @@ import { KeyRound, Users, FolderKanban, FileText, Clock, Receipt } from 'lucide-
 import { useI18n } from '@/hooks/useI18n';
 
 const HomePage = () => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
+  const isPt = lang === 'pt-BR';
 
   const cards = [
-    { icon: KeyRound, label: t.passwordGenerator, path: '/dashboard/passwords', gradient: 'from-violet-500/20 to-purple-500/20' },
-    { icon: Users, label: t.clients, path: '/dashboard/clients', gradient: 'from-blue-500/20 to-cyan-500/20' },
-    { icon: FolderKanban, label: t.projects, path: '/dashboard/projects', gradient: 'from-emerald-500/20 to-teal-500/20' },
-    { icon: FileText, label: t.budgets, path: '/dashboard/budgets', gradient: 'from-amber-500/20 to-orange-500/20' },
-    { icon: Clock, label: t.timeTracking, path: '/dashboard/time', gradient: 'from-rose-500/20 to-pink-500/20' },
-    { icon: Receipt, label: t.invoices, path: '/dashboard/invoices', gradient: 'from-indigo-500/20 to-blue-500/20' },
+    {
+      icon: KeyRound,
+      label: isPt ? 'Senha & Cofre' : 'Passwords & Vault',
+      desc: isPt ? 'Gere e armazene senhas com segurança' : 'Generate and store passwords securely',
+      path: '/dashboard/passwords',
+    },
+    {
+      icon: Users,
+      label: isPt ? 'Meus Clientes' : 'My Clients',
+      desc: isPt ? 'Gerencie seus clientes e mantenha suas informações organizadas' : 'Manage your clients and keep their info organized',
+      path: '/dashboard/clients',
+    },
+    {
+      icon: FileText,
+      label: isPt ? 'Orçamentos & Propostas' : 'Budgets & Proposals',
+      desc: isPt ? 'Crie e gerencie orçamentos e propostas para seus clientes' : 'Create and manage budgets and proposals for your clients',
+      path: '/dashboard/budgets',
+    },
+    {
+      icon: Clock,
+      label: 'Time Tracking',
+      desc: isPt ? 'Registre as horas trabalhadas e organize seu tempo por projeto' : 'Track your working hours and organize time by project',
+      path: '/dashboard/time',
+    },
+    {
+      icon: FolderKanban,
+      label: isPt ? 'Projetos' : 'Projects',
+      desc: isPt ? 'Organize e acompanhe seus projetos com facilidade' : 'Organize and track your projects easily',
+      path: '/dashboard/projects',
+    },
+    {
+      icon: Receipt,
+      label: isPt ? 'Faturamento' : 'Invoicing',
+      desc: isPt ? 'Gere faturas profissionais e acompanhe seus pagamentos' : 'Generate professional invoices and track payments',
+      path: '/dashboard/invoices',
+    },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold font-display text-foreground mb-2">Dashboard</h1>
-      <p className="text-muted-foreground mb-8">{t.heroSubtitle}</p>
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-10">
+        <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3 leading-tight whitespace-pre-line">
+          {isPt ? 'Plataforma de Serviços\npara Freelancers' : 'Service Platform\nfor Freelancers'}
+        </h1>
+        <p className="text-muted-foreground text-lg max-w-lg">
+          {t.heroSubtitle}
+        </p>
+        <button
+          onClick={() => navigate('/dashboard/passwords')}
+          className="mt-5 px-6 py-3 rounded-full btn-glow text-primary-foreground font-semibold"
+        >
+          {isPt ? 'Gerencie tudo em um só lugar' : 'Manage everything in one place'}
+        </button>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((card) => (
           <button
             key={card.path}
             onClick={() => navigate(card.path)}
-            className={`glass group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl`}
+            className="glass group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            <div className="relative z-10 flex flex-col gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <card.icon className="w-6 h-6 text-primary" />
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                <card.icon className="w-6 h-6 text-foreground" />
               </div>
-              <span className="text-lg font-semibold text-foreground">{card.label}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-lg font-bold font-display text-foreground">{card.label}</span>
+                <span className="text-sm text-muted-foreground leading-snug">{card.desc}</span>
+              </div>
             </div>
           </button>
         ))}
