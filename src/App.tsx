@@ -2,14 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { I18nProvider } from "@/hooks/useI18n";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
-import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardLayout from "./components/DashboardLayout";
 import PasswordGeneratorPage from "./pages/PasswordGeneratorPage";
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
@@ -33,7 +33,14 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route index element={<HomePage />} />
                   <Route path="passwords" element={<PasswordGeneratorPage />} />
                   <Route path="clients" element={<ClientsPage />} />
