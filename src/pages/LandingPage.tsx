@@ -43,28 +43,28 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="relative min-h-screen flex flex-col hero-gradient overflow-hidden">
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-8 py-6">
-        <h2 className="text-xl font-bold font-display text-foreground tracking-tight">Logo*</h2>
+    <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
+      {/* Tab Header */}
+      <header className="relative z-10 tab-header flex items-center justify-between px-8 pt-4 pb-5">
+        <h2 className="text-xl font-bold font-display tracking-tight">Logo*</h2>
         <div className="flex items-center gap-2">
-          <button onClick={toggle} className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center">
-            {isDark ? <Sun className="w-4 h-4 text-foreground" /> : <Moon className="w-4 h-4 text-foreground" />}
+          <button onClick={toggle} className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition">
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="h-9 px-3 rounded-xl glass-pill text-xs font-semibold text-foreground">
+          <button onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')} className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold">
             {lang === 'pt-BR' ? 'PT' : 'EN'}
           </button>
           <button
             onClick={() => navigate('/login')}
-            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center"
+            className="h-9 px-5 rounded-full bg-background text-foreground text-sm font-semibold hover:opacity-90 transition"
           >
-            <User className="w-4 h-4 text-foreground" />
+            {lang === 'pt-BR' ? 'Entrar' : 'Join Us'}
           </button>
         </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative z-10 flex-1 flex flex-col items-center px-8">
+      {/* Body */}
+      <main className="relative z-10 flex-1 flex flex-col items-center px-8 hero-gradient">
         <div className="w-full max-w-5xl animate-fade-in">
           <div className="text-center md:text-left py-12 md:py-16">
             <h1 className="text-5xl md:text-7xl font-display text-foreground leading-tight">
@@ -99,7 +99,7 @@ const LandingPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 flex items-center justify-center px-8 py-6">
+      <footer className="relative z-10 flex items-center justify-center px-8 py-6 hero-gradient">
         <span className="text-xs text-muted-foreground/50">{t.copyright}</span>
       </footer>
     </div>
