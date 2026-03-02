@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, Users } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,10 +35,10 @@ interface Budget {
 const statuses = ['draft', 'sent', 'approved', 'rejected'] as const;
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  sent: 'bg-accent text-accent-foreground',
-  approved: 'bg-primary/10 text-primary',
-  rejected: 'bg-destructive/10 text-destructive',
+  draft: 'bg-white text-black border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]',
+  sent: 'bg-yellow-400 text-black border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]',
+  approved: 'bg-[#d7ff73] text-black border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]',
+  rejected: 'bg-destructive text-white border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]',
 };
 
 const BudgetsPage = () => {
@@ -155,83 +155,138 @@ const BudgetsPage = () => {
   const isFormOpen = creating || editingId;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.budgets}</h1>
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-[#ff88db] border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-xl flex items-center justify-center">
+            <FileText className="w-6 h-6 text-black" />
+          </div>
+          <h1 className="text-4xl italic font-display">{t.budgets}</h1>
+        </div>
         {!isFormOpen && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newBudget}
+          <button onClick={() => setCreating(true)} className="brutalist-button-primary h-14 uppercase tracking-widest flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5" /> {t.newBudget}
           </button>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.quantity} value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.unitPrice} value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            ))}
+        <div className="brutalist-card bg-white overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="p-6 bg-primary text-white border-b-2 border-black">
+            <h2 className="text-2xl font-bold italic font-display">{editingId ? t.editBudget : t.newBudget}</h2>
           </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
-              <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveBudget} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+          <div className="p-8 space-y-8">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest ml-1">CLIENTE</label>
+              <div className="[&_button]:brutalist-input [&_button]:h-12 [&_button]:bg-white [&_button]:w-full [&_button]:flex [&_button]:items-center [&_button]:justify-between">
+                <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[10px] font-bold uppercase tracking-widest ml-1">ITENS DO ORÇAMENTO</label>
+              {items.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-[1fr_80px_120px_48px] gap-3 items-end">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold opacity-50 uppercase tracking-tighter">DESCRIÇÃO</p>
+                    <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="w-full brutalist-input h-10 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold opacity-50 uppercase tracking-tighter">QTD</p>
+                    <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="w-full brutalist-input h-10 text-sm text-center" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-bold opacity-50 uppercase tracking-tighter">VALOR UNIT.</p>
+                    <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="w-full brutalist-input h-10 text-sm text-right" />
+                  </div>
+                  <button onClick={() => removeItem(idx)} className="w-12 h-10 brutalist-card bg-white flex items-center justify-center hover:bg-destructive hover:text-white transition-colors border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none mb-[2px]">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button onClick={addItem} className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-1.5 hover:translate-x-1 transition-transform">
+                <Plus className="w-4 h-4" /> {t.addItem}
+              </button>
+            </div>
+
+            <div className="flex flex-col items-end justify-center py-6 border-t-2 border-black/5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">TOTAL ESTIMADO</p>
+              <p className="text-5xl font-black italic text-primary">R$ {total.toFixed(2)}</p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button onClick={saveBudget} className="flex-1 brutalist-button-primary h-14 uppercase tracking-widest">
+                {t.save}
+              </button>
+              <button onClick={resetForm} className="flex-1 brutalist-button bg-white text-black h-14 uppercase tracking-widest">
+                {t.cancel}
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {budgets.length === 0 && !isFormOpen ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum orçamento criado ainda.</p>
+        <div className="brutalist-card bg-white p-20 text-center border-dashed">
+          <FileText className="w-16 h-16 mx-auto mb-4 opacity-20 text-black" />
+          <p className="font-bold uppercase tracking-widest text-muted-foreground">Nenhum orçamento criado ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {budgets.map((b) => (
-            <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="focus:outline-none">
-                      <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
-                        {statusLabel(b.status)}
-                        <ChevronDown className="w-3 h-3" />
-                      </Badge>
+        !isFormOpen && (
+          <div className="grid grid-cols-1 gap-4">
+            {budgets.map((b) => (
+              <div key={b.id} className="brutalist-card p-6 bg-white flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-[#f8f7f9] transition-colors hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <p className="text-2xl font-bold uppercase italic group-hover:text-primary transition-colors leading-tight">{b.client_name || 'Sem cliente'}</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="focus:outline-none">
+                          <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1 uppercase text-[10px] font-black tracking-widest px-3 py-1 rounded-full`}>
+                            {statusLabel(b.status)}
+                            <ChevronDown className="w-3 h-3" />
+                          </Badge>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="brutalist-card bg-white p-2 min-w-[140px]">
+                        {statuses.map((s) => (
+                          <DropdownMenuItem
+                            key={s}
+                            onClick={() => changeStatus(b.id, s)}
+                            className={`cursor-pointer uppercase text-[10px] font-black tracking-widest p-2 hover:bg-black hover:text-white transition-colors ${b.status === s ? 'bg-primary/10' : ''}`}
+                          >
+                            {statusLabel(s)}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> {b.items.length} ITENS</span>
+                    <span className="opacity-50">CRIADO EM {new Date(b.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">TOTAL</p>
+                    <p className="text-3xl font-black italic text-black">R$ {b.total.toFixed(2)}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => startEditing(b)} className="w-11 h-11 brutalist-card bg-white flex items-center justify-center hover:bg-secondary transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none" title="Editar">
+                      <Pencil className="w-5 h-5" />
                     </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {statuses.map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onClick={() => changeStatus(b.id, s)}
-                        className={b.status === s ? 'font-bold' : ''}
-                      >
-                        {statusLabel(s)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => exportBudgetPdf(b)} className="w-11 h-11 brutalist-card bg-white flex items-center justify-center hover:bg-[#d7ff73] transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none" title="Exportar PDF">
+                      <Download className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => deleteBudget(b.id)} className="w-11 h-11 brutalist-card bg-white flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );

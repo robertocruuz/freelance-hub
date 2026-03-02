@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, FolderKanban } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, Search, DollarSign, Briefcase } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -84,80 +84,121 @@ const ProjectsPage = () => {
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
   );
 
-  const inputClass = "w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring";
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display text-foreground">{t.projects}</h1>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-        >
-          <Plus className="w-4 h-4" /> {t.newProject}
-        </button>
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-[#d7ff73] border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-xl flex items-center justify-center">
+            <Briefcase className="w-6 h-6 text-black" />
+          </div>
+          <h1 className="text-4xl italic font-display">{t.projects}</h1>
+        </div>
+        {!showForm && (
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="brutalist-button-primary h-14 uppercase tracking-widest flex items-center justify-center gap-2"
+          >
+            <Plus className="w-5 h-5" /> {t.newProject}
+          </button>
+        )}
       </div>
 
-      <input
-        placeholder={t.search}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className={inputClass + " max-w-sm"}
-      />
+      {!showForm && (
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t.search}
+            className="pl-12 pr-6 brutalist-input h-14 bg-white w-full shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] focus:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transition-all"
+          />
+        </div>
+      )}
 
       {showForm && (
-        <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
-          <h2 className="text-lg font-bold font-display text-foreground">
-            {editingId ? t.editProject : t.newProject}
-          </h2>
-          <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-          <ClientSelect value={clientId} onChange={setClientId} />
-          <input
-            placeholder={t.hourlyRate}
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourlyRate}
-            onChange={e => setHourlyRate(e.target.value)}
-            className={inputClass}
-          />
-          <div className="flex gap-2">
-            <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
-              {t.save}
-            </button>
-            <button onClick={resetForm} className="px-5 py-2 rounded-xl bg-muted text-muted-foreground font-semibold text-sm">
-              {t.cancel}
-            </button>
+        <div className="brutalist-card bg-white overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="p-6 bg-primary text-white border-b-2 border-black">
+            <h2 className="text-2xl font-bold italic font-display">
+              {editingId ? t.editProject : t.newProject}
+            </h2>
+          </div>
+          <div className="p-8 space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest ml-1">{t.projectName}</label>
+              <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className="w-full brutalist-input h-12" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest ml-1">CLIENTE</label>
+                <div className="[&_button]:brutalist-input [&_button]:h-12 [&_button]:bg-white [&_button]:w-full [&_button]:flex [&_button]:items-center [&_button]:justify-between">
+                  <ClientSelect value={clientId} onChange={setClientId} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest ml-1">{t.hourlyRate}</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    placeholder="0.00"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={hourlyRate}
+                    onChange={e => setHourlyRate(e.target.value)}
+                    className="w-full brutalist-input h-12 pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button onClick={handleSave} className="flex-1 brutalist-button-primary h-12 uppercase tracking-widest text-xs">
+                {t.save}
+              </button>
+              <button onClick={resetForm} className="flex-1 brutalist-button bg-white text-black h-12 uppercase tracking-widest text-xs">
+                {t.cancel}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <FolderKanban className="w-12 h-12 mb-3 opacity-40" />
-          <p className="text-sm">{t.noProjects}</p>
+      {filtered.length === 0 && !showForm ? (
+        <div className="brutalist-card bg-white p-20 text-center border-dashed">
+          <FolderKanban className="w-16 h-16 mx-auto mb-4 opacity-20 text-black" />
+          <p className="font-bold uppercase tracking-widest text-muted-foreground">{t.noProjects}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(p => (
-            <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{p.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {clientName(p.client_id)} · R$ {p.hourly_rate.toFixed(2)}/h
-                </p>
+        !showForm && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filtered.map(p => (
+              <div key={p.id} className="brutalist-card p-8 bg-white flex flex-col justify-between group hover:bg-[#f8f7f9] transition-colors hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <p className="text-2xl font-bold uppercase italic group-hover:text-primary transition-colors leading-tight">{p.name}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleEdit(p)} className="w-9 h-9 rounded-lg border-2 border-black bg-white hover:bg-secondary transition-colors flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(p.id)} className="w-9 h-9 rounded-lg border-2 border-black bg-white hover:bg-destructive hover:text-white transition-colors flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                      <Users className="w-3 h-3" /> {clientName(p.client_id)}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
+                      <DollarSign className="w-3 h-3" /> R$ {p.hourly_rate.toFixed(2)} / hora
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );

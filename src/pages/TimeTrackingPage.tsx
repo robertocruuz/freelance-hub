@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight, Clock, Briefcase } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -214,105 +214,131 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-10 animate-fade-in pb-12">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-[#d7ff73] border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-xl flex items-center justify-center">
+          <Clock className="w-6 h-6 text-black" />
+        </div>
+        <h1 className="text-4xl italic font-display">{t.timeTracking}</h1>
+      </div>
+
       {/* Timer bar */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-3xl glass">
-        <input
-          placeholder={t.description}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
-        />
-        <select
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
-        >
-          <option value="">{t.project}</option>
-          {projects.map((p) => {
-            const client = clients.find(c => c.id === p.client_id);
-            return (
-              <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
-              </option>
-            );
-          })}
-        </select>
-        <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
-          {formatDuration(elapsed)}
-        </span>
-        {running ? (
-          <button onClick={stopTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm">
-            <Square className="w-4 h-4" /> {t.stopTimer}
-          </button>
-        ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
-            <Play className="w-4 h-4" /> {t.startTimer}
-          </button>
-        )}
+      <div className="brutalist-card p-6 bg-white flex flex-col md:flex-row items-center gap-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+        <div className="w-full md:flex-1 space-y-2">
+          <label className="text-[10px] font-bold uppercase tracking-widest ml-1">O QUE VOCÊ ESTÁ FAZENDO?</label>
+          <input
+            placeholder={t.description}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full brutalist-input h-12"
+          />
+        </div>
+        <div className="w-full md:w-64 space-y-2">
+          <label className="text-[10px] font-bold uppercase tracking-widest ml-1">PROJETO</label>
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="w-full brutalist-input h-12 bg-white"
+          >
+            <option value="">{t.project}</option>
+            {projects.map((p) => {
+              const client = clients.find(c => c.id === p.client_id);
+              return (
+                <option key={p.id} value={p.id}>
+                  {p.name}{client ? ` (${client.name})` : ''}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <label className="text-[10px] font-bold uppercase tracking-widest">TEMPO</label>
+          <span className="font-mono text-4xl font-black text-primary italic">
+            {formatDuration(elapsed)}
+          </span>
+        </div>
+        <div className="pt-6">
+          {running ? (
+            <button onClick={stopTimer} className="w-16 h-16 rounded-full border-2 border-black bg-destructive text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center">
+              <Square className="w-6 h-6 fill-current" />
+            </button>
+          ) : (
+            <button onClick={startTimer} className="w-16 h-16 rounded-full border-2 border-black bg-[#d7ff73] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center">
+              <Play className="w-6 h-6 fill-current ml-1" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
-        </div>
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
-        </div>
-        <div className="p-4 rounded-2xl glass text-center hidden sm:block">
-          <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {[
+          { label: t.todayTotal, val: formatDuration(todayTotal), color: 'bg-white' },
+          { label: viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView, val: formatDuration(totalFiltered), color: 'bg-primary text-white' },
+          { label: t.billable, val: formatDuration(totalFiltered), color: 'bg-[#d7ff73]' },
+        ].map((stat, i) => (
+          <div key={i} className={`brutalist-card p-6 text-center ${stat.color} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-70">{stat.label}</p>
+            <p className="text-3xl font-black font-display italic leading-none">{stat.val}</p>
+          </div>
+        ))}
       </div>
 
       {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl glass-pill">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-2 p-1.5 brutalist-card bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
           {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-black text-white' : 'text-muted-foreground hover:bg-black/5'}`}
             >
-              {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
+              {mode === 'daily' ? 'DIA' : mode === 'weekly' ? 'SEMANA' : 'MÊS'}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className="capitalize">{dateLabel()}</span>
-          </button>
-          <button onClick={() => navigate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 brutalist-card bg-white flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"><ChevronLeft className="w-5 h-5" /></button>
+          <div className="px-6 py-3 brutalist-card bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold uppercase tracking-widest">{dateLabel()}</span>
+          </div>
+          <button onClick={() => navigate(1)} className="w-10 h-10 brutalist-card bg-white flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"><ChevronRight className="w-5 h-5" /></button>
         </div>
       </div>
 
-      {/* Daily view: clean list */}
+      {/* Daily view */}
       {viewMode === 'daily' && (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {filteredEntries.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t.noEntries}</p>
+            <div className="brutalist-card bg-white p-20 text-center border-dashed">
+              <Clock className="w-12 h-12 mx-auto mb-4 opacity-20 text-black" />
+              <p className="font-bold uppercase tracking-widest text-muted-foreground">{t.noEntries}</p>
             </div>
           ) : (
             filteredEntries.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
+              <div key={entry.id} className="brutalist-card p-6 bg-white flex flex-wrap items-center justify-between gap-4 group hover:bg-[#f8f7f9] transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+                  <p className="text-xl font-bold uppercase italic group-hover:text-primary transition-colors leading-tight">{entry.description || '—'}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <Briefcase className="w-3 h-3" /> {getProjectName(entry.project_id) || t.project}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                  <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">INTERVALO</p>
+                    <p className="text-xs font-bold">
+                      {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">DURAÇÃO</p>
+                    <p className="font-mono text-2xl font-black italic">{formatDuration(entry.duration || 0)}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(entry)} className="w-9 h-9 brutalist-card bg-white flex items-center justify-center hover:bg-secondary transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteEntry(entry.id)} className="w-9 h-9 brutalist-card bg-white flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"><Trash2 className="w-4 h-4" /></button>
+                  </div>
                 </div>
               </div>
             ))
@@ -320,37 +346,41 @@ const TimeTrackingPage = () => {
         </div>
       )}
 
-      {/* Weekly view: compact grid */}
+      {/* Weekly view */}
       {viewMode === 'weekly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border">
+        <div className="brutalist-card bg-white overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="grid grid-cols-7 border-b-2 border-black">
             {weekDays.map((d, i) => {
               const isToday = isSameDay(d, new Date());
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
               const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
               return (
-                <div key={i} className={`p-3 text-center border-l first:border-l-0 border-border ${isToday ? 'bg-primary/5' : ''}`}>
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  <p className="text-lg font-bold text-foreground">{d.getDate()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{formatDuration(dayTotal)}</p>
+                <div key={i} className={`p-4 text-center border-r-2 last:border-r-0 border-black ${isToday ? 'bg-primary/10' : ''}`}>
+                  <p className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground">{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                  <p className={`text-2xl font-black italic leading-none my-1 ${isToday ? 'text-primary' : ''}`}>{d.getDate()}</p>
+                  <p className="font-mono text-[10px] font-bold bg-black text-white rounded px-1 inline-block mt-1">{formatDuration(dayTotal)}</p>
                 </div>
               );
             })}
           </div>
-          <div className="divide-y divide-border/50 max-h-[350px] overflow-y-auto">
+          <div className="divide-y-2 divide-black/5 max-h-[400px] overflow-y-auto">
             {filteredEntries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">{t.noEntries}</div>
+              <div className="text-center py-12 text-muted-foreground font-bold uppercase tracking-widest text-xs">{t.noEntries}</div>
             ) : (
               filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
+                <div key={entry.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#f8f7f9] transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="text-lg font-bold uppercase italic leading-tight truncate">{entry.description || '—'}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">
+                      {getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                    <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <div className="flex items-center gap-6">
+                    <span className="font-mono text-xl font-black italic text-primary">{formatDuration(entry.duration || 0)}</span>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => openEdit(entry)} className="p-2 hover:bg-primary/10 rounded transition-colors text-muted-foreground hover:text-primary"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => deleteEntry(entry.id)} className="p-2 hover:bg-destructive/10 rounded transition-colors text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -359,18 +389,17 @@ const TimeTrackingPage = () => {
         </div>
       )}
 
-      {/* Monthly view: calendar grid */}
+      {/* Monthly view */}
       {viewMode === 'monthly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 text-center border-b border-border">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-              <div key={d} className="p-2 text-xs font-medium text-muted-foreground">{d}</div>
+        <div className="brutalist-card bg-white overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="grid grid-cols-7 text-center border-b-2 border-black bg-black text-white py-2">
+            {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => (
+              <div key={d} className="text-[10px] font-black tracking-widest">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
-            {/* Empty cells before month starts */}
             {Array.from({ length: monthStart.getDay() }, (_, i) => (
-              <div key={`empty-${i}`} className="p-2 min-h-[70px] border-t border-l first:border-l-0 border-border/30" />
+              <div key={`empty-${i}`} className="p-2 min-h-[100px] border-b-2 border-r-2 border-black/5 last:border-r-0" />
             ))}
             {monthDays.map((d) => {
               const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
@@ -380,20 +409,18 @@ const TimeTrackingPage = () => {
                 <button
                   key={d.getDate()}
                   onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
-                  className={`p-2 min-h-[70px] border-t border-l border-border/30 text-left hover:bg-accent/20 transition-colors ${isToday ? 'bg-primary/5' : ''}`}
+                  className={`p-3 min-h-[100px] border-b-2 border-r-2 border-black/5 hover:bg-primary/5 transition-colors text-left relative group ${isToday ? 'bg-secondary/10' : ''}`}
                 >
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-foreground'}`}>{d.getDate()}</p>
+                  <p className={`text-lg font-black italic leading-none ${isToday ? 'text-primary' : 'text-black'}`}>{d.getDate()}</p>
                   {dayTotal > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1 font-mono">{formatDuration(dayTotal)}</p>
+                    <p className="text-[9px] font-black font-mono bg-black text-white px-1 mt-2 inline-block rounded">{formatDuration(dayTotal)}</p>
                   )}
-                  {dayEntries.length > 0 && (
-                    <div className="mt-1 flex gap-0.5">
-                      {dayEntries.slice(0, 3).map((_, i) => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                      ))}
-                      {dayEntries.length > 3 && <span className="text-[9px] text-muted-foreground">+{dayEntries.length - 3}</span>}
-                    </div>
-                  )}
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {dayEntries.slice(0, 4).map((_, i) => (
+                      <div key={i} className="w-1.5 h-1.5 bg-primary border-px border-black" />
+                    ))}
+                    {dayEntries.length > 4 && <span className="text-[8px] font-bold">+{dayEntries.length - 4}</span>}
+                  </div>
                 </button>
               );
             })}
@@ -403,35 +430,37 @@ const TimeTrackingPage = () => {
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="glass border-border">
-          <DialogHeader>
-            <DialogTitle>{t.editEntry}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground">{t.description}</label>
-              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+        <DialogContent className="brutalist-card p-0 border-none max-w-lg">
+          <div className="p-8 bg-primary text-white border-b-2 border-black">
+            <DialogHeader>
+              <DialogTitle className="text-3xl italic font-display text-white">{t.editEntry}</DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-8 space-y-6 bg-white">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest ml-1">{t.description}</label>
+              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full brutalist-input h-12" />
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">{t.project}</label>
-              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest ml-1">{t.project}</label>
+              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full brutalist-input h-12 bg-white">
                 <option value="">{t.project}</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-muted-foreground">Início</label>
-                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest ml-1">INÍCIO</label>
+                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full brutalist-input h-12" />
               </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Fim</label>
-                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest ml-1">FIM</label>
+                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full brutalist-input h-12" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setEditingEntry(null)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveEdit} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+            <div className="flex gap-4 pt-4">
+              <button onClick={() => setEditingEntry(null)} className="flex-1 brutalist-button bg-white text-black h-12 uppercase tracking-widest text-xs">{t.cancel}</button>
+              <button onClick={saveEdit} className="flex-1 brutalist-button-primary h-12 uppercase tracking-widest text-xs">{t.save}</button>
             </div>
           </div>
         </DialogContent>

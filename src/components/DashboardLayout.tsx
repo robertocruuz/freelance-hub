@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
@@ -45,11 +46,12 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Tab header */}
-      <header className="relative z-20 tab-header px-6 pt-3 pb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold font-display tracking-tight">Logo</h2>
+      {/* Sticky Tab header with Blue Background */}
+      <header className="sticky top-0 z-50 tab-header-blue px-6 pt-3 pb-4 flex items-center justify-between shadow-sm">
+        <h2 className="text-xl font-bold font-display tracking-tight text-white italic">Logo*</h2>
 
-        <nav className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/10">
+        {/* Floating pill navigation */}
+        <nav className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/10 border-2 border-black/20">
           {navItems.map((item) => {
             const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
             return (
@@ -57,16 +59,16 @@ const DashboardLayout = () => {
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate(item.path)}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border-2 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'text-current opacity-60 hover:opacity-100 hover:bg-white/10'
+                        ? 'bg-[#d7ff73] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                        : 'text-white border-transparent hover:bg-white/10 hover:border-white/20'
                     }`}
                   >
-                    <item.icon className="w-[18px] h-[18px]" />
+                    <item.icon className="w-[20px] h-[20px]" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="glass text-foreground border-none">{labelMap[item.key](t)}</TooltipContent>
+                <TooltipContent className="brutalist-card text-foreground">{labelMap[item.key](t)}</TooltipContent>
               </Tooltip>
             );
           })}
@@ -75,32 +77,32 @@ const DashboardLayout = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+            className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition border-2 border-transparent hover:border-white/20 text-white"
           >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
 
           <button
             onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-            className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold"
+            className="h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-bold text-white border-2 border-transparent hover:border-white/20"
           >
             {lang === 'pt-BR' ? 'PT' : 'EN'}
           </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center">
-                <User className="w-4 h-4" />
+              <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center border-2 border-transparent hover:border-white/20 text-white">
+                <User className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 glass border-none">
-              <DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-48 brutalist-card mt-2">
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                 <User className="w-4 h-4 mr-2" /> {t.profile}
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                 <Settings className="w-4 h-4 mr-2" /> {t.settings}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer hover:bg-destructive/10 text-destructive">
                 <LogOut className="w-4 h-4 mr-2" /> {t.logout}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -109,12 +111,22 @@ const DashboardLayout = () => {
       </header>
 
       {/* Body */}
-      <main className="relative z-10 flex-1 p-6 overflow-auto hero-gradient">
-        <Outlet />
+      <main className="relative z-10 flex-1 p-6 overflow-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      <footer className="relative z-20 h-10 flex items-center justify-center px-6 hero-gradient">
-        <span className="text-[11px] text-muted-foreground/50">{t.copyright}</span>
+      <footer className="relative z-20 h-12 flex items-center justify-center px-6 bg-background border-t-2 border-black/5">
+        <span className="text-xs font-medium text-muted-foreground">{t.copyright}</span>
       </footer>
     </div>
   );
