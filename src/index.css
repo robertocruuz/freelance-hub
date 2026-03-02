@@ -212,6 +212,18 @@
     box-shadow: var(--glass-shadow-lg);
   }
 
+  /* Tab header */
+  .tab-header {
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+    border-radius: 0 0 1.25rem 1.25rem;
+  }
+
+  .dark .tab-header {
+    background: hsl(30 10% 15%);
+    color: hsl(40 15% 90%);
+  }
+
   /* Warm input */
   .glass-input {
     background: hsl(var(--card));

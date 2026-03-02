@@ -44,12 +44,12 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col hero-gradient">
-      {/* Top bar - glass */}
-      <header className="relative z-20 h-16 flex items-center justify-between px-6">
-        <h2 className="text-lg font-bold font-display text-foreground tracking-tight">Logo</h2>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Tab header */}
+      <header className="relative z-20 tab-header px-6 pt-3 pb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold font-display tracking-tight">Logo</h2>
 
-        <nav className="glass-pill flex items-center gap-1 px-2 py-1.5 rounded-2xl">
+        <nav className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/10">
           {navItems.map((item) => {
             const isActive = item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === item.path;
             return (
@@ -59,8 +59,8 @@ const DashboardLayout = () => {
                     onClick={() => navigate(item.path)}
                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-current opacity-60 hover:opacity-100 hover:bg-white/10'
                     }`}
                   >
                     <item.icon className="w-[18px] h-[18px]" />
@@ -75,22 +75,22 @@ const DashboardLayout = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center"
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
           >
-            {isDark ? <Sun className="w-4 h-4 text-foreground" /> : <Moon className="w-4 h-4 text-foreground" />}
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
           <button
             onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-            className="h-9 px-3 rounded-xl glass-pill text-xs font-semibold text-foreground"
+            className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold"
           >
             {lang === 'pt-BR' ? 'PT' : 'EN'}
           </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-9 h-9 rounded-full glass-pill flex items-center justify-center">
-                <User className="w-4 h-4 text-foreground" />
+              <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center">
+                <User className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 glass border-none">
@@ -108,11 +108,12 @@ const DashboardLayout = () => {
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 p-6 overflow-auto">
+      {/* Body */}
+      <main className="relative z-10 flex-1 p-6 overflow-auto hero-gradient">
         <Outlet />
       </main>
 
-      <footer className="relative z-20 h-10 flex items-center justify-center px-6">
+      <footer className="relative z-20 h-10 flex items-center justify-center px-6 hero-gradient">
         <span className="text-[11px] text-muted-foreground/50">{t.copyright}</span>
       </footer>
     </div>
