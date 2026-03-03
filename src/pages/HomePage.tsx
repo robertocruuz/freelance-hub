@@ -47,36 +47,36 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3 leading-tight whitespace-pre-line">
+    <div className="max-w-5xl">
+      <div className="mb-12">
+        <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight">
           {isPt ? 'Plataforma de Serviços\npara Freelancers' : 'Service Platform\nfor Freelancers'}
         </h1>
-        <p className="text-muted-foreground text-lg max-w-lg">
+        <p className="text-muted-foreground text-xl max-w-xl leading-relaxed">
           {t.heroSubtitle}
         </p>
         <button
           onClick={() => navigate('/dashboard/passwords')}
-          className="mt-5 px-6 py-3 rounded-full btn-glow text-primary-foreground font-semibold"
+          className="mt-8 px-8 py-4 rounded-full bg-[#1369db] text-white font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-blue-500/20"
         >
           {isPt ? 'Gerencie tudo em um só lugar' : 'Manage everything in one place'}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => (
           <button
             key={card.path}
             onClick={() => navigate(card.path)}
-            className="glass group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+            className="bg-white/50 backdrop-blur-sm border border-black/5 rounded-[2rem] p-8 text-left transition-all duration-300 hover:bg-white hover:shadow-xl hover:-translate-y-1 group"
           >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
-                <card.icon className="w-6 h-6 text-foreground" />
+            <div className="flex flex-col gap-6">
+              <div className="w-14 h-14 rounded-2xl bg-[#1369db]/10 flex items-center justify-center shrink-0 group-hover:bg-[#1369db] group-hover:text-white transition-all duration-300">
+                <card.icon className="w-6 h-6" />
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-lg font-bold font-display text-foreground">{card.label}</span>
-                <span className="text-sm text-muted-foreground leading-snug">{card.desc}</span>
+              <div className="flex flex-col gap-2">
+                <span className="text-xl font-bold text-foreground leading-tight">{card.label}</span>
+                <span className="text-sm text-muted-foreground leading-relaxed">{card.desc}</span>
               </div>
             </div>
           </button>

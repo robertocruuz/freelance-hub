@@ -155,18 +155,24 @@ const BudgetsPage = () => {
   const isFormOpen = creating || editingId;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.budgets}</h1>
+    <div className="max-w-5xl space-y-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-bold text-foreground tracking-tight mb-2">{t.budgets}</h1>
+          <p className="text-black/40 font-medium">{budgets.length} {t.budgets.toLowerCase()} {lang === 'pt-BR' ? 'registrados' : 'registered'}</p>
+        </div>
         {!isFormOpen && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newBudget}
+          <button
+            onClick={() => setCreating(true)}
+            className="h-16 px-8 rounded-2xl bg-[#1369db] text-white font-bold text-lg hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20"
+          >
+            <Plus className="w-6 h-6" /> {t.newBudget}
           </button>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div className="rounded-[2.5rem] border border-black/5 bg-white p-10 space-y-8 shadow-sm">
           <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
           <div className="space-y-2">
             {items.map((item, idx) => (
@@ -190,44 +196,56 @@ const BudgetsPage = () => {
       )}
 
       {budgets.length === 0 && !isFormOpen ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum orçamento criado ainda.</p>
+        <div className="bg-white border border-black/5 rounded-[3rem] py-24 text-center">
+          <FileText className="w-16 h-16 mx-auto mb-6 text-black/10" />
+          <p className="text-xl font-bold text-black/20 uppercase tracking-widest">Nenhum orçamento criado ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-4">
           {budgets.map((b) => (
-            <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+            <div key={b.id} className="flex items-center justify-between p-8 rounded-[2.5rem] border border-black/5 bg-white hover:border-black/10 transition-all group">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-[#f8f7f9] flex items-center justify-center text-black/40 group-hover:bg-[#1369db] group-hover:text-white transition-all duration-300">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground mb-1">{b.client_name || 'Sem cliente'}</p>
+                  <div className="flex items-center gap-4 text-sm font-bold text-black/30 uppercase tracking-widest">
+                    <span>{b.items.length} itens</span>
+                    <span>{new Date(b.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="focus:outline-none">
-                      <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
-                        {statusLabel(b.status)}
-                        <ChevronDown className="w-3 h-3" />
-                      </Badge>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {statuses.map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onClick={() => changeStatus(b.id, s)}
-                        className={b.status === s ? 'font-bold' : ''}
-                      >
-                        {statusLabel(s)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <p className="text-2xl font-black text-foreground">R$ {b.total.toFixed(2)}</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="focus:outline-none mt-1">
+                        <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1 rounded-lg border-none px-3 py-1 font-bold text-[10px] uppercase tracking-wider`}>
+                          {statusLabel(b.status)}
+                          <ChevronDown className="w-3 h-3" />
+                        </Badge>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl border-black/5 shadow-xl">
+                      {statuses.map((s) => (
+                        <DropdownMenuItem
+                          key={s}
+                          onClick={() => changeStatus(b.id, s)}
+                          className={`rounded-lg py-2 font-bold text-xs uppercase tracking-wider cursor-pointer ${b.status === s ? 'bg-black/5' : ''}`}
+                        >
+                          {statusLabel(s)}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="flex items-center gap-2 border-l border-black/5 pl-6">
+                  <button onClick={() => startEditing(b)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-[#f8f7f9] text-black/20 hover:text-black transition-all" title="Editar"><Pencil className="w-5 h-5" /></button>
+                  <button onClick={() => exportBudgetPdf(b)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-[#f8f7f9] text-black/20 hover:text-[#1369db] transition-all" title="Exportar PDF"><Download className="w-5 h-5" /></button>
+                  <button onClick={() => deleteBudget(b.id)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-red-50 text-black/20 hover:text-red-500 transition-all" title="Excluir"><Trash2 className="w-5 h-5" /></button>
+                </div>
               </div>
             </div>
           ))}

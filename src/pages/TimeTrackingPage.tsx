@@ -214,105 +214,125 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-6xl space-y-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-bold text-foreground tracking-tight mb-2">{t.timeTracking}</h1>
+          <p className="text-black/40 font-medium">{lang === 'pt-BR' ? 'Acompanhe seu tempo e produtividade' : 'Track your time and productivity'}</p>
+        </div>
+      </div>
+
       {/* Timer bar */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-3xl glass">
+      <div className="flex flex-wrap items-center gap-4 p-6 rounded-[2.5rem] bg-white border border-black/5 shadow-sm">
         <input
           placeholder={t.description}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+          className="flex-1 min-w-[250px] h-16 px-8 rounded-2xl bg-[#f8f7f9] text-lg font-medium text-foreground placeholder:text-black/20 focus:outline-none focus:ring-4 focus:ring-[#1369db]/5 transition-all border border-black/5"
         />
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
+          className="w-64 h-16 px-6 rounded-2xl bg-[#f8f7f9] text-base font-bold text-black/60 focus:outline-none border border-black/5 appearance-none cursor-pointer"
         >
           <option value="">{t.project}</option>
           {projects.map((p) => {
             const client = clients.find(c => c.id === p.client_id);
             return (
               <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
+                {p.name}{client ? ` (${client.name})` : ''}
               </option>
             );
           })}
         </select>
-        <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
-          {formatDuration(elapsed)}
-        </span>
+        <div className="px-8 h-16 flex items-center justify-center rounded-2xl bg-[#f8f7f9] border border-black/5 min-w-[160px]">
+          <span className="font-mono text-3xl font-black text-foreground">
+            {formatDuration(elapsed)}
+          </span>
+        </div>
         {running ? (
-          <button onClick={stopTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm">
-            <Square className="w-4 h-4" /> {t.stopTimer}
+          <button onClick={stopTimer} className="h-16 px-8 rounded-2xl bg-red-500 text-white font-bold text-lg hover:bg-red-600 transition-all flex items-center gap-3 shadow-lg shadow-red-500/20">
+            <Square className="w-6 h-6 fill-white" /> {t.stopTimer}
           </button>
         ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
-            <Play className="w-4 h-4" /> {t.startTimer}
+          <button onClick={startTimer} className="h-16 px-8 rounded-2xl bg-[#1369db] text-white font-bold text-lg hover:opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-blue-500/20">
+            <Play className="w-6 h-6 fill-white" /> {t.startTimer}
           </button>
         )}
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="p-8 rounded-[2rem] bg-white border border-black/5 flex flex-col gap-2">
+          <p className="text-sm font-bold uppercase tracking-widest text-black/30">{t.todayTotal}</p>
+          <p className="text-4xl font-black text-foreground">{formatDuration(todayTotal)}</p>
         </div>
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="p-8 rounded-[2rem] bg-white border border-black/5 flex flex-col gap-2">
+          <p className="text-sm font-bold uppercase tracking-widest text-black/30">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
+          <p className="text-4xl font-black text-[#1369db]">{formatDuration(totalFiltered)}</p>
         </div>
-        <div className="p-4 rounded-2xl glass text-center hidden sm:block">
-          <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+        <div className="p-8 rounded-[2rem] bg-white border border-black/5 flex flex-col gap-2 hidden sm:flex">
+          <p className="text-sm font-bold uppercase tracking-widest text-black/30">{t.billable}</p>
+          <p className="text-4xl font-black text-[#3b9166]">{formatDuration(totalFiltered)}</p>
         </div>
       </div>
 
       {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl glass-pill">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-white border border-black/5 shadow-sm">
           {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${viewMode === mode ? 'bg-black text-white' : 'text-black/40 hover:text-black hover:bg-black/5'}`}
             >
               {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-white hover:border-black/10 border border-transparent transition-all text-black/40 hover:text-black"><ChevronLeft className="w-6 h-6" /></button>
+          <button onClick={() => setSelectedDate(new Date())} className="h-12 px-6 rounded-xl bg-white border border-black/5 text-sm font-bold text-black flex items-center gap-3 shadow-sm">
+            <Calendar className="w-5 h-5 text-[#1369db]" />
             <span className="capitalize">{dateLabel()}</span>
           </button>
-          <button onClick={() => navigate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={() => navigate(1)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-white hover:border-black/10 border border-transparent transition-all text-black/40 hover:text-black"><ChevronRight className="w-6 h-6" /></button>
         </div>
       </div>
 
       {/* Daily view: clean list */}
       {viewMode === 'daily' && (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {filteredEntries.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t.noEntries}</p>
+            <div className="bg-white border border-black/5 rounded-[3rem] py-24 text-center">
+              <Calendar className="w-16 h-16 mx-auto mb-6 text-black/10" />
+              <p className="text-xl font-bold text-black/20 uppercase tracking-widest">{t.noEntries}</p>
             </div>
           ) : (
             filteredEntries.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-6 p-8 rounded-[2.5rem] bg-white border border-black/5 hover:border-black/10 transition-all group">
+                <div className="flex items-center gap-6 flex-1 min-w-0">
+                  <div className="w-16 h-16 rounded-2xl bg-[#f8f7f9] flex items-center justify-center text-black/40 group-hover:bg-[#d7ff73] group-hover:text-black transition-all duration-300">
+                    <Clock className="w-8 h-8" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold text-foreground mb-1 truncate">{entry.description || '—'}</p>
+                    <p className="text-sm font-bold text-black/30 uppercase tracking-widest">{getProjectName(entry.project_id) || t.project}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                  <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-8">
+                  <div className="text-right">
+                    <span className="block font-mono text-2xl font-black text-foreground">
+                      {formatDuration(entry.duration || 0)}
+                    </span>
+                    <span className="text-[10px] font-bold text-black/20 uppercase tracking-widest">
+                      {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 border-l border-black/5 pl-6">
+                    <button onClick={() => openEdit(entry)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-[#f8f7f9] text-black/20 hover:text-black transition-all"><Pencil className="w-5 h-5" /></button>
+                    <button onClick={() => deleteEntry(entry.id)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-red-50 text-black/20 hover:text-red-500 transition-all"><Trash2 className="w-5 h-5" /></button>
+                  </div>
                 </div>
               </div>
             ))
