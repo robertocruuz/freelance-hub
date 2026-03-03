@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun } from 'lucide-react';
+import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, SquareKanban } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,6 +19,7 @@ const navItems = [
   { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
+  { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
 ] as const;
 
 const labelMap: Record<string, (t: any) => string> = {
@@ -29,6 +30,7 @@ const labelMap: Record<string, (t: any) => string> = {
   budgets: (t) => t.budgets,
   time: (t) => t.timeTracking,
   invoices: (t) => t.invoices,
+  kanban: () => 'Tarefas',
 };
 
 const DashboardLayout = () => {

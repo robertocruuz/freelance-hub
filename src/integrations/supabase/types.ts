@@ -141,6 +141,33 @@ export type Database = {
           },
         ]
       }
+      kanban_columns: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+          user_id: string
+          wip_limit: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          user_id: string
+          wip_limit?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          user_id?: string
+          wip_limit?: number | null
+        }
+        Relationships: []
+      }
       password_vault: {
         Row: {
           category: string | null
@@ -238,6 +265,291 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activity_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          is_completed: boolean
+          position: number
+          title: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          position?: number
+          title: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean
+          position?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "task_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_checklists: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          task_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          task_id: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          task_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_checklists_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_label_assignments: {
+        Row: {
+          id: string
+          label_id: string
+          task_id: string
+        }
+        Insert: {
+          id?: string
+          label_id: string
+          task_id: string
+        }
+        Update: {
+          id?: string
+          label_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_label_assignments_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "task_labels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_label_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_labels: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          client_id: string | null
+          column_id: string | null
+          completed_at: string | null
+          complexity: number | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          estimated_time: number | null
+          estimated_value: number | null
+          id: string
+          position: number
+          priority: string
+          project_id: string | null
+          real_value: number | null
+          start_date: string | null
+          status: string
+          task_type: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          column_id?: string | null
+          completed_at?: string | null
+          complexity?: number | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_time?: number | null
+          estimated_value?: number | null
+          id?: string
+          position?: number
+          priority?: string
+          project_id?: string | null
+          real_value?: number | null
+          start_date?: string | null
+          status?: string
+          task_type?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          column_id?: string | null
+          completed_at?: string | null
+          complexity?: number | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_time?: number | null
+          estimated_value?: number | null
+          id?: string
+          position?: number
+          priority?: string
+          project_id?: string | null
+          real_value?: number | null
+          start_date?: string | null
+          status?: string
+          task_type?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
