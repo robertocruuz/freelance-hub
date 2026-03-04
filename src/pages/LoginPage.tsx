@@ -40,14 +40,19 @@ const LoginPage = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl glass-input text-foreground placeholder:text-muted-foreground focus:outline-none";
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <div className="min-h-screen hero-gradient flex items-center justify-center px-4">
-      <div className="w-full max-w-sm glass rounded-3xl p-8 animate-fade-in">
-        <h2 className="text-2xl font-bold font-display text-center mb-6 text-foreground">
-          {isRegister ? t.register : t.login}
-        </h2>
+    <div className="min-h-screen landing-hero-bg flex items-center justify-center px-4">
+      <div className="relative z-10 w-full max-w-sm bg-card rounded-3xl p-8 shadow-2xl animate-fade-in">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold font-display text-foreground">
+            {isRegister ? t.register : t.login}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isRegister ? 'Crie sua conta para começar' : 'Entre na sua conta'}
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <input
@@ -87,7 +92,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl btn-glow text-primary-foreground font-semibold disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold disabled:opacity-50 hover:brightness-110 transition-all"
           >
             {loading ? '...' : isRegister ? t.register : t.login}
           </button>
