@@ -65,6 +65,11 @@ export default {
           green: "hsl(var(--glow-green))",
           pink: "hsl(var(--glow-pink))",
         },
+        landing: {
+          hero: "hsl(var(--landing-hero))",
+          accent: "hsl(var(--landing-accent))",
+          "accent-foreground": "hsl(var(--landing-accent-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
