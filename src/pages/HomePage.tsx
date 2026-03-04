@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { KeyRound, Users, FolderKanban, FileText, Clock, Receipt } from 'lucide-react';
+import { KeyRound, Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 const HomePage = () => {
@@ -44,23 +44,23 @@ const HomePage = () => {
       desc: isPt ? 'Gere faturas profissionais e acompanhe seus pagamentos' : 'Generate professional invoices and track payments',
       path: '/dashboard/invoices',
     },
+    {
+      icon: SquareKanban,
+      label: isPt ? 'Kanban & Tarefas' : 'Kanban & Tasks',
+      desc: isPt ? 'Gerencie tarefas em formato visual com drag & drop' : 'Manage tasks visually with drag & drop',
+      path: '/dashboard/kanban',
+    },
   ];
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto relative z-10">
       <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3 leading-tight whitespace-pre-line">
-          {isPt ? 'Plataforma de Serviços\npara Freelancers' : 'Service Platform\nfor Freelancers'}
+        <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3 leading-tight">
+          {isPt ? 'Bem-vindo à sua\nPlataforma' : 'Welcome to your\nPlatform'}
         </h1>
         <p className="text-muted-foreground text-lg max-w-lg">
           {t.heroSubtitle}
         </p>
-        <button
-          onClick={() => navigate('/dashboard/passwords')}
-          className="mt-5 px-6 py-3 rounded-full btn-glow text-primary-foreground font-semibold"
-        >
-          {isPt ? 'Gerencie tudo em um só lugar' : 'Manage everything in one place'}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -68,16 +68,21 @@ const HomePage = () => {
           <button
             key={card.path}
             onClick={() => navigate(card.path)}
-            className="glass group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+            className="group glass rounded-2xl p-6 text-left transition-all duration-300 hover:-translate-y-1"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
-                <card.icon className="w-6 h-6 text-foreground" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                <card.icon className="w-6 h-6 text-primary" />
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 flex-1">
                 <span className="text-lg font-bold font-display text-foreground">{card.label}</span>
                 <span className="text-sm text-muted-foreground leading-snug">{card.desc}</span>
               </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                {isPt ? 'Acessar' : 'Open'} <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
             </div>
           </button>
         ))}

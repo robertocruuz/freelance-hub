@@ -47,9 +47,11 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Tab header */}
+      {/* Tab header - bold blue */}
       <header className="relative z-20 tab-header px-6 pt-3 pb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold font-display tracking-tight">Logo</h2>
+        <h2 className="text-lg font-bold font-display tracking-tight">
+          Logo<span className="text-accent">*</span>
+        </h2>
 
         <nav className="flex items-center gap-1 px-2 py-1.5 rounded-2xl bg-white/10">
           {navItems.map((item) => {
@@ -61,14 +63,14 @@ const DashboardLayout = () => {
                     onClick={() => navigate(item.path)}
                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'text-current opacity-60 hover:opacity-100 hover:bg-white/10'
+                        ? 'bg-accent text-accent-foreground shadow-md'
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <item.icon className="w-[18px] h-[18px]" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="glass text-foreground border-none">{labelMap[item.key](t)}</TooltipContent>
+                <TooltipContent className="bg-card text-card-foreground border-border">{labelMap[item.key](t)}</TooltipContent>
               </Tooltip>
             );
           })}
@@ -77,25 +79,25 @@ const DashboardLayout = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition text-white"
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
           <button
             onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-            className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold"
+            className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold text-white"
           >
             {lang === 'pt-BR' ? 'PT' : 'EN'}
           </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center">
+              <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center text-white">
                 <User className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 glass border-none">
+            <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem>
                 <User className="w-4 h-4 mr-2" /> {t.profile}
               </DropdownMenuItem>
