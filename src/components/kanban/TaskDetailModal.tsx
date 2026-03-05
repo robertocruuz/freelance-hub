@@ -39,6 +39,7 @@ const taskTypes = [
 ];
 
 export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, kanban }: TaskDetailModalProps) => {
+  const navigate = useNavigate();
   const { clients } = useClients();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
