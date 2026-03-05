@@ -368,8 +368,58 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </TabsContent>
           </Tabs>
 
-          {/* Delete button */}
-          <div className="pt-4 border-t border-border">
+          {/* Integration actions */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ações rápidas</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (task.project_id) params.set('project', task.project_id);
+                  params.set('desc', task.title);
+                  params.set('task_id', task.id);
+                  onClose();
+                  navigate(`/dashboard/time?${params.toString()}`);
+                }}
+              >
+                <Play className="w-3.5 h-3.5" /> Iniciar Timer
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  params.set('from_task', task.id);
+                  params.set('desc', task.title);
+                  params.set('value', String(task.real_value || task.estimated_value || 0));
+                  if (task.client_id) params.set('client', task.client_id);
+                  onClose();
+                  navigate(`/dashboard/invoices?${params.toString()}`);
+                }}
+              >
+                <Receipt className="w-3.5 h-3.5" /> Gerar Fatura
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  params.set('from_task', task.id);
+                  params.set('desc', task.title);
+                  params.set('value', String(task.estimated_value || 0));
+                  if (task.client_id) params.set('client', task.client_id);
+                  onClose();
+                  navigate(`/dashboard/budgets?${params.toString()}`);
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" /> Gerar Orçamento
+              </Button>
+            </div>
             <Button variant="destructive" size="sm" onClick={() => { onDelete(task.id); onClose(); }} className="text-xs">
               <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir tarefa
             </Button>

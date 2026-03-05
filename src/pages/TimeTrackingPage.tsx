@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +43,7 @@ const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 const TimeTrackingPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [running, setRunning] = useState(false);
   const [startTime, setStartTime] = useState(0);
@@ -58,6 +60,7 @@ const TimeTrackingPage = () => {
   const [editEndTime, setEditEndTime] = useState('');
   const { clients } = useClients();
   const intervalRef = useRef<number>();
+  const prefillApplied = useRef(false);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -77,6 +80,25 @@ const TimeTrackingPage = () => {
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
+
+  // Pre-fill from Kanban integration
+  useEffect(() => {
+    if (prefillApplied.current) return;
+    const desc = searchParams.get('desc');
+    const project = searchParams.get('project');
+    if (desc || project) {
+      prefillApplied.current = true;
+      if (desc) setDescription(desc);
+      if (project) setProjectId(project);
+      // Auto-start timer
+      setStartTime(Date.now());
+      setElapsed(0);
+      setRunning(true);
+      // Clear params
+      setSearchParams({}, { replace: true });
+      toast.success('Timer iniciado a partir da tarefa!');
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (running) {
@@ -160,7 +182,7 @@ const TimeTrackingPage = () => {
   };
 
   // Navigation
-  const navigate = (dir: number) => {
+  const navigateDate = (dir: number) => {
     const d = new Date(selectedDate);
     if (viewMode === 'daily') d.setDate(d.getDate() + dir);
     else if (viewMode === 'weekly') d.setDate(d.getDate() + dir * 7);
@@ -282,16 +304,16 @@ const TimeTrackingPage = () => {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+          <button onClick={() => navigateDate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
           <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span className="capitalize">{dateLabel()}</span>
           </button>
-          <button onClick={() => navigate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={() => navigateDate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
         </div>
       </div>
 
-      {/* Daily view: clean list */}
+      {/* Daily view */}
       {viewMode === 'daily' && (
         <div className="space-y-2">
           {filteredEntries.length === 0 ? (
@@ -320,7 +342,7 @@ const TimeTrackingPage = () => {
         </div>
       )}
 
-      {/* Weekly view: compact grid */}
+      {/* Weekly view */}
       {viewMode === 'weekly' && (
         <div className="rounded-3xl glass overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border">
@@ -359,7 +381,7 @@ const TimeTrackingPage = () => {
         </div>
       )}
 
-      {/* Monthly view: calendar grid */}
+      {/* Monthly view */}
       {viewMode === 'monthly' && (
         <div className="rounded-3xl glass overflow-hidden">
           <div className="grid grid-cols-7 text-center border-b border-border">
@@ -368,7 +390,6 @@ const TimeTrackingPage = () => {
             ))}
           </div>
           <div className="grid grid-cols-7">
-            {/* Empty cells before month starts */}
             {Array.from({ length: monthStart.getDay() }, (_, i) => (
               <div key={`empty-${i}`} className="p-2 min-h-[70px] border-t border-l first:border-l-0 border-border/30" />
             ))}
@@ -391,7 +412,9 @@ const TimeTrackingPage = () => {
                       {dayEntries.slice(0, 3).map((_, i) => (
                         <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
                       ))}
-                      {dayEntries.length > 3 && <span className="text-[9px] text-muted-foreground">+{dayEntries.length - 3}</span>}
+                      {dayEntries.length > 3 && (
+                        <span className="text-[8px] text-muted-foreground">+{dayEntries.length - 3}</span>
+                      )}
                     </div>
                   )}
                 </button>
@@ -402,36 +425,50 @@ const TimeTrackingPage = () => {
       )}
 
       {/* Edit dialog */}
-      <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
-        <DialogContent className="glass border-border">
+      <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{t.editEntry}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground">{t.description}</label>
-              <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">{t.project}</label>
-              <select value={editProjectId} onChange={(e) => setEditProjectId(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none">
-                <option value="">{t.project}</option>
-                {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
+          <div className="space-y-3 mt-2">
+            <input
+              placeholder={t.description}
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <select
+              value={editProjectId}
+              onChange={(e) => setEditProjectId(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">{t.project}</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}</select>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground">Início</label>
-                <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+                <label className="text-xs text-muted-foreground mb-1 block">Início</label>
+                <input
+                  type="time"
+                  value={editStartTime}
+                  onChange={(e) => setEditStartTime(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Fim</label>
-                <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg glass-input text-foreground text-sm focus:outline-none" />
+                <label className="text-xs text-muted-foreground mb-1 block">Fim</label>
+                <input
+                  type="time"
+                  value={editEndTime}
+                  onChange={(e) => setEditEndTime(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setEditingEntry(null)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveEdit} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setEditingEntry(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
+              <button onClick={saveEdit} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
             </div>
           </div>
         </DialogContent>

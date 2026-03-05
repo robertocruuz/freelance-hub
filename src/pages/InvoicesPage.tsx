@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Receipt, Download } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
@@ -38,6 +39,7 @@ const statusColors: Record<string, string> = {
 const InvoicesPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
   const [clientId, setClientId] = useState('');
@@ -69,6 +71,21 @@ const InvoicesPage = () => {
   }, [user, clients]);
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
+  // Pre-fill from Kanban integration
+  useEffect(() => {
+    const fromTask = searchParams.get('from_task');
+    if (fromTask) {
+      const desc = searchParams.get('desc') || '';
+      const value = parseFloat(searchParams.get('value') || '0');
+      const client = searchParams.get('client') || '';
+      setItems([{ description: desc, quantity: 1, unitPrice: value }]);
+      if (client) setClientId(client);
+      setCreating(true);
+      setSearchParams({}, { replace: true });
+      toast.info('Fatura pré-preenchida a partir da tarefa!');
+    }
+  }, [searchParams, setSearchParams]);
 
   const addItem = () => setItems((prev) => [...prev, { description: '', quantity: 1, unitPrice: 0 }]);
   const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
