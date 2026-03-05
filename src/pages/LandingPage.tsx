@@ -105,7 +105,7 @@ const LandingPage = () => {
           </svg>
 
           <div className="text-center max-w-5xl animate-fade-in">
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-display text-white leading-[0.9] tracking-tight">
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter">
               {lang === 'pt-BR' ? (
                 <>
                   <span className="text-landing-accent">#</span>PLATAFORMA
