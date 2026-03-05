@@ -107,7 +107,7 @@ const ProjectsPage = () => {
 
       {showForm && (
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
-          <h2 className="text-lg font-bold font-display text-foreground">
+          <h2 className="text-lg font-bold text-foreground">
             {editingId ? t.editProject : t.newProject}
           </h2>
           <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />

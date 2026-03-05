@@ -264,7 +264,7 @@ const TimeTrackingPage = () => {
         </div>
         <div className="p-4 rounded-2xl glass text-center hidden sm:block">
           <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
         </div>
       </div>
 
