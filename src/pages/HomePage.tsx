@@ -75,7 +75,7 @@ const HomePage = () => {
                 <card.icon className="w-6 h-6 text-primary" />
               </div>
               <div className="flex flex-col gap-1 flex-1">
-                <span className="text-lg font-bold font-display text-foreground">{card.label}</span>
+                <span className="text-lg font-bold text-foreground">{card.label}</span>
                 <span className="text-sm text-muted-foreground leading-snug">{card.desc}</span>
               </div>
             </div>

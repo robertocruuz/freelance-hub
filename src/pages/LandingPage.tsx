@@ -177,7 +177,7 @@ const LandingPage = () => {
                   <f.icon className="w-7 h-7 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold font-display text-foreground text-xl">{f.title}</h3>
+                  <h3 className="font-bold text-foreground text-xl">{f.title}</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.desc}</p>
                 </div>
                 <div className="mt-auto pt-2">
