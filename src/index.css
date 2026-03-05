@@ -227,7 +227,6 @@
   .tab-header {
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    border-radius: 0 0 1.25rem 1.25rem;
   }
 
   .dark .tab-header {
