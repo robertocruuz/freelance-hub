@@ -48,7 +48,7 @@ const LandingPage = () => {
       <section className="relative landing-hero-bg min-h-[85vh] flex flex-col">
         {/* Header */}
         <header className="relative z-20 flex items-center justify-between px-6 md:px-12 py-5">
-          <h2 className="text-xl font-bold font-display tracking-tight text-white">
+          <h2 className="text-xl font-extrabold tracking-tight text-white">
             Logo<span className="text-landing-accent">*</span>
           </h2>
           <nav className="hidden md:flex items-center gap-1">
