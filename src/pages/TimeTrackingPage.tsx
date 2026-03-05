@@ -260,7 +260,7 @@ const TimeTrackingPage = () => {
         </div>
         <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
         </div>
         <div className="p-4 rounded-2xl glass text-center hidden sm:block">
           <p className="text-xs text-muted-foreground">{t.billable}</p>
