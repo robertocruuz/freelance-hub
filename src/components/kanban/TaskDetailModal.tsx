@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText } from 'lucide-react';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
 import { useClients, Client } from '@/hooks/useClients';
 import { Input } from '@/components/ui/input';
