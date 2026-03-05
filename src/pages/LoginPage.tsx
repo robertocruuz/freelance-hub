@@ -46,7 +46,7 @@ const LoginPage = () => {
     <div className="min-h-screen landing-hero-bg flex items-center justify-center px-4">
       <div className="relative z-10 w-full max-w-sm bg-card rounded-3xl p-8 shadow-2xl animate-fade-in">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold font-display text-foreground">
+          <h2 className="text-2xl font-bold text-foreground">
             {isRegister ? t.register : t.login}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">

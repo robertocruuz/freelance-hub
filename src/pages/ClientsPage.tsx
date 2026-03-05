@@ -94,7 +94,7 @@ const ClientsPage = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display">{t.clients}</h1>
+        <h1 className="text-2xl font-bold">{t.clients}</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" /> {t.newClient}
         </button>

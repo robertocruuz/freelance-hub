@@ -48,7 +48,7 @@ const LandingPage = () => {
       <section className="relative landing-hero-bg min-h-[85vh] flex flex-col">
         {/* Header */}
         <header className="relative z-20 flex items-center justify-between px-6 md:px-12 py-5">
-          <h2 className="text-xl font-bold font-display tracking-tight text-white">
+          <h2 className="text-xl font-extrabold tracking-tight text-white">
             Logo<span className="text-landing-accent">*</span>
           </h2>
           <nav className="hidden md:flex items-center gap-1">
@@ -105,7 +105,7 @@ const LandingPage = () => {
           </svg>
 
           <div className="text-center max-w-5xl animate-fade-in">
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-display text-white leading-[0.9] tracking-tight">
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter">
               {lang === 'pt-BR' ? (
                 <>
                   <span className="text-landing-accent">#</span>PLATAFORMA
@@ -157,7 +157,7 @@ const LandingPage = () => {
       {/* Features Section - Light cards */}
       <section className="relative z-10 bg-background px-6 md:px-12 py-16 md:py-24">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-display text-foreground text-center mb-4">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-foreground text-center mb-4">
             {lang === 'pt-BR' ? 'Tudo que você precisa' : 'Everything you need'}
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto">
@@ -177,7 +177,7 @@ const LandingPage = () => {
                   <f.icon className="w-7 h-7 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold font-display text-foreground text-xl">{f.title}</h3>
+                  <h3 className="font-bold text-foreground text-xl">{f.title}</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.desc}</p>
                 </div>
                 <div className="mt-auto pt-2">

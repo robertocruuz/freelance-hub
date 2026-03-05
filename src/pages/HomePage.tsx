@@ -55,7 +55,7 @@ const HomePage = () => {
   return (
     <div className="max-w-5xl mx-auto relative z-10">
       <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-display text-foreground mb-3 leading-tight">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-3 leading-tight">
           {isPt ? 'Bem-vindo à sua\nPlataforma' : 'Welcome to your\nPlatform'}
         </h1>
         <p className="text-muted-foreground text-lg max-w-lg">
@@ -75,7 +75,7 @@ const HomePage = () => {
                 <card.icon className="w-6 h-6 text-primary" />
               </div>
               <div className="flex flex-col gap-1 flex-1">
-                <span className="text-lg font-bold font-display text-foreground">{card.label}</span>
+                <span className="text-lg font-bold text-foreground">{card.label}</span>
                 <span className="text-sm text-muted-foreground leading-snug">{card.desc}</span>
               </div>
             </div>

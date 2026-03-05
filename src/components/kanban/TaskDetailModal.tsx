@@ -132,7 +132,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={saveTitle}
-              className="text-xl font-display font-bold bg-transparent border-none outline-none w-full text-foreground"
+              className="text-xl font-bold bg-transparent border-none outline-none w-full text-foreground"
             />
             <div className="flex items-center gap-2 mt-2">
               <Select value={task.column_id || ''} onValueChange={(v) => onUpdate(task.id, { column_id: v })}>

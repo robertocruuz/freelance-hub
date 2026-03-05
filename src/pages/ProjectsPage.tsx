@@ -89,7 +89,7 @@ const ProjectsPage = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-display text-foreground">{t.projects}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{t.projects}</h1>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
@@ -107,7 +107,7 @@ const ProjectsPage = () => {
 
       {showForm && (
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
-          <h2 className="text-lg font-bold font-display text-foreground">
+          <h2 className="text-lg font-bold text-foreground">
             {editingId ? t.editProject : t.newProject}
           </h2>
           <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />

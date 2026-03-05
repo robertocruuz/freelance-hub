@@ -256,15 +256,15 @@ const TimeTrackingPage = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(todayTotal)}</p>
+          <p className="text-xl font-bold text-foreground">{formatDuration(todayTotal)}</p>
         </div>
         <div className="p-4 rounded-2xl glass text-center">
           <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
         </div>
         <div className="p-4 rounded-2xl glass text-center hidden sm:block">
           <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold font-display text-foreground">{formatDuration(totalFiltered)}</p>
+          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
         </div>
       </div>
 
