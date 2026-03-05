@@ -157,7 +157,7 @@ const LandingPage = () => {
       {/* Features Section - Light cards */}
       <section className="relative z-10 bg-background px-6 md:px-12 py-16 md:py-24">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-display text-foreground text-center mb-4">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-foreground text-center mb-4">
             {lang === 'pt-BR' ? 'Tudo que você precisa' : 'Everything you need'}
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto">
