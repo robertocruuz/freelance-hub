@@ -112,10 +112,12 @@ const TimeTrackingPage = () => {
     if (prefillApplied.current) return;
     const desc = searchParams.get('desc');
     const project = searchParams.get('project');
-    if (desc || project) {
+    const task = searchParams.get('task');
+    if (desc || project || task) {
       prefillApplied.current = true;
       if (desc) setDescription(desc);
       if (project) setProjectId(project);
+      if (task) setTaskId(task);
       // Auto-start timer
       setStartTime(Date.now());
       setElapsed(0);
