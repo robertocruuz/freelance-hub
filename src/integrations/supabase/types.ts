@@ -53,6 +53,13 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "projects_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: true
+            referencedRelation: "budgets"
+            referencedColumns: ["id"]
+          },
         ]
       }
       clients: {
@@ -233,6 +240,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          budget_id: string | null
           client_id: string | null
           created_at: string
           hourly_rate: number
@@ -242,6 +250,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          budget_id?: string | null
           client_id?: string | null
           created_at?: string
           hourly_rate?: number
@@ -251,6 +260,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          budget_id?: string | null
           client_id?: string | null
           created_at?: string
           hourly_rate?: number

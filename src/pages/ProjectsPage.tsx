@@ -13,6 +13,7 @@ interface Project {
   client_id: string | null;
   hourly_rate: number;
   created_at: string;
+  budget_id?: string | null;
 }
 
 const ProjectsPage = () => {
@@ -145,6 +146,11 @@ const ProjectsPage = () => {
                 <p className="font-semibold text-foreground">{p.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {clientName(p.client_id)} · R$ {p.hourly_rate.toFixed(2)}/h
+                  {p.budget_id && (
+                    <span className="ml-2 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                      Origem: Orçamento
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="flex gap-2">
