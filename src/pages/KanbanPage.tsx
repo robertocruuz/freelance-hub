@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -29,6 +30,7 @@ const KanbanPage = () => {
   const kanban = useKanban();
   const { clients } = useClients();
   const { columns, tasks, loading } = kanban;
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [view, setView] = useState<ViewMode>('kanban');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -38,6 +40,27 @@ const KanbanPage = () => {
   const [filterClient, setFilterClient] = useState('all');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
+
+  // Create task from budget item
+  useEffect(() => {
+    const fromBudget = searchParams.get('from_budget');
+    if (fromBudget && columns.length > 0) {
+      const title = searchParams.get('title') || 'Nova tarefa';
+      const value = parseFloat(searchParams.get('value') || '0');
+      const clientId = searchParams.get('client') || undefined;
+      const firstColumn = columns.sort((a, b) => a.position - b.position)[0];
+      kanban.addTask(firstColumn.id, title).then((newTask) => {
+        if (newTask) {
+          kanban.updateTask(newTask.id, {
+            estimated_value: value,
+            client_id: clientId || null,
+            description: `Criado a partir de item de orçamento — Valor: R$ ${value.toFixed(2)}`,
+          });
+        }
+      });
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, columns]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })

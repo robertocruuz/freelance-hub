@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, ListPlus } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,8 +45,10 @@ const statusColors: Record<string, string> = {
 const BudgetsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [expandedBudget, setExpandedBudget] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
@@ -169,6 +171,16 @@ const BudgetsPage = () => {
     });
   };
 
+  const createTaskFromItem = (item: BudgetItem, budget: Budget) => {
+    const params = new URLSearchParams({
+      from_budget: 'true',
+      title: item.description,
+      value: String(item.quantity * item.unitPrice),
+      ...(budget.client_id ? { client: budget.client_id } : {}),
+    });
+    navigate(`/dashboard/kanban?${params.toString()}`);
+  };
+
   const isFormOpen = creating || editingId;
 
   return (
@@ -214,38 +226,70 @@ const BudgetsPage = () => {
       ) : (
         <div className="space-y-2">
           {budgets.map((b) => (
-            <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+            <div key={b.id} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between p-4">
+                <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
+                  <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedBudget === b.id ? 'rotate-90' : ''}`} />
+                  <div>
+                    <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
+                    <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+                  </div>
+                </button>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="focus:outline-none">
+                        <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
+                          {statusLabel(b.status)}
+                          <ChevronDown className="w-3 h-3" />
+                        </Badge>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {statuses.map((s) => (
+                        <DropdownMenuItem
+                          key={s}
+                          onClick={() => changeStatus(b.id, s)}
+                          className={b.status === s ? 'font-bold' : ''}
+                        >
+                          {statusLabel(s)}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
+                  <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="focus:outline-none">
-                      <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
-                        {statusLabel(b.status)}
-                        <ChevronDown className="w-3 h-3" />
-                      </Badge>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {statuses.map((s) => (
-                      <DropdownMenuItem
-                        key={s}
-                        onClick={() => changeStatus(b.id, s)}
-                        className={b.status === s ? 'font-bold' : ''}
+              {expandedBudget === b.id && b.items.length > 0 && (
+                <div className="border-t border-border px-4 pb-3 pt-2 space-y-1">
+                  <div className="grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
+                    <span>{t.description}</span>
+                    <span className="text-center">{t.quantity}</span>
+                    <span className="text-right">{t.unitPrice}</span>
+                    <span className="text-right">Subtotal</span>
+                    <span></span>
+                  </div>
+                  {b.items.map((item, idx) => (
+                    <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
+                      <span className="text-foreground truncate">{item.description || '—'}</span>
+                      <span className="text-center text-muted-foreground">{item.quantity}</span>
+                      <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
+                      <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                      <button
+                        onClick={() => createTaskFromItem(item, b)}
+                        className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
+                        title="Criar tarefa no Kanban"
                       >
-                        {statusLabel(s)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
-              </div>
+                        <ListPlus className="w-3.5 h-3.5" />
+                        Tarefa
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
