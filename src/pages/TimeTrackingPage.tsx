@@ -194,10 +194,11 @@ const TimeTrackingPage = () => {
     const { error } = await supabase.from('time_entries').update({
       description: editDesc || null,
       project_id: editProjectId || null,
+      task_id: editTaskId || null,
       start_time: newStart.toISOString(),
       end_time: newEnd?.toISOString() || null,
       duration,
-    }).eq('id', editingEntry.id);
+    } as any).eq('id', editingEntry.id);
 
     if (error) toast.error(error.message);
     else {
