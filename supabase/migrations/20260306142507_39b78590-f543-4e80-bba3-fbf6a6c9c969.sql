@@ -1,0 +1,1 @@
+ALTER TABLE public.time_entries ADD COLUMN task_id uuid REFERENCES public.tasks(id) ON DELETE SET NULL;

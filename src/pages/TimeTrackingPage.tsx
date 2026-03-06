@@ -20,9 +20,17 @@ interface Project {
   hourly_rate: number;
 }
 
+interface KanbanTask {
+  id: string;
+  title: string;
+  project_id: string | null;
+  column_id: string | null;
+}
+
 interface TimeEntry {
   id: string;
   project_id: string | null;
+  task_id: string | null;
   description: string | null;
   start_time: string;
   end_time: string | null;
@@ -50,12 +58,15 @@ const TimeTrackingPage = () => {
   const [elapsed, setElapsed] = useState(0);
   const [description, setDescription] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editProjectId, setEditProjectId] = useState('');
+  const [editTaskId, setEditTaskId] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const { clients } = useClients();
@@ -68,6 +79,15 @@ const TimeTrackingPage = () => {
     if (data) setProjects(data);
   }, [user]);
 
+  const loadKanbanTasks = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('tasks')
+      .select('id, title, project_id, column_id')
+      .order('title');
+    if (data) setKanbanTasks(data);
+  }, [user]);
+
   const loadEntries = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -75,21 +95,29 @@ const TimeTrackingPage = () => {
       .select('*')
       .order('start_time', { ascending: false })
       .limit(200);
-    if (data) setEntries(data);
+    if (data) setEntries(data as TimeEntry[]);
   }, [user]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
+  useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
+
+  // Filter tasks by selected project
+  const filteredTasks = projectId
+    ? kanbanTasks.filter(t => t.project_id === projectId)
+    : kanbanTasks;
 
   // Pre-fill from Kanban integration
   useEffect(() => {
     if (prefillApplied.current) return;
     const desc = searchParams.get('desc');
     const project = searchParams.get('project');
-    if (desc || project) {
+    const task = searchParams.get('task');
+    if (desc || project || task) {
       prefillApplied.current = true;
       if (desc) setDescription(desc);
       if (project) setProjectId(project);
+      if (task) setTaskId(task);
       // Auto-start timer
       setStartTime(Date.now());
       setElapsed(0);
@@ -125,15 +153,17 @@ const TimeTrackingPage = () => {
     const { error } = await supabase.from('time_entries').insert({
       user_id: user.id,
       project_id: projectId || null,
+      task_id: taskId || null,
       description: description || null,
       start_time: start.toISOString(),
       end_time: end.toISOString(),
       duration,
-    });
+    } as any);
     if (error) toast.error(error.message);
     else {
       setElapsed(0);
       setDescription('');
+      setTaskId('');
       loadEntries();
     }
   };
@@ -147,6 +177,7 @@ const TimeTrackingPage = () => {
     setEditingEntry(entry);
     setEditDesc(entry.description || '');
     setEditProjectId(entry.project_id || '');
+    setEditTaskId(entry.task_id || '');
     setEditStartTime(new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
     setEditEndTime(entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '');
   };
@@ -163,10 +194,11 @@ const TimeTrackingPage = () => {
     const { error } = await supabase.from('time_entries').update({
       description: editDesc || null,
       project_id: editProjectId || null,
+      task_id: editTaskId || null,
       start_time: newStart.toISOString(),
       end_time: newEnd?.toISOString() || null,
       duration,
-    }).eq('id', editingEntry.id);
+    } as any).eq('id', editingEntry.id);
 
     if (error) toast.error(error.message);
     else {
@@ -180,6 +212,16 @@ const TimeTrackingPage = () => {
     const p = projects.find(pr => pr.id === pid);
     return p?.name || '';
   };
+
+  const getTaskName = (tid: string | null) => {
+    if (!tid) return '';
+    const t = kanbanTasks.find(tk => tk.id === tid);
+    return t?.title || '';
+  };
+
+  const editFilteredTasks = editProjectId
+    ? kanbanTasks.filter(t => t.project_id === editProjectId)
+    : kanbanTasks;
 
   // Navigation
   const navigateDate = (dir: number) => {
@@ -247,8 +289,8 @@ const TimeTrackingPage = () => {
         />
         <select
           value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          className="w-52 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
+          onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
+          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
         >
           <option value="">{t.project}</option>
           {projects.map((p) => {
@@ -259,6 +301,23 @@ const TimeTrackingPage = () => {
               </option>
             );
           })}
+        </select>
+        <select
+          value={taskId}
+          onChange={(e) => {
+            setTaskId(e.target.value);
+            // Auto-fill project from task if not set
+            if (e.target.value && !projectId) {
+              const task = kanbanTasks.find(t => t.id === e.target.value);
+              if (task?.project_id) setProjectId(task.project_id);
+            }
+          }}
+          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
+        >
+          <option value="">Tarefa</option>
+          {filteredTasks.map((t) => (
+            <option key={t.id} value={t.id}>{t.title}</option>
+          ))}
         </select>
         <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
           {formatDuration(elapsed)}
@@ -326,7 +385,7 @@ const TimeTrackingPage = () => {
               <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
                 <div className="flex-1 min-w-0">
                   <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+                  <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ') || t.project}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground text-xs">
@@ -367,7 +426,7 @@ const TimeTrackingPage = () => {
                 <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ')} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
@@ -439,13 +498,24 @@ const TimeTrackingPage = () => {
             />
             <select
               value={editProjectId}
-              onChange={(e) => setEditProjectId(e.target.value)}
+              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">{t.project}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
-              ))}</select>
+              ))}
+            </select>
+            <select
+              value={editTaskId}
+              onChange={(e) => setEditTaskId(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Tarefa</option>
+              {editFilteredTasks.map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Início</label>

@@ -563,6 +563,7 @@ export type Database = {
           id: string
           project_id: string | null
           start_time: string
+          task_id: string | null
           user_id: string
         }
         Insert: {
@@ -573,6 +574,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           start_time: string
+          task_id?: string | null
           user_id: string
         }
         Update: {
@@ -583,6 +585,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           start_time?: string
+          task_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -591,6 +594,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
