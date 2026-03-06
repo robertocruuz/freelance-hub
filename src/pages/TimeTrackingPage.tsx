@@ -385,7 +385,7 @@ const TimeTrackingPage = () => {
               <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
                 <div className="flex-1 min-w-0">
                   <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id) || t.project}</p>
+                  <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ') || t.project}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground text-xs">
