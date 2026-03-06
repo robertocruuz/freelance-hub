@@ -294,7 +294,6 @@ const BudgetsPage = () => {
           ))}
         </div>
       )}
-      )}
     </div>
   );
 };
