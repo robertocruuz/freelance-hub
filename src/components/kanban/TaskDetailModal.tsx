@@ -380,7 +380,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   const params = new URLSearchParams();
                   if (task.project_id) params.set('project', task.project_id);
                   params.set('desc', task.title);
-                  params.set('task_id', task.id);
+                  params.set('task', task.id);
                   onClose();
                   navigate(`/dashboard/time?${params.toString()}`);
                 }}
