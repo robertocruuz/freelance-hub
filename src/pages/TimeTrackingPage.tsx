@@ -79,6 +79,15 @@ const TimeTrackingPage = () => {
     if (data) setProjects(data);
   }, [user]);
 
+  const loadKanbanTasks = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('tasks')
+      .select('id, title, project_id, column_id')
+      .order('title');
+    if (data) setKanbanTasks(data);
+  }, [user]);
+
   const loadEntries = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -86,11 +95,17 @@ const TimeTrackingPage = () => {
       .select('*')
       .order('start_time', { ascending: false })
       .limit(200);
-    if (data) setEntries(data);
+    if (data) setEntries(data as TimeEntry[]);
   }, [user]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
+  useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
+
+  // Filter tasks by selected project
+  const filteredTasks = projectId
+    ? kanbanTasks.filter(t => t.project_id === projectId)
+    : kanbanTasks;
 
   // Pre-fill from Kanban integration
   useEffect(() => {
