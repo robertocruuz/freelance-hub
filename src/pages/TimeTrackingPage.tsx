@@ -177,6 +177,7 @@ const TimeTrackingPage = () => {
     setEditingEntry(entry);
     setEditDesc(entry.description || '');
     setEditProjectId(entry.project_id || '');
+    setEditTaskId(entry.task_id || '');
     setEditStartTime(new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
     setEditEndTime(entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '');
   };
