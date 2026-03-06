@@ -153,15 +153,17 @@ const TimeTrackingPage = () => {
     const { error } = await supabase.from('time_entries').insert({
       user_id: user.id,
       project_id: projectId || null,
+      task_id: taskId || null,
       description: description || null,
       start_time: start.toISOString(),
       end_time: end.toISOString(),
       duration,
-    });
+    } as any);
     if (error) toast.error(error.message);
     else {
       setElapsed(0);
       setDescription('');
+      setTaskId('');
       loadEntries();
     }
   };
