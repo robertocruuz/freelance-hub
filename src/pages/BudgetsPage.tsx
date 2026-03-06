@@ -171,6 +171,16 @@ const BudgetsPage = () => {
     });
   };
 
+  const createTaskFromItem = (item: BudgetItem, budget: Budget) => {
+    const params = new URLSearchParams({
+      from_budget: 'true',
+      title: item.description,
+      value: String(item.quantity * item.unitPrice),
+      ...(budget.client_id ? { client: budget.client_id } : {}),
+    });
+    navigate(`/dashboard/kanban?${params.toString()}`);
+  };
+
   const isFormOpen = creating || editingId;
 
   return (
