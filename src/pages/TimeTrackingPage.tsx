@@ -426,7 +426,7 @@ const TimeTrackingPage = () => {
                 <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{getProjectName(entry.project_id)} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ')} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
