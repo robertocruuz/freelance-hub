@@ -20,9 +20,17 @@ interface Project {
   hourly_rate: number;
 }
 
+interface KanbanTask {
+  id: string;
+  title: string;
+  project_id: string | null;
+  column_id: string | null;
+}
+
 interface TimeEntry {
   id: string;
   project_id: string | null;
+  task_id: string | null;
   description: string | null;
   start_time: string;
   end_time: string | null;
