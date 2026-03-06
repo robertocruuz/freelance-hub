@@ -45,8 +45,10 @@ const statusColors: Record<string, string> = {
 const BudgetsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [expandedBudget, setExpandedBudget] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
