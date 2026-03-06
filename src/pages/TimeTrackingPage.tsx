@@ -498,13 +498,24 @@ const TimeTrackingPage = () => {
             />
             <select
               value={editProjectId}
-              onChange={(e) => setEditProjectId(e.target.value)}
+              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">{t.project}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
-              ))}</select>
+              ))}
+            </select>
+            <select
+              value={editTaskId}
+              onChange={(e) => setEditTaskId(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Tarefa</option>
+              {editFilteredTasks.map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Início</label>
