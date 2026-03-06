@@ -213,6 +213,16 @@ const TimeTrackingPage = () => {
     return p?.name || '';
   };
 
+  const getTaskName = (tid: string | null) => {
+    if (!tid) return '';
+    const t = kanbanTasks.find(tk => tk.id === tid);
+    return t?.title || '';
+  };
+
+  const editFilteredTasks = editProjectId
+    ? kanbanTasks.filter(t => t.project_id === editProjectId)
+    : kanbanTasks;
+
   // Navigation
   const navigateDate = (dir: number) => {
     const d = new Date(selectedDate);
