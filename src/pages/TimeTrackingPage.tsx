@@ -58,12 +58,15 @@ const TimeTrackingPage = () => {
   const [elapsed, setElapsed] = useState(0);
   const [description, setDescription] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editProjectId, setEditProjectId] = useState('');
+  const [editTaskId, setEditTaskId] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const { clients } = useClients();
