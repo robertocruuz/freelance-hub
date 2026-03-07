@@ -1,11 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ClientSelect from '@/components/ClientSelect';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ProjectItem {
   id: string;
@@ -19,6 +25,21 @@ interface Project {
   id: string;
   name: string;
   client_id: string | null;
+  created_at: string;
+}
+
+interface BudgetItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+interface Budget {
+  id: string;
+  client_id: string | null;
+  items: BudgetItem[];
+  total: number;
+  status: string;
   created_at: string;
 }
 
@@ -40,6 +61,11 @@ const ProjectsPage = () => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [itemName, setItemName] = useState('');
   const [itemValue, setItemValue] = useState('');
+
+  // Budget import state
+  const [importProjectId, setImportProjectId] = useState<string | null>(null);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [loadingBudgets, setLoadingBudgets] = useState(false);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -148,11 +174,64 @@ const ProjectsPage = () => {
     }
   };
 
+  // Budget import
+  const openImportModal = async (project: Project) => {
+    setImportProjectId(project.id);
+    setLoadingBudgets(true);
+    const query = supabase.from('budgets').select('*').order('created_at', { ascending: false });
+    if (project.client_id) {
+      query.eq('client_id', project.client_id);
+    }
+    const { data } = await query;
+    if (data) {
+      setBudgets(data.map(b => ({
+        ...b,
+        items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
+      })));
+    }
+    setLoadingBudgets(false);
+  };
+
+  const importBudgetItem = async (item: BudgetItem) => {
+    if (!importProjectId) return;
+    const currentItems = projectItems[importProjectId] || [];
+    const { error } = await supabase.from('project_items').insert({
+      project_id: importProjectId,
+      name: item.description,
+      value: item.quantity * item.unitPrice,
+      position: currentItems.length,
+    });
+    if (error) return toast.error(error.message);
+    toast.success(`"${item.description}" importado!`);
+    loadItems(importProjectId);
+  };
+
+  const importAllBudgetItems = async (budget: Budget) => {
+    if (!importProjectId) return;
+    const currentItems = projectItems[importProjectId] || [];
+    const inserts = budget.items.map((item, idx) => ({
+      project_id: importProjectId,
+      name: item.description,
+      value: item.quantity * item.unitPrice,
+      position: currentItems.length + idx,
+    }));
+    const { error } = await supabase.from('project_items').insert(inserts);
+    if (error) return toast.error(error.message);
+    toast.success(`${budget.items.length} itens importados!`);
+    loadItems(importProjectId);
+    setImportProjectId(null);
+  };
+
   const clientName = (id: string | null) => clients.find(c => c.id === id)?.name || '-';
 
   const getProjectTotal = (projectId: string) => {
     const items = projectItems[projectId] || [];
     return items.reduce((sum, item) => sum + item.value, 0);
+  };
+
+  const statusLabel = (s: string) => {
+    const map: Record<string, string> = { draft: 'Rascunho', sent: 'Enviado', approved: 'Aprovado', rejected: 'Recusado' };
+    return map[s] || s;
   };
 
   const filtered = projects.filter(p =>
@@ -301,12 +380,20 @@ const ProjectsPage = () => {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
-                        className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline pt-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> {t.addItem}
-                      </button>
+                      <div className="flex items-center gap-3 pt-1">
+                        <button
+                          onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
+                          className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> {t.addItem}
+                        </button>
+                        <button
+                          onClick={() => openImportModal(p)}
+                          className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Importar do orçamento
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -315,6 +402,61 @@ const ProjectsPage = () => {
           })}
         </div>
       )}
+
+      {/* Import from budget modal */}
+      <Dialog open={!!importProjectId} onOpenChange={(open) => { if (!open) setImportProjectId(null); }}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Importar itens do orçamento</DialogTitle>
+          </DialogHeader>
+          {loadingBudgets ? (
+            <p className="text-sm text-muted-foreground py-4">Carregando orçamentos...</p>
+          ) : budgets.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum orçamento encontrado para este cliente.</p>
+          ) : (
+            <div className="space-y-4">
+              {budgets.map(b => (
+                <div key={b.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="flex items-center justify-between p-3 bg-muted/30">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {clientName(b.client_id)} · R$ {b.total.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(b.created_at).toLocaleDateString()} · {statusLabel(b.status)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => importAllBudgetItems(b)}
+                      className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
+                    >
+                      Importar todos
+                    </button>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {b.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between px-3 py-2">
+                        <div>
+                          <p className="text-sm text-foreground">{item.description || '—'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => importBudgetItem(item)}
+                          className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
+                        >
+                          Importar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
