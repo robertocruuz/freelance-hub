@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText } from 'lucide-react';
+import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
 import { useClients, Client } from '@/hooks/useClients';
 import { Input } from '@/components/ui/input';
@@ -49,10 +50,36 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const [newComment, setNewComment] = useState('');
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTitles, setNewItemTitles] = useState<Record<string, string>>({});
+  const [totalTrackedSeconds, setTotalTrackedSeconds] = useState(0);
 
   useEffect(() => {
     loadDetails();
+    loadTrackedTime();
   }, [task.id]);
+
+  const loadTrackedTime = async () => {
+    const { data } = await supabase
+      .from('time_entries')
+      .select('duration, start_time, end_time')
+      .eq('task_id', task.id);
+    if (data) {
+      const total = data.reduce((acc, entry) => {
+        if (entry.duration) return acc + entry.duration;
+        if (entry.start_time && entry.end_time) {
+          return acc + Math.floor((new Date(entry.end_time).getTime() - new Date(entry.start_time).getTime()) / 1000);
+        }
+        return acc;
+      }, 0);
+      setTotalTrackedSeconds(total);
+    }
+  };
+
+  const formatTrackedTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h ${m}min`;
+    return `${m}min`;
+  };
 
   const loadDetails = async () => {
     const [cl, cm, al] = await Promise.all([
@@ -206,6 +233,20 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo estimado (h)</label>
               <Input type="number" value={task.estimated_time || ''} onChange={(e) => onUpdate(task.id, { estimated_time: e.target.value ? parseInt(e.target.value) : null })} className="h-9 text-sm glass-input" />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo registrado</label>
+              <div className="h-9 flex items-center gap-1.5 px-3 rounded-md bg-secondary/50 border border-border text-sm">
+                <Timer className="w-3.5 h-3.5 text-primary" />
+                <span className={totalTrackedSeconds > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}>
+                  {totalTrackedSeconds > 0 ? formatTrackedTime(totalTrackedSeconds) : 'Nenhum'}
+                </span>
+                {task.estimated_time && totalTrackedSeconds > 0 && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    ({Math.round((totalTrackedSeconds / 3600 / task.estimated_time) * 100)}%)
+                  </span>
+                )}
+              </div>
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Complexidade</label>
