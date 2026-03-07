@@ -208,9 +208,8 @@ const ClientsPage = () => {
                 </h2>
                 <div className="space-y-1.5">
                   {details.projects.map(p => (
-                    <div key={p.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                    <div key={p.id} className="p-3 rounded-xl border border-border bg-card text-sm">
                       <span className="font-medium">{p.name}</span>
-                      <span className="text-muted-foreground">R$ {p.hourly_rate}/h</span>
                     </div>
                   ))}
                 </div>

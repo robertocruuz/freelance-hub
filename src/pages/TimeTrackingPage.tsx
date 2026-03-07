@@ -296,7 +296,7 @@ const TimeTrackingPage = () => {
             const client = clients.find(c => c.id === p.client_id);
             return (
               <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
+                {p.name}{client ? ` (${client.name})` : ''}
               </option>
             );
           })}
