@@ -17,7 +17,7 @@ interface Client {
 }
 
 interface ClientDetails {
-  projects: { id: string; name: string; hourly_rate: number }[];
+  projects: { id: string; name: string }[];
   tasks: { id: string; title: string; status: string; priority: string; column_id: string | null }[];
   timeEntries: { id: string; description: string | null; duration: number | null; project_id: string | null; start_time: string }[];
   invoices: { id: string; total: number; status: string; created_at: string }[];
@@ -108,7 +108,7 @@ const ClientsPage = () => {
   const loadClientDetails = useCallback(async (clientId: string) => {
     setLoadingDetails(true);
     const [projectsRes, tasksRes, invoicesRes, budgetsRes] = await Promise.all([
-      supabase.from('projects').select('id, name, hourly_rate').eq('client_id', clientId),
+      supabase.from('projects').select('id, name').eq('client_id', clientId),
       supabase.from('tasks').select('id, title, status, priority, column_id').eq('client_id', clientId),
       supabase.from('invoices').select('id, total, status, created_at').eq('client_id', clientId).order('created_at', { ascending: false }),
       supabase.from('budgets').select('id, total, status, created_at').eq('client_id', clientId).order('created_at', { ascending: false }),
@@ -208,9 +208,8 @@ const ClientsPage = () => {
                 </h2>
                 <div className="space-y-1.5">
                   {details.projects.map(p => (
-                    <div key={p.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                    <div key={p.id} className="p-3 rounded-xl border border-border bg-card text-sm">
                       <span className="font-medium">{p.name}</span>
-                      <span className="text-muted-foreground">R$ {p.hourly_rate}/h</span>
                     </div>
                   ))}
                 </div>

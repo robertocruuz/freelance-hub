@@ -17,7 +17,6 @@ interface Project {
   id: string;
   name: string;
   client_id: string | null;
-  hourly_rate: number;
 }
 
 interface KanbanTask {
@@ -297,7 +296,7 @@ const TimeTrackingPage = () => {
             const client = clients.find(c => c.id === p.client_id);
             return (
               <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''} · R${p.hourly_rate}/h
+                {p.name}{client ? ` (${client.name})` : ''}
               </option>
             );
           })}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, FolderKanban } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -7,11 +7,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ClientSelect from '@/components/ClientSelect';
 
+interface ProjectItem {
+  id: string;
+  project_id: string;
+  name: string;
+  value: number;
+  position: number;
+}
+
 interface Project {
   id: string;
   name: string;
   client_id: string | null;
-  hourly_rate: number;
   created_at: string;
 }
 
@@ -20,12 +27,19 @@ const ProjectsPage = () => {
   const { user } = useAuth();
   const { clients } = useClients();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [projectItems, setProjectItems] = useState<Record<string, ProjectItem[]>>({});
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
-  const [hourlyRate, setHourlyRate] = useState('');
   const [search, setSearch] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Item form state
+  const [showItemForm, setShowItemForm] = useState<string | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [itemName, setItemName] = useState('');
+  const [itemValue, setItemValue] = useState('');
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -33,14 +47,31 @@ const ProjectsPage = () => {
     if (data) setProjects(data);
   }, [user]);
 
+  const loadItems = useCallback(async (projectId: string) => {
+    const { data } = await supabase
+      .from('project_items')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('position');
+    if (data) {
+      setProjectItems(prev => ({ ...prev, [projectId]: data }));
+    }
+  }, []);
+
   useEffect(() => { loadProjects(); }, [loadProjects]);
 
   const resetForm = () => {
     setName('');
     setClientId('');
-    setHourlyRate('');
     setEditingId(null);
     setShowForm(false);
+  };
+
+  const resetItemForm = () => {
+    setItemName('');
+    setItemValue('');
+    setEditingItemId(null);
+    setShowItemForm(null);
   };
 
   const handleSave = async () => {
@@ -49,7 +80,6 @@ const ProjectsPage = () => {
       user_id: user.id,
       name: name.trim(),
       client_id: clientId || null,
-      hourly_rate: parseFloat(hourlyRate) || 0,
     };
 
     if (editingId) {
@@ -67,7 +97,6 @@ const ProjectsPage = () => {
     setEditingId(p.id);
     setName(p.name);
     setClientId(p.client_id || '');
-    setHourlyRate(String(p.hourly_rate));
     setShowForm(true);
   };
 
@@ -77,7 +106,54 @@ const ProjectsPage = () => {
     else loadProjects();
   };
 
+  const handleSaveItem = async (projectId: string) => {
+    if (!itemName.trim()) return;
+    const payload = {
+      project_id: projectId,
+      name: itemName.trim(),
+      value: parseFloat(itemValue) || 0,
+      position: (projectItems[projectId]?.length || 0),
+    };
+
+    if (editingItemId) {
+      const { error } = await supabase.from('project_items').update({ name: payload.name, value: payload.value }).eq('id', editingItemId);
+      if (error) return toast.error(error.message);
+    } else {
+      const { error } = await supabase.from('project_items').insert(payload);
+      if (error) return toast.error(error.message);
+    }
+    resetItemForm();
+    loadItems(projectId);
+  };
+
+  const handleEditItem = (item: ProjectItem) => {
+    setEditingItemId(item.id);
+    setItemName(item.name);
+    setItemValue(String(item.value));
+    setShowItemForm(item.project_id);
+  };
+
+  const handleDeleteItem = async (item: ProjectItem) => {
+    const { error } = await supabase.from('project_items').delete().eq('id', item.id);
+    if (error) toast.error(error.message);
+    else loadItems(item.project_id);
+  };
+
+  const toggleExpand = (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(id);
+      if (!projectItems[id]) loadItems(id);
+    }
+  };
+
   const clientName = (id: string | null) => clients.find(c => c.id === id)?.name || '-';
+
+  const getProjectTotal = (projectId: string) => {
+    const items = projectItems[projectId] || [];
+    return items.reduce((sum, item) => sum + item.value, 0);
+  };
 
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -112,15 +188,6 @@ const ProjectsPage = () => {
           </h2>
           <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
           <ClientSelect value={clientId} onChange={setClientId} />
-          <input
-            placeholder={t.hourlyRate}
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourlyRate}
-            onChange={e => setHourlyRate(e.target.value)}
-            className={inputClass}
-          />
           <div className="flex gap-2">
             <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
               {t.save}
@@ -139,24 +206,113 @@ const ProjectsPage = () => {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(p => (
-            <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-              <div>
-                <p className="font-semibold text-foreground">{p.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {clientName(p.client_id)} · R$ {p.hourly_rate.toFixed(2)}/h
-                </p>
+          {filtered.map(p => {
+            const isExpanded = expandedId === p.id;
+            const items = projectItems[p.id] || [];
+            const total = getProjectTotal(p.id);
+
+            return (
+              <div key={p.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                {/* Project header */}
+                <div className="flex items-center justify-between p-4">
+                  <button
+                    onClick={() => toggleExpand(p.id)}
+                    className="flex items-center gap-2 flex-1 text-left"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <FolderKanban className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="font-semibold text-foreground">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {clientName(p.client_id)}
+                        {isExpanded && items.length > 0 && (
+                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}</>
+                        )}
+                      </p>
+                    </div>
+                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
+                      <Pencil className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Items list */}
+                {isExpanded && (
+                  <div className="border-t border-border px-4 pb-4 pt-3 space-y-2">
+                    {items.length === 0 && (
+                      <p className="text-xs text-muted-foreground py-2">Nenhum item neste projeto.</p>
+                    )}
+                    {items.map(item => (
+                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
+                          <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                          <button onClick={() => handleDeleteItem(item)} className="p-1 rounded hover:bg-destructive/10 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add/edit item form */}
+                    {showItemForm === p.id ? (
+                      <div className="flex gap-2 items-end pt-1">
+                        <input
+                          placeholder="Nome do item"
+                          value={itemName}
+                          onChange={e => setItemName(e.target.value)}
+                          className={inputClass + " flex-1"}
+                        />
+                        <input
+                          placeholder="Valor (R$)"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={itemValue}
+                          onChange={e => setItemValue(e.target.value)}
+                          className={inputClass + " w-32"}
+                        />
+                        <button
+                          onClick={() => handleSaveItem(p.id)}
+                          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm whitespace-nowrap"
+                        >
+                          {t.save}
+                        </button>
+                        <button
+                          onClick={resetItemForm}
+                          className="px-4 py-2 rounded-lg bg-muted text-muted-foreground font-semibold text-sm"
+                        >
+                          {t.cancel}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
+                        className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline pt-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> {t.addItem}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
-                  <Pencil className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

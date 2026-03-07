@@ -89,6 +89,8 @@ const translations = {
     editProject: 'Editar Projeto',
     projectName: 'Nome do projeto',
     hourlyRate: 'Valor hora (R$)',
+    projectItem: 'Item do projeto',
+    projectItemValue: 'Valor do item',
     noProjects: 'Nenhum projeto cadastrado ainda.',
     // Time views
     dailyView: 'Diário',
@@ -180,6 +182,8 @@ const translations = {
     editProject: 'Edit Project',
     projectName: 'Project name',
     hourlyRate: 'Hourly rate',
+    projectItem: 'Project item',
+    projectItemValue: 'Item value',
     noProjects: 'No projects registered yet.',
     // Time views
     dailyView: 'Daily',
