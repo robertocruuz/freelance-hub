@@ -192,6 +192,28 @@ const BudgetsPage = () => {
     navigate(`/dashboard/kanban?${params.toString()}`);
   };
 
+  const openProjectPicker = async (item: BudgetItem, budget: Budget) => {
+    setProjectPickerItem({ item, budget });
+    const query = supabase.from('projects').select('id, name, client_id').order('name');
+    if (budget.client_id) query.eq('client_id', budget.client_id);
+    const { data } = await query;
+    setAvailableProjects((data || []) as ProjectOption[]);
+  };
+
+  const addItemToProject = async (projectId: string) => {
+    if (!projectPickerItem) return;
+    const { item } = projectPickerItem;
+    const { error } = await supabase.from('project_items').insert({
+      project_id: projectId,
+      name: item.description,
+      value: item.quantity * item.unitPrice,
+      position: 0,
+    });
+    if (error) return toast.error(error.message);
+    toast.success(`"${item.description}" adicionado ao projeto!`);
+    setProjectPickerItem(null);
+  };
+
   const isFormOpen = creating || editingId;
 
   return (
