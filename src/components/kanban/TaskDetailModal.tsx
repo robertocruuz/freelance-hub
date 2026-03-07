@@ -54,7 +54,32 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
 
   useEffect(() => {
     loadDetails();
+    loadTrackedTime();
   }, [task.id]);
+
+  const loadTrackedTime = async () => {
+    const { data } = await supabase
+      .from('time_entries')
+      .select('duration, start_time, end_time')
+      .eq('task_id', task.id);
+    if (data) {
+      const total = data.reduce((acc, entry) => {
+        if (entry.duration) return acc + entry.duration;
+        if (entry.start_time && entry.end_time) {
+          return acc + Math.floor((new Date(entry.end_time).getTime() - new Date(entry.start_time).getTime()) / 1000);
+        }
+        return acc;
+      }, 0);
+      setTotalTrackedSeconds(total);
+    }
+  };
+
+  const formatTrackedTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h ${m}min`;
+    return `${m}min`;
+  };
 
   const loadDetails = async () => {
     const [cl, cm, al] = await Promise.all([
