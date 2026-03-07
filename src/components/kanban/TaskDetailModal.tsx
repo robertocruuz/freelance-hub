@@ -50,6 +50,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const [newComment, setNewComment] = useState('');
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTitles, setNewItemTitles] = useState<Record<string, string>>({});
+  const [totalTrackedSeconds, setTotalTrackedSeconds] = useState(0);
 
   useEffect(() => {
     loadDetails();
