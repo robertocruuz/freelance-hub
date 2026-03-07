@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, ListPlus } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, ListPlus, FolderKanban } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +16,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface BudgetItem {
   description: string;
@@ -54,6 +60,11 @@ const BudgetsPage = () => {
   const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<BudgetItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
   const { clients } = useClients();
+
+  // Project import state
+  interface ProjectOption { id: string; name: string; client_id: string | null; }
+  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem; budget: Budget } | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
@@ -181,6 +192,28 @@ const BudgetsPage = () => {
     navigate(`/dashboard/kanban?${params.toString()}`);
   };
 
+  const openProjectPicker = async (item: BudgetItem, budget: Budget) => {
+    setProjectPickerItem({ item, budget });
+    const query = supabase.from('projects').select('id, name, client_id').order('name');
+    if (budget.client_id) query.eq('client_id', budget.client_id);
+    const { data } = await query;
+    setAvailableProjects((data || []) as ProjectOption[]);
+  };
+
+  const addItemToProject = async (projectId: string) => {
+    if (!projectPickerItem) return;
+    const { item } = projectPickerItem;
+    const { error } = await supabase.from('project_items').insert({
+      project_id: projectId,
+      name: item.description,
+      value: item.quantity * item.unitPrice,
+      position: 0,
+    });
+    if (error) return toast.error(error.message);
+    toast.success(`"${item.description}" adicionado ao projeto!`);
+    setProjectPickerItem(null);
+  };
+
   const isFormOpen = creating || editingId;
 
   return (
@@ -278,14 +311,24 @@ const BudgetsPage = () => {
                       <span className="text-center text-muted-foreground">{item.quantity}</span>
                       <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
                       <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
-                      <button
-                        onClick={() => createTaskFromItem(item, b)}
-                        className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
-                        title="Criar tarefa no Kanban"
-                      >
-                        <ListPlus className="w-3.5 h-3.5" />
-                        Tarefa
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => createTaskFromItem(item, b)}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
+                          title="Criar tarefa no Kanban"
+                        >
+                          <ListPlus className="w-3.5 h-3.5" />
+                          Tarefa
+                        </button>
+                        <button
+                          onClick={() => openProjectPicker(item, b)}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
+                          title="Adicionar ao projeto"
+                        >
+                          <FolderKanban className="w-3.5 h-3.5" />
+                          Projeto
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -294,6 +337,31 @@ const BudgetsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Project picker modal */}
+      <Dialog open={!!projectPickerItem} onOpenChange={(open) => { if (!open) setProjectPickerItem(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Selecionar projeto</DialogTitle>
+          </DialogHeader>
+          {availableProjects.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum projeto encontrado para este cliente.</p>
+          ) : (
+            <div className="space-y-2">
+              {availableProjects.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => addItemToProject(p.id)}
+                  className="w-full flex items-center gap-2 p-3 rounded-xl border border-border bg-card hover:bg-accent text-left transition-colors"
+                >
+                  <FolderKanban className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">{p.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
