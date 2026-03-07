@@ -329,6 +329,7 @@ const BudgetsPage = () => {
                           Projeto
                         </button>
                       </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -336,6 +337,31 @@ const BudgetsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Project picker modal */}
+      <Dialog open={!!projectPickerItem} onOpenChange={(open) => { if (!open) setProjectPickerItem(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Selecionar projeto</DialogTitle>
+          </DialogHeader>
+          {availableProjects.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum projeto encontrado para este cliente.</p>
+          ) : (
+            <div className="space-y-2">
+              {availableProjects.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => addItemToProject(p.id)}
+                  className="w-full flex items-center gap-2 p-3 rounded-xl border border-border bg-card hover:bg-accent text-left transition-colors"
+                >
+                  <FolderKanban className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">{p.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
