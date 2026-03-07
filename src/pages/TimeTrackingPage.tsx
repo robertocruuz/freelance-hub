@@ -17,7 +17,6 @@ interface Project {
   id: string;
   name: string;
   client_id: string | null;
-  hourly_rate: number;
 }
 
 interface KanbanTask {
