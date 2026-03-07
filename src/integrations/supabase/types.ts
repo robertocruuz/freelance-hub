@@ -231,11 +231,45 @@ export type Database = {
         }
         Relationships: []
       }
+      project_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+          project_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          project_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          project_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           client_id: string | null
           created_at: string
-          hourly_rate: number
           id: string
           name: string
           updated_at: string
@@ -244,7 +278,6 @@ export type Database = {
         Insert: {
           client_id?: string | null
           created_at?: string
-          hourly_rate?: number
           id?: string
           name: string
           updated_at?: string
@@ -253,7 +286,6 @@ export type Database = {
         Update: {
           client_id?: string | null
           created_at?: string
-          hourly_rate?: number
           id?: string
           name?: string
           updated_at?: string
