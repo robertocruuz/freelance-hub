@@ -235,6 +235,20 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               <Input type="number" value={task.estimated_time || ''} onChange={(e) => onUpdate(task.id, { estimated_time: e.target.value ? parseInt(e.target.value) : null })} className="h-9 text-sm glass-input" />
             </div>
             <div>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo registrado</label>
+              <div className="h-9 flex items-center gap-1.5 px-3 rounded-md bg-secondary/50 border border-border text-sm">
+                <Timer className="w-3.5 h-3.5 text-primary" />
+                <span className={totalTrackedSeconds > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}>
+                  {totalTrackedSeconds > 0 ? formatTrackedTime(totalTrackedSeconds) : 'Nenhum'}
+                </span>
+                {task.estimated_time && totalTrackedSeconds > 0 && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    ({Math.round((totalTrackedSeconds / 3600 / task.estimated_time) * 100)}%)
+                  </span>
+                )}
+              </div>
+            </div>
+            <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Complexidade</label>
               <Select value={String(task.complexity)} onValueChange={(v) => onUpdate(task.id, { complexity: parseInt(v) })}>
                 <SelectTrigger className="h-9 text-sm glass-input"><SelectValue /></SelectTrigger>
