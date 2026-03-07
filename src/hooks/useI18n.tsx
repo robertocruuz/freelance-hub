@@ -182,6 +182,8 @@ const translations = {
     editProject: 'Edit Project',
     projectName: 'Project name',
     hourlyRate: 'Hourly rate',
+    projectItem: 'Project item',
+    projectItemValue: 'Item value',
     noProjects: 'No projects registered yet.',
     // Time views
     dailyView: 'Daily',
