@@ -37,6 +37,7 @@ interface BudgetItem {
 
 interface Budget {
   id: string;
+  name: string | null;
   client_id: string | null;
   items: BudgetItem[];
   total: number;
