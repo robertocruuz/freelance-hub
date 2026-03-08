@@ -750,7 +750,7 @@ const TimeTrackingPage = () => {
                           <div
                             key={i}
                             className="h-1.5 rounded-full"
-                            style={{ width: '16px', backgroundColor: getProjectColor(e.project_id) }}
+                            style={{ width: '16px', backgroundColor: getProjectColor(e.project_id, e.client_id) }}
                           />
                         ))}
                       </div>
