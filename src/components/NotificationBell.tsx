@@ -99,6 +99,12 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const deleteAllNotifications = async () => {
+    if (!user) return;
+    await supabase.from('notifications').delete().eq('user_id', user.id);
+    setNotifications([]);
+  };
+
   const timeAgo = (date: string) => {
     return formatDistanceToNow(new Date(date), {
       addSuffix: true,
@@ -216,6 +222,22 @@ const NotificationBell = () => {
             </div>
           )}
         </ScrollArea>
+
+        {/* Footer */}
+        {notifications.length > 0 && (
+          <>
+            <Separator />
+            <div className="px-4 py-2.5 flex justify-center">
+              <button
+                onClick={deleteAllNotifications}
+                className="text-xs text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {isPt ? 'Limpar todas' : 'Clear all'}
+              </button>
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );
