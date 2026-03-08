@@ -48,6 +48,7 @@ const ProjectsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectItems, setProjectItems] = useState<Record<string, ProjectItem[]>>({});
   const [showForm, setShowForm] = useState(false);
