@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
