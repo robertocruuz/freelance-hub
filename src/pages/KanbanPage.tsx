@@ -251,383 +251,376 @@ const KanbanPage = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col gap-2 mb-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar tarefas..."
-              className="pl-9 h-9 text-sm glass-input"
-            />
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar tarefas..."
+            className="pl-9 h-9 text-sm glass-input"
+          />
+        </div>
+
+        <Button
+          variant={showFilters || activeFilterCount > 0 ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className={`h-9 gap-1.5 text-xs ${showFilters || activeFilterCount > 0 ? 'btn-glow' : 'glass-input'}`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          Filtros
+          {activeFilterCount > 0 && (
+            <span className="ml-0.5 w-5 h-5 rounded-full bg-primary-foreground/20 text-[10px] flex items-center justify-center font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+          <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+        </Button>
+
+        {/* Active filter pills inline */}
+        {!showFilters && activeFilterCount > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {Array.from(filterPriorities).map(p => (
+              <Badge key={p} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p)}>
+                {p === 'urgent' ? 'Urgente' : p === 'high' ? 'Alta' : p === 'medium' ? 'Média' : 'Baixa'}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
+            {Array.from(filterClients).map(id => (
+              <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterClients, setFilterClients, id)}>
+                {clients.find(c => c.id === id)?.name || 'Cliente'}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
+            {Array.from(filterProjects).map(id => (
+              <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterProjects, setFilterProjects, id)}>
+                {projects.find(p => p.id === id)?.name || 'Projeto'}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
+            {Array.from(filterTypes).map(type => (
+              <Badge key={type} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}>
+                {type}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
+            {Array.from(filterDeadlines).map(d => {
+              const labels: Record<string, string> = { overdue: 'Atrasadas', today: 'Hoje', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
+              return (
+                <Badge key={d} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d)}>
+                  {labels[d] || d}
+                  <X className="w-3 h-3" />
+                </Badge>
+              );
+            })}
+            {filterDeadlineDate && (
+              <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterDeadlineDate(undefined)}>
+                {format(filterDeadlineDate, "dd/MM/yyyy")}
+                <X className="w-3 h-3" />
+              </Badge>
+            )}
+            {Array.from(filterComplexities).map(c => (
+              <Badge key={`c-${c}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterComplexities(prev => { const n = new Set(prev); n.delete(c); return n; })}>
+                Complexidade {c}
+                <X className="w-3 h-3" />
+              </Badge>
+            ))}
+            {Array.from(filterEstimatedTime).map(t => {
+              const labels: Record<string, string> = { none: 'Sem estimativa', short: '≤ 2h', medium: '2h–8h', long: '> 8h' };
+              return (
+                <Badge key={`et-${t}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t)}>
+                  {labels[t] || t}
+                  <X className="w-3 h-3" />
+                </Badge>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5 ml-auto">
+          <button
+            onClick={() => setView('kanban')}
+            className={`p-1.5 rounded-lg transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setView('list')}
+            className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Collapsible filter panel */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          showFilters ? 'max-h-[600px] opacity-100 mb-4' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="glass-card rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-foreground">Filtros e ordenação</span>
+              <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                {filteredTasks.length} de {tasks.length} tarefas
+              </span>
+            </div>
+            {activeFilterCount > 0 && (
+              <button
+                onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); setFilterComplexities(new Set()); setFilterEstimatedTime(new Set()); setSortBy('position'); }}
+                className="text-[11px] text-primary hover:text-primary/80 font-medium transition"
+              >
+                Limpar tudo
+              </button>
+            )}
           </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={activeFilterCount > 0 ? "default" : "outline"} size="sm" className={`h-9 gap-1.5 text-xs ${activeFilterCount > 0 ? 'btn-glow' : 'glass-input'}`}>
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                Filtros
-                {activeFilterCount > 0 && (
-                  <span className="ml-0.5 w-5 h-5 rounded-full bg-primary-foreground/20 text-[10px] flex items-center justify-center font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0" align="start">
-              <div className="p-3 border-b border-border flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground">Filtros</span>
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); setFilterComplexities(new Set()); setFilterEstimatedTime(new Set()); }}
-                    className="text-xs text-primary hover:text-primary/80 font-medium transition"
-                  >
-                    Limpar tudo
-                  </button>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Priority */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Flag className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Prioridade</span>
+                {filterPriorities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterPriorities.size}</span>}
               </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: 'urgent', label: 'Urgente', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                  { value: 'high', label: 'Alta', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+                  { value: 'medium', label: 'Média', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800' },
+                  { value: 'low', label: 'Baixa', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
+                ].map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p.value)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterPriorities.has(p.value)
+                        ? `${p.color} shadow-sm ring-1 ring-current/20`
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <div className="p-3 space-y-4">
-                {/* Priority - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Flag className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Prioridade</span>
-                    {filterPriorities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterPriorities.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { value: 'urgent', label: 'Urgente', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
-                      { value: 'high', label: 'Alta', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
-                      { value: 'medium', label: 'Média', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800' },
-                      { value: 'low', label: 'Baixa', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
-                    ].map((p) => (
-                      <button
-                        key={p.value}
-                        onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p.value)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterPriorities.has(p.value)
-                            ? `${p.color} shadow-sm ring-1 ring-current/20`
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {/* Client */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <User className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Cliente</span>
+                {filterClients.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterClients.size}</span>}
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
+                {clients.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => toggleFilter(filterClients, setFilterClients, c.id)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterClients.has(c.id)
+                        ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+                {clients.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum cliente</span>}
+              </div>
+            </div>
 
-                {/* Client - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <User className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Cliente</span>
-                    {filterClients.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterClients.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                    {clients.map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => toggleFilter(filterClients, setFilterClients, c.id)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterClients.has(c.id)
-                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {c.name}
-                      </button>
-                    ))}
-                    {clients.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum cliente</span>}
-                  </div>
-                </div>
+            {/* Project */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <FolderOpen className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Projeto</span>
+                {filterProjects.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterProjects.size}</span>}
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
+                {projects.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => toggleFilter(filterProjects, setFilterProjects, p.id)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterProjects.has(p.id)
+                        ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+                {projects.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum projeto</span>}
+              </div>
+            </div>
 
-                {/* Project - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <FolderOpen className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Projeto</span>
-                    {filterProjects.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterProjects.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                    {projects.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => toggleFilter(filterProjects, setFilterProjects, p.id)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterProjects.has(p.id)
-                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {p.name}
-                      </button>
-                    ))}
-                    {projects.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum projeto</span>}
-                  </div>
-                </div>
-
-                {/* Type - chip toggle */}
-                {taskTypes.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Tag className="w-3.5 h-3.5" />
-                      <span className="text-[11px] font-semibold uppercase tracking-wider">Tipo</span>
-                      {filterTypes.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterTypes.size}</span>}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {taskTypes.map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                            filterTypes.has(type)
-                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                              : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                          }`}
-                        >
-                          {type}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            {/* Deadline */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Prazo</span>
+                {(filterDeadlines.size > 0 || filterDeadlineDate) && <span className="text-[10px] text-primary ml-auto">{filterDeadlines.size + (filterDeadlineDate ? 1 : 0)}</span>}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                  { value: 'today', label: 'Hoje', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
+                  { value: 'this_week', label: 'Semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                  { value: 'this_month', label: 'Mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
+                  { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                ].map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d.value)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterDeadlines.has(d.value)
+                        ? `${d.color} shadow-sm ring-1 ring-current/20`
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
+                className={`w-full px-2 py-1 rounded-md text-[11px] font-medium border transition-all flex items-center gap-1.5 justify-center ${
+                  filterDeadlineDate
+                    ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                    : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                }`}
+              >
+                <CalendarDays className="w-3 h-3" />
+                {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data específica'}
+                {filterDeadlineDate && (
+                  <X className="w-3 h-3 ml-auto hover:text-destructive" onClick={(e) => { e.stopPropagation(); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }} />
                 )}
+              </button>
+              {showDeadlineCalendar && (
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <Calendar
+                    mode="single"
+                    selected={filterDeadlineDate}
+                    onSelect={(date) => { setFilterDeadlineDate(date); setShowDeadlineCalendar(false); }}
+                    locale={ptBR}
+                    className="p-2 pointer-events-auto"
+                  />
+                </div>
+              )}
+            </div>
 
-                {/* Deadline - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Prazo</span>
-                    {filterDeadlines.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterDeadlines.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
-                      { value: 'today', label: 'Hoje', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
-                      { value: 'this_week', label: 'Esta semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
-                      { value: 'this_month', label: 'Este mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
-                      { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
-                    ].map((d) => (
-                      <button
-                        key={d.value}
-                        onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d.value)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterDeadlines.has(d.value)
-                            ? `${d.color} shadow-sm ring-1 ring-current/20`
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {d.label}
-                      </button>
-                    ))}
-                   </div>
-
-                  {/* Date picker toggle */}
-                  <div className="mt-2">
+            {/* Type */}
+            {taskTypes.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Tag className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider">Tipo</span>
+                  {filterTypes.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterTypes.size}</span>}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {taskTypes.map((type) => (
                     <button
-                      onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                      className={`w-full px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5 justify-center ${
-                        filterDeadlineDate
+                      key={type}
+                      onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                        filterTypes.has(type)
                           ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                           : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
                       }`}
                     >
-                      <CalendarDays className="w-3 h-3" />
-                      {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Escolher data específica'}
-                      {filterDeadlineDate && (
-                        <X
-                          className="w-3 h-3 ml-auto hover:text-destructive"
-                          onClick={(e) => { e.stopPropagation(); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
-                        />
-                      )}
+                      {type}
                     </button>
-                    {showDeadlineCalendar && (
-                      <div className="mt-2 border border-border rounded-lg overflow-hidden">
-                        <Calendar
-                          mode="single"
-                          selected={filterDeadlineDate}
-                          onSelect={(date) => { setFilterDeadlineDate(date); setShowDeadlineCalendar(false); }}
-                          locale={ptBR}
-                          className="p-2 pointer-events-auto"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Complexity - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Gauge className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Complexidade</span>
-                    {filterComplexities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterComplexities.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[1, 2, 3, 4, 5].map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => {
-                          setFilterComplexities(prev => {
-                            const next = new Set(prev);
-                            if (next.has(c)) next.delete(c); else next.add(c);
-                            return next;
-                          });
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterComplexities.has(c)
-                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Estimated Time - chip toggle */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Timer className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Tempo estimado</span>
-                    {filterEstimatedTime.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterEstimatedTime.size}</span>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { value: 'none', label: 'Sem estimativa', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
-                      { value: 'short', label: '≤ 2h', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
-                      { value: 'medium', label: '2h–8h', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
-                      { value: 'long', label: '> 8h', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
-                    ].map((t) => (
-                      <button
-                        key={t.value}
-                        onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t.value)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterEstimatedTime.has(t.value)
-                            ? `${t.color} shadow-sm ring-1 ring-current/20`
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
+            )}
 
-              {/* Sort + Result count */}
-              <div className="p-3 border-t border-border space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <ArrowUpDown className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Ordenar por</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { value: 'position', label: 'Posição' },
-                      { value: 'value_desc', label: 'Maior valor' },
-                      { value: 'value_asc', label: 'Menor valor' },
-                      { value: 'complexity_desc', label: 'Mais complexa' },
-                      { value: 'complexity_asc', label: 'Menos complexa' },
-                      { value: 'due_date', label: 'Prazo' },
-                    ].map((s) => (
-                      <button
-                        key={s.value}
-                        onClick={() => setSortBy(s.value)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          sortBy === s.value
-                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                        }`}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-muted/30 rounded-lg px-2 py-1.5">
-                  <span className="text-[11px] text-muted-foreground">
-                    {filteredTasks.length} de {tasks.length} tarefas
-                  </span>
-                </div>
+            {/* Complexity */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Gauge className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Complexidade</span>
+                {filterComplexities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterComplexities.size}</span>}
               </div>
-            </PopoverContent>
-          </Popover>
-
-          {/* Active filter pills inline */}
-          {activeFilterCount > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {Array.from(filterPriorities).map(p => (
-                <Badge key={p} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p)}>
-                  {p === 'urgent' ? 'Urgente' : p === 'high' ? 'Alta' : p === 'medium' ? 'Média' : 'Baixa'}
-                  <X className="w-3 h-3" />
-                </Badge>
-              ))}
-              {Array.from(filterClients).map(id => (
-                <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterClients, setFilterClients, id)}>
-                  {clients.find(c => c.id === id)?.name || 'Cliente'}
-                  <X className="w-3 h-3" />
-                </Badge>
-              ))}
-              {Array.from(filterProjects).map(id => (
-                <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterProjects, setFilterProjects, id)}>
-                  {projects.find(p => p.id === id)?.name || 'Projeto'}
-                  <X className="w-3 h-3" />
-                </Badge>
-              ))}
-              {Array.from(filterTypes).map(type => (
-                <Badge key={type} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}>
-                  {type}
-                  <X className="w-3 h-3" />
-                </Badge>
-              ))}
-              {Array.from(filterDeadlines).map(d => {
-                const labels: Record<string, string> = { overdue: 'Atrasadas', today: 'Hoje', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
-                return (
-                  <Badge key={d} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d)}>
-                    {labels[d] || d}
-                    <X className="w-3 h-3" />
-                  </Badge>
-                );
-              })}
-              {filterDeadlineDate && (
-                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterDeadlineDate(undefined)}>
-                  {format(filterDeadlineDate, "dd/MM/yyyy")}
-                  <X className="w-3 h-3" />
-                </Badge>
-              )}
-              {Array.from(filterComplexities).map(c => (
-                <Badge key={`c-${c}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterComplexities(prev => { const n = new Set(prev); n.delete(c); return n; })}>
-                  Complexidade {c}
-                  <X className="w-3 h-3" />
-                </Badge>
-              ))}
-              {Array.from(filterEstimatedTime).map(t => {
-                const labels: Record<string, string> = { none: 'Sem estimativa', short: '≤ 2h', medium: '2h–8h', long: '> 8h' };
-                return (
-                  <Badge key={`et-${t}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t)}>
-                    {labels[t] || t}
-                    <X className="w-3 h-3" />
-                  </Badge>
-                );
-              })}
+              <div className="flex flex-wrap gap-1.5">
+                {[1, 2, 3, 4, 5].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setFilterComplexities(prev => { const next = new Set(prev); if (next.has(c)) next.delete(c); else next.add(c); return next; })}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterComplexities.has(c)
+                        ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
 
-          <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5 ml-auto">
-            <button
-              onClick={() => setView('kanban')}
-              className={`p-1.5 rounded-lg transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setView('list')}
-              className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
-            >
-              <List className="w-4 h-4" />
-            </button>
+            {/* Estimated Time */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Timer className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Tempo estimado</span>
+                {filterEstimatedTime.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterEstimatedTime.size}</span>}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: 'none', label: 'Sem estimativa', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                  { value: 'short', label: '≤ 2h', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
+                  { value: 'medium', label: '2h–8h', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                  { value: 'long', label: '> 8h', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+                ].map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t.value)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      filterEstimatedTime.has(t.value)
+                        ? `${t.color} shadow-sm ring-1 ring-current/20`
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Ordenar por</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: 'position', label: 'Posição' },
+                  { value: 'value_desc', label: '↑ Valor' },
+                  { value: 'value_asc', label: '↓ Valor' },
+                  { value: 'complexity_desc', label: '↑ Complexa' },
+                  { value: 'complexity_asc', label: '↓ Complexa' },
+                  { value: 'due_date', label: 'Prazo' },
+                ].map((s) => (
+                  <button
+                    key={s.value}
+                    onClick={() => setSortBy(s.value)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      sortBy === s.value
+                        ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
