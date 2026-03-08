@@ -266,6 +266,7 @@ const TimeTrackingPage = () => {
     const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
     const { error } = await supabase.from('time_entries').insert({
       user_id: user.id,
+      client_id: clientId || null,
       project_id: projectId || null,
       task_id: taskId || null,
       description: description || null,
