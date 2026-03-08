@@ -23,7 +23,9 @@ import { Button } from '@/components/ui/button';
 
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { isThisWeek, isThisMonth, isPast } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { isThisWeek, isThisMonth, isPast, isSameDay, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -45,6 +47,8 @@ const KanbanPage = () => {
   const [filterProjects, setFilterProjects] = useState<Set<string>>(new Set());
   const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
   const [filterDeadlines, setFilterDeadlines] = useState<Set<string>>(new Set());
+  const [filterDeadlineDate, setFilterDeadlineDate] = useState<Date | undefined>(undefined);
+  const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -98,7 +102,7 @@ const KanbanPage = () => {
     });
   };
 
-  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size;
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0);
 
   // Unique task types
   const taskTypes = useMemo(() => {
@@ -108,6 +112,11 @@ const KanbanPage = () => {
 
   // Deadline filter helper
   const matchesDeadline = (task: Task): boolean => {
+    // Date-specific filter (AND with chip filters)
+    if (filterDeadlineDate && (!task.due_date || !isSameDay(new Date(task.due_date), filterDeadlineDate))) {
+      return false;
+    }
+    // Chip filters (OR between them)
     if (filterDeadlines.size === 0) return true;
     const hasNoDueDate = !task.due_date;
     const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
@@ -131,7 +140,7 @@ const KanbanPage = () => {
       if (!matchesDeadline(t)) return false;
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
@@ -240,7 +249,7 @@ const KanbanPage = () => {
                 <span className="text-sm font-semibold text-foreground">Filtros</span>
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); }}
+                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
                     className="text-xs text-primary hover:text-primary/80 font-medium transition"
                   >
                     Limpar tudo
@@ -380,6 +389,38 @@ const KanbanPage = () => {
                         {d.label}
                       </button>
                     ))}
+                   </div>
+
+                  {/* Date picker toggle */}
+                  <div className="mt-2">
+                    <button
+                      onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
+                      className={`w-full px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5 justify-center ${
+                        filterDeadlineDate
+                          ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                          : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                      }`}
+                    >
+                      <CalendarDays className="w-3 h-3" />
+                      {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Escolher data específica'}
+                      {filterDeadlineDate && (
+                        <X
+                          className="w-3 h-3 ml-auto hover:text-destructive"
+                          onClick={(e) => { e.stopPropagation(); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
+                        />
+                      )}
+                    </button>
+                    {showDeadlineCalendar && (
+                      <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                        <Calendar
+                          mode="single"
+                          selected={filterDeadlineDate}
+                          onSelect={(date) => { setFilterDeadlineDate(date); setShowDeadlineCalendar(false); }}
+                          locale={ptBR}
+                          className="p-2 pointer-events-auto"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -429,6 +470,12 @@ const KanbanPage = () => {
                   </Badge>
                 );
               })}
+              {filterDeadlineDate && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterDeadlineDate(undefined)}>
+                  {format(filterDeadlineDate, "dd/MM/yyyy")}
+                  <X className="w-3 h-3" />
+                </Badge>
+              )}
             </div>
           )}
 
