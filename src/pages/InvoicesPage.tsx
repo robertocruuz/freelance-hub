@@ -628,6 +628,10 @@ const InvoicesPage = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
+                      <Pencil className="w-4 h-4" />
+                      {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+                    </DropdownMenuItem>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
