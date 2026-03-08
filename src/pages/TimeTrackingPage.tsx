@@ -913,15 +913,21 @@ const TimeTrackingPage = () => {
         </div>
         <div className="flex items-center gap-2">
           {/* Time range selector */}
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-            className="px-3 py-1.5 rounded-lg border border-border text-sm text-foreground bg-card focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            <option value="daily">Dia</option>
-            <option value="weekly">Semana</option>
-            <option value="monthly">Mês</option>
-          </select>
+          <div className="flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5">
+            {([['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setTimeRange(value)}
+                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  timeRange === value
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           {/* View mode toggle */}
           <div className="flex items-center rounded-lg border border-border overflow-hidden">
             {([
