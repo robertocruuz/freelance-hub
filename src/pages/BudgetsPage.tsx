@@ -114,6 +114,10 @@ const BudgetsPage = () => {
         return {
           ...b,
           client_name: cl?.name,
+          name: (b as any).name ?? null,
+          budget_date: (b as any).budget_date ?? null,
+          validity_date: (b as any).validity_date ?? null,
+          delivery_date: (b as any).delivery_date ?? null,
           discount: (b as any).discount ?? 0,
           notes: (b as any).notes ?? null,
           items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
