@@ -131,6 +131,13 @@ const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
   };
 
   if (!orgId && !loading) {
+    if (embedded) {
+      return (
+        <div className="text-sm text-muted-foreground py-2">
+          {isPt ? 'Cadastre uma organização primeiro para convidar membros' : 'Register an organization first to invite members'}
+        </div>
+      );
+    }
     return (
       <Card>
         <CardHeader className="flex flex-row items-start gap-3">
