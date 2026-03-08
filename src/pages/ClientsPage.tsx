@@ -56,6 +56,7 @@ const formatDuration = (seconds: number) => {
 const ClientsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
