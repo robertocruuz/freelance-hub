@@ -268,7 +268,7 @@ const ProfilePage = () => {
           {editing && (
             <ActionButtons
               onSave={handleSave}
-              onCancel={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}
+              onCancel={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document, phone: profile.phone }); }}
             />
           )}
         </CardContent>
