@@ -12,7 +12,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock } from 'lucide-react';
 import { useKanban, Task } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -44,6 +44,7 @@ const KanbanPage = () => {
   const [filterClients, setFilterClients] = useState<Set<string>>(new Set());
   const [filterProjects, setFilterProjects] = useState<Set<string>>(new Set());
   const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
+  const [filterDeadlines, setFilterDeadlines] = useState<Set<string>>(new Set());
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -97,13 +98,28 @@ const KanbanPage = () => {
     });
   };
 
-  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size;
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size;
 
   // Unique task types
   const taskTypes = useMemo(() => {
     const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
     return Array.from(types) as string[];
   }, [tasks]);
+
+  // Deadline filter helper
+  const matchesDeadline = (task: Task): boolean => {
+    if (filterDeadlines.size === 0) return true;
+    const hasNoDueDate = !task.due_date;
+    const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
+    const isDueThisWeek = task.due_date && isThisWeek(new Date(task.due_date)) && !task.completed_at;
+    const isDueThisMonth = task.due_date && isThisMonth(new Date(task.due_date)) && !task.completed_at;
+
+    if (filterDeadlines.has('overdue') && isOverdue) return true;
+    if (filterDeadlines.has('this_week') && isDueThisWeek) return true;
+    if (filterDeadlines.has('this_month') && isDueThisMonth) return true;
+    if (filterDeadlines.has('no_deadline') && hasNoDueDate) return true;
+    return false;
+  };
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
@@ -112,9 +128,10 @@ const KanbanPage = () => {
       if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
       if (filterProjects.size > 0 && (!t.project_id || !filterProjects.has(t.project_id))) return false;
       if (filterTypes.size > 0 && (!t.task_type || !filterTypes.has(t.task_type))) return false;
+      if (!matchesDeadline(t)) return false;
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
@@ -223,7 +240,7 @@ const KanbanPage = () => {
                 <span className="text-sm font-semibold text-foreground">Filtros</span>
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); }}
+                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); }}
                     className="text-xs text-primary hover:text-primary/80 font-medium transition"
                   >
                     Limpar tudo
@@ -336,6 +353,35 @@ const KanbanPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Deadline - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Prazo</span>
+                    {filterDeadlines.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterDeadlines.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                      { value: 'this_week', label: 'Esta semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                      { value: 'this_month', label: 'Este mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
+                      { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                    ].map((d) => (
+                      <button
+                        key={d.value}
+                        onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterDeadlines.has(d.value)
+                            ? `${d.color} shadow-sm ring-1 ring-current/20`
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Result count */}
@@ -374,6 +420,15 @@ const KanbanPage = () => {
                   <X className="w-3 h-3" />
                 </Badge>
               ))}
+              {Array.from(filterDeadlines).map(d => {
+                const labels: Record<string, string> = { overdue: 'Atrasadas', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
+                return (
+                  <Badge key={d} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d)}>
+                    {labels[d] || d}
+                    <X className="w-3 h-3" />
+                  </Badge>
+                );
+              })}
             </div>
           )}
 
