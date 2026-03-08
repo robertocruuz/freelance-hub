@@ -135,14 +135,22 @@ export const KanbanColumnComponent = ({
       {/* Column Header */}
       <div className="flex items-center justify-between px-3 py-3">
         {isEditing ? (
-          <Input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            onBlur={handleRename}
-            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-            autoFocus
-            className="h-7 text-xs font-bold glass-input"
-          />
+          <div className="flex items-center gap-1 flex-1">
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleRename}
+              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+              autoFocus
+              className="h-7 text-xs font-bold glass-input"
+            />
+            <button
+              onMouseDown={(e) => { e.preventDefault(); handleRename(); }}
+              className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary/20 transition shrink-0"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <h3
