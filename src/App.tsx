@@ -18,6 +18,7 @@ import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import HomePage from "./pages/HomePage";
 import KanbanPage from "./pages/KanbanPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                   <Route path="time" element={<TimeTrackingPage />} />
                   <Route path="invoices" element={<InvoicesPage />} />
                   <Route path="kanban" element={<KanbanPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
