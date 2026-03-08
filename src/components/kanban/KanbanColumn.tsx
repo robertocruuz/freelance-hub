@@ -128,7 +128,7 @@ export const KanbanColumnComponent = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-72 flex flex-col rounded-2xl transition-colors ${
+      className={`flex-shrink-0 w-72 flex flex-col rounded-2xl transition-colors snap-start ${
         isOver ? 'bg-primary/5' : 'bg-card/50'
       }`}
     >
