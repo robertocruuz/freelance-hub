@@ -337,6 +337,7 @@ const ProjectsPage = () => {
   };
 
   const clientName = (id: string | null) => clients.find(c => c.id === id)?.name || '-';
+  const clientColor = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
 
   const getProjectTotal = (projectId: string) => {
     const items = projectItems[projectId] || [];
