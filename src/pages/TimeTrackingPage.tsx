@@ -170,6 +170,104 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+
+  // Drag state for calendar entries
+  const [dragState, setDragState] = useState<{
+    entryId: string;
+    type: 'move' | 'resize';
+    initialMouseY: number;
+    initialStartMin: number;
+    initialEndMin: number;
+    currentStartMin: number;
+    currentEndMin: number;
+    dayDate: Date;
+  } | null>(null);
+  const dragStateRef = useRef(dragState);
+  dragStateRef.current = dragState;
+
+  const handleDragStart = (e: React.MouseEvent, entryId: string, type: 'move' | 'resize', startMin: number, endMin: number, dayDate: Date) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const state = {
+      entryId,
+      type,
+      initialMouseY: e.clientY,
+      initialStartMin: startMin,
+      initialEndMin: endMin,
+      currentStartMin: startMin,
+      currentEndMin: endMin,
+      dayDate,
+    };
+    setDragState(state);
+    dragStateRef.current = state;
+  };
+
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const ds = dragStateRef.current;
+      if (!ds) return;
+      const deltaY = e.clientY - ds.initialMouseY;
+      // 1px = 1 minute in calendar, snap to 5 min
+      const deltaMin = Math.round(deltaY / 5) * 5;
+
+      if (ds.type === 'move') {
+        const newStart = Math.max(0, ds.initialStartMin + deltaMin);
+        const duration = ds.initialEndMin - ds.initialStartMin;
+        const newEnd = Math.min(24 * 60, newStart + duration);
+        const adjustedStart = newEnd === 24 * 60 ? newEnd - duration : newStart;
+        const next = { ...ds, currentStartMin: adjustedStart, currentEndMin: adjustedStart + duration };
+        setDragState(next);
+        dragStateRef.current = next;
+      } else {
+        const newEnd = Math.max(ds.initialStartMin + 5, Math.min(24 * 60, ds.initialEndMin + deltaMin));
+        const next = { ...ds, currentEndMin: newEnd };
+        setDragState(next);
+        dragStateRef.current = next;
+      }
+    };
+
+    const handleMouseUp = async () => {
+      const ds = dragStateRef.current;
+      if (!ds) return;
+      setDragState(null);
+      dragStateRef.current = null;
+
+      // Only save if something changed
+      if (ds.currentStartMin === ds.initialStartMin && ds.currentEndMin === ds.initialEndMin) return;
+
+      const entry = entries.find(en => en.id === ds.entryId);
+      if (!entry) return;
+
+      const baseDate = new Date(ds.dayDate);
+      const newStart = new Date(baseDate);
+      newStart.setHours(Math.floor(ds.currentStartMin / 60), ds.currentStartMin % 60, 0, 0);
+      const newEnd = new Date(baseDate);
+      newEnd.setHours(Math.floor(ds.currentEndMin / 60), ds.currentEndMin % 60, 0, 0);
+      const duration = Math.floor((newEnd.getTime() - newStart.getTime()) / 1000);
+
+      const { error } = await supabase.from('time_entries').update({
+        start_time: newStart.toISOString(),
+        end_time: newEnd.toISOString(),
+        duration,
+      } as any).eq('id', ds.entryId);
+
+      if (error) toast.error(error.message);
+      else {
+        toast.success('Registro atualizado');
+        loadEntries();
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragState, entries, loadEntries]);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
