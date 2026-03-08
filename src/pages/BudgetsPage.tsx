@@ -577,7 +577,6 @@ const BudgetsPage = () => {
                     <span className="text-right">{t.unitPrice}</span>
                     <span className="text-right">Subtotal</span>
                   </div>
-                  </div>
                   {b.items.map((item, idx) => (
                     <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
                       <span className="text-foreground truncate">{item.description || '—'}</span>
@@ -586,7 +585,6 @@ const BudgetsPage = () => {
                       <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
                     </div>
                   ))}
-                  {/* Show discount & notes in expanded view */}
                   {(b.discount > 0 || b.notes) && (
                     <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
                       {b.discount > 0 && (
