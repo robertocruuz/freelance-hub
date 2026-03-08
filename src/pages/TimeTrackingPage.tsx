@@ -1087,9 +1087,6 @@ const TimeTrackingPage = () => {
             setShowExportPanel(false);
           };
 
-          const exportFilteredProjects = exportClientId
-            ? projects.filter(p => p.client_id === exportClientId)
-            : projects;
 
           return (
             <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
