@@ -722,7 +722,7 @@ const ProfilePage = () => {
                     {lang === 'pt-BR' ? 'Equipe' : 'Team'}
                   </p>
                 </div>
-                <OrgMembersCard embedded />
+                <OrgMembersCard embedded orgHook={orgHook} />
               </div>
             </CardContent>
           </CollapsibleContent>
