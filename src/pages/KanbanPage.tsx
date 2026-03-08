@@ -123,6 +123,7 @@ const KanbanPage = () => {
     const isDueThisWeek = task.due_date && isThisWeek(new Date(task.due_date)) && !task.completed_at;
     const isDueThisMonth = task.due_date && isThisMonth(new Date(task.due_date)) && !task.completed_at;
 
+    if (filterDeadlines.has('today') && task.due_date && isToday(new Date(task.due_date)) && !task.completed_at) return true;
     if (filterDeadlines.has('overdue') && isOverdue) return true;
     if (filterDeadlines.has('this_week') && isDueThisWeek) return true;
     if (filterDeadlines.has('this_month') && isDueThisMonth) return true;
