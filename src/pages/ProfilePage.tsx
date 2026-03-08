@@ -25,8 +25,8 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState({ name: '', email: '', document: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-  const [org, setOrg] = useState({ company_name: '', cnpj: '', state_registration: '', business_email: '', business_phone: '', website: '' });
-  const [orgForm, setOrgForm] = useState({ company_name: '', cnpj: '', state_registration: '', business_email: '', business_phone: '', website: '' });
+  const [org, setOrg] = useState({ company_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -47,7 +47,7 @@ const ProfilePage = () => {
       // Fetch organization
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, cnpj, state_registration, business_email, business_phone, website')
+        .select('company_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -56,6 +56,7 @@ const ProfilePage = () => {
           company_name: o.company_name || '',
           cnpj: o.cnpj || '',
           state_registration: o.state_registration || '',
+          municipal_registration: o.municipal_registration || '',
           business_email: o.business_email || '',
           business_phone: o.business_phone || '',
           website: o.website || '',
@@ -237,7 +238,7 @@ const ProfilePage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5 text-muted-foreground">
                 <FileText className="w-4 h-4" />
@@ -259,6 +260,18 @@ const ProfilePage = () => {
                 <Input value={orgForm.state_registration} onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
               ) : (
                 <p className="text-foreground font-medium">{org.state_registration || '—'}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <FileText className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Registration'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.municipal_registration} onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.municipal_registration || '—'}</p>
               )}
             </div>
           </div>

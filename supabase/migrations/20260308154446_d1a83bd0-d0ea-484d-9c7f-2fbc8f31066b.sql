@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN municipal_registration text;
