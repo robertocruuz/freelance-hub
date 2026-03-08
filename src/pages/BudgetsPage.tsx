@@ -92,7 +92,7 @@ const BudgetsPage = () => {
 
   // Project import state
   interface ProjectOption { id: string; name: string; client_id: string | null; }
-  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem; budget: Budget } | null>(null);
+  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem | null; budget: Budget } | null>(null);
   const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
   const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
 
@@ -270,7 +270,7 @@ const BudgetsPage = () => {
     navigate(`/dashboard/kanban?${params.toString()}`);
   };
 
-  const openProjectPicker = async (item: BudgetItem, budget: Budget) => {
+  const openProjectPicker = async (item: BudgetItem | null, budget: Budget) => {
     setProjectPickerItem({ item, budget });
     const query = supabase.from('projects').select('id, name, client_id').order('name');
     if (budget.client_id) query.eq('client_id', budget.client_id);
@@ -280,15 +280,30 @@ const BudgetsPage = () => {
 
   const addItemToProject = async (projectId: string) => {
     if (!projectPickerItem) return;
-    const { item } = projectPickerItem;
-    const { error } = await supabase.from('project_items').insert({
-      project_id: projectId,
-      name: item.description,
-      value: item.quantity * item.unitPrice,
-      position: 0,
-    });
-    if (error) return toast.error(error.message);
-    toast.success(`"${item.description}" adicionado ao projeto!`);
+    const { item, budget } = projectPickerItem;
+    
+    if (item) {
+      // Single item import
+      const { error } = await supabase.from('project_items').insert({
+        project_id: projectId,
+        name: item.description,
+        value: item.quantity * item.unitPrice,
+        position: 0,
+      });
+      if (error) return toast.error(error.message);
+      toast.success(`"${item.description}" adicionado ao projeto!`);
+    } else {
+      // All items from budget
+      const inserts = budget.items.map((bi, idx) => ({
+        project_id: projectId,
+        name: bi.description,
+        value: bi.quantity * bi.unitPrice,
+        position: idx,
+      }));
+      const { error } = await supabase.from('project_items').insert(inserts);
+      if (error) return toast.error(error.message);
+      toast.success(`${inserts.length} itens enviados ao projeto!`);
+    }
     setProjectPickerItem(null);
     loadImportedItems();
   };
@@ -566,50 +581,26 @@ const BudgetsPage = () => {
                   </DropdownMenu>
                   <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
+                  <button onClick={() => openProjectPicker(null, b)} className="text-muted-foreground hover:text-primary" title="Enviar para projeto"><FolderKanban className="w-4 h-4" /></button>
                   <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
               {expandedBudget === b.id && b.items.length > 0 && (
                 <div className="border-t border-border px-4 pb-3 pt-2 space-y-1">
-                  <div className="grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
+                  <div className="grid grid-cols-[1fr_80px_100px_100px] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
                     <span>{t.description}</span>
                     <span className="text-center">{t.quantity}</span>
                     <span className="text-right">{t.unitPrice}</span>
                     <span className="text-right">Subtotal</span>
-                    <span></span>
                   </div>
-                  {b.items.map((item, idx) => {
-                    const isImported = importedItemKeys.has(makeItemKey(item.description, item.quantity * item.unitPrice));
-                    return (
-                    <div key={idx} className={`grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50 ${isImported ? 'opacity-60' : ''}`}>
-                      <span className="text-foreground truncate flex items-center gap-1.5">
-                        {item.description || '—'}
-                        {isImported && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">No projeto</Badge>}
-                      </span>
+                  {b.items.map((item, idx) => (
+                    <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
+                      <span className="text-foreground truncate">{item.description || '—'}</span>
                       <span className="text-center text-muted-foreground">{item.quantity}</span>
                       <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
                       <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
-                      <div className="flex items-center gap-2">
-                        {isImported ? (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                            <FolderKanban className="w-3.5 h-3.5" />
-                            Importado
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => openProjectPicker(item, b)}
-                            className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
-                            title="Adicionar ao projeto"
-                          >
-                            <FolderKanban className="w-3.5 h-3.5" />
-                            Projeto
-                          </button>
-                        )}
-                      </div>
                     </div>
-                    );
-                  })}
-                  {/* Show discount & notes in expanded view */}
+                  ))}
                   {(b.discount > 0 || b.notes) && (
                     <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
                       {b.discount > 0 && (
@@ -631,7 +622,7 @@ const BudgetsPage = () => {
       <Dialog open={!!projectPickerItem} onOpenChange={(open) => { if (!open) setProjectPickerItem(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Selecionar projeto</DialogTitle>
+            <DialogTitle>{projectPickerItem?.item ? 'Enviar item ao projeto' : 'Enviar orçamento ao projeto'}</DialogTitle>
           </DialogHeader>
           {availableProjects.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4">Nenhum projeto encontrado para este cliente.</p>
