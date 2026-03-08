@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Share2, Users, UserPlus, X, Building2, Globe } from 'lucide-react';
+import { Share2, Users, UserPlus, X, Building2, Globe, Mail, Loader2 } from 'lucide-react';
 
 interface ShareButtonProps {
   resourceType: 'board' | 'task';
@@ -39,6 +39,8 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
   const [sharedWithOrg, setSharedWithOrg] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchEmail, setSearchEmail] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   const loadShares = async () => {
     if (!user) return;
@@ -153,6 +155,40 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
     loadShares();
   };
 
+  const inviteByEmail = async () => {
+    if (!user || !inviteEmail.trim()) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (email === user.email?.toLowerCase()) {
+      toast({ title: 'Você não pode compartilhar consigo mesmo', variant: 'destructive' });
+      return;
+    }
+    setInviteLoading(true);
+    // Find user by email in profiles
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, name, email')
+      .eq('email', email)
+      .limit(1);
+
+    if (!profiles || profiles.length === 0) {
+      toast({ title: 'Usuário não encontrado', description: 'Nenhum usuário cadastrado com esse email.', variant: 'destructive' });
+      setInviteLoading(false);
+      return;
+    }
+
+    const targetUserId = profiles[0].user_id;
+    // Check if already shared
+    if (shares.some(s => s.share_type === 'user' && s.shared_with_user_id === targetUserId)) {
+      toast({ title: 'Já compartilhado', description: 'Este recurso já está compartilhado com esse usuário.', variant: 'destructive' });
+      setInviteLoading(false);
+      return;
+    }
+
+    await shareWithUser(targetUserId);
+    setInviteEmail('');
+    setInviteLoading(false);
+  };
+
   const userShares = shares.filter(s => s.share_type === 'user');
   const sharedUserIds = new Set(userShares.map(s => s.shared_with_user_id));
   const availableMembers = orgMembers.filter(m => !sharedUserIds.has(m.user_id));
@@ -257,6 +293,33 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
             </>
           )}
 
+          {/* Invite by email */}
+          <Separator className="opacity-50" />
+          <div>
+            <Label className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+              <Mail className="w-3.5 h-3.5" />
+              Convidar por email
+            </Label>
+            <div className="flex gap-1.5">
+              <Input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && inviteByEmail()}
+                placeholder="email@exemplo.com"
+                type="email"
+                className="h-8 text-xs flex-1"
+              />
+              <Button
+                size="sm"
+                onClick={inviteByEmail}
+                disabled={inviteLoading || !inviteEmail.trim()}
+                className="h-8 px-2.5 text-xs"
+              >
+                {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+              </Button>
+            </div>
+          </div>
+
           {/* Current shares */}
           {userShares.length > 0 && (
             <>
@@ -288,12 +351,6 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                 </div>
               </div>
             </>
-          )}
-
-          {!hasOrg && (
-            <p className="text-xs text-muted-foreground text-center py-2">
-              Cadastre uma organização no perfil para compartilhar com outros usuários
-            </p>
           )}
         </div>
       </PopoverContent>
