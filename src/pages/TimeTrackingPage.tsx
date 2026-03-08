@@ -170,6 +170,38 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+
+  // Drag state for calendar entries
+  const [dragState, setDragState] = useState<{
+    entryId: string;
+    type: 'move' | 'resize';
+    initialMouseY: number;
+    initialStartMin: number;
+    initialEndMin: number;
+    currentStartMin: number;
+    currentEndMin: number;
+    dayDate: Date;
+  } | null>(null);
+  const dragStateRef = useRef(dragState);
+  dragStateRef.current = dragState;
+
+  const handleDragStart = (e: React.MouseEvent, entryId: string, type: 'move' | 'resize', startMin: number, endMin: number, dayDate: Date) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const state = {
+      entryId,
+      type,
+      initialMouseY: e.clientY,
+      initialStartMin: startMin,
+      initialEndMin: endMin,
+      currentStartMin: startMin,
+      currentEndMin: endMin,
+      dayDate,
+    };
+    setDragState(state);
+    dragStateRef.current = state;
+  };
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -198,6 +230,71 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
+
+  // Drag effect — must be after loadEntries is declared
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const ds = dragStateRef.current;
+      if (!ds) return;
+      const deltaY = e.clientY - ds.initialMouseY;
+      const deltaMin = Math.round(deltaY / 5) * 5;
+
+      if (ds.type === 'move') {
+        const newStart = Math.max(0, ds.initialStartMin + deltaMin);
+        const duration = ds.initialEndMin - ds.initialStartMin;
+        const newEnd = Math.min(24 * 60, newStart + duration);
+        const adjustedStart = newEnd === 24 * 60 ? newEnd - duration : newStart;
+        const next = { ...ds, currentStartMin: adjustedStart, currentEndMin: adjustedStart + duration };
+        setDragState(next);
+        dragStateRef.current = next;
+      } else {
+        const newEnd = Math.max(ds.initialStartMin + 5, Math.min(24 * 60, ds.initialEndMin + deltaMin));
+        const next = { ...ds, currentEndMin: newEnd };
+        setDragState(next);
+        dragStateRef.current = next;
+      }
+    };
+
+    const handleMouseUp = async () => {
+      const ds = dragStateRef.current;
+      if (!ds) return;
+      setDragState(null);
+      dragStateRef.current = null;
+
+      if (ds.currentStartMin === ds.initialStartMin && ds.currentEndMin === ds.initialEndMin) return;
+
+      const entry = entries.find(en => en.id === ds.entryId);
+      if (!entry) return;
+
+      const baseDate = new Date(ds.dayDate);
+      const newStart = new Date(baseDate);
+      newStart.setHours(Math.floor(ds.currentStartMin / 60), ds.currentStartMin % 60, 0, 0);
+      const newEnd = new Date(baseDate);
+      newEnd.setHours(Math.floor(ds.currentEndMin / 60), ds.currentEndMin % 60, 0, 0);
+      const duration = Math.floor((newEnd.getTime() - newStart.getTime()) / 1000);
+
+      const { error } = await supabase.from('time_entries').update({
+        start_time: newStart.toISOString(),
+        end_time: newEnd.toISOString(),
+        duration,
+      } as any).eq('id', ds.entryId);
+
+      if (error) toast.error(error.message);
+      else {
+        toast.success('Registro atualizado');
+        loadEntries();
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragState, entries, loadEntries]);
 
   const filteredProjects = clientId
     ? projects.filter(p => p.client_id === clientId)
@@ -771,34 +868,48 @@ const TimeTrackingPage = () => {
                   const colWidth = `calc((100% - 64px) / 7)`;
                   return layoutItems.map((item) => {
                     const { entry, startMin, endMin, col, totalCols } = item;
-                    const durationMinutes = endMin - startMin;
+                    const isDragging = dragState?.entryId === entry.id;
+                    const displayStart = isDragging ? dragState.currentStartMin : startMin;
+                    const displayEnd = isDragging ? dragState.currentEndMin : endMin;
+                    const durationMinutes = displayEnd - displayStart;
                     const color = getProjectColor(entry.project_id, entry.client_id);
                     const entryWidth = `calc((${colWidth} - 4px) / ${totalCols})`;
                     const entryLeft = `calc(64px + ${dayIdx} * ${colWidth} + 2px + ${col} * (${colWidth} - 4px) / ${totalCols})`;
 
                     return (
-                      <button
+                      <div
                         key={entry.id}
-                        onClick={() => openEdit(entry)}
-                        className="absolute rounded-md px-1.5 py-0.5 text-[10px] text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm group z-10"
+                        className={`absolute rounded-md text-[10px] text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${startMin}px`,
+                          top: `${displayStart}px`,
                           height: `${Math.max(durationMinutes, 18)}px`,
                           left: entryLeft,
                           width: entryWidth,
                           backgroundColor: color,
+                          cursor: isDragging ? 'grabbing' : 'grab',
                         }}
+                        onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, day)}
+                        onClick={(e) => { if (!dragState) openEdit(entry); }}
                       >
-                        <div className="flex items-center gap-1 truncate">
+                        <div className="flex items-center gap-1 truncate px-1.5 py-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0" />
                           <span className="truncate font-medium">
                             {entry.description || getProjectName(entry.project_id) || '—'}
                           </span>
                         </div>
                         {durationMinutes > 30 && (
-                          <p className="text-white/70 truncate">{formatDurationShort(entry.duration || 0)}</p>
+                          <p className="text-white/70 truncate px-1.5">{isDragging
+                            ? `${String(Math.floor(displayStart / 60)).padStart(2, '0')}:${String(displayStart % 60).padStart(2, '0')} – ${String(Math.floor(displayEnd / 60)).padStart(2, '0')}:${String(displayEnd % 60).padStart(2, '0')}`
+                            : formatDurationShort(entry.duration || 0)}</p>
                         )}
-                      </button>
+                        {/* Resize handle */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize hover:bg-white/20 flex items-center justify-center"
+                          onMouseDown={(e) => { e.stopPropagation(); handleDragStart(e, entry.id, 'resize', startMin, endMin, day); }}
+                        >
+                          <div className="w-6 h-0.5 rounded-full bg-white/50" />
+                        </div>
+                      </div>
                     );
                   });
                 })}
@@ -847,32 +958,48 @@ const TimeTrackingPage = () => {
                   const layoutItems = computeOverlapLayout(filteredEntries);
                   return layoutItems.map((item) => {
                     const { entry, startMin, endMin, col, totalCols } = item;
-                    const durationMinutes = endMin - startMin;
+                    const isDragging = dragState?.entryId === entry.id;
+                    const displayStart = isDragging ? dragState.currentStartMin : startMin;
+                    const displayEnd = isDragging ? dragState.currentEndMin : endMin;
+                    const durationMinutes = displayEnd - displayStart;
                     const color = getProjectColor(entry.project_id, entry.client_id);
                     const availableWidth = 'calc(100% - 72px)';
                     const entryWidth = `calc(${availableWidth} / ${totalCols})`;
                     const entryLeft = `calc(68px + ${col} * ${availableWidth} / ${totalCols})`;
                     return (
-                      <button
+                      <div
                         key={entry.id}
-                        onClick={() => openEdit(entry)}
-                        className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
+                        className={`absolute rounded-md text-xs text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${startMin}px`,
+                          top: `${displayStart}px`,
                           height: `${Math.max(durationMinutes, 20)}px`,
                           left: entryLeft,
                           width: entryWidth,
                           backgroundColor: color,
+                          cursor: isDragging ? 'grabbing' : 'grab',
                         }}
+                        onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, selectedDate)}
+                        onClick={() => { if (!dragState) openEdit(entry); }}
                       >
-                        <div className="flex items-center gap-1.5 truncate">
+                        <div className="flex items-center gap-1.5 truncate px-2 py-1">
                           <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
                           <span className="truncate font-medium">
                             {entry.description || getProjectName(entry.project_id) || '—'}
                           </span>
-                          <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
+                          <span className="ml-auto text-white/70 flex-shrink-0">
+                            {isDragging
+                              ? `${String(Math.floor(displayStart / 60)).padStart(2, '0')}:${String(displayStart % 60).padStart(2, '0')} – ${String(Math.floor(displayEnd / 60)).padStart(2, '0')}:${String(displayEnd % 60).padStart(2, '0')}`
+                              : formatDurationShort(entry.duration || 0)}
+                          </span>
                         </div>
-                      </button>
+                        {/* Resize handle */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-2.5 cursor-s-resize hover:bg-white/20 flex items-center justify-center"
+                          onMouseDown={(e) => { e.stopPropagation(); handleDragStart(e, entry.id, 'resize', startMin, endMin, selectedDate); }}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-white/50" />
+                        </div>
+                      </div>
                     );
                   });
                 })()}
