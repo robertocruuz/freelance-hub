@@ -66,7 +66,7 @@ const LoginPage = () => {
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-28 relative bg-background">
         {/* Back button */}
         <button
-          onClick={() => isRegister ? setIsRegister(false) : navigate('/')}
+          onClick={() => isForgotPassword ? setIsForgotPassword(false) : isRegister ? setIsRegister(false) : navigate('/')}
           className="absolute top-6 left-6 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
