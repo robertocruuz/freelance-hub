@@ -143,8 +143,20 @@ const ProjectsPage = () => {
       const { error } = await supabase.from('projects').update(payload).eq('id', editingId);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from('projects').insert(payload);
+      const { data, error } = await supabase.from('projects').insert(payload).select('id').single();
       if (error) return toast.error(error.message);
+      // Import budget items if a budget was selected
+      if (data && pendingBudgetItems.length > 0) {
+        const inserts = pendingBudgetItems.map((item, idx) => ({
+          project_id: data.id,
+          name: item.description,
+          value: item.quantity * item.unitPrice,
+          position: idx,
+        }));
+        const { error: itemsError } = await supabase.from('project_items').insert(inserts);
+        if (itemsError) toast.error(itemsError.message);
+        else toast.success(`${inserts.length} itens importados do orçamento!`);
+      }
     }
     resetForm();
     loadProjects();
