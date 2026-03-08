@@ -189,6 +189,42 @@ export type Database = {
         }
         Relationships: []
       }
+      organizations: {
+        Row: {
+          business_email: string | null
+          business_phone: string | null
+          cnpj: string | null
+          company_name: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          business_email?: string | null
+          business_phone?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          business_email?: string | null
+          business_phone?: string | null
+          cnpj?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       password_vault: {
         Row: {
           category: string | null
