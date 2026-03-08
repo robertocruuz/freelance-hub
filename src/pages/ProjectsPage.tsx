@@ -84,6 +84,9 @@ const ProjectsPage = () => {
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+  const [inlineEditItemId, setInlineEditItemId] = useState<string | null>(null);
+  const [inlineEditName, setInlineEditName] = useState('');
 
   // Item form state
   const [showItemForm, setShowItemForm] = useState<string | null>(null);
