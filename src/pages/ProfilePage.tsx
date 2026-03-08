@@ -172,7 +172,7 @@ const ProfilePage = () => {
     toast({ title: lang === 'pt-BR' ? 'Logo removido!' : 'Logo removed!' });
   };
 
-
+  const handleChangePassword = async () => {
     if (passwordForm.password.length < 6) {
       toast({ title: lang === 'pt-BR' ? 'A senha deve ter pelo menos 6 caracteres' : 'Password must be at least 6 characters', variant: 'destructive' });
       return;
