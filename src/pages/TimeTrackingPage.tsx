@@ -446,7 +446,71 @@ const TimeTrackingPage = () => {
     return colors[idx % colors.length];
   };
 
-  // Autocomplete suggestions from recent entries + tasks
+  // Compute overlap layout for calendar entries (side-by-side when overlapping)
+  const computeOverlapLayout = (dayEntries: TimeEntry[]) => {
+    const items = dayEntries.map(entry => {
+      const start = new Date(entry.start_time);
+      const end = entry.end_time ? new Date(entry.end_time) : new Date();
+      const startMin = start.getHours() * 60 + start.getMinutes();
+      const endMin = Math.max(end.getHours() * 60 + end.getMinutes(), startMin + 10);
+      return { entry, startMin, endMin, col: 0, totalCols: 1 };
+    }).sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
+
+    // Greedy column assignment
+    const columns: { endMin: number }[][] = [];
+    for (const item of items) {
+      let placed = false;
+      for (let c = 0; c < columns.length; c++) {
+        if (columns[c].every(prev => prev.endMin <= item.startMin)) {
+          item.col = c;
+          columns[c].push({ endMin: item.endMin });
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        item.col = columns.length;
+        columns.push([{ endMin: item.endMin }]);
+      }
+    }
+
+    // Compute total columns for each overlapping group
+    const totalCols = columns.length;
+    for (const item of items) {
+      item.totalCols = totalCols;
+    }
+
+    // More precise: find actual max overlap per group
+    // Group items that transitively overlap
+    const groups: typeof items[] = [];
+    const visited = new Set<number>();
+    for (let i = 0; i < items.length; i++) {
+      if (visited.has(i)) continue;
+      const group = [items[i]];
+      visited.add(i);
+      const stack = [i];
+      while (stack.length > 0) {
+        const cur = stack.pop()!;
+        for (let j = 0; j < items.length; j++) {
+          if (visited.has(j)) continue;
+          if (items[cur].startMin < items[j].endMin && items[j].startMin < items[cur].endMin) {
+            visited.add(j);
+            group.push(items[j]);
+            stack.push(j);
+          }
+        }
+      }
+      groups.push(group);
+    }
+    for (const group of groups) {
+      const maxCol = Math.max(...group.map(it => it.col)) + 1;
+      for (const it of group) it.totalCols = maxCol;
+    }
+
+    return items;
+  };
+
+
   const [showSuggestions, setShowSuggestions] = useState(false);
   const descInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
