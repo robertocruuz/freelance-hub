@@ -228,6 +228,18 @@ const KanbanPage = () => {
                   column={col}
                   tasks={getColumnTasks(col.id)}
                   onAddTask={(colId, title) => kanban.addTask(colId, title)}
+                  onAddTaskFromProject={(colId, item) => {
+                    kanban.addTask(colId, item.name).then((newTask) => {
+                      if (newTask) {
+                        kanban.updateTask(newTask.id, {
+                          estimated_value: item.value,
+                          project_id: item.project_id,
+                          client_id: item.client_id || null,
+                          description: `Criado a partir de item de projeto — Valor: R$ ${item.value.toFixed(2)}`,
+                        });
+                      }
+                    });
+                  }}
                   onTaskClick={(task) => setSelectedTask(task)}
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}

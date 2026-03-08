@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, FolderKanban, FileText, ChevronLeft } from 'lucide-react';
 import { KanbanColumn as KanbanColumnType, Task } from '@/hooks/useKanban';
 import { TaskCard } from './TaskCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,27 +14,42 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface ProjectItem {
+  id: string;
+  name: string;
+  value: number;
+  project_id: string;
+  project_name?: string;
+  client_id?: string | null;
+}
+
 interface KanbanColumnProps {
   column: KanbanColumnType;
   tasks: Task[];
   onAddTask: (columnId: string, title: string) => void;
+  onAddTaskFromProject?: (columnId: string, item: ProjectItem) => void;
   onTaskClick: (task: Task) => void;
   onUpdateColumn: (id: string, name: string) => void;
   onDeleteColumn: (id: string) => void;
 }
 
+type AddMode = 'choice' | 'blank' | 'project';
+
 export const KanbanColumnComponent = ({
   column,
   tasks,
   onAddTask,
+  onAddTaskFromProject,
   onTaskClick,
   onUpdateColumn,
   onDeleteColumn,
 }: KanbanColumnProps) => {
-  const [isAdding, setIsAdding] = useState(false);
+  const [addMode, setAddMode] = useState<AddMode | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(column.name);
+  const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(false);
 
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -41,13 +57,44 @@ export const KanbanColumnComponent = ({
     if (!newTitle.trim()) return;
     onAddTask(column.id, newTitle.trim());
     setNewTitle('');
-    setIsAdding(false);
+    setAddMode(null);
   };
 
   const handleRename = () => {
     if (!editName.trim()) return;
     onUpdateColumn(column.id, editName.trim());
     setIsEditing(false);
+  };
+
+  const loadProjectItems = async () => {
+    setLoadingItems(true);
+    const { data } = await supabase
+      .from('project_items')
+      .select('id, name, value, project_id, projects(name, client_id)')
+      .order('name');
+    if (data) {
+      setProjectItems(data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        value: item.value,
+        project_id: item.project_id,
+        project_name: item.projects?.name || '',
+        client_id: item.projects?.client_id || null,
+      })));
+    }
+    setLoadingItems(false);
+  };
+
+  const handleSelectProjectItem = (item: ProjectItem) => {
+    if (onAddTaskFromProject) {
+      onAddTaskFromProject(column.id, item);
+    }
+    setAddMode(null);
+  };
+
+  const openProjectPicker = () => {
+    setAddMode('project');
+    loadProjectItems();
   };
 
   return (
@@ -109,7 +156,27 @@ export const KanbanColumnComponent = ({
 
       {/* Add task */}
       <div className="px-2 pb-3">
-        {isAdding ? (
+        {addMode === 'choice' && (
+          <div className="space-y-1.5">
+            <button
+              onClick={() => setAddMode('blank')}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-secondary transition border border-border"
+            >
+              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Em branco
+            </button>
+            <button
+              onClick={openProjectPicker}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-secondary transition border border-border"
+            >
+              <FolderKanban className="w-3.5 h-3.5 text-primary" /> A partir de um projeto
+            </button>
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+              Cancelar
+            </Button>
+          </div>
+        )}
+
+        {addMode === 'blank' && (
           <div className="space-y-2">
             <Input
               value={newTitle}
@@ -123,14 +190,48 @@ export const KanbanColumnComponent = ({
               <Button size="sm" onClick={handleAdd} className="btn-glow text-xs h-7 flex-1">
                 Adicionar
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="text-xs h-7">
+              <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="text-xs h-7">
                 Cancelar
               </Button>
             </div>
           </div>
-        ) : (
+        )}
+
+        {addMode === 'project' && (
+          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            <button
+              onClick={() => setAddMode('choice')}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition mb-1"
+            >
+              <ChevronLeft className="w-3 h-3" /> Voltar
+            </button>
+            {loadingItems ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
+            ) : projectItems.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Nenhum item de projeto encontrado</p>
+            ) : (
+              projectItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelectProjectItem(item)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-secondary transition border border-border"
+                >
+                  <p className="font-medium text-foreground truncate">{item.name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {item.project_name} · R$ {item.value.toFixed(2)}
+                  </p>
+                </button>
+              ))
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+              Cancelar
+            </Button>
+          </div>
+        )}
+
+        {addMode === null && (
           <button
-            onClick={() => setIsAdding(true)}
+            onClick={() => setAddMode('choice')}
             className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition"
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar um cartão
