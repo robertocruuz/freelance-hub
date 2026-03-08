@@ -76,6 +76,7 @@ const ProfilePage = () => {
           zip_code: o.zip_code || '',
           address: o.address || '',
           complement: o.complement || '',
+          neighborhood: o.neighborhood || '',
           state: o.state || '',
           city: o.city || '',
         };
