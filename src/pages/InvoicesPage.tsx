@@ -204,9 +204,58 @@ const InvoicesPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t.invoices}</h1>
         {!creating && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newInvoice}
-          </button>
+          <div className="flex items-center gap-2">
+            <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <FolderKanban className="w-4 h-4" />
+                  {lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>{lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {lang === 'pt-BR' ? 'Selecione um projeto para importar os dados na fatura.' : 'Select a project to import data into the invoice.'}
+                </p>
+                {projects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{lang === 'pt-BR' ? 'Nenhum projeto encontrado.' : 'No projects found.'}</p>
+                ) : (
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {projects.map((p) => {
+                      const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => importProject(p)}
+                          className="w-full text-left p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-sm text-foreground">{p.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {p.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')}
+                                {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-sm text-foreground">R$ {totalValue.toFixed(2)}</p>
+                              {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" /> {t.newInvoice}
+            </button>
+          </div>
         )}
       </div>
 
