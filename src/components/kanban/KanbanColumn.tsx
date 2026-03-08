@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus, MoreHorizontal, Pencil, Trash2, FolderKanban, FileText, ChevronLeft } from 'lucide-react';
@@ -21,6 +22,7 @@ interface ProjectItem {
   project_id: string;
   project_name?: string;
   client_id?: string | null;
+  imported?: boolean;
 }
 
 interface KanbanColumnProps {
@@ -77,19 +79,29 @@ export const KanbanColumnComponent = ({
 
   const loadProjectItems = async (projectId: string) => {
     setLoadingItems(true);
-    const { data } = await supabase
-      .from('project_items')
-      .select('id, name, value, project_id, projects(name, client_id)')
-      .eq('project_id', projectId)
-      .order('name');
-    if (data) {
-      setProjectItems(data.map((item: any) => ({
+    const [{ data: items }, { data: existingTasks }] = await Promise.all([
+      supabase
+        .from('project_items')
+        .select('id, name, value, project_id, projects(name, client_id)')
+        .eq('project_id', projectId)
+        .order('name'),
+      supabase
+        .from('tasks')
+        .select('title, project_id')
+        .eq('project_id', projectId),
+    ]);
+    const taskSet = new Set(
+      (existingTasks || []).map((t: any) => `${t.title}::${t.project_id}`)
+    );
+    if (items) {
+      setProjectItems(items.map((item: any) => ({
         id: item.id,
         name: item.name,
         value: item.value,
         project_id: item.project_id,
         project_name: item.projects?.name || '',
         client_id: item.projects?.client_id || null,
+        imported: taskSet.has(`${item.name}::${item.project_id}`),
       })));
     }
     setLoadingItems(false);
@@ -261,10 +273,22 @@ export const KanbanColumnComponent = ({
               projectItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleSelectProjectItem(item)}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-secondary transition border border-border"
+                  onClick={() => !item.imported && handleSelectProjectItem(item)}
+                  disabled={item.imported}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs transition border ${
+                    item.imported
+                      ? 'border-border/50 opacity-50 cursor-not-allowed'
+                      : 'border-border hover:bg-secondary'
+                  }`}
                 >
-                  <p className="font-medium text-foreground truncate">{item.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className={`font-medium truncate ${item.imported ? 'text-muted-foreground' : 'text-foreground'}`}>{item.name}</p>
+                    {item.imported && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-primary shrink-0 ml-2">
+                        <Check className="w-3 h-3" /> Importado
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-muted-foreground">R$ {item.value.toFixed(2)}</p>
                 </button>
               ))
