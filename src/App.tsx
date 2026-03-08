@@ -21,6 +21,7 @@ import KanbanPage from "./pages/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import InvitePage from "./pages/InvitePage";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
