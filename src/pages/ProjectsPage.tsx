@@ -347,6 +347,7 @@ const ProjectsPage = () => {
                                 from_budget: 'true',
                                 title: item.name,
                                 value: String(item.value),
+                                ...(item.project_id ? { project: item.project_id } : {}),
                                 ...(project?.client_id ? { client: project.client_id } : {}),
                               });
                               navigate(`/dashboard/kanban?${params.toString()}`);
