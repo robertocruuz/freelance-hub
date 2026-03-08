@@ -1040,17 +1040,17 @@ const TimeTrackingPage = () => {
             doc.setFont('helvetica', 'bold');
             doc.text('Detalhamento', 14, y); y += 8;
 
-            // Table header
+            // Table header: Descrição, Duração, Membro, Projeto, Tempo, Data
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
             doc.setFillColor(245, 245, 245);
             doc.rect(14, y - 4, pageWidth - 28, 7, 'F');
-            doc.text('Data', 16, y);
-            doc.text('Descrição / Tarefa', 42, y);
-            doc.text('Projeto', 115, y);
-            doc.text('Início', 152, y);
-            doc.text('Fim', 170, y);
-            doc.text('Duração', 186, y);
+            doc.text('Descrição', 16, y);
+            doc.text('Duração', 80, y);
+            doc.text('Membro', 102, y);
+            doc.text('Projeto', 135, y);
+            doc.text('Tempo', 165, y);
+            doc.text('Data', 186, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
@@ -1059,7 +1059,7 @@ const TimeTrackingPage = () => {
               .forEach((entry) => {
                 checkPageBreak(8);
                 const d = new Date(entry.start_time);
-                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 const desc = entry.description || getTaskName(entry.task_id) || '—';
                 const projName = getProjectName(entry.project_id) || '—';
                 const startStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1067,14 +1067,15 @@ const TimeTrackingPage = () => {
                 const durStr = entry.duration ? formatDurationShort(entry.duration) : '—';
 
                 doc.setFontSize(9);
-                doc.text(dateStr, 16, y);
-                const descTruncated = desc.length > 40 ? desc.substring(0, 37) + '...' : desc;
-                doc.text(descTruncated, 42, y);
-                const projTruncated = projName.length > 20 ? projName.substring(0, 17) + '...' : projName;
-                doc.text(projTruncated, 115, y);
-                doc.text(startStr, 152, y);
-                doc.text(endStr, 170, y);
-                doc.text(durStr, 186, y);
+                const descTruncated = desc.length > 35 ? desc.substring(0, 32) + '...' : desc;
+                doc.text(descTruncated, 16, y);
+                doc.text(durStr, 80, y);
+                const memberTruncated = userName.length > 18 ? userName.substring(0, 15) + '...' : userName || '—';
+                doc.text(memberTruncated, 102, y);
+                const projTruncated = projName.length > 16 ? projName.substring(0, 13) + '...' : projName;
+                doc.text(projTruncated, 135, y);
+                doc.text(`${startStr}-${endStr}`, 165, y);
+                doc.text(dateStr, 186, y);
                 y += 6;
 
                 // light separator
