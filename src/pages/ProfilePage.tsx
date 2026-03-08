@@ -162,28 +162,27 @@ const ProfilePage = () => {
       </div>
 
       {/* Profile Card */}
-      <Card className="overflow-hidden">
-        {/* Profile banner */}
-        <div className="h-16 bg-gradient-to-r from-primary to-primary/70" />
-        <CardHeader className="relative pt-0 pb-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-8">
-            <Avatar className="w-16 h-16 border-4 border-card shadow-lg">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+      <Card>
+        <CardHeader className="flex flex-row items-start gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Avatar className="w-10 h-10">
+              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 pt-2 sm:pt-0 sm:pb-1">
-              <CardTitle className="text-xl">{profile.name || profile.email}</CardTitle>
-            </div>
-            <div className="sm:pb-1">
-              {!editing ? (
-                <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
-                  <Pencil className="w-3.5 h-3.5" />
-                  {lang === 'pt-BR' ? 'Editar' : 'Edit'}
-                </Button>
-              ) : null}
-            </div>
           </div>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-xl truncate">{profile.name || profile.email}</CardTitle>
+            <CardDescription className="mt-0.5">
+              {lang === 'pt-BR' ? 'Informações pessoais' : 'Personal information'}
+            </CardDescription>
+          </div>
+          {!editing && (
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5 shrink-0">
+              <Pencil className="w-3.5 h-3.5" />
+              {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+            </Button>
+          )}
         </CardHeader>
 
         <Separator />
