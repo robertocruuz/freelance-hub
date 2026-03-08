@@ -85,7 +85,7 @@ const ProfilePage = () => {
     if (error) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
-      setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document }));
+      setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document, phone: editForm.phone }));
       setEditing(false);
       toast({ title: lang === 'pt-BR' ? 'Perfil atualizado!' : 'Profile updated!' });
     }
