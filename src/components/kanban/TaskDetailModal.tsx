@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer } from 'lucide-react';
+import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
 import { useClients, Client } from '@/hooks/useClients';
@@ -42,6 +42,7 @@ const taskTypes = [
 export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, kanban }: TaskDetailModalProps) => {
   const navigate = useNavigate();
   const { clients } = useClients();
+  const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [checklists, setChecklists] = useState<TaskChecklist[]>([]);
@@ -55,7 +56,13 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   useEffect(() => {
     loadDetails();
     loadTrackedTime();
+    loadProjects();
   }, [task.id]);
+
+  const loadProjects = async () => {
+    const { data } = await supabase.from('projects').select('id, name, client_id').order('name');
+    if (data) setProjects(data);
+  };
 
   const loadTrackedTime = async () => {
     const { data } = await supabase
@@ -209,6 +216,16 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Projeto</label>
+              <Select value={task.project_id || 'none'} onValueChange={(v) => onUpdate(task.id, { project_id: v === 'none' ? null : v })}>
+                <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
