@@ -484,6 +484,7 @@ const ClientsPage = () => {
                   {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(c.document)}</span>}
                 </div>
               </div>
+              </div>
               <div className="flex items-center gap-2">
                 <button onClick={(e) => { e.stopPropagation(); openEdit(c); }} className="text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
                 <button onClick={(e) => { e.stopPropagation(); deleteClient(c.id); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
