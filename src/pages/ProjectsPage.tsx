@@ -42,6 +42,7 @@ interface Project {
   id: string;
   name: string;
   client_id: string | null;
+  due_date: string | null;
   created_at: string;
 }
 
