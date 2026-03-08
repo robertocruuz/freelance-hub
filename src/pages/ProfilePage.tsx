@@ -333,15 +333,16 @@ const ProfilePage = () => {
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
-                <label className="relative cursor-pointer group shrink-0">
-                  <Avatar className="w-12 h-12 rounded-xl border-2 border-border">
-                    {logoUrl ? (
-                      <AvatarImage src={logoUrl} alt="Logo" className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="rounded-xl bg-primary/10">
+                <label className="relative cursor-pointer group shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {logoUrl ? (
+                    <div className="h-12 max-w-[120px] rounded-xl border-2 border-border overflow-hidden flex items-center justify-center bg-background">
+                      <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl border-2 border-border bg-primary/10 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-primary" />
-                    </AvatarFallback>
-                  </Avatar>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     {uploadingLogo ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
