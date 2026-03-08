@@ -926,12 +926,6 @@ const TimeTrackingPage = () => {
 
           const totalHours = (totalFiltered / 3600).toFixed(1);
 
-          const [showExportPanel, setShowExportPanel] = useState(false);
-          const [exportFilter, setExportFilter] = useState<'all' | 'client' | 'project'>('all');
-          const [exportClientId, setExportClientId] = useState('');
-          const [exportProjectId, setExportProjectId] = useState('');
-          const [exportStartDate, setExportStartDate] = useState('');
-          const [exportEndDate, setExportEndDate] = useState('');
 
           const handleExportPDF = async () => {
             const { default: jsPDF } = await import('jspdf');
