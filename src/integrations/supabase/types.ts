@@ -199,6 +199,7 @@ export type Database = {
           id: string
           municipal_registration: string | null
           state_registration: string | null
+          trade_name: string | null
           updated_at: string
           user_id: string
           website: string | null
@@ -212,6 +213,7 @@ export type Database = {
           id?: string
           municipal_registration?: string | null
           state_registration?: string | null
+          trade_name?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -225,6 +227,7 @@ export type Database = {
           id?: string
           municipal_registration?: string | null
           state_registration?: string | null
+          trade_name?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
