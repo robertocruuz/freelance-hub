@@ -200,7 +200,8 @@ const InvoicesPage = () => {
     setTaxes(0);
     setDiscount(0);
     setDueDate(undefined);
-    setPaymentMethod('');
+    setPaymentMethods([]);
+    setOtherPaymentMethod('');
     setNotes('');
     setEditingItemIdx(null);
     setNewDesc('');
