@@ -40,10 +40,10 @@ const KanbanPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [search, setSearch] = useState('');
-  const [filterPriority, setFilterPriority] = useState('all');
-  const [filterClient, setFilterClient] = useState('all');
-  const [filterProject, setFilterProject] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const [filterPriorities, setFilterPriorities] = useState<Set<string>>(new Set());
+  const [filterClients, setFilterClients] = useState<Set<string>>(new Set());
+  const [filterProjects, setFilterProjects] = useState<Set<string>>(new Set());
+  const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
