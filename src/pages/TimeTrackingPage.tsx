@@ -1158,6 +1158,27 @@ const TimeTrackingPage = () => {
                     );
                   });
                 })()}
+                {/* Create-drag preview (daily) */}
+                {createDrag && (() => {
+                  const s = Math.min(createDrag.startMin, createDrag.currentMin);
+                  const e = Math.max(createDrag.startMin, createDrag.currentMin);
+                  if (e - s < 5) return null;
+                  return (
+                    <div
+                      className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
+                      style={{
+                        top: `${s}px`,
+                        height: `${e - s}px`,
+                        left: '68px',
+                        width: 'calc(100% - 72px)',
+                      }}
+                    >
+                      <span className="text-xs font-semibold text-primary">
+                        {String(Math.floor(s / 60)).padStart(2, '0')}:{String(s % 60).padStart(2, '0')} – {String(Math.floor(e / 60)).padStart(2, '0')}:{String(e % 60).padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
