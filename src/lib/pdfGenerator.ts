@@ -250,6 +250,142 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
   doc.save(filename);
 };
 
+interface InvoicePdfOptions {
+  invoiceName?: string | null;
+  items: PdfItem[];
+  total: number;
+  taxes: number;
+  discount: number;
+  status: string;
+  dueDate?: string | null;
+  paymentMethod?: string | null;
+  createdAt: string;
+  organization?: OrganizationInfo | null;
+  client?: ClientInfo | null;
+}
+
+export const generateInvoicePdf = (options: InvoicePdfOptions) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 20;
+
+  // === Organization Header ===
+  if (options.organization) {
+    const org = options.organization;
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(org.company_name || org.trade_name || 'Empresa', 20, y);
+    y += 6;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    if (org.trade_name && org.company_name) { doc.text(`Nome Fantasia: ${org.trade_name}`, 20, y); y += 4.5; }
+    if (org.cnpj) { doc.text(`CNPJ: ${org.cnpj}`, 20, y); y += 4.5; }
+    if (org.state_registration) { doc.text(`IE: ${org.state_registration}`, 20, y); y += 4.5; }
+    if (org.municipal_registration) { doc.text(`IM: ${org.municipal_registration}`, 20, y); y += 4.5; }
+    if (org.business_phone) { doc.text(`Tel: ${org.business_phone}`, 20, y); y += 4.5; }
+    if (org.business_email) { doc.text(`E-mail: ${org.business_email}`, 20, y); y += 4.5; }
+    if (org.website) { doc.text(`Site: ${org.website}`, 20, y); y += 4.5; }
+    y += 4;
+  }
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(20, y, pageWidth - 20, y);
+  y += 8;
+
+  // === Invoice Title & Meta ===
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text(options.invoiceName || 'Fatura', 20, y);
+  y += 7;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Status: ${options.status}`, 20, y); y += 4.5;
+  doc.text(`Data: ${new Date(options.createdAt).toLocaleDateString('pt-BR')}`, 20, y); y += 4.5;
+  if (options.dueDate) {
+    doc.text(`Vencimento: ${new Date(options.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, 20, y); y += 4.5;
+  }
+  if (options.paymentMethod) {
+    doc.text(`Pagamento: ${options.paymentMethod}`, 20, y); y += 4.5;
+  }
+  y += 4;
+
+  // === Client Section ===
+  if (options.client) {
+    const cl = options.client;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Cliente', 20, y); y += 5;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(cl.name, 20, y); y += 4.5;
+    if (cl.document) { doc.text(`CPF/CNPJ: ${cl.document}`, 20, y); y += 4.5; }
+    if (cl.responsible) { doc.text(`Responsável: ${cl.responsible}`, 20, y); y += 4.5; }
+    if (cl.email) { doc.text(`E-mail: ${cl.email}`, 20, y); y += 4.5; }
+    if (cl.phone) { doc.text(`Tel: ${cl.phone}`, 20, y); y += 4.5; }
+    y += 4;
+  }
+
+  // === Items Table ===
+  doc.setDrawColor(200, 200, 200);
+  doc.line(20, y, pageWidth - 20, y);
+  y += 6;
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setFillColor(245, 245, 245);
+  doc.rect(20, y - 3, pageWidth - 40, 8, 'F');
+  doc.text('Descrição', 22, y + 2);
+  doc.text('Qtd', 120, y + 2);
+  doc.text('Valor Unit.', 138, y + 2);
+  doc.text('Subtotal', 168, y + 2);
+  y += 10;
+
+  doc.setFont('helvetica', 'normal');
+  options.items.forEach((item) => {
+    if (y > 265) { doc.addPage(); y = 20; }
+    const subtotal = item.quantity * item.unitPrice;
+    doc.text(item.description || '-', 22, y);
+    doc.text(String(item.quantity), 122, y);
+    doc.text(formatCurrency(item.unitPrice), 138, y);
+    doc.text(formatCurrency(subtotal), 168, y);
+    y += 7;
+  });
+
+  // === Totals ===
+  y += 4;
+  doc.setDrawColor(220, 220, 220);
+  doc.line(120, y, pageWidth - 20, y);
+  y += 8;
+
+  const subtotal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  doc.setFontSize(10);
+  doc.text(`Subtotal: ${formatCurrency(subtotal)}`, 138, y); y += 6;
+  if (options.taxes > 0) {
+    doc.text(`Impostos (${options.taxes}%): ${formatCurrency(subtotal * options.taxes / 100)}`, 138, y); y += 6;
+  }
+  if (options.discount > 0) {
+    doc.text(`Desconto: -${formatCurrency(options.discount)}`, 138, y); y += 6;
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(`Total: ${formatCurrency(options.total)}`, 138, y);
+
+  // === Footer ===
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(160, 160, 160);
+  doc.text('Documento gerado automaticamente', 20, 280);
+
+  const datePart = new Date(options.createdAt).toISOString().slice(0, 10);
+  doc.save(`fatura_${datePart}.pdf`);
+};
+
 export const generateDocumentPdf = (options: PdfOptions) => {
   const doc = new jsPDF();
   const { title, type, items, total, status, createdAt, taxes, discount, dueDate } = options;
