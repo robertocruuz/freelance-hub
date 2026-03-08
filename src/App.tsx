@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import KanbanPage from "./pages/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import InvitePage from "./pages/InvitePage";
 
 const queryClient = new QueryClient();
 
