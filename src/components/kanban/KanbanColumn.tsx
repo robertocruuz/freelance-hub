@@ -194,7 +194,7 @@ export const KanbanColumnComponent = ({
       <div ref={setNodeRef} className="flex-1 px-2 pb-2 space-y-2 min-h-[60px] overflow-y-auto max-h-[calc(100vh-280px)]">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} onToggleComplete={onToggleComplete} />
+            <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} onToggleComplete={onToggleComplete} onDelete={onDeleteTask} />
           ))}
         </SortableContext>
       </div>
