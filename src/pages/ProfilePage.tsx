@@ -84,6 +84,19 @@ const ProfilePage = () => {
     fetchProfile();
   }, [user]);
 
+  // Load cities when orgForm.state changes
+  useEffect(() => {
+    if (!orgForm.state) {
+      setCities([]);
+      return;
+    }
+    setCitiesLoading(true);
+    fetchCitiesByState(orgForm.state).then((c) => {
+      setCities(c);
+      setCitiesLoading(false);
+    });
+  }, [orgForm.state]);
+
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
