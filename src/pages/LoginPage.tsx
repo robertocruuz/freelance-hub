@@ -41,18 +41,18 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Left side — Form */}
-      <div className="w-full lg:w-1/2 bg-[hsl(225,30%,8%)] flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-28 relative">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-28 relative bg-background">
         {/* Logo / Brand */}
         <div className="mb-10">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-6">
             <span className="text-primary-foreground font-black text-lg">F</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             {isRegister ? 'Crie sua conta' : 'Bem-vindo de volta'}
           </h1>
-          <p className="text-[hsl(220,10%,50%)] text-sm mt-2">
+          <p className="text-muted-foreground text-sm mt-2">
             {isRegister ? 'Preencha os dados para começar' : 'Entre com suas credenciais para continuar'}
           </p>
         </div>
@@ -60,7 +60,7 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
           {isRegister && (
             <div>
-              <label className="block text-xs font-semibold text-[hsl(220,10%,55%)] mb-1.5 tracking-wide uppercase">
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
                 Nome
               </label>
               <input
@@ -68,13 +68,13 @@ const LoginPage = () => {
                 placeholder="Seu nome"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[hsl(225,25%,12%)] border border-[hsl(225,15%,18%)] text-white placeholder:text-[hsl(220,10%,35%)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring/50 transition-all"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-[hsl(220,10%,55%)] mb-1.5 tracking-wide uppercase">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
               Email
             </label>
             <input
@@ -82,13 +82,13 @@ const LoginPage = () => {
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[hsl(225,25%,12%)] border border-[hsl(225,15%,18%)] text-white placeholder:text-[hsl(220,10%,35%)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring/50 transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[hsl(220,10%,55%)] mb-1.5 tracking-wide uppercase">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
               Senha
             </label>
             <div className="relative">
@@ -97,41 +97,36 @@ const LoginPage = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[hsl(225,25%,12%)] border border-[hsl(225,15%,18%)] text-white placeholder:text-[hsl(220,10%,35%)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all pr-12"
+                className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring/50 transition-all pr-12"
                 required
                 minLength={6}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(220,10%,40%)] hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[hsl(225,15%,18%)]" />
-            </div>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:brightness-110 transition-all"
+            >
+              {loading ? '...' : isRegister ? 'Criar conta' : 'Entrar'}
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-white text-[hsl(225,30%,8%)] font-semibold text-sm disabled:opacity-50 hover:bg-white/90 transition-all"
-          >
-            {loading ? '...' : isRegister ? 'Criar conta' : 'Entrar'}
-          </button>
         </form>
 
-        <p className="mt-6 text-sm text-[hsl(220,10%,45%)] max-w-sm">
+        <p className="mt-6 text-sm text-muted-foreground max-w-sm">
           {isRegister ? 'Já tem uma conta? ' : 'Não tem uma conta? '}
           <button
             onClick={() => setIsRegister(!isRegister)}
-            className="text-white font-medium underline underline-offset-4 hover:text-primary transition-colors"
+            className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors"
           >
             {isRegister ? 'Entrar' : 'Criar conta'}
           </button>
@@ -151,7 +146,6 @@ const LoginPage = () => {
             `,
           }}
         />
-        {/* Subtle noise overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
       </div>
     </div>
