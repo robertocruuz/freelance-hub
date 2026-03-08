@@ -58,6 +58,7 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
+          </TimerProvider>
         </AuthProvider>
       </I18nProvider>
     </ThemeProvider>
