@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -76,6 +79,7 @@ const ProjectsPage = () => {
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
   const [search, setSearch] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -117,6 +121,7 @@ const ProjectsPage = () => {
   const resetForm = () => {
     setName('');
     setClientId('');
+    setDueDate(undefined);
     setEditingId(null);
     setShowForm(false);
     setSelectedBudgetId(null);
@@ -153,6 +158,9 @@ const ProjectsPage = () => {
       setName(budget.name || '');
       setClientId(budget.client_id || '');
       setPendingBudgetItems(budget.items);
+      if (budget.delivery_date) {
+        setDueDate(new Date(budget.delivery_date + 'T12:00:00'));
+      }
     }
   };
 
@@ -166,11 +174,12 @@ const ProjectsPage = () => {
   const handleSave = async () => {
     if (!user || !name.trim()) return;
     const selectedBudget = allBudgets.find(b => b.id === selectedBudgetId);
+    const dueDateStr = dueDate ? format(dueDate, 'yyyy-MM-dd') : (selectedBudget?.delivery_date || null);
     const payload = {
       user_id: user.id,
       name: name.trim(),
       client_id: clientId || null,
-      due_date: selectedBudget?.delivery_date || null,
+      due_date: dueDateStr,
     };
 
     if (editingId) {
@@ -200,6 +209,7 @@ const ProjectsPage = () => {
     setEditingId(p.id);
     setName(p.name);
     setClientId(p.client_id || '');
+    setDueDate(p.due_date ? new Date(p.due_date + 'T12:00:00') : undefined);
     setShowForm(true);
   };
 
@@ -397,6 +407,34 @@ const ProjectsPage = () => {
           ) : (
             <ClientSelect value={clientId} onChange={setClientId} />
           )}
+
+          {/* Due date picker */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Prazo de entrega</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    inputClass,
+                    "flex items-center gap-2 text-left",
+                    !dueDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  {dueDate ? format(dueDate, 'dd/MM/yyyy') : 'Selecione o prazo...'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={setDueDate}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
           {/* Preview of items to import */}
           {pendingBudgetItems.length > 0 && (
