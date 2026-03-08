@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ShareButton } from '@/components/kanban/ShareButton';
 import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
@@ -199,6 +200,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   ))}
                 </SelectContent>
               </Select>
+              <ShareButton resourceType="task" resourceId={task.id} compact />
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-secondary transition">

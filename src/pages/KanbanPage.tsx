@@ -13,12 +13,13 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2 } from 'lucide-react';
 import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
 import { TaskCard } from '@/components/kanban/TaskCard';
 import { TaskDetailModal } from '@/components/kanban/TaskDetailModal';
+import { ShareButton } from '@/components/kanban/ShareButton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -396,6 +397,9 @@ const KanbanPage = () => {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditBoard(board); }}>
                   <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()} asChild>
+                  <div><ShareButton resourceType="board" resourceId={board.id} compact /></div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeletingBoard(board); }} className="text-destructive focus:text-destructive">
                   <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
@@ -1104,6 +1108,12 @@ const KanbanPage = () => {
               </div>
             )}
           </div>
+          {editingBoard && (
+            <div className="pt-2">
+              <Label className="text-xs mb-2 block">Compartilhamento</Label>
+              <ShareButton resourceType="board" resourceId={editingBoard.id} />
+            </div>
+          )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowBoardDialog(false)}>Cancelar</Button>
             <Button onClick={handleSaveBoard} disabled={!boardName.trim()} className="btn-glow">
