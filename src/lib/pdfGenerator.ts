@@ -71,14 +71,14 @@ export const generateDocumentPdf = (options: PdfOptions) => {
   doc.setFontSize(10);
   if (type === 'invoice') {
     const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-    doc.text(`Subtotal: R$ ${subtotal.toFixed(2)}`, 140, y);
+    doc.text(`Subtotal: ${formatCurrency(subtotal)}`, 140, y);
     y += 6;
     if (taxes) {
-      doc.text(`Impostos (${taxes}%): R$ ${(subtotal * taxes / 100).toFixed(2)}`, 140, y);
+      doc.text(`Impostos (${taxes}%): ${formatCurrency(subtotal * taxes / 100)}`, 140, y);
       y += 6;
     }
     if (discount) {
-      doc.text(`Desconto: -R$ ${discount.toFixed(2)}`, 140, y);
+      doc.text(`Desconto: -${formatCurrency(discount)}`, 140, y);
       y += 6;
     }
   }
