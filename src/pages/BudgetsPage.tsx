@@ -90,7 +90,16 @@ const BudgetsPage = () => {
     }
   }, [user, clients]);
 
-  useEffect(() => { loadBudgets(); }, [loadBudgets]);
+  const loadImportedItems = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('project_items').select('name, value');
+    if (data) {
+      const keys = new Set(data.map(d => makeItemKey(d.name, Number(d.value))));
+      setImportedItemKeys(keys);
+    }
+  }, [user]);
+
+  useEffect(() => { loadBudgets(); loadImportedItems(); }, [loadBudgets, loadImportedItems]);
 
   // Pre-fill from Kanban integration
   useEffect(() => {
