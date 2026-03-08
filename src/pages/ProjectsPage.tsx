@@ -158,6 +158,9 @@ const ProjectsPage = () => {
       setName(budget.name || '');
       setClientId(budget.client_id || '');
       setPendingBudgetItems(budget.items);
+      if (budget.delivery_date) {
+        setDueDate(new Date(budget.delivery_date + 'T12:00:00'));
+      }
     }
   };
 
