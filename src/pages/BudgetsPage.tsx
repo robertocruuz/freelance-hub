@@ -92,7 +92,7 @@ const BudgetsPage = () => {
 
   // Project import state
   interface ProjectOption { id: string; name: string; client_id: string | null; }
-  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem; budget: Budget } | null>(null);
+  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem | null; budget: Budget } | null>(null);
   const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
   const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
 
