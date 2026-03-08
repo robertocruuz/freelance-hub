@@ -205,8 +205,16 @@ const TimeTrackingPage = () => {
     }
   };
 
-  const deleteEntry = async (id: string) => {
-    await supabase.from('time_entries').delete().eq('id', id);
+  const confirmDeleteEntry = (id: string) => {
+    setDeletingEntryId(id);
+  };
+
+  const deleteEntry = async () => {
+    if (!deletingEntryId) return;
+    const { error } = await supabase.from('time_entries').delete().eq('id', deletingEntryId);
+    if (error) toast.error(error.message);
+    else toast.success('Registro excluído com sucesso');
+    setDeletingEntryId(null);
     loadEntries();
   };
 
