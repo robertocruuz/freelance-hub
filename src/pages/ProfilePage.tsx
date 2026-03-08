@@ -706,6 +706,9 @@ const ProfilePage = () => {
 
               <Separator className="opacity-50" />
 
+              {/* Received invites */}
+              <ReceivedInvites />
+
               {/* Team section (embedded) */}
               <div>
                 <div className="flex items-center justify-between mb-3">
