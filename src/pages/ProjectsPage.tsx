@@ -516,7 +516,9 @@ const ProjectsPage = () => {
                           <> · Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
                         )}
                         {isExpanded && items.length > 0 && (
-                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}</>
+                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}
+                            {p.discount > 0 && <> · Desconto: {p.discount}%</>}
+                          </>
                         )}
                       </p>
                     </div>
