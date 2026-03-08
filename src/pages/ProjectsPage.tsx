@@ -47,6 +47,7 @@ interface Project {
   name: string;
   client_id: string | null;
   due_date: string | null;
+  discount: number;
   created_at: string;
 }
 
@@ -62,6 +63,7 @@ interface Budget {
   client_id: string | null;
   delivery_date: string | null;
   items: BudgetItem[];
+  discount: number;
   total: number;
   status: string;
   created_at: string;
@@ -98,6 +100,7 @@ const ProjectsPage = () => {
   const [allBudgets, setAllBudgets] = useState<Budget[]>([]);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
   const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
+  const [projectDiscount, setProjectDiscount] = useState(0);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -126,6 +129,7 @@ const ProjectsPage = () => {
     setShowForm(false);
     setSelectedBudgetId(null);
     setPendingBudgetItems([]);
+    setProjectDiscount(0);
   };
 
   const [allProjectItemNames, setAllProjectItemNames] = useState<Set<string>>(new Set());
@@ -158,6 +162,7 @@ const ProjectsPage = () => {
       setName(budget.name || '');
       setClientId(budget.client_id || '');
       setPendingBudgetItems(budget.items);
+      setProjectDiscount(budget.discount || 0);
       if (budget.delivery_date) {
         setDueDate(new Date(budget.delivery_date + 'T12:00:00'));
       }
@@ -180,6 +185,7 @@ const ProjectsPage = () => {
       name: name.trim(),
       client_id: clientId || null,
       due_date: dueDateStr,
+      discount: projectDiscount,
     };
 
     if (editingId) {
@@ -210,6 +216,7 @@ const ProjectsPage = () => {
     setName(p.name);
     setClientId(p.client_id || '');
     setDueDate(p.due_date ? new Date(p.due_date + 'T12:00:00') : undefined);
+    setProjectDiscount(p.discount || 0);
     setShowForm(true);
   };
 
@@ -449,6 +456,21 @@ const ProjectsPage = () => {
             </div>
           )}
 
+          {/* Discount field */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Desconto (%)</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={projectDiscount || ''}
+              onChange={e => setProjectDiscount(+e.target.value)}
+              placeholder="0"
+              className={inputClass + " w-40"}
+            />
+          </div>
+
           <div className="flex gap-2">
             <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
               {t.save}
@@ -494,7 +516,9 @@ const ProjectsPage = () => {
                           <> · Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
                         )}
                         {isExpanded && items.length > 0 && (
-                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}</>
+                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}
+                            {p.discount > 0 && <> · Desconto: {p.discount}%</>}
+                          </>
                         )}
                       </p>
                     </div>
