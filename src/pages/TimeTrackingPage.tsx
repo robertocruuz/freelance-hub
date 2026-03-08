@@ -260,7 +260,7 @@ const TimeTrackingPage = () => {
       if (!cd || !calendarRef.current) return;
       const rect = calendarRef.current.getBoundingClientRect();
       const y = e.clientY - rect.top + calendarRef.current.scrollTop;
-      const minute = Math.max(0, Math.min(24 * 60, Math.round(y / 5) * 5));
+      const minute = Math.max(workHourStart * 60, Math.min(workHourEnd * 60, Math.round(y / 5) * 5 + workHourStart * 60));
       const next = { ...cd, currentMin: minute };
       setCreateDrag(next);
       createDragRef.current = next;
