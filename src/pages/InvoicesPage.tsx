@@ -739,8 +739,9 @@ const InvoicesPage = () => {
               </div>
             ));
           })()}
-        </div>
-      )}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 };
