@@ -65,8 +65,12 @@ const BudgetsPage = () => {
   interface ProjectOption { id: string; name: string; client_id: string | null; }
   const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem; budget: Budget } | null>(null);
   const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
+  // Track which items are already imported (key: "description|value")
+  const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+
+  const makeItemKey = (name: string, value: number) => `${name}|${value.toFixed(2)}`;
 
   const loadBudgets = useCallback(async () => {
     if (!user) return;
