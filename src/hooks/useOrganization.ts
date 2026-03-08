@@ -152,7 +152,7 @@ export const useOrganization = () => {
     return { error };
   };
 
-  const generateInviteLink = async (role: 'admin' | 'editor' | 'viewer') => {
+  const generateInviteLink = async (role: 'admin' | 'collaborator') => {
     if (!orgId || !user) return { error: 'No organization', token: null };
 
     const { data, error } = await (supabase.from('organization_invites' as any) as any)
