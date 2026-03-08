@@ -70,7 +70,8 @@ const InvoicesPage = () => {
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
