@@ -196,17 +196,17 @@ const TimerIndicator = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
     <button
       onClick={() => navigate('/dashboard/time')}
-      className="flex items-center gap-2 h-8 pl-2 pr-3 rounded-lg bg-white/[0.08] hover:bg-white/15 transition group"
+      className="flex items-center gap-2 h-10 pl-3 pr-3.5 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] backdrop-blur-sm border border-white/[0.08] transition-all group"
     >
-      <span className="relative flex h-2 w-2">
+      <span className="relative flex h-2.5 w-2.5">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
       </span>
-      <span className="text-xs font-mono font-semibold text-white/90 tabular-nums">
+      <span className="text-xs font-mono font-bold text-white tabular-nums">
         {formatElapsed(elapsed)}
       </span>
       <Square
-        className="w-3 h-3 text-white/50 group-hover:text-white transition"
+        className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition"
         onClick={(e) => {
           e.stopPropagation();
           stopTimer();
