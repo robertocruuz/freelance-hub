@@ -464,7 +464,7 @@ const KanbanPage = () => {
                 </Badge>
               ))}
               {Array.from(filterDeadlines).map(d => {
-                const labels: Record<string, string> = { overdue: 'Atrasadas', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
+                const labels: Record<string, string> = { overdue: 'Atrasadas', today: 'Hoje', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
                 return (
                   <Badge key={d} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d)}>
                     {labels[d] || d}
