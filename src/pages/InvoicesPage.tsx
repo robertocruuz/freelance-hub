@@ -218,6 +218,7 @@ const InvoicesPage = () => {
   const resetForm = () => {
     setCreating(false);
     setEditingInvoiceId(null);
+    setInvoiceName('');
     setClientId('');
     setItems([]);
     setTaxes(0);
