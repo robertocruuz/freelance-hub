@@ -1,8 +1,9 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, SquareKanban, Menu } from 'lucide-react';
+import { Home, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, SquareKanban, Menu, Play, Square } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { useTimer } from '@/hooks/useTimer';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -83,8 +84,9 @@ const DashboardLayout = () => {
             })}
           </nav>
 
-          {/* Right controls */}
+          {/* Timer indicator + Right controls */}
           <div className="flex items-center gap-1.5">
+            <TimerIndicator navigate={navigate} />
             <button
               onClick={toggle}
               className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.08] hover:bg-white/15 transition text-white/70 hover:text-white"
@@ -168,6 +170,43 @@ const DashboardLayout = () => {
         <span className="text-[11px] text-muted-foreground/40">{t.copyright}</span>
       </footer>
     </div>
+  );
+};
+
+const formatElapsed = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
+
+const TimerIndicator = ({ navigate }: { navigate: (path: string) => void }) => {
+  const { running, elapsed, stopTimer } = useTimer();
+
+  if (!running) return null;
+
+  return (
+    <button
+      onClick={() => navigate('/dashboard/time')}
+      className="flex items-center gap-2 h-8 pl-2 pr-3 rounded-lg bg-white/[0.08] hover:bg-white/15 transition group"
+    >
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+      </span>
+      <span className="text-xs font-mono font-semibold text-white/90 tabular-nums">
+        {formatElapsed(elapsed)}
+      </span>
+      <Square
+        className="w-3 h-3 text-white/50 group-hover:text-white transition"
+        onClick={(e) => {
+          e.stopPropagation();
+          stopTimer();
+        }}
+      />
+    </button>
   );
 };
 
