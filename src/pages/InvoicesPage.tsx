@@ -127,7 +127,7 @@ const InvoicesPage = () => {
         : []
     );
     setTaxes(0);
-    setDiscount(0);
+    setDiscount(project.discount || 0);
     setCreating(true);
     setImportDialogOpen(false);
     toast.success(lang === 'pt-BR' ? `Projeto "${project.name}" importado!` : `Project "${project.name}" imported!`);
