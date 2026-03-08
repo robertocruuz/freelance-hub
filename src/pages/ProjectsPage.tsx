@@ -62,6 +62,7 @@ interface Budget {
   client_id: string | null;
   delivery_date: string | null;
   items: BudgetItem[];
+  discount: number;
   total: number;
   status: string;
   created_at: string;
