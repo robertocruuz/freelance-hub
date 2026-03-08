@@ -116,6 +116,19 @@ const ProjectsPage = () => {
   const [newBoardName, setNewBoardName] = useState('');
   const [creatingBoard, setCreatingBoard] = useState(false);
 
+  // Track which project items already have tasks created
+  const [existingTaskKeys, setExistingTaskKeys] = useState<Set<string>>(new Set());
+
+  const loadExistingTasks = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('tasks').select('title, project_id').not('project_id', 'is', null);
+    if (data) {
+      setExistingTaskKeys(new Set(data.map(t => `${t.title}::${t.project_id}`)));
+    }
+  }, [user]);
+
+  const isTaskCreated = (item: ProjectItem) => existingTaskKeys.has(`${item.name}::${item.project_id}`);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
