@@ -7,7 +7,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { generateDocumentPdf } from '@/lib/pdfGenerator';
+import { generateDocumentPdf, generateBudgetPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -89,6 +89,14 @@ const BudgetsPage = () => {
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
+  const [organization, setOrganization] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('organizations').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) setOrganization(data);
+    });
+  }, [user]);
 
   // New item input state
   const [newDesc, setNewDesc] = useState('');
@@ -261,13 +269,19 @@ const BudgetsPage = () => {
   const statusLabel = (s: string) => (t as any)[s] || s;
 
   const exportBudgetPdf = (b: Budget) => {
-    generateDocumentPdf({
-      title: t.budgets,
-      type: 'budget',
+    const client = clients.find(c => c.id === b.client_id) || null;
+    generateBudgetPdf({
+      budgetName: b.name,
+      budgetDate: b.budget_date,
+      validityDate: b.validity_date,
+      deliveryDate: b.delivery_date,
       items: b.items,
       total: b.total,
-      status: statusLabel(b.status),
-      createdAt: b.created_at,
+      discount: b.discount,
+      notes: b.notes,
+      status: b.status,
+      organization: organization,
+      client: client,
     });
   };
 
