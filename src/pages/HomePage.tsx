@@ -4,7 +4,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface DashboardData {
