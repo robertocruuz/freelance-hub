@@ -318,10 +318,6 @@ const ProfilePage = () => {
                 <div className="space-y-6">
                   {/* Identification section */}
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-                      <Building2 className="w-3.5 h-3.5" />
-                      {lang === 'pt-BR' ? 'Identificação' : 'Identification'}
-                    </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">
