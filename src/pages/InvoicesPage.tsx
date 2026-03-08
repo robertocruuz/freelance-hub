@@ -139,6 +139,7 @@ const InvoicesPage = () => {
   }, [user, clients]);
 
   const importProject = (project: ProjectWithItems) => {
+    setInvoiceName(project.name);
     setClientId(project.client_id || '');
     if (project.due_date) setDueDate(new Date(project.due_date + 'T12:00:00'));
     setItems(
