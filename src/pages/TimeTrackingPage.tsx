@@ -204,6 +204,110 @@ const TimeTrackingPage = () => {
     dragStateRef.current = state;
   };
 
+  // Create-drag state for new entries from empty space
+  const [createDrag, setCreateDrag] = useState<{
+    dayDate: Date;
+    startMin: number;
+    currentMin: number;
+    gridTop: number;
+  } | null>(null);
+  const createDragRef = useRef(createDrag);
+  createDragRef.current = createDrag;
+
+  const [createModalData, setCreateModalData] = useState<{
+    dayDate: Date;
+    startMin: number;
+    endMin: number;
+  } | null>(null);
+  const [createDesc, setCreateDesc] = useState('');
+  const [createClientId, setCreateClientId] = useState('');
+  const [createProjectId, setCreateProjectId] = useState('');
+  const [createTaskId, setCreateTaskId] = useState('');
+
+  const handleGridMouseDown = (e: React.MouseEvent, dayDate: Date, gridEl: HTMLDivElement) => {
+    if (dragState) return;
+    const rect = gridEl.getBoundingClientRect();
+    const y = e.clientY - rect.top + gridEl.scrollTop;
+    const minute = Math.round(y / 5) * 5;
+    setCreateDrag({ dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop });
+    createDragRef.current = { dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop };
+  };
+
+  useEffect(() => {
+    if (!createDrag) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const cd = createDragRef.current;
+      if (!cd || !calendarRef.current) return;
+      const rect = calendarRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top + calendarRef.current.scrollTop;
+      const minute = Math.max(0, Math.min(24 * 60, Math.round(y / 5) * 5));
+      const next = { ...cd, currentMin: minute };
+      setCreateDrag(next);
+      createDragRef.current = next;
+    };
+
+    const handleMouseUp = () => {
+      const cd = createDragRef.current;
+      setCreateDrag(null);
+      createDragRef.current = null;
+      if (!cd) return;
+
+      const s = Math.min(cd.startMin, cd.currentMin);
+      const e = Math.max(cd.startMin, cd.currentMin);
+      if (e - s < 5) return; // too small, ignore
+
+      setCreateModalData({ dayDate: cd.dayDate, startMin: s, endMin: e });
+      setCreateDesc('');
+      setCreateClientId('');
+      setCreateProjectId('');
+      setCreateTaskId('');
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [createDrag]);
+
+  const createFilteredProjects = createClientId
+    ? projects.filter(p => p.client_id === createClientId)
+    : projects;
+
+  const createFilteredTasks = createProjectId
+    ? kanbanTasks.filter(t => t.project_id === createProjectId)
+    : kanbanTasks;
+
+  const saveCreate = async () => {
+    if (!createModalData || !user) return;
+    const { dayDate, startMin, endMin } = createModalData;
+    const newStart = new Date(dayDate);
+    newStart.setHours(Math.floor(startMin / 60), startMin % 60, 0, 0);
+    const newEnd = new Date(dayDate);
+    newEnd.setHours(Math.floor(endMin / 60), endMin % 60, 0, 0);
+    const duration = Math.floor((newEnd.getTime() - newStart.getTime()) / 1000);
+
+    const { error } = await supabase.from('time_entries').insert({
+      user_id: user.id,
+      description: createDesc || null,
+      client_id: createClientId || null,
+      project_id: createProjectId || null,
+      task_id: createTaskId || null,
+      start_time: newStart.toISOString(),
+      end_time: newEnd.toISOString(),
+      duration,
+    } as any);
+
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Registro criado');
+      setCreateModalData(null);
+      loadEntries();
+    }
+  };
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
