@@ -1001,6 +1001,7 @@ const TimeTrackingPage = () => {
                     return (
                       <div
                         key={entry.id}
+                        data-entry-block
                         className={`absolute rounded-md text-[10px] text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
                           top: `${displayStart}px`,
