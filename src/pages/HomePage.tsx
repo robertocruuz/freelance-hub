@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, Plus, TrendingUp, CheckCircle2, AlertCircle, Timer, DollarSign } from 'lucide-react';
+import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isToday, parseISO, differenceInMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface DashboardData {
@@ -67,10 +67,7 @@ const HomePage = () => {
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
 
-  // Task stats
   const taskStats = useMemo(() => {
     const total = data.tasks.length;
     const done = data.tasks.filter(t => t.status === 'done').length;
@@ -80,7 +77,6 @@ const HomePage = () => {
     return { total, done, inProgress, todo, overdue };
   }, [data.tasks]);
 
-  // Time stats
   const timeStats = useMemo(() => {
     const todayEntries = data.timeEntries.filter(e => e.start_time && isToday(parseISO(e.start_time)));
     const weekEntries = data.timeEntries.filter(e => {
@@ -93,289 +89,279 @@ const HomePage = () => {
       if (e.end_time) return sum + differenceInMinutes(parseISO(e.end_time), parseISO(e.start_time));
       return sum;
     }, 0);
-    const todayMin = calcMinutes(todayEntries);
-    const weekMin = calcMinutes(weekEntries);
-    const activeTimer = data.timeEntries.find(e => !e.end_time && !e.duration);
-    return { todayMin, weekMin, activeTimer };
+    return { todayMin: calcMinutes(todayEntries), weekMin: calcMinutes(weekEntries), activeTimer: data.timeEntries.find(e => !e.end_time && !e.duration) };
   }, [data.timeEntries]);
 
-  // Invoice stats
   const invoiceStats = useMemo(() => {
     const pending = data.invoices.filter(i => i.status === 'pending');
     const paid = data.invoices.filter(i => i.status === 'paid');
     const overdue = data.invoices.filter(i => i.status === 'overdue');
-    const totalPending = pending.reduce((s, i) => s + (Number(i.total) || 0), 0);
-    const totalPaid = paid.reduce((s, i) => s + (Number(i.total) || 0), 0);
-    return { pending: pending.length, paid: paid.length, overdue: overdue.length, totalPending, totalPaid };
+    return { pending: pending.length, paid: paid.length, overdue: overdue.length, totalPending: pending.reduce((s, i) => s + (Number(i.total) || 0), 0), totalPaid: paid.reduce((s, i) => s + (Number(i.total) || 0), 0) };
   }, [data.invoices]);
 
-  // Budget stats
   const budgetStats = useMemo(() => {
     const draft = data.budgets.filter(b => b.status === 'draft').length;
     const sent = data.budgets.filter(b => b.status === 'sent').length;
     const approved = data.budgets.filter(b => b.status === 'approved').length;
-    const totalValue = data.budgets.reduce((s, b) => s + (Number(b.total) || 0), 0);
-    return { draft, sent, approved, total: data.budgets.length, totalValue };
+    return { draft, sent, approved, total: data.budgets.length, totalValue: data.budgets.reduce((s, b) => s + (Number(b.total) || 0), 0) };
   }, [data.budgets]);
 
-  const formatTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m.toString().padStart(2, '0')}m`;
-  };
+  const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
+  const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', {
-      style: 'currency', currency: isPt ? 'BRL' : 'USD',
-    }).format(value);
-  };
+  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 cursor-pointer";
 
-  const SkeletonCard = () => (
-    <div className="rounded-2xl border border-border bg-card p-5 animate-pulse">
-      <div className="h-4 bg-muted rounded w-1/3 mb-4" />
-      <div className="h-8 bg-muted rounded w-1/2 mb-3" />
-      <div className="h-3 bg-muted rounded w-2/3" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto relative z-10 space-y-6">
+        <div className="h-10 bg-muted rounded-xl w-64 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="rounded-2xl border border-border bg-card p-6 animate-pulse space-y-3">
+              <div className="h-4 bg-muted rounded w-1/3" />
+              <div className="h-8 bg-muted rounded w-1/2" />
+              <div className="h-3 bg-muted rounded w-2/3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto relative z-10 space-y-6">
       {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-foreground leading-tight">
-            {isPt ? `Olá, ${firstName || 'Usuário'}` : `Hello, ${firstName || 'User'}`} 👋
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {isPt
-              ? format(now, "EEEE, dd 'de' MMMM", { locale: ptBR })
-              : format(now, 'EEEE, MMMM dd')}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-foreground leading-tight">
+          {isPt ? `Olá, ${firstName || 'Usuário'}` : `Hello, ${firstName || 'User'}`} 👋
+        </h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          {isPt ? format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }) : format(now, 'EEEE, MMMM dd')}
+        </p>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+      {/* Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 auto-rows-min">
+
+        {/* ═══ Tarefas — wide card ═══ */}
+        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} xl:col-span-2 p-6`}>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                <SquareKanban className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <span className="font-bold text-foreground text-base">{isPt ? 'Tarefas' : 'Tasks'}</span>
+                <p className="text-xs text-muted-foreground">{taskStats.total} {isPt ? 'total' : 'total'}</p>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex mb-4">
+            {taskStats.total > 0 && (
+              <>
+                <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${(taskStats.done / taskStats.total) * 100}%` }} />
+                <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${(taskStats.inProgress / taskStats.total) * 100}%` }} />
+              </>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <MiniStat value={taskStats.todo} label={isPt ? 'A fazer' : 'To do'} dotColor="bg-muted-foreground/40" />
+            <MiniStat value={taskStats.inProgress} label={isPt ? 'Fazendo' : 'Doing'} dotColor="bg-blue-500" />
+            <MiniStat value={taskStats.done} label={isPt ? 'Feito' : 'Done'} dotColor="bg-green-500" />
+          </div>
+
+          {taskStats.overdue > 0 && (
+            <div className="mt-4 flex items-center gap-1.5 text-destructive bg-destructive/5 rounded-lg px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span className="text-xs font-semibold">{taskStats.overdue} {isPt ? 'atrasadas' : 'overdue'}</span>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
-          {/* Clientes */}
-          <button
-            onClick={() => navigate('/dashboard/clients')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Users className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <span className="font-bold text-foreground">{isPt ? 'Clientes' : 'Clients'}</span>
+        {/* ═══ Time Tracking ═══ */}
+        <div onClick={() => navigate('/dashboard/time')} className={`${cardBase} xl:col-span-2 p-6`}>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-cyan-500" />
               </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{data.clients.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {isPt ? 'clientes cadastrados' : 'registered clients'}
-            </p>
-            {data.clients.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-border space-y-1.5">
-                {data.clients.slice(0, 3).map(c => (
-                  <div key={c.id} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }} />
-                    <span className="text-xs text-muted-foreground truncate">{c.name}</span>
-                  </div>
-                ))}
-                {data.clients.length > 3 && (
-                  <span className="text-xs text-primary font-medium">+{data.clients.length - 3} {isPt ? 'mais' : 'more'}</span>
-                )}
-              </div>
-            )}
-          </button>
-
-          {/* Orçamentos */}
-          <button
-            onClick={() => navigate('/dashboard/budgets')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-accent/20 flex items-center justify-center">
-                  <FileText className="w-4.5 h-4.5 text-accent-foreground" />
-                </div>
-                <span className="font-bold text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{budgetStats.total}</div>
-            <p className="text-xs text-muted-foreground">{formatCurrency(budgetStats.totalValue)} {isPt ? 'total' : 'total'}</p>
-            <div className="mt-3 pt-3 border-t border-border flex gap-3 flex-wrap">
-              <StatusPill label={isPt ? 'Rascunho' : 'Draft'} count={budgetStats.draft} color="bg-muted text-muted-foreground" />
-              <StatusPill label={isPt ? 'Enviado' : 'Sent'} count={budgetStats.sent} color="bg-blue-500/10 text-blue-600 dark:text-blue-400" />
-              <StatusPill label={isPt ? 'Aprovado' : 'Approved'} count={budgetStats.approved} color="bg-green-500/10 text-green-600 dark:text-green-400" />
-            </div>
-          </button>
-
-          {/* Projetos */}
-          <button
-            onClick={() => navigate('/dashboard/projects')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                  <FolderKanban className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <span className="font-bold text-foreground">{isPt ? 'Projetos' : 'Projects'}</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{data.projects.length}</div>
-            <p className="text-xs text-muted-foreground">{isPt ? 'projetos ativos' : 'active projects'}</p>
-            {data.projects.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-border space-y-1.5">
-                {data.projects.slice(0, 3).map(p => (
-                  <div key={p.id} className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground truncate">{p.name}</span>
-                    {p.due_date && (
-                      <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                        {format(parseISO(p.due_date), 'dd/MM')}
-                      </span>
-                    )}
-                  </div>
-                ))}
-                {data.projects.length > 3 && (
-                  <span className="text-xs text-primary font-medium">+{data.projects.length - 3} {isPt ? 'mais' : 'more'}</span>
-                )}
-              </div>
-            )}
-          </button>
-
-          {/* Tarefas */}
-          <button
-            onClick={() => navigate('/dashboard/kanban')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                  <SquareKanban className="w-4.5 h-4.5 text-orange-600 dark:text-orange-400" />
-                </div>
-                <span className="font-bold text-foreground">{isPt ? 'Tarefas' : 'Tasks'}</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{taskStats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {taskStats.done} {isPt ? 'concluídas' : 'completed'}
-            </p>
-            <div className="mt-3 pt-3 border-t border-border space-y-2">
-              {/* Progress bar */}
-              <div className="w-full h-2 rounded-full bg-muted overflow-hidden flex">
-                {taskStats.total > 0 && (
-                  <>
-                    <div className="h-full bg-green-500 transition-all" style={{ width: `${(taskStats.done / taskStats.total) * 100}%` }} />
-                    <div className="h-full bg-blue-500 transition-all" style={{ width: `${(taskStats.inProgress / taskStats.total) * 100}%` }} />
-                    <div className="h-full bg-muted-foreground/20 transition-all" style={{ width: `${(taskStats.todo / taskStats.total) * 100}%` }} />
-                  </>
-                )}
-              </div>
-              <div className="flex gap-3 flex-wrap">
-                <StatusPill label={isPt ? 'A fazer' : 'To do'} count={taskStats.todo} color="bg-muted text-muted-foreground" />
-                <StatusPill label={isPt ? 'Fazendo' : 'Doing'} count={taskStats.inProgress} color="bg-blue-500/10 text-blue-600 dark:text-blue-400" />
-                <StatusPill label={isPt ? 'Feito' : 'Done'} count={taskStats.done} color="bg-green-500/10 text-green-600 dark:text-green-400" />
-              </div>
-              {taskStats.overdue > 0 && (
-                <div className="flex items-center gap-1.5 text-destructive">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">{taskStats.overdue} {isPt ? 'atrasadas' : 'overdue'}</span>
-                </div>
-              )}
-            </div>
-          </button>
-
-          {/* Time Tracking */}
-          <button
-            onClick={() => navigate('/dashboard/time')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                  <Clock className="w-4.5 h-4.5 text-cyan-600 dark:text-cyan-400" />
-                </div>
-                <span className="font-bold text-foreground">Time Tracking</span>
-              </div>
-              <div className="flex items-center gap-2">
+              <div>
+                <span className="font-bold text-foreground text-base">Time Tracking</span>
                 {timeStats.activeTimer && (
-                  <span className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    {isPt ? 'Ativo' : 'Active'}
-                  </span>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-semibold text-green-600 dark:text-green-400">{isPt ? 'Timer ativo' : 'Timer active'}</span>
+                  </div>
                 )}
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{formatTime(timeStats.todayMin)}</div>
-            <p className="text-xs text-muted-foreground">{isPt ? 'trabalhado hoje' : 'worked today'}</p>
-            <div className="mt-3 pt-3 border-t border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{isPt ? 'Esta semana' : 'This week'}</span>
-                <span className="text-sm font-bold text-foreground">{formatTime(timeStats.weekMin)}</span>
-              </div>
-              <div className="flex items-center justify-between mt-1.5">
-                <span className="text-xs text-muted-foreground">{isPt ? 'Registros totais' : 'Total entries'}</span>
-                <span className="text-sm font-bold text-foreground">{data.timeEntries.length}</span>
-              </div>
-            </div>
-          </button>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
 
-          {/* Faturas */}
-          <button
-            onClick={() => navigate('/dashboard/invoices')}
-            className="group rounded-2xl border border-border bg-card p-5 text-left transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <Receipt className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <span className="font-bold text-foreground">{isPt ? 'Faturas' : 'Invoices'}</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl bg-muted/50 p-3.5 text-center">
+              <div className="text-2xl font-extrabold text-foreground">{fmtTime(timeStats.todayMin)}</div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Hoje' : 'Today'}</span>
             </div>
-            <div className="text-3xl font-extrabold text-foreground mb-1">{data.invoices.length}</div>
-            <p className="text-xs text-muted-foreground">{formatCurrency(invoiceStats.totalPaid)} {isPt ? 'recebido' : 'received'}</p>
-            <div className="mt-3 pt-3 border-t border-border space-y-2">
-              <div className="flex gap-3 flex-wrap">
-                <StatusPill label={isPt ? 'Pendente' : 'Pending'} count={invoiceStats.pending} color="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" />
-                <StatusPill label={isPt ? 'Pago' : 'Paid'} count={invoiceStats.paid} color="bg-green-500/10 text-green-600 dark:text-green-400" />
-                {invoiceStats.overdue > 0 && (
-                  <StatusPill label={isPt ? 'Atrasado' : 'Overdue'} count={invoiceStats.overdue} color="bg-red-500/10 text-red-600 dark:text-red-400" />
-                )}
+            <div className="rounded-xl bg-muted/50 p-3.5 text-center">
+              <div className="text-2xl font-extrabold text-foreground">{fmtTime(timeStats.weekMin)}</div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Semana' : 'Week'}</span>
+            </div>
+            <div className="rounded-xl bg-muted/50 p-3.5 text-center">
+              <div className="text-2xl font-extrabold text-foreground">{data.timeEntries.length}</div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Registros' : 'Entries'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ Faturas — tall card ═══ */}
+        <div onClick={() => navigate('/dashboard/invoices')} className={`${cardBase} xl:row-span-2 p-6 flex flex-col`}>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Receipt className="w-5 h-5 text-emerald-500" />
               </div>
-              {invoiceStats.totalPending > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {formatCurrency(invoiceStats.totalPending)} {isPt ? 'a receber' : 'receivable'}
-                  </span>
+              <span className="font-bold text-foreground text-base">{isPt ? 'Faturas' : 'Invoices'}</span>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          <div className="text-3xl font-extrabold text-foreground">{data.invoices.length}</div>
+          <p className="text-xs text-muted-foreground mt-1 mb-5">{isPt ? 'faturas criadas' : 'invoices created'}</p>
+
+          <div className="space-y-3 flex-1">
+            <StatusRow label={isPt ? 'Pendente' : 'Pending'} count={invoiceStats.pending} dotColor="bg-yellow-500" />
+            <StatusRow label={isPt ? 'Pago' : 'Paid'} count={invoiceStats.paid} dotColor="bg-green-500" />
+            {invoiceStats.overdue > 0 && <StatusRow label={isPt ? 'Atrasado' : 'Overdue'} count={invoiceStats.overdue} dotColor="bg-destructive" />}
+          </div>
+
+          <div className="mt-auto pt-4 border-t border-border space-y-2">
+            {invoiceStats.totalPaid > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{isPt ? 'Recebido' : 'Received'}</span>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">{fmtCurrency(invoiceStats.totalPaid)}</span>
+              </div>
+            )}
+            {invoiceStats.totalPending > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{isPt ? 'A receber' : 'Receivable'}</span>
+                <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">{fmtCurrency(invoiceStats.totalPending)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ═══ Clientes ═══ */}
+        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} p-6`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <span className="font-bold text-foreground text-base">{isPt ? 'Clientes' : 'Clients'}</span>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="text-3xl font-extrabold text-foreground">{data.clients.length}</div>
+          <p className="text-xs text-muted-foreground mt-1">{isPt ? 'cadastrados' : 'registered'}</p>
+          {data.clients.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-border space-y-2">
+              {data.clients.slice(0, 4).map(c => (
+                <div key={c.id} className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
+                    {c.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs text-foreground truncate font-medium">{c.name}</span>
                 </div>
+              ))}
+              {data.clients.length > 4 && (
+                <span className="text-[11px] text-primary font-semibold">+{data.clients.length - 4} {isPt ? 'mais' : 'more'}</span>
               )}
             </div>
-          </button>
-
+          )}
         </div>
-      )}
+
+        {/* ═══ Orçamentos ═══ */}
+        <div onClick={() => navigate('/dashboard/budgets')} className={`${cardBase} p-6`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <span className="font-bold text-foreground text-base">{isPt ? 'Orçamentos' : 'Budgets'}</span>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="text-3xl font-extrabold text-foreground">{budgetStats.total}</div>
+          <p className="text-xs text-muted-foreground mt-1">{fmtCurrency(budgetStats.totalValue)}</p>
+          <div className="mt-4 pt-3 border-t border-border space-y-2">
+            <StatusRow label={isPt ? 'Rascunho' : 'Draft'} count={budgetStats.draft} dotColor="bg-muted-foreground/40" />
+            <StatusRow label={isPt ? 'Enviado' : 'Sent'} count={budgetStats.sent} dotColor="bg-blue-500" />
+            <StatusRow label={isPt ? 'Aprovado' : 'Approved'} count={budgetStats.approved} dotColor="bg-green-500" />
+          </div>
+        </div>
+
+        {/* ═══ Projetos ═══ */}
+        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} xl:col-span-2 p-6`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                <FolderKanban className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <span className="font-bold text-foreground text-base">{isPt ? 'Projetos' : 'Projects'}</span>
+                <p className="text-xs text-muted-foreground">{data.projects.length} {isPt ? 'ativos' : 'active'}</p>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          {data.projects.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {data.projects.slice(0, 4).map(p => (
+                <div key={p.id} className="rounded-xl bg-muted/50 p-3.5 space-y-1">
+                  <span className="text-sm font-semibold text-foreground line-clamp-1">{p.name}</span>
+                  {p.due_date && (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <CalendarDays className="w-3 h-3" />
+                      <span className="text-[11px]">{format(parseISO(p.due_date), isPt ? 'dd/MM/yyyy' : 'MMM dd, yyyy')}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{isPt ? 'Nenhum projeto ainda' : 'No projects yet'}</p>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 };
 
-const StatusPill = ({ label, count, color }: { label: string; count: number; color: string }) => (
-  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${color}`}>
-    {count} {label}
-  </span>
+const MiniStat = ({ value, label, dotColor }: { value: number; label: string; dotColor: string }) => (
+  <div className="rounded-xl bg-muted/50 p-3 text-center">
+    <div className="flex items-center justify-center gap-1.5 mb-1">
+      <span className={`w-2 h-2 rounded-full ${dotColor}`} />
+      <span className="text-xl font-extrabold text-foreground">{value}</span>
+    </div>
+    <span className="text-[11px] text-muted-foreground font-medium">{label}</span>
+  </div>
+);
+
+const StatusRow = ({ label, count, dotColor }: { label: string; count: number; dotColor: string }) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <span className={`w-2 h-2 rounded-full ${dotColor}`} />
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+    <span className="text-sm font-bold text-foreground">{count}</span>
+  </div>
 );
 
 export default HomePage;
