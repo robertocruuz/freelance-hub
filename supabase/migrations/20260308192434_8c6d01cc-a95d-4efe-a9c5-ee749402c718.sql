@@ -1,0 +1,1 @@
+ALTER TABLE public.time_entries ADD COLUMN client_id uuid REFERENCES public.clients(id) DEFAULT NULL;
