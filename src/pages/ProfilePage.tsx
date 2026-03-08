@@ -142,6 +142,24 @@ const ProfilePage = () => {
             <p className="text-foreground font-medium">{profile.email}</p>
           </div>
 
+          {/* CPF/CNPJ */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <FileText className="w-4 h-4" />
+              CPF/CNPJ
+            </Label>
+            {editing ? (
+              <Input
+                value={editForm.document}
+                onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
+                placeholder="000.000.000-00"
+                maxLength={18}
+              />
+            ) : (
+              <p className="text-foreground font-medium">{profile.document || '—'}</p>
+            )}
+          </div>
+
           {/* Created at */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-muted-foreground">
