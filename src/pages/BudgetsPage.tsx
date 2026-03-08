@@ -576,7 +576,7 @@ const BudgetsPage = () => {
                     <span className="text-center">{t.quantity}</span>
                     <span className="text-right">{t.unitPrice}</span>
                     <span className="text-right">Subtotal</span>
-                    <span></span>
+                  </div>
                   </div>
                   {b.items.map((item, idx) => {
                     const isImported = importedItemKeys.has(makeItemKey(item.description, item.quantity * item.unitPrice));
