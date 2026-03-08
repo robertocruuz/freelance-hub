@@ -87,7 +87,7 @@ const KanbanPage = () => {
             client_id: clientId || null,
             project_id: projectId || null,
             due_date: dueDate || null,
-            description: `Criado a partir de item de orçamento — Valor: R$ ${value.toFixed(2)}`,
+            description: `Criado a partir de item de orçamento — Valor: ${formatCurrency(value)}`,
           });
         }
       });
