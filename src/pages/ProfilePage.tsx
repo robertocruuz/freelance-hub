@@ -238,7 +238,7 @@ const ProfilePage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5 text-muted-foreground">
                 <FileText className="w-4 h-4" />
@@ -260,6 +260,18 @@ const ProfilePage = () => {
                 <Input value={orgForm.state_registration} onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
               ) : (
                 <p className="text-foreground font-medium">{org.state_registration || '—'}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <FileText className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Registration'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.municipal_registration} onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.municipal_registration || '—'}</p>
               )}
             </div>
           </div>
