@@ -119,7 +119,7 @@ export const useOrganization = () => {
     fetchOrgData();
   }, [fetchOrgData]);
 
-  const inviteByEmail = async (email: string, role: 'admin' | 'editor' | 'viewer') => {
+  const inviteByEmail = async (email: string, role: 'admin' | 'collaborator') => {
     if (!orgId || !user) return { error: 'No organization' };
 
     const { error } = await (supabase.from('organization_invites' as any) as any).insert({
