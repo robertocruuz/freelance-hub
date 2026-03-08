@@ -399,7 +399,7 @@ const ProfilePage = () => {
                     <Building2 className="w-3.5 h-3.5" />
                     {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
                   </p>
-                  {!editingOrg && (
+                  {!editingOrg && isAdmin && (
                     <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setEditingOrg(true); }} className="gap-1.5 shrink-0">
                       <Pencil className="w-3.5 h-3.5" />
                       {lang === 'pt-BR' ? 'Editar' : 'Edit'}
