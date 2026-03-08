@@ -1040,6 +1040,7 @@ const KanbanPage = () => {
           kanban={kanban}
         />
       )}
+      </>)}
 
       {/* Board create/edit dialog */}
       <Dialog open={showBoardDialog} onOpenChange={setShowBoardDialog}>
