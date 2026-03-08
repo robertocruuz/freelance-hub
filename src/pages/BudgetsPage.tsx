@@ -114,6 +114,7 @@ const BudgetsPage = () => {
   const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem | null; budget: Budget } | null>(null);
   const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
   const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const discountValue = subtotal * (discount / 100);
