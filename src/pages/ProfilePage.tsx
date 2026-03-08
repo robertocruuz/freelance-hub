@@ -161,7 +161,18 @@ const ProfilePage = () => {
     toast({ title: lang === 'pt-BR' ? 'Logo atualizado!' : 'Logo updated!' });
   };
 
-  const handleChangePassword = async () => {
+  const handleRemoveLogo = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) return;
+    setUploadingLogo(true);
+    await (supabase.from('organizations' as any) as any).update({ logo_url: null }).eq('user_id', user.id);
+    setLogoUrl(null);
+    setUploadingLogo(false);
+    toast({ title: lang === 'pt-BR' ? 'Logo removido!' : 'Logo removed!' });
+  };
+
+
     if (passwordForm.password.length < 6) {
       toast({ title: lang === 'pt-BR' ? 'A senha deve ter pelo menos 6 caracteres' : 'Password must be at least 6 characters', variant: 'destructive' });
       return;
