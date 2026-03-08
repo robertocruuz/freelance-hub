@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -173,7 +174,7 @@ const ProfilePage = () => {
             {editing ? (
               <Input
                 value={editForm.document}
-                onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
+                onChange={(e) => setEditForm({ ...editForm, document: maskCPF(e.target.value) })}
                 placeholder="000.000.000-00"
                 maxLength={14}
               />
@@ -241,7 +242,7 @@ const ProfilePage = () => {
               CNPJ
             </Label>
             {editingOrg ? (
-              <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: e.target.value })} placeholder="00.000.000/0001-00" maxLength={18} />
+              <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
             ) : (
               <p className="text-foreground font-medium">{org.cnpj || '—'}</p>
             )}
@@ -265,7 +266,7 @@ const ProfilePage = () => {
               {lang === 'pt-BR' ? 'Telefone Comercial' : 'Business Phone'}
             </Label>
             {editingOrg ? (
-              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: e.target.value })} placeholder="(00) 00000-0000" maxLength={15} />
+              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
             ) : (
               <p className="text-foreground font-medium">{org.business_phone || '—'}</p>
             )}
