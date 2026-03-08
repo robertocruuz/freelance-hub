@@ -69,6 +69,11 @@ const ProjectsPage = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loadingBudgets, setLoadingBudgets] = useState(false);
 
+  // Import budget on create
+  const [allBudgets, setAllBudgets] = useState<Budget[]>([]);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
+  const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
