@@ -176,7 +176,7 @@ const ProfilePage = () => {
                 <Save className="w-4 h-4 mr-1" />
                 {t.save}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditForm({ name: profile.name }); }}>
+              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}>
                 <X className="w-4 h-4 mr-1" />
                 {t.cancel}
               </Button>
