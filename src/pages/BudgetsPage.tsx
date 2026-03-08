@@ -89,6 +89,14 @@ const BudgetsPage = () => {
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
+  const [organization, setOrganization] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('organizations').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) setOrganization(data);
+    });
+  }, [user]);
 
   // New item input state
   const [newDesc, setNewDesc] = useState('');
