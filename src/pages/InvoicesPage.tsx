@@ -50,6 +50,7 @@ interface ProjectWithItems {
   client_id: string | null;
   client_name?: string;
   due_date: string | null;
+  discount: number;
   items: { name: string; value: number }[];
 }
 
@@ -97,7 +98,7 @@ const InvoicesPage = () => {
     if (!user) return;
     const { data: projData } = await supabase
       .from('projects')
-      .select('id, name, client_id, due_date')
+      .select('id, name, client_id, due_date, discount')
       .order('name', { ascending: true });
     if (!projData) return;
     const projectIds = projData.map(p => p.id);
@@ -126,7 +127,7 @@ const InvoicesPage = () => {
         : []
     );
     setTaxes(0);
-    setDiscount(0);
+    setDiscount(project.discount || 0);
     setCreating(true);
     setImportDialogOpen(false);
     toast.success(lang === 'pt-BR' ? `Projeto "${project.name}" importado!` : `Project "${project.name}" imported!`);
