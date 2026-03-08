@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -252,24 +253,56 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-muted-foreground">
-                <FileText className="w-4 h-4" />
-                {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Registration'}
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5 text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Registration'}
+                </Label>
+                {editingOrg && (
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                    <Checkbox
+                      checked={orgForm.state_registration === 'ISENTO'}
+                      onCheckedChange={(checked) => setOrgForm({ ...orgForm, state_registration: checked ? 'ISENTO' : '' })}
+                    />
+                    {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                  </label>
+                )}
+              </div>
               {editingOrg ? (
-                <Input value={orgForm.state_registration} onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
+                <Input
+                  value={orgForm.state_registration}
+                  onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
+                  placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                  disabled={orgForm.state_registration === 'ISENTO'}
+                />
               ) : (
                 <p className="text-foreground font-medium">{org.state_registration || '—'}</p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-muted-foreground">
-                <FileText className="w-4 h-4" />
-                {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Registration'}
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5 text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Registration'}
+                </Label>
+                {editingOrg && (
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                    <Checkbox
+                      checked={orgForm.municipal_registration === 'ISENTO'}
+                      onCheckedChange={(checked) => setOrgForm({ ...orgForm, municipal_registration: checked ? 'ISENTO' : '' })}
+                    />
+                    {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                  </label>
+                )}
+              </div>
               {editingOrg ? (
-                <Input value={orgForm.municipal_registration} onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })} placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'} />
+                <Input
+                  value={orgForm.municipal_registration}
+                  onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
+                  placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                  disabled={orgForm.municipal_registration === 'ISENTO'}
+                />
               ) : (
                 <p className="text-foreground font-medium">{org.municipal_registration || '—'}</p>
               )}
