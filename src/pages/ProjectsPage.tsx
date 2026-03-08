@@ -510,7 +510,6 @@ const ProjectsPage = () => {
               <div key={key} className="space-y-2">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
                   {key === '__no_client__' ? 'Sem cliente' : clientName(key)}
-                  <span className="ml-2 text-xs font-normal">({grouped[key].length})</span>
                 </h2>
                 <div className="space-y-2">
                   {grouped[key].map(p => {
