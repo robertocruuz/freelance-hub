@@ -384,4 +384,32 @@ const StatusRow = ({ label, count, dotColor }: { label: string; count: number; d
   </div>
 );
 
+const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours: number; isToday: boolean }[] }) => {
+  const maxMin = Math.max(...data.map(d => d.minutes), 1);
+  return (
+    <div className="flex items-end gap-1.5 h-16">
+      {data.map((d, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <div className="w-full relative flex items-end justify-center" style={{ height: '44px' }}>
+            {d.minutes > 0 && (
+              <div
+                className="absolute bottom-0 -top-6 flex items-start justify-center pointer-events-none opacity-0 group-hover:opacity-100"
+              >
+              </div>
+            )}
+            <div
+              className={`w-full rounded-md transition-all duration-300 ${d.isToday ? 'bg-cyan-500' : 'bg-cyan-500/30'}`}
+              style={{ height: `${Math.max((d.minutes / maxMin) * 44, d.minutes > 0 ? 4 : 2)}px` }}
+              title={`${d.hours}h`}
+            />
+          </div>
+          <span className={`text-[9px] font-medium ${d.isToday ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>
+            {d.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default HomePage;
