@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { formatCurrency } from '@/lib/utils';
 
 interface PdfItem {
   description: string;

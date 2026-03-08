@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import {
   DndContext,
