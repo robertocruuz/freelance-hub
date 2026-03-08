@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
