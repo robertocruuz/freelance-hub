@@ -1036,6 +1036,30 @@ const TimeTrackingPage = () => {
                     );
                   });
                 })}
+                {/* Create-drag preview (weekly) */}
+                {createDrag && (() => {
+                  const s = Math.min(createDrag.startMin, createDrag.currentMin);
+                  const e = Math.max(createDrag.startMin, createDrag.currentMin);
+                  if (e - s < 5) return null;
+                  const dayIdx = weekDays.findIndex(d => isSameDay(d, createDrag.dayDate));
+                  if (dayIdx === -1) return null;
+                  const colWidth = `calc((100% - 64px) / 7)`;
+                  return (
+                    <div
+                      className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
+                      style={{
+                        top: `${s}px`,
+                        height: `${e - s}px`,
+                        left: `calc(64px + ${dayIdx} * ${colWidth} + 2px)`,
+                        width: `calc(${colWidth} - 4px)`,
+                      }}
+                    >
+                      <span className="text-[10px] font-semibold text-primary">
+                        {String(Math.floor(s / 60)).padStart(2, '0')}:{String(s % 60).padStart(2, '0')} – {String(Math.floor(e / 60)).padStart(2, '0')}:{String(e % 60).padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
+                })()}
                 {/* Current time indicator */}
                 {weekDays.some(d => isSameDay(d, new Date())) && (() => {
                   const now = new Date();
