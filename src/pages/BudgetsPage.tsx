@@ -269,7 +269,7 @@ const BudgetsPage = () => {
 
   const statusLabel = (s: string) => (t as any)[s] || s;
 
-  const exportBudgetPdf = (b: Budget) => {
+  const exportBudgetPdf = async (b: Budget) => {
     const client = clients.find(c => c.id === b.client_id) || null;
     generateBudgetPdf({
       budgetName: b.name,
