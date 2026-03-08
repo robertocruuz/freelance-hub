@@ -71,6 +71,47 @@ const InvoicesPage = () => {
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const total = subtotal + (subtotal * taxes) / 100 - discount;
 
+  const loadProjects = useCallback(async () => {
+    if (!user) return;
+    const { data: projData } = await supabase
+      .from('projects')
+      .select('id, name, client_id, due_date')
+      .order('name', { ascending: true });
+    if (!projData) return;
+
+    const projectIds = projData.map(p => p.id);
+    const { data: itemsData } = await supabase
+      .from('project_items')
+      .select('project_id, name, value')
+      .in('project_id', projectIds)
+      .order('position', { ascending: true });
+
+    const mapped: ProjectWithItems[] = projData.map(p => {
+      const cl = clients.find(c => c.id === p.client_id);
+      return {
+        ...p,
+        client_name: cl?.name,
+        items: (itemsData || []).filter(i => i.project_id === p.id).map(i => ({ name: i.name, value: Number(i.value) })),
+      };
+    });
+    setProjects(mapped);
+  }, [user, clients]);
+
+  const importProject = (project: ProjectWithItems) => {
+    setClientId(project.client_id || '');
+    setDueDate(project.due_date || '');
+    setItems(
+      project.items.length > 0
+        ? project.items.map(i => ({ description: i.name, quantity: 1, unitPrice: i.value }))
+        : [{ description: '', quantity: 1, unitPrice: 0 }]
+    );
+    setTaxes(0);
+    setDiscount(0);
+    setCreating(true);
+    setImportDialogOpen(false);
+    toast.success(lang === 'pt-BR' ? `Projeto "${project.name}" importado!` : `Project "${project.name}" imported!`);
+  };
+
   const loadInvoices = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
