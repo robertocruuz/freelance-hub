@@ -14,24 +14,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
-  
   { key: 'clients', icon: Users, path: '/dashboard/clients' },
-  { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
   { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
+  { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
+  { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
-  { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
 ] as const;
 
 const labelMap: Record<string, (t: any) => string> = {
   home: () => 'Home',
-  
   clients: (t) => t.clients,
-  projects: (t) => t.projects,
   budgets: (t) => t.budgets,
+  projects: (t) => t.projects,
+  kanban: () => 'Kanban',
   time: (t) => t.timeTracking,
   invoices: (t) => t.invoices,
-  kanban: () => 'Tarefas',
 };
 
 const DashboardLayout = () => {
