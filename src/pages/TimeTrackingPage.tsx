@@ -47,7 +47,7 @@ interface TimeEntry {
   duration: number | null;
 }
 
-type ViewMode = 'calendar' | 'list' | 'timesheet';
+type ViewMode = 'calendar' | 'list' | 'timesheet' | 'report';
 type TimeRange = 'daily' | 'weekly' | 'monthly';
 
 const formatDuration = (seconds: number) => {
