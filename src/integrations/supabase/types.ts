@@ -168,8 +168,54 @@ export type Database = {
           },
         ]
       }
+      kanban_boards: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          name: string
+          position: number
+          project_id: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          project_id?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          project_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_boards_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_boards_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_columns: {
         Row: {
+          board_id: string | null
           created_at: string
           id: string
           name: string
@@ -178,6 +224,7 @@ export type Database = {
           wip_limit: number | null
         }
         Insert: {
+          board_id?: string | null
           created_at?: string
           id?: string
           name: string
@@ -186,6 +233,7 @@ export type Database = {
           wip_limit?: number | null
         }
         Update: {
+          board_id?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -193,7 +241,15 @@ export type Database = {
           user_id?: string
           wip_limit?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "kanban_columns_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_boards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizations: {
         Row: {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -13,8 +13,8 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { useKanban, Task } from '@/hooks/useKanban';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban } from 'lucide-react';
+import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
 import { TaskCard } from '@/components/kanban/TaskCard';
@@ -22,10 +22,33 @@ import { TaskDetailModal } from '@/components/kanban/TaskDetailModal';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { isThisWeek, isThisMonth, isPast, isSameDay, format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,10 +58,11 @@ import { useAuth } from '@/hooks/useAuth';
 type ViewMode = 'kanban' | 'list';
 
 const KanbanPage = () => {
-  const kanban = useKanban();
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
+  const kanban = useKanban(activeBoardId);
   const { clients } = useClients();
   const { user } = useAuth();
-  const { columns, tasks, loading } = kanban;
+  const { columns, tasks, boards, loading } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [view, setView] = useState<ViewMode>('kanban');
@@ -61,6 +85,21 @@ const KanbanPage = () => {
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  // Board management state
+  const [showBoardDialog, setShowBoardDialog] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<KanbanBoard | null>(null);
+  const [boardName, setBoardName] = useState('');
+  const [boardClientId, setBoardClientId] = useState<string | null>(null);
+  const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
+  const [deletingBoard, setDeletingBoard] = useState<KanbanBoard | null>(null);
+
+  // Auto-select first board
+  useEffect(() => {
+    if (!loading && boards.length > 0 && !activeBoardId) {
+      setActiveBoardId(boards[0].id);
+    }
+  }, [loading, boards, activeBoardId]);
 
   // Load projects for filter
   useEffect(() => {
@@ -232,6 +271,52 @@ const KanbanPage = () => {
     setShowAddColumn(false);
   };
 
+  const handleSaveBoard = async () => {
+    if (!boardName.trim()) return;
+    if (editingBoard) {
+      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId });
+    } else {
+      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId);
+      if (newBoard) setActiveBoardId(newBoard.id);
+    }
+    setShowBoardDialog(false);
+    setBoardName('');
+    setBoardClientId(null);
+    setBoardProjectId(null);
+    setEditingBoard(null);
+  };
+
+  const openEditBoard = (board: KanbanBoard) => {
+    setEditingBoard(board);
+    setBoardName(board.name);
+    setBoardClientId(board.client_id);
+    setBoardProjectId(board.project_id);
+    setShowBoardDialog(true);
+  };
+
+  const handleDeleteBoard = async () => {
+    if (!deletingBoard) return;
+    const wasActive = activeBoardId === deletingBoard.id;
+    await kanban.deleteBoard(deletingBoard.id);
+    setDeletingBoard(null);
+    if (wasActive) {
+      const remaining = boards.filter(b => b.id !== deletingBoard.id);
+      setActiveBoardId(remaining.length > 0 ? remaining[0].id : null);
+    }
+  };
+
+  const getBoardSubtitle = (board: KanbanBoard) => {
+    if (board.project_id) {
+      const project = projects.find(p => p.id === board.project_id);
+      return project ? `📂 ${project.name}` : '';
+    }
+    if (board.client_id) {
+      const client = clients.find(c => c.id === board.client_id);
+      return client ? `👤 ${client.name}` : '';
+    }
+    return '';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -282,6 +367,79 @@ const KanbanPage = () => {
         </div>
       </div>
 
+      {/* Board tabs */}
+      <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-thin pb-1">
+        {boards.map((board) => (
+          <div
+            key={board.id}
+            className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all border shrink-0 ${
+              activeBoardId === board.id
+                ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground'
+            }`}
+            onClick={() => setActiveBoardId(board.id)}
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            <span>{board.name}</span>
+            {getBoardSubtitle(board) && (
+              <span className="text-[10px] opacity-70">{getBoardSubtitle(board)}</span>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-secondary transition"
+                >
+                  <MoreHorizontal className="w-3 h-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditBoard(board); }}>
+                  <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeletingBoard(board); }} className="text-destructive focus:text-destructive">
+                  <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ))}
+        <button
+          onClick={() => {
+            setEditingBoard(null);
+            setBoardName('');
+            setBoardClientId(null);
+            setBoardProjectId(null);
+            setShowBoardDialog(true);
+          }}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition border border-dashed border-border shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo painel
+        </button>
+      </div>
+
+      {/* No board selected */}
+      {!activeBoardId && boards.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <Kanban className="w-10 h-10 opacity-30" />
+          <p className="text-sm">Crie seu primeiro painel Kanban para começar</p>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingBoard(null);
+              setBoardName('');
+              setBoardClientId(null);
+              setBoardProjectId(null);
+              setShowBoardDialog(true);
+            }}
+            className="btn-glow"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Criar painel
+          </Button>
+        </div>
+      )}
+
+      {activeBoardId && (<>
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap mb-3">
         <div className="relative flex-1 min-w-[140px] max-w-xs">
@@ -882,6 +1040,79 @@ const KanbanPage = () => {
           kanban={kanban}
         />
       )}
+      </>)}
+
+      {/* Board create/edit dialog */}
+      <Dialog open={showBoardDialog} onOpenChange={setShowBoardDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingBoard ? 'Editar painel' : 'Novo painel Kanban'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-xs">Nome do painel</Label>
+              <Input
+                value={boardName}
+                onChange={(e) => setBoardName(e.target.value)}
+                placeholder="Ex: Marketing, Projeto X..."
+                autoFocus
+                className="glass-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Atrelar a cliente (opcional)</Label>
+              <Select value={boardClientId || 'none'} onValueChange={(v) => setBoardClientId(v === 'none' ? null : v)}>
+                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (livre)</SelectItem>
+                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Atrelar a projeto (opcional)</Label>
+              <Select value={boardProjectId || 'none'} onValueChange={(v) => {
+                setBoardProjectId(v === 'none' ? null : v);
+                // Auto-set client from project
+                if (v !== 'none') {
+                  const proj = projects.find(p => p.id === v);
+                  // projects here only have id/name, need to check if we have client info
+                }
+              }}>
+                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (livre)</SelectItem>
+                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBoardDialog(false)}>Cancelar</Button>
+            <Button onClick={handleSaveBoard} disabled={!boardName.trim()} className="btn-glow">
+              {editingBoard ? 'Salvar' : 'Criar painel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete board confirmation */}
+      <AlertDialog open={!!deletingBoard} onOpenChange={(open) => !open && setDeletingBoard(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir painel</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o painel "{deletingBoard?.name}"? Todas as colunas e tarefas deste painel serão excluídas permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteBoard} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
