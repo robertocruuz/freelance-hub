@@ -145,7 +145,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       toast({ title: isPt ? 'Erro ao sair da equipe' : 'Error leaving team', variant: 'destructive' });
     } else {
       toast({ title: isPt ? 'Você saiu da equipe' : 'You left the team' });
-      navigate('/dashboard');
+      onLeave?.();
     }
     setLeaveDialogOpen(false);
   };
