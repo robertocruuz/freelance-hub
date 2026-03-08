@@ -1114,7 +1114,7 @@ const TimeTrackingPage = () => {
                     <div
                       className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
                       style={{
-                        top: `${s}px`,
+                        top: `${s - workHourStart * 60}px`,
                         height: `${e - s}px`,
                         left: `calc(64px + ${dayIdx} * ${colWidth} + 2px)`,
                         width: `calc(${colWidth} - 4px)`,
