@@ -79,6 +79,7 @@ const ClientsPage = () => {
   const [phone, setPhone] = useState('');
   const [document, setDocument] = useState('');
   const [responsible, setResponsible] = useState('');
+  const [color, setColor] = useState<string | null>(null);
   // 360° view
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
