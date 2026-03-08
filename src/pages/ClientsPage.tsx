@@ -212,22 +212,22 @@ const ClientsPage = () => {
           <>
             {/* Summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-4 rounded-2xl glass text-center">
+              <div onClick={() => navigate('/dashboard/projects')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
                 <FolderKanban className="w-5 h-5 mx-auto mb-1 text-primary" />
                 <p className="text-xl font-bold text-foreground">{details.projects.length}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Projetos</p>
               </div>
-              <div className="p-4 rounded-2xl glass text-center">
+              <div onClick={() => navigate('/dashboard/kanban')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
                 <SquareKanban className="w-5 h-5 mx-auto mb-1 text-primary" />
                 <p className="text-xl font-bold text-foreground">{details.tasks.length}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tarefas</p>
               </div>
-              <div className="p-4 rounded-2xl glass text-center">
+              <div onClick={() => navigate('/dashboard/time')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
                 <Clock className="w-5 h-5 mx-auto mb-1 text-primary" />
                 <p className="text-xl font-bold text-foreground">{formatDuration(totalHours)}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Horas</p>
               </div>
-              <div className="p-4 rounded-2xl glass text-center">
+              <div onClick={() => navigate('/dashboard/invoices')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
                 <Receipt className="w-5 h-5 mx-auto mb-1 text-primary" />
                 <p className="text-xl font-bold text-foreground">R$ {totalInvoiced.toFixed(0)}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Faturado</p>
