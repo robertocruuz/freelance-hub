@@ -56,7 +56,13 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   useEffect(() => {
     loadDetails();
     loadTrackedTime();
+    loadProjects();
   }, [task.id]);
+
+  const loadProjects = async () => {
+    const { data } = await supabase.from('projects').select('id, name, client_id').order('name');
+    if (data) setProjects(data);
+  };
 
   const loadTrackedTime = async () => {
     const { data } = await supabase
