@@ -598,7 +598,7 @@ const BudgetsPage = () => {
                       <button className="text-muted-foreground hover:text-foreground focus:outline-none"><MoreVertical className="w-4 h-4" /></button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => deleteBudget(b.id)} className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="text-destructive focus:text-destructive">
                         <Trash2 className="w-4 h-4 mr-2" /> Excluir
                       </DropdownMenuItem>
                     </DropdownMenuContent>
