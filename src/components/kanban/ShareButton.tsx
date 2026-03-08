@@ -155,6 +155,40 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
     loadShares();
   };
 
+  const inviteByEmail = async () => {
+    if (!user || !inviteEmail.trim()) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (email === user.email?.toLowerCase()) {
+      toast({ title: 'Você não pode compartilhar consigo mesmo', variant: 'destructive' });
+      return;
+    }
+    setInviteLoading(true);
+    // Find user by email in profiles
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, name, email')
+      .eq('email', email)
+      .limit(1);
+
+    if (!profiles || profiles.length === 0) {
+      toast({ title: 'Usuário não encontrado', description: 'Nenhum usuário cadastrado com esse email.', variant: 'destructive' });
+      setInviteLoading(false);
+      return;
+    }
+
+    const targetUserId = profiles[0].user_id;
+    // Check if already shared
+    if (shares.some(s => s.share_type === 'user' && s.shared_with_user_id === targetUserId)) {
+      toast({ title: 'Já compartilhado', description: 'Este recurso já está compartilhado com esse usuário.', variant: 'destructive' });
+      setInviteLoading(false);
+      return;
+    }
+
+    await shareWithUser(targetUserId);
+    setInviteEmail('');
+    setInviteLoading(false);
+  };
+
   const userShares = shares.filter(s => s.share_type === 'user');
   const sharedUserIds = new Set(userShares.map(s => s.shared_with_user_id));
   const availableMembers = orgMembers.filter(m => !sharedUserIds.has(m.user_id));
