@@ -298,16 +298,19 @@ const InvoicesPage = () => {
   const statusLabel = (s: string) => (t as any)[s] || s;
 
   const exportInvoicePdf = (inv: Invoice) => {
-    generateDocumentPdf({
-      title: t.invoices,
-      type: 'invoice',
+    const client = clients.find(c => c.id === inv.client_id) || null;
+    generateInvoicePdf({
+      invoiceName: inv.name,
       items: inv.items,
       total: inv.total,
-      status: statusLabel(inv.status),
-      createdAt: inv.created_at,
       taxes: inv.taxes,
       discount: inv.discount,
+      status: statusLabel(inv.status),
       dueDate: inv.due_date,
+      paymentMethod: inv.payment_method,
+      createdAt: inv.created_at,
+      organization: organization,
+      client: client,
     });
   };
 
