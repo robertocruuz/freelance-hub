@@ -1359,9 +1359,9 @@ const TimeTrackingPage = () => {
                           const proj = projects.find(pr => pr.name === p.name);
                           const client = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
                           const pct = +totalHours > 0 ? ((p.hours / (+totalHours)) * 100).toFixed(1) : '0';
-                          const isExpanded = expandedProjects.has(p.name);
+                          const isExpanded = !collapsedProjects.has(p.name);
                           const toggleExpand = () => {
-                            setExpandedProjects(prev => {
+                            setCollapsedProjects(prev => {
                               const next = new Set(prev);
                               if (next.has(p.name)) next.delete(p.name);
                               else next.add(p.name);
