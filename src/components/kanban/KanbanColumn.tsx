@@ -46,6 +46,7 @@ export const KanbanColumnComponent = ({
   onAddTaskFromProject,
   onTaskClick,
   onToggleComplete,
+  onDeleteTask,
   onUpdateColumn,
   onDeleteColumn,
 }: KanbanColumnProps) => {
