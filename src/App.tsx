@@ -32,6 +32,7 @@ const App = () => (
     <ThemeProvider>
       <I18nProvider>
         <AuthProvider>
+          <TimerProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
