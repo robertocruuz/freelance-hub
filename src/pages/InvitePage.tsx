@@ -68,8 +68,8 @@ const InvitePage = () => {
           )}
           {status === 'success' && (
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-                <Check className="w-6 h-6 text-green-500" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Check className="w-6 h-6 text-primary" />
               </div>
               <p className="text-sm text-foreground font-medium">
                 {isPt ? 'Convite aceito! Redirecionando...' : 'Invite accepted! Redirecting...'}
