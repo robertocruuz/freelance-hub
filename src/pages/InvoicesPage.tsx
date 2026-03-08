@@ -339,14 +339,36 @@ const InvoicesPage = () => {
           </div>
 
           {/* Payment method */}
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <label className="text-sm font-medium text-foreground">{t.paymentMethod}</label>
-            <input
-              placeholder={lang === 'pt-BR' ? 'Ex: PIX, Boleto, Cartão...' : 'Ex: Wire, Card...'}
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className={`${inputClass} w-full`}
-            />
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {['Pix', 'Boleto', 'Cartão', 'Transferência bancária', 'Dinheiro', 'Outro'].map((method) => (
+                <label key={method} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={paymentMethods.includes(method)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setPaymentMethods(prev => [...prev, method]);
+                      } else {
+                        setPaymentMethods(prev => prev.filter(m => m !== method));
+                        if (method === 'Outro') setOtherPaymentMethod('');
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-border text-primary accent-primary"
+                  />
+                  {method}
+                </label>
+              ))}
+            </div>
+            {paymentMethods.includes('Outro') && (
+              <input
+                placeholder={lang === 'pt-BR' ? 'Especifique a forma de pagamento...' : 'Specify payment method...'}
+                value={otherPaymentMethod}
+                onChange={(e) => setOtherPaymentMethod(e.target.value)}
+                className={`${inputClass} w-full mt-1`}
+              />
+            )}
           </div>
 
           {/* Add items section */}
