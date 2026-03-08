@@ -25,6 +25,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingOrg, setEditingOrg] = useState(false);
+  const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '' });
