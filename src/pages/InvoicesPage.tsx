@@ -7,7 +7,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { generateDocumentPdf } from '@/lib/pdfGenerator';
+import { generateDocumentPdf, generateInvoicePdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,6 +95,14 @@ const InvoicesPage = () => {
   const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
+  const [organization, setOrganization] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('organizations').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) setOrganization(data);
+    });
+  }, [user]);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
@@ -290,16 +298,19 @@ const InvoicesPage = () => {
   const statusLabel = (s: string) => (t as any)[s] || s;
 
   const exportInvoicePdf = (inv: Invoice) => {
-    generateDocumentPdf({
-      title: t.invoices,
-      type: 'invoice',
+    const client = clients.find(c => c.id === inv.client_id) || null;
+    generateInvoicePdf({
+      invoiceName: inv.name,
       items: inv.items,
       total: inv.total,
-      status: statusLabel(inv.status),
-      createdAt: inv.created_at,
       taxes: inv.taxes,
       discount: inv.discount,
+      status: statusLabel(inv.status),
       dueDate: inv.due_date,
+      paymentMethod: inv.payment_method,
+      createdAt: inv.created_at,
+      organization: organization,
+      client: client,
     });
   };
 
