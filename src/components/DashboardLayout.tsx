@@ -75,7 +75,7 @@ const DashboardLayout = () => {
           </button>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 bg-white/[0.1] backdrop-blur-sm rounded-2xl px-2 py-1.5 border border-white/[0.08]">
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const isActive = item.path === '/dashboard'
                 ? location.pathname === '/dashboard'
