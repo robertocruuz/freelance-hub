@@ -383,6 +383,25 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
             </div>
           </>
         )}
+        {/* Leave team confirmation dialog */}
+        <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{isPt ? 'Sair da equipe?' : 'Leave team?'}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {isPt
+                  ? 'Você perderá acesso aos dados compartilhados da organização. Esta ação não pode ser desfeita.'
+                  : 'You will lose access to shared organization data. This action cannot be undone.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLeaveOrganization} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {isPt ? 'Sair' : 'Leave'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </>
   );
 
