@@ -479,6 +479,16 @@ const ProfilePage = () => {
                             <FieldDisplay value={org.address} />
                           )}
                         </div>
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Complemento' : 'Complement'}
+                          </Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.complement} onChange={(e) => setOrgForm({ ...orgForm, complement: e.target.value })} placeholder={lang === 'pt-BR' ? 'Apto, sala, bloco...' : 'Apt, suite, block...'} />
+                          ) : (
+                            <FieldDisplay value={org.complement} />
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
