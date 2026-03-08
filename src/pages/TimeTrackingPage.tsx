@@ -198,6 +198,22 @@ const TimeTrackingPage = () => {
     } as any);
     if (error) toast.error(error.message);
     else {
+      // Log activity on the task if linked
+      if (taskId) {
+        const projectName = getProjectName(projectId || null);
+        const durationStr = formatDuration(duration);
+        await supabase.from('task_activity_logs').insert({
+          task_id: taskId,
+          user_id: user.id,
+          action: 'time_tracked',
+          details: {
+            duration,
+            duration_formatted: durationStr,
+            description: description || null,
+            project_name: projectName || null,
+          },
+        } as any);
+      }
       setElapsed(0);
       setDescription('');
       setTaskId('');

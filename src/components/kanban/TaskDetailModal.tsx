@@ -418,17 +418,32 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             {/* Activity */}
             <TabsContent value="activity" className="mt-4">
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {activityLogs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-2 py-1.5 border-b border-border/50 last:border-0">
-                    <Activity className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-foreground">{log.action.replace(/_/g, ' ')}</p>
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(log.created_at), { locale: ptBR, addSuffix: true })}
-                      </span>
+                {activityLogs.map((log) => {
+                  const details = log.details as Record<string, any> | null;
+                  const isTimeTracked = log.action === 'time_tracked';
+                  return (
+                    <div key={log.id} className="flex items-start gap-2 py-1.5 border-b border-border/50 last:border-0">
+                      {isTimeTracked ? (
+                        <Timer className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <Activity className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      )}
+                      <div>
+                        {isTimeTracked ? (
+                          <p className="text-xs text-foreground">
+                            Tempo registrado: <span className="font-semibold">{details?.duration_formatted || '—'}</span>
+                            {details?.description && <span className="text-muted-foreground"> — {details.description}</span>}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-foreground">{log.action.replace(/_/g, ' ')}</p>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(log.created_at), { locale: ptBR, addSuffix: true })}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {activityLogs.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-4">Nenhuma atividade registrada.</p>
                 )}
