@@ -32,6 +32,7 @@ type ViewMode = 'kanban' | 'list';
 const KanbanPage = () => {
   const kanban = useKanban();
   const { clients } = useClients();
+  const { user } = useAuth();
   const { columns, tasks, loading } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -41,8 +42,19 @@ const KanbanPage = () => {
   const [search, setSearch] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterClient, setFilterClient] = useState('all');
+  const [filterProject, setFilterProject] = useState('all');
+  const [filterType, setFilterType] = useState('all');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  // Load projects for filter
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('projects').select('id, name').eq('user_id', user.id).then(({ data }) => {
+      if (data) setProjects(data);
+    });
+  }, [user]);
 
   // Create task from budget item
   useEffect(() => {
