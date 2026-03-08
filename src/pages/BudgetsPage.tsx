@@ -533,8 +533,12 @@ const BudgetsPage = () => {
                 <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
                   <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedBudget === b.id ? 'rotate-90' : ''}`} />
                   <div>
-                    <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                    <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+                    <p className="font-semibold text-foreground">{b.name || b.client_name || 'Sem nome'} · {b.items.length} itens</p>
+                    <p className="text-xs text-muted-foreground">
+                      {b.client_name && b.name ? `${b.client_name} · ` : ''}
+                      {b.budget_date ? format(new Date(b.budget_date + 'T12:00:00'), 'dd/MM/yyyy') : new Date(b.created_at).toLocaleDateString()}
+                      {b.validity_date && ` · Validade: ${format(new Date(b.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
+                    </p>
                   </div>
                 </button>
                 <div className="flex items-center gap-3">
