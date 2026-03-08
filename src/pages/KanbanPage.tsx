@@ -439,6 +439,7 @@ const KanbanPage = () => {
         </div>
       )}
 
+      {activeBoardId && (<>
       {/* Toolbar */}
       {activeBoardId && <div className="flex items-center gap-2 flex-wrap mb-3">
         <div className="relative flex-1 min-w-[140px] max-w-xs">
