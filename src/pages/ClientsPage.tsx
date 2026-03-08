@@ -365,7 +365,7 @@ const ClientsPage = () => {
                         <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
                           <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">R$ {inv.total.toFixed(2)}</span>
+                            <span className="font-semibold">{formatCurrency(inv.total)}</span>
                             <Badge variant="secondary" className="text-[10px] capitalize">{inv.status}</Badge>
                           </div>
                         </div>
