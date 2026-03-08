@@ -767,17 +767,14 @@ const TimeTrackingPage = () => {
                 {/* Render time entries as blocks */}
                 {weekDays.map((day, dayIdx) => {
                   const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), day));
-                  return dayEntries.map((entry) => {
-                    const start = new Date(entry.start_time);
-                    const end = entry.end_time ? new Date(entry.end_time) : new Date();
-                    const startMinutes = start.getHours() * 60 + start.getMinutes();
-                    const endMinutes = end.getHours() * 60 + end.getMinutes();
-                    const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                    const top = startMinutes;
-                    const height = durationMinutes;
-                    const colWidth = `calc((100% - 64px) / 7)`;
-                    const left = `calc(64px + ${dayIdx} * ${colWidth})`;
+                  const layoutItems = computeOverlapLayout(dayEntries);
+                  const colWidth = `calc((100% - 64px) / 7)`;
+                  return layoutItems.map((item) => {
+                    const { entry, startMin, endMin, col, totalCols } = item;
+                    const durationMinutes = endMin - startMin;
                     const color = getProjectColor(entry.project_id, entry.client_id);
+                    const entryWidth = `calc((${colWidth} - 4px) / ${totalCols})`;
+                    const entryLeft = `calc(64px + ${dayIdx} * ${colWidth} + 2px + ${col} * (${colWidth} - 4px) / ${totalCols})`;
 
                     return (
                       <button
@@ -785,11 +782,10 @@ const TimeTrackingPage = () => {
                         onClick={() => openEdit(entry)}
                         className="absolute rounded-md px-1.5 py-0.5 text-[10px] text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm group z-10"
                         style={{
-                          top: `${top}px`,
-                          height: `${Math.max(height, 18)}px`,
-                          left,
-                          width: `calc(${colWidth} - 4px)`,
-                          marginLeft: '2px',
+                          top: `${startMin}px`,
+                          height: `${Math.max(durationMinutes, 18)}px`,
+                          left: entryLeft,
+                          width: entryWidth,
                           backgroundColor: color,
                         }}
                       >
@@ -799,7 +795,7 @@ const TimeTrackingPage = () => {
                             {entry.description || getProjectName(entry.project_id) || '—'}
                           </span>
                         </div>
-                        {height > 30 && (
+                        {durationMinutes > 30 && (
                           <p className="text-white/70 truncate">{formatDurationShort(entry.duration || 0)}</p>
                         )}
                       </button>
