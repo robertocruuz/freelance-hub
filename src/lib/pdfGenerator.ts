@@ -408,9 +408,15 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     if (org.logo_url) {
       const logoResult = await loadImageAsBase64(org.logo_url);
       if (logoResult) {
-        const logoH = 14;
+        const maxLogoH = 16;
+        const maxLogoW = contentW * 0.35;
         const ratio = logoResult.width / logoResult.height;
-        const logoW = logoH * ratio;
+        let logoW = maxLogoH * ratio;
+        let logoH = maxLogoH;
+        if (logoW > maxLogoW) {
+          logoW = maxLogoW;
+          logoH = logoW / ratio;
+        }
         doc.addImage(logoResult.data, 'PNG', margin, y - 4, logoW, logoH);
         y = Math.max(y, y - 4 + logoH + 2);
       }
