@@ -322,6 +322,24 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+                  {isCurrentUser && !isOwner && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive gap-2"
+                          onClick={() => setLeaveDialogOpen(true)}
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          {isPt ? 'Sair da equipe' : 'Leave team'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
                 </div>
               </div>
             );
