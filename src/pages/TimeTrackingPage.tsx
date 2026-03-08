@@ -50,7 +50,7 @@ interface TimeEntry {
 }
 
 type ViewMode = 'calendar' | 'list' | 'timesheet' | 'report';
-type TimeRange = 'all' | 'daily' | 'weekly' | 'monthly';
+type TimeRange = 'daily' | 'weekly' | 'monthly';
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
