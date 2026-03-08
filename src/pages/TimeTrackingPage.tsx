@@ -378,16 +378,7 @@ const TimeTrackingPage = () => {
           className="flex-1 min-w-[150px] px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
         />
         <div className="flex items-center gap-1.5">
-          <select
-            value={clientId}
-            onChange={(e) => { setClientId(e.target.value); setProjectId(''); setTaskId(''); }}
-            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            <option value="">Cliente</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <CompactClientSelect clients={clients} value={clientId} onChange={(v) => { setClientId(v); setProjectId(''); setTaskId(''); }} placeholder="Cliente" />
           <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
