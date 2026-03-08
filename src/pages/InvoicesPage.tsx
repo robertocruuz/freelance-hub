@@ -652,6 +652,7 @@ const InvoicesPage = () => {
                 grouped[key].push(inv);
               });
             const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+            const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
               if (a === '__no_client__') return 1;
               if (b === '__no_client__') return -1;
@@ -665,7 +666,7 @@ const InvoicesPage = () => {
                 </h2>
                 <div className="space-y-2">
                   {grouped[key].map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
+            <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border overflow-hidden" style={clientColorFn(inv.client_id) ? { backgroundColor: `${clientColorFn(inv.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColorFn(inv.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
               <div>
                 <p className="font-semibold text-foreground">{inv.name || inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
                 <p className="text-xs text-muted-foreground">
