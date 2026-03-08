@@ -32,7 +32,7 @@ const LoginPage = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          navigate('/dashboard/passwords');
+          navigate('/dashboard');
         }
       }
     } finally {
