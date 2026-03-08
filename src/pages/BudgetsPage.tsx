@@ -310,8 +310,68 @@ const BudgetsPage = () => {
 
       {isFormOpen && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Budget name */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Nome do Orçamento</label>
+            <input
+              placeholder="Ex: Projeto Website Corporativo"
+              value={budgetName}
+              onChange={(e) => setBudgetName(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
+          </div>
+
           {/* Client select */}
-          <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Cliente</label>
+            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Data</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !budgetDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {budgetDate ? format(budgetDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={budgetDate} onSelect={setBudgetDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Validade</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !validityDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {validityDate ? format(validityDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={validityDate} onSelect={setValidityDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Prazo de Entrega</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !deliveryDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {deliveryDate ? format(deliveryDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={deliveryDate} onSelect={setDeliveryDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
 
           {/* Add items section */}
           <div className="space-y-4">
