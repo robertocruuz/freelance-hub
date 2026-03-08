@@ -184,6 +184,7 @@ const ProjectsPage = () => {
       name: name.trim(),
       client_id: clientId || null,
       due_date: dueDateStr,
+      discount: projectDiscount,
     };
 
     if (editingId) {
