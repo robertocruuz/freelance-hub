@@ -454,6 +454,7 @@ const ProjectsPage = () => {
     toast.success(`Tarefa "${pendingTaskItem.name}" criada!`);
     setShowBoardPicker(false);
     setPendingTaskItem(null);
+    loadExistingTasks();
   };
 
 
