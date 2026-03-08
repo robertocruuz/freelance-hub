@@ -266,7 +266,7 @@ const ProfilePage = () => {
               {lang === 'pt-BR' ? 'Telefone Comercial' : 'Business Phone'}
             </Label>
             {editingOrg ? (
-              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: e.target.value })} placeholder="(00) 00000-0000" maxLength={15} />
+              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
             ) : (
               <p className="text-foreground font-medium">{org.business_phone || '—'}</p>
             )}
