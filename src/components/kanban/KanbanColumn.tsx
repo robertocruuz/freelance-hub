@@ -110,7 +110,8 @@ export const KanbanColumnComponent = ({
 
   const openProjectPicker = () => {
     setAddMode('project');
-    loadProjectItems();
+    setSelectedProjectId(null);
+    loadProjects();
   };
 
   return (
