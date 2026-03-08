@@ -368,7 +368,6 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
-                  <Separator className="opacity-50" />
 
                   {/* Tax section */}
                   <div>
