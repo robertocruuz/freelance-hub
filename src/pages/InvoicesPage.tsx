@@ -622,15 +622,35 @@ const InvoicesPage = () => {
           <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p className="text-sm">{lang === 'pt-BR' ? 'Nenhuma fatura criada ainda.' : 'No invoices yet.'}</p>
         </div>
-      ) : (
-        <div className="space-y-6">
-          {(() => {
-            const grouped: Record<string, Invoice[]> = {};
-            invoices.forEach(inv => {
-              const key = inv.client_id || '__no_client__';
-              if (!grouped[key]) grouped[key] = [];
-              grouped[key].push(inv);
-            });
+      ) : !creating ? (
+        <>
+          {/* Status filter */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['all', 'pending', 'paid', 'overdue'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+                  statusFilter === s
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                )}
+              >
+                {s === 'all' ? 'Todos' : statusLabel(s)}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-6">
+            {(() => {
+              const filtered = statusFilter === 'all' ? invoices : invoices.filter(inv => inv.status === statusFilter);
+              const grouped: Record<string, Invoice[]> = {};
+              filtered.forEach(inv => {
+                const key = inv.client_id || '__no_client__';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(inv);
+              });
             const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
               if (a === '__no_client__') return 1;
