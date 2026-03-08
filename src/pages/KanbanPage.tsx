@@ -48,12 +48,14 @@ const KanbanPage = () => {
       const title = searchParams.get('title') || 'Nova tarefa';
       const value = parseFloat(searchParams.get('value') || '0');
       const clientId = searchParams.get('client') || undefined;
+      const projectId = searchParams.get('project') || undefined;
       const firstColumn = columns.sort((a, b) => a.position - b.position)[0];
       kanban.addTask(firstColumn.id, title).then((newTask) => {
         if (newTask) {
           kanban.updateTask(newTask.id, {
             estimated_value: value,
             client_id: clientId || null,
+            project_id: projectId || null,
             description: `Criado a partir de item de orçamento — Valor: R$ ${value.toFixed(2)}`,
           });
         }
