@@ -128,6 +128,7 @@ const ProjectsPage = () => {
     setShowForm(false);
     setSelectedBudgetId(null);
     setPendingBudgetItems([]);
+    setProjectDiscount(0);
   };
 
   const [allProjectItemNames, setAllProjectItemNames] = useState<Set<string>>(new Set());
