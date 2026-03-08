@@ -220,6 +220,16 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               </Select>
             </div>
             <div>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Projeto</label>
+              <Select value={task.project_id || 'none'} onValueChange={(v) => onUpdate(task.id, { project_id: v === 'none' ? null : v })}>
+                <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tipo</label>
               <Select value={task.task_type || 'none'} onValueChange={(v) => onUpdate(task.id, { task_type: v === 'none' ? null : v })}>
                 <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
