@@ -369,10 +369,14 @@ const ProjectsPage = () => {
       clientId: project?.client_id || null,
       dueDate: project?.due_date || null,
     });
-    // Load boards
-    const { data } = await supabase.from('kanban_boards').select('id, name').order('position');
-    setAvailableBoards(data || []);
-    setSelectedBoardId(data && data.length > 0 ? data[0].id : null);
+    // Load boards with project_id and client_id info
+    const { data } = await supabase.from('kanban_boards').select('id, name, project_id, client_id').order('position');
+    const boards = data || [];
+    setAvailableBoards(boards);
+    // Pre-select: prefer board linked to project, then client, then first
+    const projectBoard = boards.find(b => b.project_id === item.project_id);
+    const clientBoard = project?.client_id ? boards.find(b => b.client_id === project.client_id) : null;
+    setSelectedBoardId(projectBoard?.id || clientBoard?.id || (boards.length > 0 ? boards[0].id : null));
     setNewBoardName('');
     setCreatingBoard(false);
     setShowBoardPicker(true);
