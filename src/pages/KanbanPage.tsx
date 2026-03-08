@@ -89,7 +89,15 @@ const KanbanPage = () => {
   const completedMonth = tasks.filter((t) => t.completed_at && isThisMonth(new Date(t.completed_at)));
 
   // Filter tasks
-  const activeFilterCount = [filterPriority, filterClient, filterProject, filterType].filter(f => f !== 'all').length;
+  const toggleFilter = (set: Set<string>, setFn: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) => {
+    setFn(prev => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value); else next.add(value);
+      return next;
+    });
+  };
+
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size;
 
   // Unique task types
   const taskTypes = useMemo(() => {
@@ -100,13 +108,13 @@ const KanbanPage = () => {
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
-      if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
-      if (filterClient !== 'all' && t.client_id !== filterClient) return false;
-      if (filterProject !== 'all' && t.project_id !== filterProject) return false;
-      if (filterType !== 'all' && t.task_type !== filterType) return false;
+      if (filterPriorities.size > 0 && !filterPriorities.has(t.priority)) return false;
+      if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
+      if (filterProjects.size > 0 && (!t.project_id || !filterProjects.has(t.project_id))) return false;
+      if (filterTypes.size > 0 && (!t.task_type || !filterTypes.has(t.task_type))) return false;
       return true;
     });
-  }, [tasks, search, filterPriority, filterClient, filterProject, filterType]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
