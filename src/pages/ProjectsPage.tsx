@@ -467,10 +467,11 @@ const ProjectsPage = () => {
                               });
                               navigate(`/dashboard/kanban?${params.toString()}`);
                             }}
-                            className="p-1 rounded hover:bg-accent transition-colors"
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group"
                             title="Criar tarefa no Kanban"
                           >
-                            <ListPlus className="w-3.5 h-3.5 text-primary" />
+                            <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
+                            <span className="text-xs font-medium text-primary">Kanban</span>
                           </button>
                           <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
