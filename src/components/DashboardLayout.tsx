@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, KeyRound, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, SquareKanban, Menu } from 'lucide-react';
+import { Home, FileText, Clock, Receipt, User, LogOut, Settings, Users, FolderKanban, Moon, Sun, SquareKanban, Menu } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
