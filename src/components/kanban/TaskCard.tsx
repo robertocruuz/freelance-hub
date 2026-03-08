@@ -80,8 +80,8 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         {...attributes}
         {...listeners}
         onClick={onClick}
-        className={`glass-card rounded-xl p-3.5 cursor-pointer hover:shadow-lg transition-all duration-200 group relative ${
-          isDragging ? 'opacity-50 scale-95 rotate-2' : ''
+        className={`glass-card rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 group relative ${
+          isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60' : ''
         } ${isOverdue ? 'border-l-4 border-l-destructive' : clientColor ? 'border-l-4' : ''}`}
       >
         {/* 3-dot menu */}
