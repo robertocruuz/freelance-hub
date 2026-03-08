@@ -162,6 +162,12 @@ const TimeTrackingPage = () => {
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const [exportFilter, setExportFilter] = useState<'all' | 'client' | 'project'>('all');
+  const [exportClientId, setExportClientId] = useState('');
+  const [exportProjectId, setExportProjectId] = useState('');
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -920,36 +926,170 @@ const TimeTrackingPage = () => {
 
           const totalHours = (totalFiltered / 3600).toFixed(1);
 
+
           const handleExportPDF = async () => {
             const { default: jsPDF } = await import('jspdf');
+
+            // Use all entries when custom dates are set, otherwise use filtered by period
+            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+            if (exportFilter === 'client' && exportClientId) {
+              const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
+              exportEntries = exportEntries.filter(e => e.project_id && clientProjectIds.includes(e.project_id));
+            } else if (exportFilter === 'project' && exportProjectId) {
+              exportEntries = exportEntries.filter(e => e.project_id === exportProjectId);
+            }
+            if (exportStartDate) {
+              exportEntries = exportEntries.filter(e => new Date(e.start_time) >= new Date(exportStartDate + 'T00:00:00'));
+            }
+            if (exportEndDate) {
+              exportEntries = exportEntries.filter(e => new Date(e.start_time) <= new Date(exportEndDate + 'T23:59:59'));
+            }
+
+            if (exportEntries.length === 0) {
+              toast.error('Nenhum registro encontrado para os filtros selecionados');
+              return;
+            }
+
+            const exportTotal = exportEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+            const exportTotalHours = (exportTotal / 3600).toFixed(1);
+
             const doc = new jsPDF();
-            const pdfTitle = `Relatório de Tempo - ${dateLabel()}`;
-            doc.setFontSize(16);
-            doc.text(pdfTitle, 14, 20);
-            doc.setFontSize(11);
-            doc.text(`Total: ${totalHours}h`, 14, 30);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = 20;
 
-            let y = 42;
-            doc.setFontSize(13);
-            doc.text('Por Projeto', 14, y); y += 8;
-            doc.setFontSize(10);
-            projectData.forEach(p => { doc.text(`${p.name}: ${p.hours}h`, 18, y); y += 6; });
+            const checkPageBreak = (needed: number) => {
+              if (y + needed > 275) { doc.addPage(); y = 20; }
+            };
 
-            y += 6;
-            doc.setFontSize(13);
-            doc.text('Por Cliente', 14, y); y += 8;
+            // Header
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Relatório de Tempo', 14, y); y += 8;
             doc.setFontSize(10);
-            clientData.forEach(c => { doc.text(`${c.name}: ${c.hours}h`, 18, y); y += 6; });
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            const periodLabel = exportStartDate && exportEndDate
+              ? `Período: ${new Date(exportStartDate).toLocaleDateString('pt-BR')} a ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
+              : `Período: ${dateLabel()}`;
+            doc.text(periodLabel, 14, y); y += 5;
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 14, y); y += 8;
+            doc.setTextColor(0, 0, 0);
 
-            y += 6;
+            // Divider
+            doc.setDrawColor(200, 200, 200);
+            doc.line(14, y, pageWidth - 14, y); y += 8;
+
+            // Client info if filtering by client
+            if (exportFilter === 'client' && exportClientId) {
+              const client = clients.find(c => c.id === exportClientId);
+              if (client) {
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Cliente', 14, y); y += 7;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Nome: ${client.name}`, 18, y); y += 5;
+                if (client.email) { doc.text(`Email: ${client.email}`, 18, y); y += 5; }
+                if (client.phone) { doc.text(`Telefone: ${client.phone}`, 18, y); y += 5; }
+                if (client.document) { doc.text(`Documento: ${client.document}`, 18, y); y += 5; }
+                y += 4;
+              }
+            }
+
+            // Project info if filtering by project
+            if (exportFilter === 'project' && exportProjectId) {
+              const proj = projects.find(p => p.id === exportProjectId);
+              if (proj) {
+                const projClient = proj.client_id ? clients.find(c => c.id === proj.client_id) : null;
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Projeto', 14, y); y += 7;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Nome: ${proj.name}`, 18, y); y += 5;
+                if (projClient) {
+                  doc.text(`Cliente: ${projClient.name}`, 18, y); y += 5;
+                  if (projClient.email) { doc.text(`Email: ${projClient.email}`, 18, y); y += 5; }
+                  if (projClient.phone) { doc.text(`Telefone: ${projClient.phone}`, 18, y); y += 5; }
+                }
+                y += 4;
+              }
+            }
+
+            // Summary
             doc.setFontSize(13);
-            doc.text('Por Dia', 14, y); y += 8;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Resumo', 14, y); y += 7;
             doc.setFontSize(10);
-            dayData.forEach(d => { doc.text(`${d.day}: ${d.hours}h`, 18, y); y += 6; });
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Total de horas: ${exportTotalHours}h`, 18, y); y += 5;
+            doc.text(`Total de registros: ${exportEntries.length}`, 18, y); y += 10;
+
+            // Detailed task listing
+            checkPageBreak(30);
+            doc.setFontSize(13);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Detalhamento por Registro', 14, y); y += 8;
+
+            // Table header
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.setFillColor(245, 245, 245);
+            doc.rect(14, y - 4, pageWidth - 28, 7, 'F');
+            doc.text('Data', 16, y);
+            doc.text('Descrição / Tarefa', 42, y);
+            doc.text('Projeto', 115, y);
+            doc.text('Início', 152, y);
+            doc.text('Fim', 170, y);
+            doc.text('Duração', 186, y);
+            y += 8;
+
+            doc.setFont('helvetica', 'normal');
+            exportEntries
+              .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+              .forEach((entry) => {
+                checkPageBreak(8);
+                const d = new Date(entry.start_time);
+                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                const desc = entry.description || getTaskName(entry.task_id) || '—';
+                const projName = getProjectName(entry.project_id) || '—';
+                const startStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const endStr = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                const durStr = entry.duration ? formatDurationShort(entry.duration) : '—';
+
+                doc.setFontSize(9);
+                doc.text(dateStr, 16, y);
+                const descTruncated = desc.length > 40 ? desc.substring(0, 37) + '...' : desc;
+                doc.text(descTruncated, 42, y);
+                const projTruncated = projName.length > 20 ? projName.substring(0, 17) + '...' : projName;
+                doc.text(projTruncated, 115, y);
+                doc.text(startStr, 152, y);
+                doc.text(endStr, 170, y);
+                doc.text(durStr, 186, y);
+                y += 6;
+
+                // light separator
+                doc.setDrawColor(230, 230, 230);
+                doc.line(14, y - 2, pageWidth - 14, y - 2);
+              });
+
+            // Footer total
+            checkPageBreak(12);
+            y += 4;
+            doc.setDrawColor(100, 100, 100);
+            doc.line(14, y - 2, pageWidth - 14, y - 2);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text(`Total: ${exportTotalHours}h (${exportEntries.length} registros)`, 16, y + 3);
 
             doc.save(`relatorio-tempo-${new Date().toISOString().slice(0, 10)}.pdf`);
             toast.success('PDF exportado com sucesso!');
+            setShowExportPanel(false);
           };
+
+          const exportFilteredProjects = exportClientId
+            ? projects.filter(p => p.client_id === exportClientId)
+            : projects;
 
           return (
             <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
@@ -959,13 +1099,104 @@ const TimeTrackingPage = () => {
                   <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {filteredEntries.length} registros</p>
                 </div>
                 <button
-                  onClick={handleExportPDF}
+                  onClick={() => setShowExportPanel(!showExportPanel)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Exportar PDF
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExportPanel ? 'rotate-180' : ''}`} />
                 </button>
               </div>
+
+              {/* Export filter panel */}
+              {showExportPanel && (
+                <div className="rounded-xl border border-border bg-card p-5 space-y-4 animate-fade-in">
+                  <h3 className="text-sm font-semibold text-foreground">Configurar Exportação</h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Filter type */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Filtrar por</label>
+                      <select
+                        value={exportFilter}
+                        onChange={(e) => { setExportFilter(e.target.value as any); setExportClientId(''); setExportProjectId(''); }}
+                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option value="all">Tudo</option>
+                        <option value="client">Por Cliente</option>
+                        <option value="project">Por Projeto</option>
+                      </select>
+                    </div>
+
+                    {/* Client select */}
+                    {exportFilter === 'client' && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                        <CompactClientSelect clients={clients} value={exportClientId} onChange={(v) => { setExportClientId(v); setExportProjectId(''); }} placeholder="Selecione o cliente" fullWidth />
+                      </div>
+                    )}
+
+                    {/* Project select */}
+                    {exportFilter === 'project' && (
+                      <>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                          <CompactClientSelect clients={clients} value={exportClientId} onChange={(v) => { setExportClientId(v); setExportProjectId(''); }} placeholder="Filtrar por cliente" fullWidth />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-muted-foreground">Projeto</label>
+                          <select
+                            value={exportProjectId}
+                            onChange={(e) => setExportProjectId(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Selecione o projeto</option>
+                            {exportFilteredProjects.map(p => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Period */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Data início</label>
+                      <input
+                        type="date"
+                        value={exportStartDate}
+                        onChange={(e) => setExportStartDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">Data fim</label>
+                      <input
+                        type="date"
+                        value={exportEndDate}
+                        onChange={(e) => setExportEndDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <button
+                      onClick={() => { setExportFilter('all'); setExportClientId(''); setExportProjectId(''); setExportStartDate(''); setExportEndDate(''); }}
+                      className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
+                    >
+                      Limpar filtros
+                    </button>
+                    <button
+                      onClick={handleExportPDF}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Gerar PDF
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {filteredEntries.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
