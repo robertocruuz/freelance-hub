@@ -115,6 +115,7 @@ const ClientsPage = () => {
         email: email || null,
         phone: phone || null,
         document: document || null,
+        responsible: responsible || null,
       });
       if (error) toast.error(error.message);
       else toast.success(t.save + '!');
