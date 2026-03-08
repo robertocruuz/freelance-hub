@@ -56,8 +56,8 @@ export const generateDocumentPdf = (options: PdfOptions) => {
     const subtotal = item.quantity * item.unitPrice;
     doc.text(item.description || '-', 22, y);
     doc.text(String(item.quantity), 122, y);
-    doc.text(`R$ ${item.unitPrice.toFixed(2)}`, 140, y);
-    doc.text(`R$ ${subtotal.toFixed(2)}`, 168, y);
+    doc.text(formatCurrency(item.unitPrice), 140, y);
+    doc.text(formatCurrency(subtotal), 168, y);
     y += 7;
   });
 
