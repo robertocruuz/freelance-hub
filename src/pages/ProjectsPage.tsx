@@ -121,6 +121,7 @@ const ProjectsPage = () => {
   const resetForm = () => {
     setName('');
     setClientId('');
+    setDueDate(undefined);
     setEditingId(null);
     setShowForm(false);
     setSelectedBudgetId(null);
