@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
@@ -39,6 +40,7 @@ const ProfilePage = () => {
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoModalOpen, setLogoModalOpen] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
@@ -377,32 +379,25 @@ const ProfilePage = () => {
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
-                <label className="relative cursor-pointer group shrink-0" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="relative cursor-pointer group shrink-0"
+                  onClick={(e) => { e.stopPropagation(); if (isAdmin || !orgId) setLogoModalOpen(true); }}
+                >
                   {logoUrl ? (
                     <div className="h-12 max-w-[120px] overflow-hidden flex items-center justify-center relative">
-                      <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain" />
-                      <button
-                        type="button"
-                        onClick={handleRemoveLogo}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-destructive/90 z-10"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                      <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain rounded-lg" />
                     </div>
                   ) : (
                     <div className="w-12 h-12 rounded-xl border-2 border-border bg-primary/10 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-primary" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    {uploadingLogo ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
-                </label>
+                  {(isAdmin || !orgId) && (
+                    <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
                 <div>
                   <CardTitle className="text-lg">
                     {org.trade_name || org.company_name || (lang === 'pt-BR' ? 'Organização' : 'Organization')}
@@ -819,6 +814,61 @@ const ProfilePage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Logo Upload Modal */}
+      <Dialog open={logoModalOpen} onOpenChange={setLogoModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{lang === 'pt-BR' ? 'Logo da empresa' : 'Company logo'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {logoUrl ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-full max-h-48 flex items-center justify-center bg-muted/30 rounded-lg p-4 border border-border">
+                  <img src={logoUrl} alt="Logo" className="max-h-40 w-auto object-contain" />
+                </div>
+                <div className="flex gap-2 w-full">
+                  <label className="flex-1">
+                    <Button variant="outline" className="w-full gap-2" disabled={uploadingLogo} asChild>
+                      <span>
+                        <Upload className="w-4 h-4" />
+                        {lang === 'pt-BR' ? 'Alterar logo' : 'Change logo'}
+                      </span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { handleLogoUpload(e); }} disabled={uploadingLogo} />
+                  </label>
+                  <Button
+                    variant="destructive"
+                    className="gap-2"
+                    disabled={uploadingLogo}
+                    onClick={(e) => { handleRemoveLogo(e); }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {lang === 'pt-BR' ? 'Remover' : 'Remove'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/30 transition-colors">
+                {uploadingLogo ? (
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Clique para enviar' : 'Click to upload'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG {lang === 'pt-BR' ? 'até' : 'up to'} 2MB</p>
+                    </div>
+                  </>
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+              </label>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
