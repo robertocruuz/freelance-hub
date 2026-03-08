@@ -855,7 +855,7 @@ const TimeTrackingPage = () => {
         <div className="flex items-center gap-2">
           {/* Time range selector */}
           <div className="flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5">
-            {([['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
+            {([['all', 'Tudo'], ['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
               <button
                 key={value}
                 onClick={() => setTimeRange(value)}
