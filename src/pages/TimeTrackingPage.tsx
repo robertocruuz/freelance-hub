@@ -962,101 +962,167 @@ const TimeTrackingPage = () => {
             const exportTotalHours = (exportTotal / 3600).toFixed(1);
 
             const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.getWidth();
-            let y = 20;
+            const pw = doc.internal.pageSize.getWidth();
+            const ph = doc.internal.pageSize.getHeight();
+            let y = 0;
+            const marginL = 16;
+            const marginR = pw - 16;
+            const contentW = marginR - marginL;
 
-            const checkPageBreak = (needed: number) => {
-              if (y + needed > 275) { doc.addPage(); y = 20; }
+            // Brand colors
+            const blue = { r: 0, g: 71, b: 255 };       // #0047FF
+            const darkBlue = { r: 0, g: 30, b: 120 };
+            const lime = { r: 163, g: 230, b: 53 };
+            const gray = { r: 120, g: 130, b: 150 };
+            const lightGray = { r: 240, g: 242, b: 247 };
+            const white = { r: 255, g: 255, b: 255 };
+
+            const addPageFooter = () => {
+              doc.setFontSize(7);
+              doc.setTextColor(gray.r, gray.g, gray.b);
+              doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, marginL, ph - 10);
+              doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, marginR, ph - 10, { align: 'right' });
             };
 
-            // Header
-            doc.setFontSize(18);
+            const checkPageBreak = (needed: number) => {
+              if (y + needed > ph - 20) {
+                addPageFooter();
+                doc.addPage();
+                y = 20;
+              }
+            };
+
+            // ── HERO HEADER ──
+            doc.setFillColor(blue.r, blue.g, blue.b);
+            doc.rect(0, 0, pw, 52, 'F');
+            // Accent bar
+            doc.setFillColor(lime.r, lime.g, lime.b);
+            doc.rect(0, 52, pw, 3, 'F');
+
+            // Title
             doc.setFont('helvetica', 'bold');
-            doc.text('Relatório de Tempo', 14, y); y += 8;
+            doc.setFontSize(22);
+            doc.setTextColor(white.r, white.g, white.b);
+            doc.text('Relatório de Tempo', marginL, 24);
+
+            // Subtitle line
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(120, 120, 120);
-            if (userName) { doc.text(`Responsável: ${userName}`, 14, y); y += 5; }
+            doc.setTextColor(200, 210, 255);
             const periodLabel = exportStartDate && exportEndDate
-              ? `Período: ${new Date(exportStartDate).toLocaleDateString('pt-BR')} a ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
-              : `Período: ${dateLabel()}`;
-            doc.text(periodLabel, 14, y); y += 5;
-            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 14, y); y += 8;
-            doc.setTextColor(0, 0, 0);
+              ? `${new Date(exportStartDate).toLocaleDateString('pt-BR')} — ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
+              : dateLabel();
+            doc.text(periodLabel, marginL, 33);
 
-            // Divider
-            doc.setDrawColor(200, 200, 200);
-            doc.line(14, y, pageWidth - 14, y); y += 8;
+            // User badge on header right
+            if (userName) {
+              doc.setFontSize(9);
+              doc.setTextColor(200, 210, 255);
+              doc.text(userName, marginR, 24, { align: 'right' });
+            }
 
-            // Client info if filtering by client
+            // Total hours big number on header
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(28);
+            doc.setTextColor(lime.r, lime.g, lime.b);
+            doc.text(`${exportTotalHours}h`, marginR, 43, { align: 'right' });
+            doc.setFontSize(8);
+            doc.setTextColor(200, 210, 255);
+            doc.text(`${exportEntries.length} registros`, marginR - 1, 48, { align: 'right' });
+
+            y = 65;
+
+            // ── CLIENT / PROJECT INFO CARDS ──
+            const drawInfoCard = (title: string, lines: string[]) => {
+              checkPageBreak(12 + lines.length * 5);
+              doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
+              const cardH = 10 + lines.length * 5;
+              doc.roundedRect(marginL, y - 4, contentW, cardH, 3, 3, 'F');
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(10);
+              doc.setTextColor(darkBlue.r, darkBlue.g, darkBlue.b);
+              doc.text(title, marginL + 6, y + 2);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(9);
+              doc.setTextColor(gray.r, gray.g, gray.b);
+              let ly = y + 8;
+              lines.forEach(l => { doc.text(l, marginL + 6, ly); ly += 5; });
+              y += cardH + 6;
+            };
+
             if (exportFilter === 'client' && exportClientId) {
               const client = clients.find(c => c.id === exportClientId);
               if (client) {
-                doc.setFontSize(13);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Cliente', 14, y); y += 7;
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Nome: ${client.name}`, 18, y); y += 5;
-                if (client.email) { doc.text(`Email: ${client.email}`, 18, y); y += 5; }
-                if (client.phone) { doc.text(`Telefone: ${client.phone}`, 18, y); y += 5; }
-                if (client.document) { doc.text(`Documento: ${client.document}`, 18, y); y += 5; }
-                y += 4;
+                const lines = [client.name];
+                if (client.email) lines.push(client.email);
+                if (client.phone) lines.push(client.phone);
+                if (client.document) lines.push(client.document);
+                drawInfoCard('Cliente', lines);
               }
             }
 
-            // Project info if filtering by project
             if (exportFilter === 'project' && exportProjectId) {
               const proj = projects.find(p => p.id === exportProjectId);
               if (proj) {
                 const projClient = proj.client_id ? clients.find(c => c.id === proj.client_id) : null;
-                doc.setFontSize(13);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Projeto', 14, y); y += 7;
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Nome: ${proj.name}`, 18, y); y += 5;
-                if (projClient) {
-                  doc.text(`Cliente: ${projClient.name}`, 18, y); y += 5;
-                  if (projClient.email) { doc.text(`Email: ${projClient.email}`, 18, y); y += 5; }
-                  if (projClient.phone) { doc.text(`Telefone: ${projClient.phone}`, 18, y); y += 5; }
-                }
-                y += 4;
+                const lines = [proj.name];
+                if (projClient) lines.push(`Cliente: ${projClient.name}`);
+                drawInfoCard('Projeto', lines);
               }
             }
 
-            // Summary
-            doc.setFontSize(13);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Resumo', 14, y); y += 7;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Total de horas: ${exportTotalHours}h`, 18, y); y += 5;
-            doc.text(`Total de registros: ${exportEntries.length}`, 18, y); y += 10;
+            // ── SUMMARY METRICS ──
+            checkPageBreak(24);
+            const metricW = contentW / 3;
+            const metrics = [
+              { label: 'Total Horas', value: `${exportTotalHours}h` },
+              { label: 'Registros', value: `${exportEntries.length}` },
+              { label: 'Projetos', value: `${new Set(exportEntries.map(e => e.project_id).filter(Boolean)).size}` },
+            ];
+            metrics.forEach((m, i) => {
+              const x = marginL + i * metricW;
+              doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
+              doc.roundedRect(x + (i > 0 ? 2 : 0), y, metricW - 4, 18, 2, 2, 'F');
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(16);
+              doc.setTextColor(blue.r, blue.g, blue.b);
+              doc.text(m.value, x + metricW / 2, y + 10, { align: 'center' });
+              doc.setFontSize(7);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(gray.r, gray.g, gray.b);
+              doc.text(m.label.toUpperCase(), x + metricW / 2, y + 16, { align: 'center' });
+            });
+            y += 28;
 
-            // Detailed task listing
-            checkPageBreak(30);
+            // ── DETALHAMENTO ──
+            checkPageBreak(20);
+            doc.setFont('helvetica', 'bold');
             doc.setFontSize(13);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Detalhamento', 14, y); y += 8;
+            doc.setTextColor(darkBlue.r, darkBlue.g, darkBlue.b);
+            doc.text('Detalhamento', marginL, y);
+            // Accent underline
+            doc.setFillColor(blue.r, blue.g, blue.b);
+            doc.rect(marginL, y + 2, 30, 1.5, 'F');
+            y += 10;
 
-            // Table header: Descrição, Duração, Membro, Projeto, Tempo, Data
-            doc.setFontSize(9);
+            // Table header
+            doc.setFillColor(darkBlue.r, darkBlue.g, darkBlue.b);
+            doc.roundedRect(marginL, y - 4, contentW, 8, 1.5, 1.5, 'F');
+            doc.setFontSize(8);
             doc.setFont('helvetica', 'bold');
-            doc.setFillColor(245, 245, 245);
-            doc.rect(14, y - 4, pageWidth - 28, 7, 'F');
-            doc.text('Descrição', 16, y);
-            doc.text('Duração', 80, y);
-            doc.text('Membro', 102, y);
-            doc.text('Projeto', 135, y);
-            doc.text('Tempo / Data', 168, y);
+            doc.setTextColor(white.r, white.g, white.b);
+            doc.text('DESCRIÇÃO', marginL + 4, y);
+            doc.text('DURAÇÃO', 82, y);
+            doc.text('MEMBRO', 104, y);
+            doc.text('PROJETO', 136, y);
+            doc.text('TEMPO / DATA', 170, y);
             y += 8;
 
-            doc.setFont('helvetica', 'normal');
+            let rowIndex = 0;
             exportEntries
               .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
               .forEach((entry) => {
-                checkPageBreak(12);
+                checkPageBreak(14);
                 const d = new Date(entry.start_time);
                 const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 const desc = entry.description || getTaskName(entry.task_id) || '—';
@@ -1065,36 +1131,61 @@ const TimeTrackingPage = () => {
                 const endStr = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
                 const durStr = entry.duration ? formatDurationShort(entry.duration) : '—';
 
-                doc.setFontSize(9);
-                const descTruncated = desc.length > 35 ? desc.substring(0, 32) + '...' : desc;
-                doc.text(descTruncated, 16, y);
-                doc.text(durStr, 80, y);
-                const memberTruncated = userName.length > 18 ? userName.substring(0, 15) + '...' : userName || '—';
-                doc.text(memberTruncated, 102, y);
-                const projTruncated = projName.length > 16 ? projName.substring(0, 13) + '...' : projName;
-                doc.text(projTruncated, 135, y);
-                doc.text(`${startStr} - ${endStr}`, 168, y);
-                doc.setFontSize(8);
-                doc.setTextColor(120, 120, 120);
-                doc.text(dateStr, 168, y + 4);
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(9);
-                y += 10;
+                // Zebra striping
+                if (rowIndex % 2 === 0) {
+                  doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
+                  doc.rect(marginL, y - 4, contentW, 12, 'F');
+                }
 
-                // light separator
-                doc.setDrawColor(230, 230, 230);
-                doc.line(14, y - 2, pageWidth - 14, y - 2);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(30, 35, 50);
+                const descTrunc = desc.length > 35 ? desc.substring(0, 32) + '...' : desc;
+                doc.text(descTrunc, marginL + 4, y);
+
+                // Duration with accent
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(blue.r, blue.g, blue.b);
+                doc.text(durStr, 82, y);
+
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(gray.r, gray.g, gray.b);
+                doc.setFontSize(8);
+                const memberTrunc = userName.length > 16 ? userName.substring(0, 13) + '...' : userName || '—';
+                doc.text(memberTrunc, 104, y);
+
+                doc.setFontSize(8);
+                doc.setTextColor(30, 35, 50);
+                const projTrunc = projName.length > 14 ? projName.substring(0, 11) + '...' : projName;
+                doc.text(projTrunc, 136, y);
+
+                // Time / Date stacked
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 35, 50);
+                doc.text(`${startStr} – ${endStr}`, 170, y);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(gray.r, gray.g, gray.b);
+                doc.text(dateStr, 170, y + 4);
+
+                y += 12;
+                rowIndex++;
               });
 
-            // Footer total
-            checkPageBreak(12);
-            y += 4;
-            doc.setDrawColor(100, 100, 100);
-            doc.line(14, y - 2, pageWidth - 14, y - 2);
+            // ── FOOTER TOTAL BAR ──
+            checkPageBreak(14);
+            y += 2;
+            doc.setFillColor(blue.r, blue.g, blue.b);
+            doc.roundedRect(marginL, y - 4, contentW, 10, 2, 2, 'F');
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
-            doc.text(`Total: ${exportTotalHours}h (${exportEntries.length} registros)`, 16, y + 3);
+            doc.setTextColor(white.r, white.g, white.b);
+            doc.text('TOTAL', marginL + 6, y + 2);
+            doc.text(`${exportTotalHours}h`, 82, y + 2);
+            doc.text(`${exportEntries.length} registros`, marginR - 6, y + 2, { align: 'right' });
 
+            addPageFooter();
             doc.save(`relatorio-tempo-${new Date().toISOString().slice(0, 10)}.pdf`);
             toast.success('PDF exportado com sucesso!');
             setShowExportPanel(false);
