@@ -49,7 +49,7 @@ const roleColors = {
   viewer: 'bg-muted text-muted-foreground border-border',
 };
 
-const OrgMembersCard = () => {
+const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
