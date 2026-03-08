@@ -242,6 +242,7 @@ const TimeTrackingPage = () => {
       if (!ds) return;
       const deltaY = e.clientY - ds.initialMouseY;
       const deltaMin = Math.round(deltaY / 5) * 5;
+      if (deltaMin !== 0) didDragRef.current = true;
 
       if (ds.type === 'move') {
         const newStart = Math.max(0, ds.initialStartMin + deltaMin);
