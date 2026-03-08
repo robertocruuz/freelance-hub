@@ -104,6 +104,7 @@ const InvoicesPage = () => {
     });
   }, [user]);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // New item input
