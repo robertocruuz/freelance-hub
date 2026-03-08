@@ -19,6 +19,7 @@ interface ReceivedInvite {
   created_at: string;
   expires_at: string;
   org_name?: string;
+  invited_by_name?: string;
 }
 
 const roleIcons = { admin: Crown, editor: Pencil, viewer: Eye };
