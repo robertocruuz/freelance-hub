@@ -380,6 +380,7 @@ const InvoicesPage = () => {
           {/* Client & Due Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t.client}</label>
               <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
             </div>
             <div className="space-y-1.5">
