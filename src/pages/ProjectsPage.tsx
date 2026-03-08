@@ -74,6 +74,7 @@ const ProjectsPage = () => {
   const [clientId, setClientId] = useState('');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Item form state
   const [showItemForm, setShowItemForm] = useState<string | null>(null);
