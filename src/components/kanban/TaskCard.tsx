@@ -69,10 +69,25 @@ export const TaskCard = ({ task, onClick, onToggleComplete, checklistProgress }:
         </div>
       )}
 
-      {/* Title */}
-      <p className="text-sm font-semibold text-foreground leading-snug mb-2 group-hover:text-primary transition-colors">
-        {task.title}
-      </p>
+      {/* Title with checkbox */}
+      <div className="flex items-start gap-2 mb-2">
+        <Checkbox
+          checked={isCompleted}
+          onCheckedChange={(checked) => {
+            if (onToggleComplete) {
+              onToggleComplete(task.id, !!checked);
+            }
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="mt-0.5 shrink-0"
+        />
+        <p className={`text-sm font-semibold leading-snug group-hover:text-primary transition-colors ${
+          isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'
+        }`}>
+          {task.title}
+        </p>
+      </div>
 
       {/* Priority badge */}
       <div className="flex items-center gap-1.5 mb-2">
