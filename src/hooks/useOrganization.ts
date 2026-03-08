@@ -201,6 +201,20 @@ export const useOrganization = () => {
       .update({ status: 'accepted' })
       .eq('id', inv.id);
 
+    // Notify org admins that someone joined
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('name, email')
+      .eq('user_id', user.id)
+      .single();
+
+    const userName = userProfile?.name || userProfile?.email || user.email || 'Alguém';
+
+    await supabase.rpc('notify_org_admins_on_accept' as any, {
+      _org_id: inv.organization_id,
+      _accepted_user_name: userName,
+    });
+
     await fetchOrgData();
     return { error: null };
   };
