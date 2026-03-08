@@ -335,6 +335,7 @@ const TimeTrackingPage = () => {
 
     const { error } = await supabase.from('time_entries').update({
       description: editDesc || null,
+      client_id: editClientId || null,
       project_id: editProjectId || null,
       task_id: editTaskId || null,
       start_time: newStart.toISOString(),
