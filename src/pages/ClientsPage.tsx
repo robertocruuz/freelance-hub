@@ -481,7 +481,7 @@ const ClientsPage = () => {
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border overflow-hidden hover:border-primary/30 transition-colors cursor-pointer" style={(c as any).color ? { backgroundColor: `${(c as any).color}15`, borderLeftWidth: '4px', borderLeftColor: (c as any).color, borderColor: undefined } : { backgroundColor: 'hsl(var(--card))' }} onClick={() => openClient360(c)}>
+            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border overflow-hidden transition-all cursor-pointer hover:shadow-md" style={(c as any).color ? { backgroundColor: `${(c as any).color}15`, borderLeftWidth: '4px', borderLeftColor: (c as any).color, ['--hover-border' as any]: `${(c as any).color}50` } : { backgroundColor: 'hsl(var(--card))' }} onMouseEnter={(e) => { const col = (c as any).color; if (col) e.currentTarget.style.borderColor = `${col}60`; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }} onClick={() => openClient360(c)}>
               <div className="min-w-0">
                 <p className="font-semibold text-foreground">{c.name}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
