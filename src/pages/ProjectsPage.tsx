@@ -427,9 +427,18 @@ const ProjectsPage = () => {
                     <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
                       <Pencil className="w-4 h-4 text-muted-foreground" />
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg hover:bg-destructive/10 transition-colors">
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-2 rounded-lg hover:bg-accent transition-colors">
+                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                          <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
