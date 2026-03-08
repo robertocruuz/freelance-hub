@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import {
   DndContext,
@@ -86,7 +87,7 @@ const KanbanPage = () => {
             client_id: clientId || null,
             project_id: projectId || null,
             due_date: dueDate || null,
-            description: `Criado a partir de item de orçamento — Valor: R$ ${value.toFixed(2)}`,
+            description: `Criado a partir de item de orçamento — Valor: ${formatCurrency(value)}`,
           });
         }
       });
@@ -682,7 +683,7 @@ const KanbanPage = () => {
                           estimated_value: item.value,
                           project_id: item.project_id,
                           client_id: item.client_id || null,
-                          description: `Criado a partir de item de projeto — Valor: R$ ${item.value.toFixed(2)}`,
+                          description: `Criado a partir de item de projeto — Valor: ${formatCurrency(item.value)}`,
                         });
                       }
                     });
@@ -842,7 +843,7 @@ const KanbanPage = () => {
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{task.task_type || '-'}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {task.estimated_value ? `R$ ${Number(task.estimated_value).toFixed(2)}` : '-'}
+                      {task.estimated_value ? formatCurrency(Number(task.estimated_value)) : '-'}
                     </td>
                   </tr>
                 );

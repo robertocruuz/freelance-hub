@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderInput, FolderKanban, CalendarIcon, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -465,7 +465,7 @@ const BudgetsPage = () => {
                             <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-foreground">
-                            R$ {(editQty * editPrice).toFixed(2)}
+                            {formatCurrency(editQty * editPrice)}
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center justify-center gap-2">
@@ -478,8 +478,8 @@ const BudgetsPage = () => {
                         <>
                           <td className="py-3 px-3 text-foreground">{item.description}</td>
                           <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
                           <td className="py-3 px-3">
                             <div className="flex items-center justify-center gap-2">
                               <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">Editar</button>
@@ -526,17 +526,17 @@ const BudgetsPage = () => {
           <div className="border-t border-border pt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Desconto ({discount}%)</span>
-                <span className="text-destructive">- R$ {discountValue.toFixed(2)}</span>
+                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="text-foreground">Total</span>
-              <span className="text-foreground">R$ {total.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(total)}</span>
             </div>
             <div className="flex gap-2 pt-2 justify-end">
               <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
@@ -568,7 +568,7 @@ const BudgetsPage = () => {
                   </div>
                 </button>
                 <div className="flex items-center gap-3">
-                  <span className="font-semibold text-foreground">R$ {b.total.toFixed(2)}</span>
+                  <span className="font-semibold text-foreground">{formatCurrency(b.total)}</span>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="focus:outline-none">
@@ -617,14 +617,14 @@ const BudgetsPage = () => {
                     <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
                       <span className="text-foreground truncate">{item.description || '—'}</span>
                       <span className="text-center text-muted-foreground">{item.quantity}</span>
-                      <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
-                      <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                      <span className="text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</span>
+                      <span className="text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
                     </div>
                   ))}
                   {(b.discount > 0 || b.notes) && (
                     <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
                       {b.discount > 0 && (
-                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- R$ {(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100).toFixed(2)})</p>
+                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)})</p>
                       )}
                       {b.notes && (
                         <p className="text-xs text-muted-foreground">Obs: {b.notes}</p>

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -354,7 +354,7 @@ const InvoicesPage = () => {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-sm text-foreground">R$ {totalValue.toFixed(2)}</p>
+                              <p className="font-semibold text-sm text-foreground">{formatCurrency(totalValue)}</p>
                               {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
                             </div>
                           </div>
@@ -506,7 +506,7 @@ const InvoicesPage = () => {
                             <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-foreground">
-                            R$ {(editQty * editPrice).toFixed(2)}
+                            {formatCurrency(editQty * editPrice)}
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center justify-center gap-2">
@@ -519,8 +519,8 @@ const InvoicesPage = () => {
                         <>
                           <td className="py-3 px-3 text-foreground">{item.description}</td>
                           <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
                           <td className="py-3 px-3">
                             <div className="flex items-center justify-center gap-2">
                               <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">{lang === 'pt-BR' ? 'Editar' : 'Edit'}</button>
@@ -579,23 +579,23 @@ const InvoicesPage = () => {
           <div className="border-t border-border pt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(subtotal)}</span>
             </div>
             {taxes > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t.taxes} ({taxes}%)</span>
-                <span className="text-foreground">+ R$ {taxesValue.toFixed(2)}</span>
+                <span className="text-foreground">+ {formatCurrency(taxesValue)}</span>
               </div>
             )}
             {discount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t.discount} ({discount}%)</span>
-                <span className="text-destructive">- R$ {discountValue.toFixed(2)}</span>
+                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="text-foreground">Total</span>
-              <span className="text-foreground">R$ {total.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(total)}</span>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
@@ -642,7 +642,7 @@ const InvoicesPage = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(inv.total)}</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="focus:outline-none">

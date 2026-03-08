@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { formatCurrency } from '@/lib/utils';
 import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
@@ -364,7 +365,7 @@ const ClientsPage = () => {
                         <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
                           <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">R$ {inv.total.toFixed(2)}</span>
+                            <span className="font-semibold">{formatCurrency(inv.total)}</span>
                             <Badge variant="secondary" className="text-[10px] capitalize">{inv.status}</Badge>
                           </div>
                         </div>
@@ -382,7 +383,7 @@ const ClientsPage = () => {
                         <div key={b.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
                           <span className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">R$ {b.total.toFixed(2)}</span>
+                            <span className="font-semibold">{formatCurrency(b.total)}</span>
                             <Badge variant="secondary" className="text-[10px] capitalize">{b.status}</Badge>
                           </div>
                         </div>

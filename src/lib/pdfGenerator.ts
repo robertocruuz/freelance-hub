@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { formatCurrency } from '@/lib/utils';
 
 interface PdfItem {
   description: string;
@@ -55,8 +56,8 @@ export const generateDocumentPdf = (options: PdfOptions) => {
     const subtotal = item.quantity * item.unitPrice;
     doc.text(item.description || '-', 22, y);
     doc.text(String(item.quantity), 122, y);
-    doc.text(`R$ ${item.unitPrice.toFixed(2)}`, 140, y);
-    doc.text(`R$ ${subtotal.toFixed(2)}`, 168, y);
+    doc.text(formatCurrency(item.unitPrice), 140, y);
+    doc.text(formatCurrency(subtotal), 168, y);
     y += 7;
   });
 
@@ -70,21 +71,21 @@ export const generateDocumentPdf = (options: PdfOptions) => {
   doc.setFontSize(10);
   if (type === 'invoice') {
     const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-    doc.text(`Subtotal: R$ ${subtotal.toFixed(2)}`, 140, y);
+    doc.text(`Subtotal: ${formatCurrency(subtotal)}`, 140, y);
     y += 6;
     if (taxes) {
-      doc.text(`Impostos (${taxes}%): R$ ${(subtotal * taxes / 100).toFixed(2)}`, 140, y);
+      doc.text(`Impostos (${taxes}%): ${formatCurrency(subtotal * taxes / 100)}`, 140, y);
       y += 6;
     }
     if (discount) {
-      doc.text(`Desconto: -R$ ${discount.toFixed(2)}`, 140, y);
+      doc.text(`Desconto: -${formatCurrency(discount)}`, 140, y);
       y += 6;
     }
   }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text(`Total: R$ ${total.toFixed(2)}`, 140, y);
+  doc.text(`Total: ${formatCurrency(total)}`, 140, y);
 
   // Footer
   doc.setFontSize(8);

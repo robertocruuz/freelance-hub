@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -298,7 +299,7 @@ export const KanbanColumnComponent = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-muted-foreground">R$ {item.value.toFixed(2)}</p>
+                  <p className="text-[10px] text-muted-foreground">{formatCurrency(item.value)}</p>
                 </button>
               ))
             )}

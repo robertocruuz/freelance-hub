@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/hooks/useI18n';
@@ -396,7 +396,7 @@ const ProjectsPage = () => {
                   const imported = isBudgetFullyImported(b);
                   return (
                     <option key={b.id} value={b.id} disabled={imported}>
-                      {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
+                      {b.name || clientName(b.client_id)} · {formatCurrency(b.total)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
                     </option>
                   );
                 })}
@@ -453,7 +453,7 @@ const ProjectsPage = () => {
               {pendingBudgetItems.map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-sm">
                   <span className="text-foreground">{item.description}</span>
-                  <span className="text-muted-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                  <span className="text-muted-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
                 </div>
               ))}
             </div>
@@ -539,7 +539,7 @@ const ProjectsPage = () => {
                           <>Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
                         )}
                         {isExpanded && items.length > 0 && (
-                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}
+                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · {formatCurrency(total)}
                             {p.discount > 0 && <> · Desconto: {p.discount}%</>}
                           </>
                         )}
@@ -654,7 +654,7 @@ const ProjectsPage = () => {
                               {/* Value display */}
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-muted-foreground">Valor</label>
-                                <p className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</p>
+                                <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
                               </div>
 
                               {/* Actions */}
@@ -749,7 +749,7 @@ const ProjectsPage = () => {
                   <div className="flex items-center justify-between p-3 bg-muted/30">
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        {clientName(b.client_id)} · R$ {b.total.toFixed(2)}
+                        {clientName(b.client_id)} · {formatCurrency(b.total)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(b.created_at).toLocaleDateString()} · {statusLabel(b.status)}
@@ -779,7 +779,7 @@ const ProjectsPage = () => {
                               {imported && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-medium">Importado</span>}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                              {item.quantity}x {formatCurrency(item.unitPrice)} = {formatCurrency(item.quantity * item.unitPrice)}
                             </p>
                           </div>
                           {!imported && (
