@@ -367,10 +367,19 @@ const InvoicesPage = () => {
 
       {creating && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Nome da Fatura' : 'Invoice Name'}</label>
+            <input
+              placeholder={lang === 'pt-BR' ? 'Ex: Projeto Website' : 'Ex: Website Project'}
+              value={invoiceName}
+              onChange={(e) => setInvoiceName(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
+          </div>
           {/* Client & Due Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">{t.client}</label>
               <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
             </div>
             <div className="space-y-1.5">
