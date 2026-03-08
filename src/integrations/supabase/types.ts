@@ -965,6 +965,10 @@ export type Database = {
         Returns: boolean
       }
       is_task_shared: { Args: { _task_id: string }; Returns: boolean }
+      notify_org_admins_on_accept: {
+        Args: { _accepted_user_name: string; _org_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       org_role: "admin" | "editor" | "viewer"
