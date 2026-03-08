@@ -226,6 +226,7 @@ const BudgetsPage = () => {
     toast.success(`"${item.description}" adicionado ao projeto!`);
     setProjectPickerItem(null);
     loadImportedItems();
+  };
 
   const isFormOpen = creating || editingId;
 
