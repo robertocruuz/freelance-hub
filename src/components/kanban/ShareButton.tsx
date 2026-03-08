@@ -39,6 +39,8 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
   const [sharedWithOrg, setSharedWithOrg] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchEmail, setSearchEmail] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   const loadShares = async () => {
     if (!user) return;
