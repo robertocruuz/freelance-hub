@@ -731,8 +731,8 @@ const KanbanPage = () => {
 
       {/* LIST VIEW */}
       {view === 'list' && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <table className="w-full">
+        <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+          <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-border">
                 {[
