@@ -12,6 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Project {
   id: string;
@@ -93,7 +103,7 @@ const TimeTrackingPage = () => {
   const intervalRef = useRef<number>();
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
-
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -195,8 +205,16 @@ const TimeTrackingPage = () => {
     }
   };
 
-  const deleteEntry = async (id: string) => {
-    await supabase.from('time_entries').delete().eq('id', id);
+  const confirmDeleteEntry = (id: string) => {
+    setDeletingEntryId(id);
+  };
+
+  const deleteEntry = async () => {
+    if (!deletingEntryId) return;
+    const { error } = await supabase.from('time_entries').delete().eq('id', deletingEntryId);
+    if (error) toast.error(error.message);
+    else toast.success('Registro excluído com sucesso');
+    setDeletingEntryId(null);
     loadEntries();
   };
 
@@ -668,7 +686,7 @@ const TimeTrackingPage = () => {
                       <button onClick={() => openEdit(entry)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => deleteEntry(entry.id)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
+                      <button onClick={() => confirmDeleteEntry(entry.id)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -735,7 +753,7 @@ const TimeTrackingPage = () => {
                           <button onClick={() => openEdit(entry)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => deleteEntry(entry.id)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive">
+                          <button onClick={() => confirmDeleteEntry(entry.id)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -830,6 +848,23 @@ const TimeTrackingPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingEntryId} onOpenChange={(open) => !open && setDeletingEntryId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir registro</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este registro de tempo? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteEntry} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
