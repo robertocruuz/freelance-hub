@@ -198,7 +198,6 @@ const ProjectsPage = () => {
       loadProjects();
     }
   };
-  };
 
   const handleSaveItem = async (projectId: string) => {
     if (!itemName.trim()) return;
