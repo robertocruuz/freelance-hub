@@ -342,6 +342,7 @@ export type Database = {
           created_at: string
           id: string
           municipal_registration: string | null
+          neighborhood: string | null
           state: string | null
           state_registration: string | null
           trade_name: string | null
@@ -361,6 +362,7 @@ export type Database = {
           created_at?: string
           id?: string
           municipal_registration?: string | null
+          neighborhood?: string | null
           state?: string | null
           state_registration?: string | null
           trade_name?: string | null
@@ -380,6 +382,7 @@ export type Database = {
           created_at?: string
           id?: string
           municipal_registration?: string | null
+          neighborhood?: string | null
           state?: string | null
           state_registration?: string | null
           trade_name?: string | null
