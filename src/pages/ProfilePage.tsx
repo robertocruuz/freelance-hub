@@ -271,24 +271,26 @@ const ProfilePage = () => {
               </CardDescription>
             </div>
           </div>
-          {!editingOrg && (
-            <Button variant="outline" size="sm" onClick={() => setEditingOrg(true)} className="gap-1.5 shrink-0">
-              <Pencil className="w-3.5 h-3.5" />
-              {lang === 'pt-BR' ? 'Editar' : 'Edit'}
-            </Button>
-          )}
         </CardHeader>
 
         <Separator />
 
         <CardContent className="pt-5 pb-6 space-y-6">
           <Collapsible open={orgDetailsOpen || editingOrg} onOpenChange={setOrgDetailsOpen}>
-            <CollapsibleTrigger asChild>
-              <button className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors w-full">
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${orgDetailsOpen || editingOrg ? 'rotate-0' : '-rotate-90'}`} />
-                {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
-              </button>
-            </CollapsibleTrigger>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${orgDetailsOpen || editingOrg ? 'rotate-0' : '-rotate-90'}`} />
+                  {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
+                </button>
+              </CollapsibleTrigger>
+              {!editingOrg && (orgDetailsOpen) && (
+                <Button variant="outline" size="sm" onClick={() => setEditingOrg(true)} className="gap-1.5 shrink-0">
+                  <Pencil className="w-3.5 h-3.5" />
+                  {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+                </Button>
+              )}
+            </div>
             <CollapsibleContent className="space-y-6 pt-4">
               {/* Identification section */}
               <div>
