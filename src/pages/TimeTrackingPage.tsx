@@ -835,12 +835,23 @@ const TimeTrackingPage = () => {
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <select
-              value={editProjectId}
-              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
+              value={editClientId}
+              onChange={(e) => { setEditClientId(e.target.value); setEditProjectId(''); setEditTaskId(''); }}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">{t.project}</option>
-              {projects.map((p) => (
+              <option value="">Cliente</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <select
+              value={editProjectId}
+              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
+              disabled={!editClientId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{editClientId ? t.project : 'Selecione um cliente primeiro'}</option>
+              {editFilteredProjects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
