@@ -49,6 +49,7 @@ interface InvoiceItem {
 
 interface Invoice {
   id: string;
+  name: string | null;
   client_id: string | null;
   client_name?: string;
   items: InvoiceItem[];
