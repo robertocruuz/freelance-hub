@@ -474,7 +474,9 @@ const ClientsPage = () => {
         <div className="space-y-2">
           {filtered.map((c) => (
             <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer" onClick={() => openClient360(c)}>
-              <div className="min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--muted-foreground))' }} />
+                <div className="min-w-0">
                 <p className="font-semibold text-foreground">{c.name}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                   {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
