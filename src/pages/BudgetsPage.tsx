@@ -184,6 +184,10 @@ const BudgetsPage = () => {
 
     const payload = {
       client_id: clientId || null,
+      name: budgetName || null,
+      budget_date: budgetDate ? format(budgetDate, 'yyyy-MM-dd') : null,
+      validity_date: validityDate ? format(validityDate, 'yyyy-MM-dd') : null,
+      delivery_date: deliveryDate ? format(deliveryDate, 'yyyy-MM-dd') : null,
       items: items as unknown as Json,
       total,
       discount,
