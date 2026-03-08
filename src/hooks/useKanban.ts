@@ -2,6 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+export interface KanbanBoard {
+  id: string;
+  user_id: string;
+  name: string;
+  client_id: string | null;
+  project_id: string | null;
+  position: number;
+  created_at: string;
+}
+
 export interface KanbanColumn {
   id: string;
   user_id: string;
@@ -9,6 +19,7 @@ export interface KanbanColumn {
   position: number;
   wip_limit: number | null;
   created_at: string;
+  board_id: string | null;
 }
 
 export interface Task {
@@ -83,12 +94,71 @@ const DEFAULT_COLUMNS = [
   { name: 'Arquivado', position: 4 },
 ];
 
-export const useKanban = () => {
+export const useKanban = (activeBoardId?: string | null) => {
   const { user } = useAuth();
+  const [boards, setBoards] = useState<KanbanBoard[]>([]);
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<TaskLabel[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Board operations
+  const loadBoards = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('kanban_boards')
+      .select('*')
+      .order('position', { ascending: true });
+    if (data) setBoards(data);
+    return data || [];
+  }, [user]);
+
+  const addBoard = async (name: string, clientId?: string | null, projectId?: string | null) => {
+    if (!user) return;
+    const position = boards.length;
+    const { data } = await supabase
+      .from('kanban_boards')
+      .insert({ name, position, user_id: user.id, client_id: clientId || null, project_id: projectId || null })
+      .select()
+      .single();
+    if (data) {
+      setBoards((prev) => [...prev, data]);
+      // Create default columns for the new board
+      const inserts = DEFAULT_COLUMNS.map((col) => ({
+        ...col,
+        user_id: user.id,
+        board_id: data.id,
+      }));
+      const { data: newCols } = await supabase
+        .from('kanban_columns')
+        .insert(inserts)
+        .select('*');
+      if (newCols) setColumns((prev) => [...prev, ...newCols]);
+    }
+    return data;
+  };
+
+  const updateBoard = async (id: string, updates: Partial<KanbanBoard>) => {
+    await supabase.from('kanban_boards').update(updates).eq('id', id);
+    setBoards((prev) => prev.map((b) => (b.id === id ? { ...b, ...updates } : b)));
+  };
+
+  const deleteBoard = async (id: string) => {
+    // Columns will cascade delete; tasks in those columns lose their column_id
+    // First delete tasks that belong to columns of this board
+    const boardCols = columns.filter(c => c.board_id === id);
+    const colIds = boardCols.map(c => c.id);
+    if (colIds.length > 0) {
+      // Delete tasks in those columns
+      for (const colId of colIds) {
+        await supabase.from('tasks').delete().eq('column_id', colId);
+      }
+    }
+    await supabase.from('kanban_boards').delete().eq('id', id);
+    setBoards((prev) => prev.filter((b) => b.id !== id));
+    setColumns((prev) => prev.filter((c) => c.board_id !== id));
+    setTasks((prev) => prev.filter((t) => !colIds.includes(t.column_id || '')));
+  };
 
   const loadColumns = useCallback(async () => {
     if (!user) return;
@@ -97,18 +167,7 @@ export const useKanban = () => {
       .select('*')
       .order('position', { ascending: true });
 
-    if (data && data.length === 0) {
-      // Create default columns
-      const inserts = DEFAULT_COLUMNS.map((col) => ({
-        ...col,
-        user_id: user.id,
-      }));
-      const { data: created } = await supabase
-        .from('kanban_columns')
-        .insert(inserts)
-        .select('*');
-      if (created) setColumns(created);
-    } else if (data) {
+    if (data) {
       setColumns(data);
     }
   }, [user]);
@@ -133,19 +192,27 @@ export const useKanban = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    await Promise.all([loadColumns(), loadTasks(), loadLabels()]);
+    await Promise.all([loadBoards(), loadColumns(), loadTasks(), loadLabels()]);
     setLoading(false);
-  }, [loadColumns, loadTasks, loadLabels]);
+  }, [loadBoards, loadColumns, loadTasks, loadLabels]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Filtered columns and tasks for active board
+  const boardColumns = activeBoardId
+    ? columns.filter((c) => c.board_id === activeBoardId).sort((a, b) => a.position - b.position)
+    : columns.filter((c) => !c.board_id).sort((a, b) => a.position - b.position);
+
+  const boardColumnIds = new Set(boardColumns.map((c) => c.id));
+  const boardTasks = tasks.filter((t) => t.column_id && boardColumnIds.has(t.column_id));
 
   // Column operations
   const addColumn = async (name: string) => {
     if (!user) return;
-    const position = columns.length;
+    const position = boardColumns.length;
     const { data } = await supabase
       .from('kanban_columns')
-      .insert({ name, position, user_id: user.id })
+      .insert({ name, position, user_id: user.id, board_id: activeBoardId || null })
       .select()
       .single();
     if (data) setColumns((prev) => [...prev, data]);
@@ -162,7 +229,10 @@ export const useKanban = () => {
   };
 
   const reorderColumns = async (newColumns: KanbanColumn[]) => {
-    setColumns(newColumns);
+    setColumns((prev) => {
+      const otherCols = prev.filter((c) => !newColumns.find((nc) => nc.id === c.id));
+      return [...otherCols, ...newColumns];
+    });
     const updates = newColumns.map((col, i) => ({ id: col.id, position: i, name: col.name, user_id: col.user_id }));
     for (const u of updates) {
       await supabase.from('kanban_columns').update({ position: u.position }).eq('id', u.id);
@@ -184,7 +254,6 @@ export const useKanban = () => {
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    // Auto-set completed_at when moving to "Concluído"
     if (updates.column_id) {
       const targetCol = columns.find((c) => c.id === updates.column_id);
       if (targetCol && targetCol.name === 'Concluído' && !updates.completed_at) {
@@ -341,7 +410,8 @@ export const useKanban = () => {
   };
 
   return {
-    columns, tasks, labels, loading, reload: load,
+    boards, columns: boardColumns, tasks: boardTasks, labels, loading, reload: load,
+    addBoard, updateBoard, deleteBoard,
     addColumn, updateColumn, deleteColumn, reorderColumns,
     addTask, updateTask, deleteTask, moveTask,
     getChecklists, addChecklist, addChecklistItem, toggleChecklistItem, deleteChecklist, deleteChecklistItem,
