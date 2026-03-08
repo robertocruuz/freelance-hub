@@ -1255,8 +1255,8 @@ const TimeTrackingPage = () => {
 
         {/* Calendar View (Monthly) */}
         {viewMode === 'calendar' && timeRange === 'monthly' && (
-          <div className="h-full overflow-y-auto scrollbar-thin bg-card">
-            <div className="grid grid-cols-7 text-center border-b border-border">
+          <div className="h-full overflow-y-auto scrollbar-thin bg-card rounded-t-xl">
+            <div className="grid grid-cols-7 text-center border-b border-border rounded-t-xl overflow-hidden">
               {DAY_NAMES_SHORT.map(d => (
                 <div key={d} className="p-2.5 text-xs font-bold tracking-wider text-muted-foreground">{d}</div>
               ))}
