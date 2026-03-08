@@ -581,7 +581,7 @@ const BudgetsPage = () => {
                   </DropdownMenu>
                   <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                  <button onClick={() => openProjectPicker(null, b)} className="text-muted-foreground hover:text-primary" title="Enviar para projeto"><FolderOutput className="w-4 h-4" /></button>
+                  <button onClick={() => openProjectPicker(null, b)} className="text-muted-foreground hover:text-primary" title="Enviar para projeto"><FolderInput className="w-4 h-4" /></button>
                   <button onClick={() => deleteBudget(b.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
