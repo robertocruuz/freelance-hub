@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN responsible text DEFAULT NULL;
