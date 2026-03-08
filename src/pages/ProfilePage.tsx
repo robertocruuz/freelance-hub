@@ -66,6 +66,9 @@ const ProfilePage = () => {
           business_email: o.business_email || '',
           business_phone: o.business_phone || '',
           website: o.website || '',
+          address: o.address || '',
+          state: o.state || '',
+          city: o.city || '',
         };
         setOrg(orgState);
         setOrgForm(orgState);
