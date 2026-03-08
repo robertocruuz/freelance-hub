@@ -21,6 +21,7 @@ import KanbanPage from "./pages/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import InvitePage from "./pages/InvitePage";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
                   <Route path="invoices" element={<InvoicesPage />} />
                   <Route path="kanban" element={<KanbanPage />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                 </Route>
                 <Route path="/invite/:token" element={<InvitePage />} />
                 <Route path="*" element={<NotFound />} />

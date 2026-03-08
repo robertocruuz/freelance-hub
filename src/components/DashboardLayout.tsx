@@ -109,7 +109,7 @@ const DashboardLayout = () => {
                 <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
                   <User className="w-4 h-4 mr-2" /> {t.profile}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
                   <Settings className="w-4 h-4 mr-2" /> {t.settings}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
