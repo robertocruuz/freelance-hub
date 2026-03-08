@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import NotificationBell from '@/components/NotificationBell';
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
@@ -93,6 +94,7 @@ const DashboardLayout = () => {
           {/* Timer indicator + Right controls */}
           <div className="flex items-center gap-2">
             <TimerIndicator navigate={navigate} />
+            <NotificationBell />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
