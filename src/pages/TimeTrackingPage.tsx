@@ -230,6 +230,8 @@ const TimeTrackingPage = () => {
       }
       setElapsed(0);
       setDescription('');
+      setClientId('');
+      setProjectId('');
       setTaskId('');
       loadEntries();
     }
