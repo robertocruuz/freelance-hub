@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon, X, Kanban } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -16,7 +16,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input as UIInput } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,6 +107,14 @@ const ProjectsPage = () => {
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
   const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
   const [projectDiscount, setProjectDiscount] = useState(0);
+
+  // Board picker for task creation
+  const [showBoardPicker, setShowBoardPicker] = useState(false);
+  const [availableBoards, setAvailableBoards] = useState<{ id: string; name: string }[]>([]);
+  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
+  const [pendingTaskItem, setPendingTaskItem] = useState<{ name: string; value: number; projectId: string; clientId: string | null; dueDate: string | null } | null>(null);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [creatingBoard, setCreatingBoard] = useState(false);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -348,6 +359,86 @@ const ProjectsPage = () => {
     const map: Record<string, string> = { draft: 'Rascunho', sent: 'Enviado', approved: 'Aprovado', rejected: 'Recusado' };
     return map[s] || s;
   };
+
+  const openBoardPicker = async (item: ProjectItem) => {
+    const project = projects.find(pr => pr.id === item.project_id);
+    setPendingTaskItem({
+      name: item.name,
+      value: item.value,
+      projectId: item.project_id,
+      clientId: project?.client_id || null,
+      dueDate: project?.due_date || null,
+    });
+    // Load boards
+    const { data } = await supabase.from('kanban_boards').select('id, name').order('position');
+    setAvailableBoards(data || []);
+    setSelectedBoardId(data && data.length > 0 ? data[0].id : null);
+    setNewBoardName('');
+    setCreatingBoard(false);
+    setShowBoardPicker(true);
+  };
+
+  const handleCreateTaskInBoard = async () => {
+    if (!user || !pendingTaskItem) return;
+    let boardId = selectedBoardId;
+
+    // Create board if needed
+    if (creatingBoard && newBoardName.trim()) {
+      const { data: newBoard } = await supabase
+        .from('kanban_boards')
+        .insert({ name: newBoardName.trim(), user_id: user.id, position: availableBoards.length })
+        .select()
+        .single();
+      if (!newBoard) return toast.error('Erro ao criar painel');
+      boardId = newBoard.id;
+
+      // Create default columns for new board
+      const defaultCols = [
+        { name: 'Para Fazer', position: 0 },
+        { name: 'Em Andamento', position: 1 },
+        { name: 'Alteração', position: 2 },
+        { name: 'Concluído', position: 3 },
+        { name: 'Arquivado', position: 4 },
+      ];
+      await supabase.from('kanban_columns').insert(
+        defaultCols.map(c => ({ ...c, user_id: user.id, board_id: newBoard.id }))
+      );
+    }
+
+    if (!boardId) return toast.error('Selecione ou crie um painel');
+
+    // Get first column of the board
+    const { data: cols } = await supabase
+      .from('kanban_columns')
+      .select('id')
+      .eq('board_id', boardId)
+      .order('position')
+      .limit(1);
+
+    if (!cols || cols.length === 0) return toast.error('Painel sem colunas');
+
+    const { data: newTask, error } = await supabase
+      .from('tasks')
+      .insert({
+        title: pendingTaskItem.name,
+        column_id: cols[0].id,
+        position: 0,
+        user_id: user.id,
+        estimated_value: pendingTaskItem.value,
+        project_id: pendingTaskItem.projectId,
+        client_id: pendingTaskItem.clientId,
+        due_date: pendingTaskItem.dueDate,
+        description: `Criado a partir de item de projeto — Valor: ${formatCurrency(pendingTaskItem.value)}`,
+      })
+      .select()
+      .single();
+
+    if (error) return toast.error(error.message);
+    toast.success(`Tarefa "${pendingTaskItem.name}" criada!`);
+    setShowBoardPicker(false);
+    setPendingTaskItem(null);
+  };
+
 
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -600,16 +691,7 @@ const ProjectsPage = () => {
                             <span
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const project = projects.find(pr => pr.id === item.project_id);
-                                const params = new URLSearchParams({
-                                  from_budget: 'true',
-                                  title: item.name,
-                                  value: String(item.value),
-                                  ...(item.project_id ? { project: item.project_id } : {}),
-                                  ...(project?.client_id ? { client: project.client_id } : {}),
-                                  ...(project?.due_date ? { due_date: project.due_date } : {}),
-                                });
-                                navigate(`/dashboard/kanban?${params.toString()}`);
+                                openBoardPicker(item);
                               }}
                               className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group shrink-0 cursor-pointer"
                             >
@@ -827,6 +909,86 @@ const ProjectsPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Board picker dialog for task creation */}
+      <Dialog open={showBoardPicker} onOpenChange={setShowBoardPicker}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Kanban className="w-5 h-5 text-primary" />
+              Criar tarefa no painel
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {pendingTaskItem && (
+              <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                <p className="text-sm font-medium text-foreground">{pendingTaskItem.name}</p>
+                <p className="text-xs text-muted-foreground">{formatCurrency(pendingTaskItem.value)}</p>
+              </div>
+            )}
+
+            {!creatingBoard ? (
+              <>
+                {availableBoards.length > 0 ? (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Selecione o painel</label>
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {availableBoards.map((board) => (
+                        <button
+                          key={board.id}
+                          onClick={() => setSelectedBoardId(board.id)}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition border ${
+                            selectedBoardId === board.id
+                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                              : 'bg-secondary/50 text-foreground border-transparent hover:bg-secondary'
+                          }`}
+                        >
+                          <Kanban className="w-3.5 h-3.5 inline mr-2" />
+                          {board.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">Nenhum painel encontrado. Crie um para continuar.</p>
+                )}
+                <button
+                  onClick={() => setCreatingBoard(true)}
+                  className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition border border-dashed border-border"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Criar novo painel
+                </button>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Nome do novo painel</label>
+                <UIInput
+                  value={newBoardName}
+                  onChange={(e) => setNewBoardName(e.target.value)}
+                  placeholder="Ex: Marketing, Sprint 1..."
+                  autoFocus
+                />
+                <button
+                  onClick={() => setCreatingBoard(false)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition"
+                >
+                  ← Voltar para a lista
+                </button>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBoardPicker(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreateTaskInBoard}
+              disabled={!creatingBoard ? !selectedBoardId : !newBoardName.trim()}
+              className="btn-glow"
+            >
+              Criar tarefa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
