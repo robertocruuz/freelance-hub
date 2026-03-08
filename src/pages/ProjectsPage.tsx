@@ -640,24 +640,6 @@ const ProjectsPage = () => {
                               {/* Actions */}
                               <div className="flex items-center gap-2 pt-1">
                                 <button
-                                  onClick={() => {
-                                    const project = projects.find(pr => pr.id === item.project_id);
-                                    const params = new URLSearchParams({
-                                      from_budget: 'true',
-                                      title: item.name,
-                                      value: String(item.value),
-                                      ...(item.project_id ? { project: item.project_id } : {}),
-                                      ...(project?.client_id ? { client: project.client_id } : {}),
-                                      ...(project?.due_date ? { due_date: project.due_date } : {}),
-                                    });
-                                    navigate(`/dashboard/kanban?${params.toString()}`);
-                                  }}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group"
-                                >
-                                  <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
-                                  <span className="text-xs font-medium text-primary">Criar Tarefa</span>
-                                </button>
-                                <button
                                   onClick={() => handleDeleteItem(item)}
                                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors"
                                 >
