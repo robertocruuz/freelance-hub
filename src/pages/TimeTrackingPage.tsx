@@ -1025,7 +1025,7 @@ const TimeTrackingPage = () => {
               })}
             </div>
             {/* Time grid */}
-            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
+            <div ref={calendarRef} className="flex-1"
               onMouseDown={(e) => {
                 // Only trigger on empty space (not on entry blocks)
                 const target = e.target as HTMLElement;
