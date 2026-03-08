@@ -822,6 +822,7 @@ const KanbanPage = () => {
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
                     className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition"
+                    style={(client as any)?.color ? { borderLeft: `3px solid ${(client as any).color}` } : undefined}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
