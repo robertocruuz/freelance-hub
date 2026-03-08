@@ -4,6 +4,7 @@ import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, Ch
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, AreaChart, Area } from 'recharts';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
+import { useTimer } from '@/hooks/useTimer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClients } from '@/hooks/useClients';
