@@ -86,6 +86,7 @@ const TimeTrackingPage = () => {
   const [startTime, setStartTime] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [description, setDescription] = useState('');
+  const [clientId, setClientId] = useState('');
   const [projectId, setProjectId] = useState('');
   const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
