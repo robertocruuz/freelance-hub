@@ -3,14 +3,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
@@ -33,6 +33,8 @@ const ProfilePage = () => {
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [statePopoverOpen, setStatePopoverOpen] = useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
@@ -59,7 +61,7 @@ const ProfilePage = () => {
 
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city, logo_url')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -82,6 +84,7 @@ const ProfilePage = () => {
         };
         setOrg(orgState);
         setOrgForm(orgState);
+        setLogoUrl(o.logo_url || null);
       }
     };
     fetchProfile();
@@ -132,6 +135,30 @@ const ProfilePage = () => {
       setEditingOrg(false);
       toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
     }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    if (!file.type.startsWith('image/')) {
+      toast({ title: lang === 'pt-BR' ? 'Selecione uma imagem' : 'Select an image', variant: 'destructive' });
+      return;
+    }
+    setUploadingLogo(true);
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/logo.${fileExt}`;
+    const { error: uploadError } = await supabase.storage.from('org-logos').upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast({ title: lang === 'pt-BR' ? 'Erro ao enviar logo' : 'Error uploading logo', variant: 'destructive' });
+      setUploadingLogo(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('org-logos').getPublicUrl(filePath);
+    const publicUrl = urlData.publicUrl + '?t=' + Date.now();
+    await (supabase.from('organizations' as any) as any).upsert({ user_id: user.id, logo_url: publicUrl }, { onConflict: 'user_id' });
+    setLogoUrl(publicUrl);
+    setUploadingLogo(false);
+    toast({ title: lang === 'pt-BR' ? 'Logo atualizado!' : 'Logo updated!' });
   };
 
   const handleChangePassword = async () => {
@@ -306,9 +333,24 @@ const ProfilePage = () => {
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-primary" />
-                </div>
+                <label className="relative cursor-pointer group shrink-0">
+                  <Avatar className="w-12 h-12 rounded-xl border-2 border-border">
+                    {logoUrl ? (
+                      <AvatarImage src={logoUrl} alt="Logo" className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="rounded-xl bg-primary/10">
+                      <Building2 className="w-5 h-5 text-primary" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {uploadingLogo ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                </label>
                 <div>
                   <CardTitle className="text-lg">
                     {org.trade_name || org.company_name || (lang === 'pt-BR' ? 'Organização' : 'Organization')}

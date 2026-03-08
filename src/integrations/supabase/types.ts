@@ -341,6 +341,7 @@ export type Database = {
           complement: string | null
           created_at: string
           id: string
+          logo_url: string | null
           municipal_registration: string | null
           neighborhood: string | null
           state: string | null
@@ -361,6 +362,7 @@ export type Database = {
           complement?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           municipal_registration?: string | null
           neighborhood?: string | null
           state?: string | null
@@ -381,6 +383,7 @@ export type Database = {
           complement?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           municipal_registration?: string | null
           neighborhood?: string | null
           state?: string | null
