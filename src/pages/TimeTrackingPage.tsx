@@ -247,7 +247,7 @@ const TimeTrackingPage = () => {
     if (dragState) return;
     const rect = gridEl.getBoundingClientRect();
     const y = e.clientY - rect.top + gridEl.scrollTop;
-    const minute = Math.round(y / 5) * 5;
+    const minute = Math.round(y / 5) * 5 + workHourStart * 60;
     setCreateDrag({ dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop });
     createDragRef.current = { dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop };
   };
