@@ -20,6 +20,7 @@ import HomePage from "./pages/HomePage";
 import KanbanPage from "./pages/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import InvitePage from "./pages/InvitePage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
                   <Route path="kanban" element={<KanbanPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
+                <Route path="/invite/:token" element={<InvitePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

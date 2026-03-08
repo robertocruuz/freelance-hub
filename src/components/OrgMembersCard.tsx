@@ -1,0 +1,393 @@
+import { useState } from 'react';
+import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
+import { useOrganization, OrgMember, OrgInvite } from '@/hooks/useOrganization';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown, Clock } from 'lucide-react';
+
+const roleIcons = {
+  admin: Crown,
+  editor: Pencil,
+  viewer: Eye,
+};
+
+const roleColors = {
+  admin: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  editor: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  viewer: 'bg-muted text-muted-foreground border-border',
+};
+
+const OrgMembersCard = () => {
+  const { user } = useAuth();
+  const { lang } = useI18n();
+  const { toast } = useToast();
+  const { orgId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = useOrganization();
+
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+
+  const isPt = lang === 'pt-BR';
+
+  const roleLabel = (role: string) => {
+    const labels: Record<string, Record<string, string>> = {
+      admin: { 'pt-BR': 'Admin', en: 'Admin' },
+      editor: { 'pt-BR': 'Editor', en: 'Editor' },
+      viewer: { 'pt-BR': 'Visualizador', en: 'Viewer' },
+    };
+    return labels[role]?.[lang] || role;
+  };
+
+  const handleInviteByEmail = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteLoading(true);
+    const { error } = await inviteByEmail(inviteEmail.trim(), inviteRole);
+    setInviteLoading(false);
+    if (error) {
+      toast({ title: isPt ? 'Erro ao convidar' : 'Error inviting', variant: 'destructive' });
+    } else {
+      toast({ title: isPt ? 'Convite enviado!' : 'Invite sent!' });
+      setInviteEmail('');
+      setInviteOpen(false);
+    }
+  };
+
+  const handleGenerateLink = async () => {
+    setInviteLoading(true);
+    const { token, error } = await generateInviteLink(inviteRole);
+    setInviteLoading(false);
+    if (error || !token) {
+      toast({ title: isPt ? 'Erro ao gerar link' : 'Error generating link', variant: 'destructive' });
+    } else {
+      const link = `${window.location.origin}/invite/${token}`;
+      setInviteLink(link);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (inviteLink) {
+      navigator.clipboard.writeText(inviteLink);
+      toast({ title: isPt ? 'Link copiado!' : 'Link copied!' });
+    }
+  };
+
+  const handleRoleChange = async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
+    const { error } = await updateMemberRole(memberId, role);
+    if (error) {
+      toast({ title: isPt ? 'Erro ao atualizar' : 'Error updating', variant: 'destructive' });
+    } else {
+      toast({ title: isPt ? 'Permissão atualizada!' : 'Role updated!' });
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    const { error } = await removeMember(memberId);
+    if (error) {
+      toast({ title: isPt ? 'Erro ao remover' : 'Error removing', variant: 'destructive' });
+    } else {
+      toast({ title: isPt ? 'Membro removido!' : 'Member removed!' });
+    }
+  };
+
+  const handleCancelInvite = async (inviteId: string) => {
+    const { error } = await cancelInvite(inviteId);
+    if (error) {
+      toast({ title: isPt ? 'Erro ao cancelar' : 'Error canceling', variant: 'destructive' });
+    }
+  };
+
+  if (!orgId && !loading) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">{isPt ? 'Equipe' : 'Team'}</CardTitle>
+            <CardDescription className="mt-0.5">
+              {isPt ? 'Cadastre uma organização primeiro para convidar membros' : 'Register an organization first to invite members'}
+            </CardDescription>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const getInitials = (name?: string | null, email?: string | null) => {
+    const str = name || email || '?';
+    return str.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">{isPt ? 'Equipe' : 'Team'}</CardTitle>
+            <CardDescription className="mt-0.5">
+              {isPt ? 'Gerencie os membros da sua organização' : 'Manage your organization members'}
+            </CardDescription>
+          </div>
+        </div>
+        {isAdmin && (
+          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteLink(null); setInviteEmail(''); } }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5 shrink-0">
+                <UserPlus className="w-3.5 h-3.5" />
+                {isPt ? 'Convidar' : 'Invite'}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{isPt ? 'Convidar membro' : 'Invite member'}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                {/* Role selector */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{isPt ? 'Permissão' : 'Role'}</Label>
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        <span className="flex items-center gap-2"><Crown className="w-3.5 h-3.5" /> Admin</span>
+                      </SelectItem>
+                      <SelectItem value="editor">
+                        <span className="flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Editor</span>
+                      </SelectItem>
+                      <SelectItem value="viewer">
+                        <span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5" /> {isPt ? 'Visualizador' : 'Viewer'}</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {inviteRole === 'admin' && (isPt ? 'Pode gerenciar membros, editar e excluir dados' : 'Can manage members, edit and delete data')}
+                    {inviteRole === 'editor' && (isPt ? 'Pode visualizar e editar dados' : 'Can view and edit data')}
+                    {inviteRole === 'viewer' && (isPt ? 'Pode apenas visualizar dados' : 'Can only view data')}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Invite by email */}
+                <div className="space-y-2">
+                  <Label className="text-sm flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5" />
+                    {isPt ? 'Convidar por e-mail' : 'Invite by email'}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()}
+                    />
+                    <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} size="sm">
+                      {isPt ? 'Enviar' : 'Send'}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Separator className="flex-1" />
+                  <span className="text-xs text-muted-foreground">{isPt ? 'ou' : 'or'}</span>
+                  <Separator className="flex-1" />
+                </div>
+
+                {/* Invite by link */}
+                <div className="space-y-2">
+                  <Label className="text-sm flex items-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5" />
+                    {isPt ? 'Gerar link de convite' : 'Generate invite link'}
+                  </Label>
+                  {inviteLink ? (
+                    <div className="flex gap-2">
+                      <Input value={inviteLink} readOnly className="text-xs" />
+                      <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="outline" className="w-full gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
+                      <Link2 className="w-3.5 h-3.5" />
+                      {isPt ? 'Gerar link' : 'Generate link'}
+                    </Button>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </CardHeader>
+
+      <Separator />
+
+      <CardContent className="pt-5 pb-6 space-y-4">
+        {/* Members list */}
+        <div className="space-y-2">
+          {members.map((member) => {
+            const RoleIcon = roleIcons[member.role] || Eye;
+            const isCurrentUser = member.user_id === user?.id;
+            const canManage = isAdmin && !isCurrentUser;
+
+            return (
+              <div
+                key={member.id}
+                className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors"
+              >
+                <Avatar className="w-9 h-9 shrink-0">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                    {getInitials(member.profile?.name, member.profile?.email)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
+                    {isCurrentUser && <span className="text-xs text-muted-foreground ml-1.5">({isPt ? 'você' : 'you'})</span>}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {member.profile?.email || ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {member.status === 'pending' && (
+                    <Badge variant="outline" className="text-[10px] gap-1">
+                      <Clock className="w-3 h-3" />
+                      {isPt ? 'Pendente' : 'Pending'}
+                    </Badge>
+                  )}
+                  {canManage ? (
+                    <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
+                      <SelectTrigger className="h-7 text-xs w-auto gap-1 px-2">
+                        <RoleIcon className="w-3 h-3" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                        <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge variant="outline" className={`text-[10px] gap-1 ${roleColors[member.role]}`}>
+                      <RoleIcon className="w-3 h-3" />
+                      {roleLabel(member.role)}
+                    </Badge>
+                  )}
+                  {canManage && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{isPt ? 'Remover membro?' : 'Remove member?'}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {isPt
+                              ? 'Este membro perderá acesso aos dados da organização.'
+                              : 'This member will lose access to organization data.'}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleRemoveMember(member.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            {isPt ? 'Remover' : 'Remove'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Pending invites */}
+        {isAdmin && invites.length > 0 && (
+          <>
+            <Separator className="opacity-50" />
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
+                {isPt ? 'Convites pendentes' : 'Pending invites'}
+              </p>
+              <div className="space-y-2">
+                {invites.map((invite) => (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-muted/20 border border-dashed border-border/50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground truncate">
+                        {invite.email || (isPt ? 'Link de convite' : 'Invite link')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {roleLabel(invite.role)} · {isPt ? 'Expira em' : 'Expires'} {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0"
+                      onClick={() => handleCancelInvite(invite.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default OrgMembersCard;

@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield } from 'lucide-react';
+import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
@@ -447,6 +448,9 @@ const ProfilePage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Team Card */}
+      <OrgMembersCard />
 
       {/* Security Card */}
       <Card>
