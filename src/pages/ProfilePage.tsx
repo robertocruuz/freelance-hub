@@ -26,8 +26,8 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState({ name: '', email: '', document: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-  const [org, setOrg] = useState({ company_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
-  const [orgForm, setOrgForm] = useState({ company_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
+  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -48,13 +48,14 @@ const ProfilePage = () => {
       // Fetch organization
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
         const o = orgData as any;
         const orgState = {
           company_name: o.company_name || '',
+          trade_name: o.trade_name || '',
           cnpj: o.cnpj || '',
           state_registration: o.state_registration || '',
           municipal_registration: o.municipal_registration || '',
@@ -227,16 +228,30 @@ const ProfilePage = () => {
         </CardHeader>
         <Separator />
         <CardContent className="pt-6 space-y-5">
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Building2 className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
-            </Label>
-            {editingOrg ? (
-              <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
-            ) : (
-              <p className="text-foreground font-medium">{org.company_name || '—'}</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <Building2 className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.company_name || '—'}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <Building2 className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.trade_name || '—'}</p>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
