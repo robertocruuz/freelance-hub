@@ -4,6 +4,7 @@ import { Calendar, CheckSquare, MessageSquare, Paperclip, AlertTriangle, Clock }
 import { Task } from '@/hooks/useKanban';
 import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
   low: { label: 'Baixa', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -23,10 +24,12 @@ const taskTypeConfig: Record<string, string> = {
 interface TaskCardProps {
   task: Task;
   onClick: () => void;
+  onToggleComplete?: (taskId: string, completed: boolean) => void;
   checklistProgress?: { done: number; total: number } | null;
 }
 
-export const TaskCard = ({ task, onClick, checklistProgress }: TaskCardProps) => {
+export const TaskCard = ({ task, onClick, onToggleComplete, checklistProgress }: TaskCardProps) => {
+  const isCompleted = !!task.completed_at;
   const {
     attributes,
     listeners,
@@ -66,10 +69,25 @@ export const TaskCard = ({ task, onClick, checklistProgress }: TaskCardProps) =>
         </div>
       )}
 
-      {/* Title */}
-      <p className="text-sm font-semibold text-foreground leading-snug mb-2 group-hover:text-primary transition-colors">
-        {task.title}
-      </p>
+      {/* Title with checkbox */}
+      <div className="flex items-start gap-2 mb-2">
+        <Checkbox
+          checked={isCompleted}
+          onCheckedChange={(checked) => {
+            if (onToggleComplete) {
+              onToggleComplete(task.id, !!checked);
+            }
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="mt-0.5 shrink-0"
+        />
+        <p className={`text-sm font-semibold leading-snug group-hover:text-primary transition-colors ${
+          isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'
+        }`}>
+          {task.title}
+        </p>
+      </div>
 
       {/* Priority badge */}
       <div className="flex items-center gap-1.5 mb-2">
