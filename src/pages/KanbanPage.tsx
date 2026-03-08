@@ -47,6 +47,8 @@ const KanbanPage = () => {
   const [filterProjects, setFilterProjects] = useState<Set<string>>(new Set());
   const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
   const [filterDeadlines, setFilterDeadlines] = useState<Set<string>>(new Set());
+  const [filterDeadlineDate, setFilterDeadlineDate] = useState<Date | undefined>(undefined);
+  const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
