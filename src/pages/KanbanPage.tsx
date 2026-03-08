@@ -1062,8 +1062,14 @@ const KanbanPage = () => {
             <div className="space-y-2">
               <Label className="text-xs">Atrelar a cliente (opcional)</Label>
               <Select value={boardClientId || 'none'} onValueChange={(v) => {
-                setBoardClientId(v === 'none' ? null : v);
-                setBoardProjectId(null); // Reset project when client changes
+                const clientId = v === 'none' ? null : v;
+                setBoardClientId(clientId);
+                setBoardProjectId(null);
+                if (clientId && !boardName.trim()) {
+                  const client = clients.find(c => c.id === clientId);
+                  if (client) setBoardName(client.name);
+                }
+                if (!clientId && !editingBoard) setBoardName('');
               }}>
                 <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                 <SelectContent>
