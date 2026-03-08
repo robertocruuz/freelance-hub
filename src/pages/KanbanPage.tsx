@@ -112,6 +112,11 @@ const KanbanPage = () => {
 
   // Deadline filter helper
   const matchesDeadline = (task: Task): boolean => {
+    // Date-specific filter (AND with chip filters)
+    if (filterDeadlineDate && (!task.due_date || !isSameDay(new Date(task.due_date), filterDeadlineDate))) {
+      return false;
+    }
+    // Chip filters (OR between them)
     if (filterDeadlines.size === 0) return true;
     const hasNoDueDate = !task.due_date;
     const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
