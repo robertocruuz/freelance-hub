@@ -42,6 +42,25 @@ const ProfilePage = () => {
         setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '' });
         setEditForm({ name: user.user_metadata?.name || '', document: '' });
       }
+
+      // Fetch organization
+      const { data: orgData } = await supabase
+        .from('organizations' as any)
+        .select('company_name, cnpj, business_email, business_phone, website')
+        .eq('user_id', user.id)
+        .single();
+      if (orgData) {
+        const o = orgData as any;
+        const orgState = {
+          company_name: o.company_name || '',
+          cnpj: o.cnpj || '',
+          business_email: o.business_email || '',
+          business_phone: o.business_phone || '',
+          website: o.website || '',
+        };
+        setOrg(orgState);
+        setOrgForm(orgState);
+      }
     };
     fetchProfile();
   }, [user]);
