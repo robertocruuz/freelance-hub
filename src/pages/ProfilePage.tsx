@@ -137,6 +137,30 @@ const ProfilePage = () => {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    if (!file.type.startsWith('image/')) {
+      toast({ title: lang === 'pt-BR' ? 'Selecione uma imagem' : 'Select an image', variant: 'destructive' });
+      return;
+    }
+    setUploadingLogo(true);
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/logo.${fileExt}`;
+    const { error: uploadError } = await supabase.storage.from('org-logos').upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast({ title: lang === 'pt-BR' ? 'Erro ao enviar logo' : 'Error uploading logo', variant: 'destructive' });
+      setUploadingLogo(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('org-logos').getPublicUrl(filePath);
+    const publicUrl = urlData.publicUrl + '?t=' + Date.now();
+    await (supabase.from('organizations' as any) as any).upsert({ user_id: user.id, logo_url: publicUrl }, { onConflict: 'user_id' });
+    setLogoUrl(publicUrl);
+    setUploadingLogo(false);
+    toast({ title: lang === 'pt-BR' ? 'Logo atualizado!' : 'Logo updated!' });
+  };
+
   const handleChangePassword = async () => {
     if (passwordForm.password.length < 6) {
       toast({ title: lang === 'pt-BR' ? 'A senha deve ter pelo menos 6 caracteres' : 'Password must be at least 6 characters', variant: 'destructive' });
