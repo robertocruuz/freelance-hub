@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
 
 const ProfilePage = () => {
   const { user } = useAuth();
