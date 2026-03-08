@@ -171,12 +171,12 @@ const NotificationBell = () => {
                       }
                     }}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                      <Icon className="w-[18px] h-[18px]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm leading-tight ${!notification.read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+                        <p className={`text-sm leading-snug ${!notification.read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
                           {notification.title}
                         </p>
                         {!notification.read && (
@@ -184,7 +184,7 @@ const NotificationBell = () => {
                         )}
                       </div>
                       {notification.message && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3 leading-relaxed">
                           {notification.message}
                         </p>
                       )}
