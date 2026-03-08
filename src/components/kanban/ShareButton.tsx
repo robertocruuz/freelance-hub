@@ -293,6 +293,33 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
             </>
           )}
 
+          {/* Invite by email */}
+          <Separator className="opacity-50" />
+          <div>
+            <Label className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+              <Mail className="w-3.5 h-3.5" />
+              Convidar por email
+            </Label>
+            <div className="flex gap-1.5">
+              <Input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && inviteByEmail()}
+                placeholder="email@exemplo.com"
+                type="email"
+                className="h-8 text-xs flex-1"
+              />
+              <Button
+                size="sm"
+                onClick={inviteByEmail}
+                disabled={inviteLoading || !inviteEmail.trim()}
+                className="h-8 px-2.5 text-xs"
+              >
+                {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+              </Button>
+            </div>
+          </div>
+
           {/* Current shares */}
           {userShares.length > 0 && (
             <>
@@ -324,39 +351,6 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                 </div>
               </div>
             </>
-          )}
-
-          {/* Invite by email */}
-          <Separator className="opacity-50" />
-          <div>
-            <Label className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
-              <Mail className="w-3.5 h-3.5" />
-              Convidar por email
-            </Label>
-            <div className="flex gap-1.5">
-              <Input
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && inviteByEmail()}
-                placeholder="email@exemplo.com"
-                type="email"
-                className="h-8 text-xs flex-1"
-              />
-              <Button
-                size="sm"
-                onClick={inviteByEmail}
-                disabled={inviteLoading || !inviteEmail.trim()}
-                className="h-8 px-2.5 text-xs"
-              >
-                {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
-              </Button>
-            </div>
-          </div>
-
-          {!hasOrg && (
-            <p className="text-xs text-muted-foreground text-center py-2">
-              Cadastre uma organização no perfil para compartilhar com outros usuários
-            </p>
           )}
         </div>
       </PopoverContent>
