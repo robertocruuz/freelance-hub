@@ -556,7 +556,6 @@ const TimeTrackingPage = () => {
   // Filtered entries
   const filteredEntries = entries.filter((e) => {
     const ed = new Date(e.start_time);
-    const ed = new Date(e.start_time);
     if (timeRange === 'daily') return isSameDay(ed, selectedDate);
     if (timeRange === 'weekly') {
       const we = new Date(weekStart);
