@@ -795,9 +795,11 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto space-y-0 animate-fade-in h-full flex flex-col">
-      {/* Timer bar - Toggl style */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
+    <div className="max-w-full mx-auto animate-fade-in h-full flex flex-col gap-3 p-3">
+      {/* Header section */}
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex-shrink-0">
+        {/* Timer bar - Toggl style */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
         <div className="relative flex-1 min-w-[150px]">
           <input
             ref={descInputRef}
