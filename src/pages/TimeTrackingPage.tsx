@@ -1001,7 +1001,7 @@ const TimeTrackingPage = () => {
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
             {/* Day headers */}
-            <div className="grid border-b border-border bg-card" style={{ gridTemplateColumns: '64px repeat(7, 1fr)' }}>
+            <div className="grid border-b border-border bg-card rounded-t-xl overflow-hidden" style={{ gridTemplateColumns: '64px repeat(7, 1fr)' }}>
               <div className="p-2 border-r border-border" />
               {weekDays.map((d, i) => {
                 const isToday = isSameDay(d, new Date());
