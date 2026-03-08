@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -24,6 +25,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingOrg, setEditingOrg] = useState(false);
+  const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '' });
@@ -280,172 +282,182 @@ const ProfilePage = () => {
         <Separator />
 
         <CardContent className="pt-5 pb-6 space-y-6">
-          {/* Identification section */}
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5" />
-              {lang === 'pt-BR' ? 'Identificação' : 'Identification'}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">
-                  {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
-                </Label>
-                {editingOrg ? (
-                  <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
-                ) : (
-                  <FieldDisplay value={org.company_name} />
-                )}
-              </div>
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">
-                  {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
-                </Label>
-                {editingOrg ? (
-                  <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
-                ) : (
-                  <FieldDisplay value={org.trade_name} />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <Separator className="opacity-50" />
-
-          {/* Tax section */}
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5" />
-              {lang === 'pt-BR' ? 'Documentação Fiscal' : 'Tax Documentation'}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">CNPJ</Label>
-                {editingOrg ? (
-                  <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
-                ) : (
-                  <FieldDisplay value={org.cnpj} />
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm text-muted-foreground">
-                    {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Reg.'}
-                  </Label>
-                  {editingOrg && (
-                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                      <Checkbox
-                        className="w-3.5 h-3.5"
-                        checked={orgForm.state_registration === 'ISENTO'}
-                        onCheckedChange={(checked) => setOrgForm({ ...orgForm, state_registration: checked ? 'ISENTO' : '' })}
-                      />
-                      {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
-                    </label>
-                  )}
-                </div>
-                {editingOrg ? (
-                  <Input
-                    value={orgForm.state_registration}
-                    onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
-                    placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
-                    disabled={orgForm.state_registration === 'ISENTO'}
-                    className={orgForm.state_registration === 'ISENTO' ? 'opacity-50' : ''}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <FieldDisplay value={org.state_registration} />
-                    {org.state_registration === 'ISENTO' && (
-                      <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+          <Collapsible open={orgDetailsOpen || editingOrg} onOpenChange={setOrgDetailsOpen}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors w-full">
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${orgDetailsOpen || editingOrg ? 'rotate-0' : '-rotate-90'}`} />
+                {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-6 pt-4">
+              {/* Identification section */}
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5" />
+                  {lang === 'pt-BR' ? 'Identificação' : 'Identification'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">
+                      {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
+                    </Label>
+                    {editingOrg ? (
+                      <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+                    ) : (
+                      <FieldDisplay value={org.company_name} />
                     )}
                   </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm text-muted-foreground">
-                    {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Reg.'}
-                  </Label>
-                  {editingOrg && (
-                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                      <Checkbox
-                        className="w-3.5 h-3.5"
-                        checked={orgForm.municipal_registration === 'ISENTO'}
-                        onCheckedChange={(checked) => setOrgForm({ ...orgForm, municipal_registration: checked ? 'ISENTO' : '' })}
-                      />
-                      {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
-                    </label>
-                  )}
-                </div>
-                {editingOrg ? (
-                  <Input
-                    value={orgForm.municipal_registration}
-                    onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
-                    placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
-                    disabled={orgForm.municipal_registration === 'ISENTO'}
-                    className={orgForm.municipal_registration === 'ISENTO' ? 'opacity-50' : ''}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <FieldDisplay value={org.municipal_registration} />
-                    {org.municipal_registration === 'ISENTO' && (
-                      <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">
+                      {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
+                    </Label>
+                    {editingOrg ? (
+                      <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
+                    ) : (
+                      <FieldDisplay value={org.trade_name} />
                     )}
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <Separator className="opacity-50" />
-
-          {/* Contact section */}
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5" />
-              {lang === 'pt-BR' ? 'Contato Comercial' : 'Business Contact'}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">
-                  {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
-                </Label>
-                {editingOrg ? (
-                  <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
-                ) : (
-                  <FieldDisplay value={org.business_email} />
-                )}
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">
-                  {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
-                </Label>
-                {editingOrg ? (
-                  <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
-                ) : (
-                  <FieldDisplay value={org.business_phone} />
-                )}
+              <Separator className="opacity-50" />
+
+              {/* Tax section */}
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  {lang === 'pt-BR' ? 'Documentação Fiscal' : 'Tax Documentation'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">CNPJ</Label>
+                    {editingOrg ? (
+                      <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
+                    ) : (
+                      <FieldDisplay value={org.cnpj} />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm text-muted-foreground">
+                        {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Reg.'}
+                      </Label>
+                      {editingOrg && (
+                        <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                          <Checkbox
+                            className="w-3.5 h-3.5"
+                            checked={orgForm.state_registration === 'ISENTO'}
+                            onCheckedChange={(checked) => setOrgForm({ ...orgForm, state_registration: checked ? 'ISENTO' : '' })}
+                          />
+                          {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                        </label>
+                      )}
+                    </div>
+                    {editingOrg ? (
+                      <Input
+                        value={orgForm.state_registration}
+                        onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
+                        placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                        disabled={orgForm.state_registration === 'ISENTO'}
+                        className={orgForm.state_registration === 'ISENTO' ? 'opacity-50' : ''}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <FieldDisplay value={org.state_registration} />
+                        {org.state_registration === 'ISENTO' && (
+                          <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm text-muted-foreground">
+                        {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Reg.'}
+                      </Label>
+                      {editingOrg && (
+                        <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                          <Checkbox
+                            className="w-3.5 h-3.5"
+                            checked={orgForm.municipal_registration === 'ISENTO'}
+                            onCheckedChange={(checked) => setOrgForm({ ...orgForm, municipal_registration: checked ? 'ISENTO' : '' })}
+                          />
+                          {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                        </label>
+                      )}
+                    </div>
+                    {editingOrg ? (
+                      <Input
+                        value={orgForm.municipal_registration}
+                        onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
+                        placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                        disabled={orgForm.municipal_registration === 'ISENTO'}
+                        className={orgForm.municipal_registration === 'ISENTO' ? 'opacity-50' : ''}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <FieldDisplay value={org.municipal_registration} />
+                        {org.municipal_registration === 'ISENTO' && (
+                          <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-sm text-muted-foreground">Site</Label>
-                {editingOrg ? (
-                  <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
-                ) : (
-                  <FieldDisplay value={org.website} />
-                )}
-              </div>
-            </div>
-          </div>
+              <Separator className="opacity-50" />
 
-          {editingOrg && (
-            <ActionButtons
-              onSave={handleSaveOrg}
-              onCancel={() => { setEditingOrg(false); setOrgForm({ ...org }); }}
-            />
-          )}
+              {/* Contact section */}
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5" />
+                  {lang === 'pt-BR' ? 'Contato Comercial' : 'Business Contact'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">
+                      {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
+                    </Label>
+                    {editingOrg ? (
+                      <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
+                    ) : (
+                      <FieldDisplay value={org.business_email} />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">
+                      {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
+                    </Label>
+                    {editingOrg ? (
+                      <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
+                    ) : (
+                      <FieldDisplay value={org.business_phone} />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">Site</Label>
+                    {editingOrg ? (
+                      <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
+                    ) : (
+                      <FieldDisplay value={org.website} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {editingOrg && (
+                <ActionButtons
+                  onSave={handleSaveOrg}
+                  onCancel={() => { setEditingOrg(false); setOrgForm({ ...org }); }}
+                />
+              )}
+            </CollapsibleContent>
+          </Collapsible>
 
           <Separator className="opacity-50" />
 
