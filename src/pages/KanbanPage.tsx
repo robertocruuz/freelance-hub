@@ -186,111 +186,185 @@ const KanbanPage = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar tarefas..."
-            className="pl-9 h-9 text-sm glass-input"
-          />
-        </div>
+      <div className="flex flex-col gap-2 mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar tarefas..."
+              className="pl-9 h-9 text-sm glass-input"
+            />
+          </div>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0 relative glass-input">
-              <Filter className="w-4 h-4" />
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center font-bold">
-                  {activeFilterCount}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant={activeFilterCount > 0 ? "default" : "outline"} size="sm" className={`h-9 gap-1.5 text-xs ${activeFilterCount > 0 ? 'btn-glow' : 'glass-input'}`}>
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                Filtros
+                {activeFilterCount > 0 && (
+                  <span className="ml-0.5 w-5 h-5 rounded-full bg-primary-foreground/20 text-[10px] flex items-center justify-center font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0" align="start">
+              <div className="p-3 border-b border-border flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">Filtros</span>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={() => { setFilterClient('all'); setFilterProject('all'); setFilterPriority('all'); setFilterType('all'); }}
+                    className="text-xs text-primary hover:text-primary/80 font-medium transition"
+                  >
+                    Limpar tudo
+                  </button>
+                )}
+              </div>
+
+              <div className="p-3 space-y-4">
+                {/* Priority - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Flag className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Prioridade</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'urgent', label: 'Urgente', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                      { value: 'high', label: 'Alta', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+                      { value: 'medium', label: 'Média', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800' },
+                      { value: 'low', label: 'Baixa', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
+                    ].map((p) => (
+                      <button
+                        key={p.value}
+                        onClick={() => setFilterPriority(filterPriority === p.value ? 'all' : p.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterPriority === p.value
+                            ? `${p.color} shadow-sm ring-1 ring-current/20`
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Client */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <User className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Cliente</span>
+                  </div>
+                  <Select value={filterClient} onValueChange={setFilterClient}>
+                    <SelectTrigger className="h-8 text-xs bg-secondary/30 border-border/50">
+                      <SelectValue placeholder="Todos os clientes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os clientes</SelectItem>
+                      {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Project */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Projeto</span>
+                  </div>
+                  <Select value={filterProject} onValueChange={setFilterProject}>
+                    <SelectTrigger className="h-8 text-xs bg-secondary/30 border-border/50">
+                      <SelectValue placeholder="Todos os projetos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os projetos</SelectItem>
+                      {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Type */}
+                {taskTypes.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-semibold uppercase tracking-wider">Tipo</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {taskTypes.map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setFilterType(filterType === type ? 'all' : type)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                            filterType === type
+                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                              : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Result count */}
+              <div className="p-3 border-t border-border bg-muted/30">
+                <span className="text-[11px] text-muted-foreground">
+                  {filteredTasks.length} de {tasks.length} tarefas
                 </span>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Active filter pills inline */}
+          {activeFilterCount > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {filterPriority !== 'all' && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterPriority('all')}>
+                  {filterPriority === 'urgent' ? 'Urgente' : filterPriority === 'high' ? 'Alta' : filterPriority === 'medium' ? 'Média' : 'Baixa'}
+                  <X className="w-3 h-3" />
+                </Badge>
               )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-3 space-y-3" align="start">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">Filtros</span>
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => { setFilterClient('all'); setFilterProject('all'); setFilterPriority('all'); setFilterType('all'); }}
-                  className="text-[10px] text-muted-foreground hover:text-foreground transition"
-                >
-                  Limpar
-                </button>
+              {filterClient !== 'all' && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterClient('all')}>
+                  {clients.find(c => c.id === filterClient)?.name || 'Cliente'}
+                  <X className="w-3 h-3" />
+                </Badge>
+              )}
+              {filterProject !== 'all' && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterProject('all')}>
+                  {projects.find(p => p.id === filterProject)?.name || 'Projeto'}
+                  <X className="w-3 h-3" />
+                </Badge>
+              )}
+              {filterType !== 'all' && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterType('all')}>
+                  {filterType}
+                  <X className="w-3 h-3" />
+                </Badge>
               )}
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Cliente</label>
-              <Select value={filterClient} onValueChange={setFilterClient}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Projeto</label>
-              <Select value={filterProject} onValueChange={setFilterProject}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Prioridade</label>
-              <Select value={filterPriority} onValueChange={setFilterPriority}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="low">Baixa</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="urgent">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Tipo</label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {taskTypes.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5">
-          <button
-            onClick={() => setView('kanban')}
-            className={`p-1.5 rounded-lg transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setView('list')}
-            className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
-          >
-            <List className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5 ml-auto">
+            <button
+              onClick={() => setView('kanban')}
+              className={`p-1.5 rounded-lg transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setView('list')}
+              className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
