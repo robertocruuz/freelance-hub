@@ -228,16 +228,30 @@ const ProfilePage = () => {
         </CardHeader>
         <Separator />
         <CardContent className="pt-6 space-y-5">
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Building2 className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
-            </Label>
-            {editingOrg ? (
-              <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
-            ) : (
-              <p className="text-foreground font-medium">{org.company_name || '—'}</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <Building2 className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.company_name || '—'}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-muted-foreground">
+                <Building2 className="w-4 h-4" />
+                {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
+              </Label>
+              {editingOrg ? (
+                <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
+              ) : (
+                <p className="text-foreground font-medium">{org.trade_name || '—'}</p>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
