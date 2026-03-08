@@ -115,6 +115,12 @@ const KanbanPage = () => {
 
   const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0) + filterComplexities.size + filterEstimatedTime.size;
 
+  const clientColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    clients.forEach((c) => { if ((c as any).color) map[c.id] = (c as any).color; });
+    return map;
+  }, [clients]);
+
   // Unique task types
   const taskTypes = useMemo(() => {
     const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
@@ -697,6 +703,7 @@ const KanbanPage = () => {
                   onDeleteTask={(taskId) => kanban.deleteTask(taskId)}
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
+                  clientColorMap={clientColorMap}
                 />
               ))}
             </SortableContext>
@@ -732,7 +739,7 @@ const KanbanPage = () => {
           <DragOverlay>
             {activeTask && (
               <div className="w-72 opacity-90 rotate-3">
-                <TaskCard task={activeTask} onClick={() => {}} />
+                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} />
               </div>
             )}
           </DragOverlay>
@@ -815,6 +822,7 @@ const KanbanPage = () => {
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
                     className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition"
+                    style={(client as any)?.color ? { borderLeft: `3px solid ${(client as any).color}` } : undefined}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

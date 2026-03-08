@@ -44,9 +44,10 @@ interface TaskCardProps {
   onToggleComplete?: (taskId: string, completed: boolean) => void;
   onDelete?: (taskId: string) => void;
   checklistProgress?: { done: number; total: number } | null;
+  clientColor?: string | null;
 }
 
-export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress }: TaskCardProps) => {
+export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const {
@@ -71,13 +72,16 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
     <>
       <div
         ref={setNodeRef}
-        style={style}
+        style={{
+          ...style,
+          ...(!isOverdue && clientColor ? { borderLeftColor: clientColor } : {}),
+        }}
         {...attributes}
         {...listeners}
         onClick={onClick}
         className={`glass-card rounded-xl p-3.5 cursor-pointer hover:shadow-lg transition-all duration-200 group relative ${
           isDragging ? 'opacity-50 scale-95 rotate-2' : ''
-        } ${isOverdue ? 'border-l-4 border-l-destructive' : ''}`}
+        } ${isOverdue ? 'border-l-4 border-l-destructive' : clientColor ? 'border-l-4' : ''}`}
       >
         {/* 3-dot menu */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
