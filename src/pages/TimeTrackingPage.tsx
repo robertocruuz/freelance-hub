@@ -892,7 +892,7 @@ const TimeTrackingPage = () => {
                           cursor: isDragging ? 'grabbing' : 'grab',
                         }}
                         onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, day)}
-                        onClick={(e) => { if (!dragState) openEdit(entry); }}
+                        onClick={() => { if (!didDragRef.current) openEdit(entry); }}
                       >
                         <div className="flex items-center gap-1 truncate px-1.5 py-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0" />
