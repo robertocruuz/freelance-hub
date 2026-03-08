@@ -451,6 +451,116 @@ const ProfilePage = () => {
 
                   <Separator className="opacity-50" />
 
+                  {/* Address section */}
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                    </p>
+                    <div className="grid grid-cols-1 gap-y-4">
+                      <div className="space-y-1">
+                        <Label className="text-sm text-muted-foreground">
+                          {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                        </Label>
+                        {editingOrg ? (
+                          <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
+                        ) : (
+                          <FieldDisplay value={org.address} />
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        {/* State */}
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Estado' : 'State'}
+                          </Label>
+                          {editingOrg ? (
+                            <Popover open={statePopoverOpen} onOpenChange={setStatePopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()}>
+                                  {orgForm.state
+                                    ? brazilianStates.find(s => s.value === orgForm.state)?.label || orgForm.state
+                                    : (lang === 'pt-BR' ? 'Selecione o estado' : 'Select state')}
+                                  <ChevronDown className="w-4 h-4 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[280px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder={lang === 'pt-BR' ? 'Buscar estado...' : 'Search state...'} />
+                                  <CommandList>
+                                    <CommandEmpty>{lang === 'pt-BR' ? 'Nenhum estado encontrado' : 'No state found'}</CommandEmpty>
+                                    <CommandGroup>
+                                      {brazilianStates.map((state) => (
+                                        <CommandItem
+                                          key={state.value}
+                                          value={state.label}
+                                          onSelect={() => {
+                                            setOrgForm({ ...orgForm, state: state.value, city: '' });
+                                            setStatePopoverOpen(false);
+                                          }}
+                                        >
+                                          {state.label} ({state.value})
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <FieldDisplay value={orgForm.state ? (brazilianStates.find(s => s.value === org.state)?.label || org.state) : ''} />
+                          )}
+                        </div>
+
+                        {/* City */}
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Cidade' : 'City'}
+                          </Label>
+                          {editingOrg ? (
+                            <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()} disabled={!orgForm.state}>
+                                  {orgForm.city || (lang === 'pt-BR' ? 'Selecione a cidade' : 'Select city')}
+                                  <ChevronDown className="w-4 h-4 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[280px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder={lang === 'pt-BR' ? 'Buscar cidade...' : 'Search city...'} />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      {citiesLoading
+                                        ? (lang === 'pt-BR' ? 'Carregando...' : 'Loading...')
+                                        : (lang === 'pt-BR' ? 'Nenhuma cidade encontrada' : 'No city found')}
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {cities.map((city) => (
+                                        <CommandItem
+                                          key={city}
+                                          value={city}
+                                          onSelect={() => {
+                                            setOrgForm({ ...orgForm, city });
+                                            setCityPopoverOpen(false);
+                                          }}
+                                        >
+                                          {city}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <FieldDisplay value={org.city} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Contact section */}
                   <div>
                     <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
