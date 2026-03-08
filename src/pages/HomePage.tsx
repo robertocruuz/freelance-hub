@@ -89,7 +89,21 @@ const HomePage = () => {
       if (e.end_time) return sum + differenceInMinutes(parseISO(e.end_time), parseISO(e.start_time));
       return sum;
     }, 0);
-    return { todayMin: calcMinutes(todayEntries), weekMin: calcMinutes(weekEntries), activeTimer: data.timeEntries.find(e => !e.end_time && !e.duration) };
+
+    // Last 7 days chart data
+    const last7 = Array.from({ length: 7 }, (_, i) => {
+      const day = subDays(now, 6 - i);
+      const dayEntries = data.timeEntries.filter(e => e.start_time && isSameDay(parseISO(e.start_time), day));
+      const minutes = calcMinutes(dayEntries);
+      return {
+        label: format(day, 'EEE', { locale: isPt ? ptBR : undefined }),
+        minutes,
+        hours: +(minutes / 60).toFixed(1),
+        isToday: isToday(day),
+      };
+    });
+
+    return { todayMin: calcMinutes(todayEntries), weekMin: calcMinutes(weekEntries), activeTimer: data.timeEntries.find(e => !e.end_time && !e.duration), last7 };
   }, [data.timeEntries]);
 
   const invoiceStats = useMemo(() => {
