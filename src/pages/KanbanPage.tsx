@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { isThisWeek, isThisMonth, isPast, isSameDay, format } from 'date-fns';
+import { isThisWeek, isThisMonth, isPast, isSameDay, format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -123,6 +123,7 @@ const KanbanPage = () => {
     const isDueThisWeek = task.due_date && isThisWeek(new Date(task.due_date)) && !task.completed_at;
     const isDueThisMonth = task.due_date && isThisMonth(new Date(task.due_date)) && !task.completed_at;
 
+    if (filterDeadlines.has('today') && task.due_date && isToday(new Date(task.due_date)) && !task.completed_at) return true;
     if (filterDeadlines.has('overdue') && isOverdue) return true;
     if (filterDeadlines.has('this_week') && isDueThisWeek) return true;
     if (filterDeadlines.has('this_month') && isDueThisMonth) return true;
@@ -373,6 +374,7 @@ const KanbanPage = () => {
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                      { value: 'today', label: 'Hoje', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
                       { value: 'this_week', label: 'Esta semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
                       { value: 'this_month', label: 'Este mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
                       { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
@@ -462,7 +464,7 @@ const KanbanPage = () => {
                 </Badge>
               ))}
               {Array.from(filterDeadlines).map(d => {
-                const labels: Record<string, string> = { overdue: 'Atrasadas', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
+                const labels: Record<string, string> = { overdue: 'Atrasadas', today: 'Hoje', this_week: 'Esta semana', this_month: 'Este mês', no_deadline: 'Sem prazo' };
                 return (
                   <Badge key={d} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d)}>
                     {labels[d] || d}
