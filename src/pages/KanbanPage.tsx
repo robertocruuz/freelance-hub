@@ -231,48 +231,50 @@ const KanbanPage = () => {
   }
 
   return (
-    <div className="relative z-10 h-full flex flex-col">
+    <div className="relative z-10 h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Tarefas</h1>
-          <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
-        </div>
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">Tarefas</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
+          </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/20">
-            <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-destructive" />
+          <div className="flex items-center gap-2 md:gap-3 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-thin">
+            <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl bg-destructive/10 border border-destructive/20 shrink-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-destructive/15 flex items-center justify-center">
+                <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-destructive" />
+              </div>
+              <div>
+                <p className="text-base md:text-lg font-bold text-destructive leading-none">{overdueTasks.length}</p>
+                <p className="text-[9px] md:text-[10px] text-destructive/70 font-medium">Atrasadas</p>
+              </div>
             </div>
-            <div>
-              <p className="text-lg font-bold text-destructive leading-none">{overdueTasks.length}</p>
-              <p className="text-[10px] text-destructive/70 font-medium">Atrasadas</p>
+            <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                <CalendarDays className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-base md:text-lg font-bold text-primary leading-none">{weekTasks.length}</p>
+                <p className="text-[9px] md:text-[10px] text-primary/70 font-medium">Esta semana</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
-            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-              <CalendarDays className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-primary leading-none">{weekTasks.length}</p>
-              <p className="text-[10px] text-primary/70 font-medium">Esta semana</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-accent/50 border border-accent">
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4 text-accent-foreground" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground leading-none">{completedMonth.length}</p>
-              <p className="text-[10px] text-muted-foreground font-medium">Concluídas no mês</p>
+            <div className="flex items-center gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl bg-accent/50 border border-accent shrink-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-accent flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="text-base md:text-lg font-bold text-foreground leading-none">{completedMonth.length}</p>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground font-medium">No mês</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-2 flex-wrap mb-2">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex items-center gap-2 flex-wrap mb-3">
+        <div className="relative flex-1 min-w-[140px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             value={search}
@@ -662,7 +664,7 @@ const KanbanPage = () => {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex gap-4 overflow-x-auto pb-4 flex-1">
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 flex-1 scrollbar-thin">
             <SortableContext items={columns.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
               {columns.map((col) => (
                 <KanbanColumnComponent
@@ -729,8 +731,8 @@ const KanbanPage = () => {
 
       {/* LIST VIEW */}
       {view === 'list' && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <table className="w-full">
+        <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+          <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-border">
                 {[
