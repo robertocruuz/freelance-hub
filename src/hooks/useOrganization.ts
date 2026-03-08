@@ -219,7 +219,7 @@ export const useOrganization = () => {
     return { error: null };
   };
 
-  const updateMemberRole = async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
+  const updateMemberRole = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await (supabase.from('organization_members' as any) as any)
       .update({ role })
       .eq('id', memberId);

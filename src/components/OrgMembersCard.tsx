@@ -45,14 +45,12 @@ import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown,
 
 const roleIcons = {
   admin: Crown,
-  editor: Pencil,
-  viewer: Eye,
+  collaborator: Pencil,
 };
 
 const roleColors = {
   admin: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  editor: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  viewer: 'bg-muted text-muted-foreground border-border',
+  collaborator: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
 };
 
 const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization>; onLeave?: () => void }) => {
