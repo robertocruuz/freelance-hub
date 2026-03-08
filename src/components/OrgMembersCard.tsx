@@ -246,7 +246,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
                     {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
-                    {isOwner && <span className="text-xs text-amber-600 ml-1.5">({isPt ? 'proprietário' : 'owner'})</span>}
+                    {isOwner && <span className="text-xs text-primary ml-1.5">({isPt ? 'proprietário' : 'owner'})</span>}
                     {isCurrentUser && !isOwner && <span className="text-xs text-muted-foreground ml-1.5">({isPt ? 'você' : 'you'})</span>}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
