@@ -86,6 +86,7 @@ const InvoicesPage = () => {
   const [creating, setCreating] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
+  const [invoiceName, setInvoiceName] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
