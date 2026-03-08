@@ -99,6 +99,12 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const deleteAllNotifications = async () => {
+    if (!user) return;
+    await supabase.from('notifications').delete().eq('user_id', user.id);
+    setNotifications([]);
+  };
+
   const timeAgo = (date: string) => {
     return formatDistanceToNow(new Date(date), {
       addSuffix: true,
