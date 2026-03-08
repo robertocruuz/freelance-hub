@@ -201,6 +201,37 @@ export const useOrganization = () => {
       .update({ status: 'accepted' })
       .eq('id', inv.id);
 
+    // Notify org admins that someone joined
+    const { data: adminMembers } = await (supabase.from('organization_members' as any) as any)
+      .select('user_id')
+      .eq('organization_id', inv.organization_id)
+      .eq('role', 'admin')
+      .eq('status', 'accepted');
+
+    if (adminMembers) {
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('name, email')
+        .eq('user_id', user.id)
+        .single();
+
+      const userName = userProfile?.name || userProfile?.email || user.email || 'Alguém';
+
+      const notifications = (adminMembers as any[])
+        .filter((m: any) => m.user_id !== user.id)
+        .map((m: any) => ({
+          user_id: m.user_id,
+          title: `${userName} aceitou o convite`,
+          message: `${userName} agora faz parte da organização.`,
+          type: 'org',
+          link: '/dashboard/profile',
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications);
+      }
+    }
+
     await fetchOrgData();
     return { error: null };
   };
