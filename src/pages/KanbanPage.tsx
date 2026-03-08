@@ -102,7 +102,7 @@ const KanbanPage = () => {
     });
   };
 
-  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size;
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0);
 
   // Unique task types
   const taskTypes = useMemo(() => {
