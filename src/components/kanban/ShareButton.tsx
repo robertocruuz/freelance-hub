@@ -96,10 +96,9 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
     }
   };
 
-  // Reset state immediately when resource changes
+  // Preload shares whenever resourceId changes (even when closed)
   useEffect(() => {
-    setShares([]);
-    setSharedWithOrg(false);
+    loadShares();
   }, [resourceId]);
 
   useEffect(() => {
@@ -107,7 +106,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
       loadShares();
       loadOrgMembers();
     }
-  }, [open, resourceId]);
+  }, [open]);
 
   const toggleOrgShare = async () => {
     if (!user) return;
