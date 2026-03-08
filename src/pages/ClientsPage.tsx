@@ -109,6 +109,7 @@ const ClientsPage = () => {
     setPhone(c.phone || '');
     setDocument(c.document || '');
     setResponsible(c.responsible || '');
+    setColor(c.color || null);
     setDialogOpen(true);
   };
 
