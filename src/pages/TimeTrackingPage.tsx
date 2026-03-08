@@ -156,7 +156,11 @@ const TimeTrackingPage = () => {
     if (desc || project || task) {
       prefillApplied.current = true;
       if (desc) setDescription(desc);
-      if (project) setProjectId(project);
+      if (project) {
+        const proj = projects.find(p => p.id === project);
+        if (proj?.client_id) setClientId(proj.client_id);
+        setProjectId(project);
+      }
       if (task) setTaskId(task);
       setStartTime(Date.now());
       setElapsed(0);
