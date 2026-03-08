@@ -150,8 +150,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
     setLeaveDialogOpen(false);
   };
 
-
-    if (embedded) {
+  if (!orgId && !loading) {
       return (
         <div className="text-sm text-muted-foreground py-2">
           {isPt ? 'Cadastre uma organização primeiro para convidar membros' : 'Register an organization first to invite members'}
