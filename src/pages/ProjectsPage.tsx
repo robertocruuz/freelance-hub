@@ -408,6 +408,34 @@ const ProjectsPage = () => {
             <ClientSelect value={clientId} onChange={setClientId} />
           )}
 
+          {/* Due date picker */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Prazo de entrega</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    inputClass,
+                    "flex items-center gap-2 text-left",
+                    !dueDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  {dueDate ? format(dueDate, 'dd/MM/yyyy') : 'Selecione o prazo...'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDate}
+                  onSelect={setDueDate}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           {/* Preview of items to import */}
           {pendingBudgetItems.length > 0 && (
             <div className="space-y-1">
