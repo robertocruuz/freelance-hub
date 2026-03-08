@@ -20,7 +20,7 @@ import { TaskCard } from '@/components/kanban/TaskCard';
 import { TaskDetailModal } from '@/components/kanban/TaskDetailModal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isThisWeek, isThisMonth, isPast } from 'date-fns';
