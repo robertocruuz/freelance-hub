@@ -62,6 +62,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   const priority = priorityConfig[task.priority] || priorityConfig.medium;
