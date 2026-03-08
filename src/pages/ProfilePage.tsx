@@ -228,6 +228,24 @@ const ProfilePage = () => {
               )}
             </div>
 
+            {/* Phone */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
+              </Label>
+              {editing ? (
+                <Input
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: maskPhone(e.target.value) })}
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                />
+              ) : (
+                <FieldDisplay value={profile.phone} />
+              )}
+            </div>
+
             {/* Email (read-only) */}
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
