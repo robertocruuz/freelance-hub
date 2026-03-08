@@ -624,7 +624,7 @@ const BudgetsPage = () => {
                   {(b.discount > 0 || b.notes) && (
                     <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
                       {b.discount > 0 && (
-                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- R$ {(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100).toFixed(2)})</p>
+                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)})</p>
                       )}
                       {b.notes && (
                         <p className="text-xs text-muted-foreground">Obs: {b.notes}</p>

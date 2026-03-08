@@ -779,7 +779,7 @@ const ProjectsPage = () => {
                               {imported && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-medium">Importado</span>}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                              {item.quantity}x {formatCurrency(item.unitPrice)} = {formatCurrency(item.quantity * item.unitPrice)}
                             </p>
                           </div>
                           {!imported && (

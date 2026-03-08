@@ -843,7 +843,7 @@ const KanbanPage = () => {
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{task.task_type || '-'}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {task.estimated_value ? `R$ ${Number(task.estimated_value).toFixed(2)}` : '-'}
+                      {task.estimated_value ? formatCurrency(Number(task.estimated_value)) : '-'}
                     </td>
                   </tr>
                 );
