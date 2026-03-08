@@ -567,7 +567,25 @@ const ProjectsPage = () => {
                             )}
                             <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                             <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
-                            <span className="text-xs text-muted-foreground shrink-0">R$ {item.value.toFixed(2)}</span>
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const project = projects.find(pr => pr.id === item.project_id);
+                                const params = new URLSearchParams({
+                                  from_budget: 'true',
+                                  title: item.name,
+                                  value: String(item.value),
+                                  ...(item.project_id ? { project: item.project_id } : {}),
+                                  ...(project?.client_id ? { client: project.client_id } : {}),
+                                  ...(project?.due_date ? { due_date: project.due_date } : {}),
+                                });
+                                navigate(`/dashboard/kanban?${params.toString()}`);
+                              }}
+                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group shrink-0 cursor-pointer"
+                            >
+                              <Sparkles className="w-3 h-3 text-primary group-hover:animate-pulse" />
+                              <span className="text-xs font-medium text-primary">Tarefa</span>
+                            </span>
                           </button>
 
                           {/* Expanded content */}
