@@ -174,7 +174,7 @@ const ProfilePage = () => {
             {editing ? (
               <Input
                 value={editForm.document}
-                onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
+                onChange={(e) => setEditForm({ ...editForm, document: maskCPF(e.target.value) })}
                 placeholder="000.000.000-00"
                 maxLength={14}
               />
