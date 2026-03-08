@@ -162,6 +162,12 @@ const TimeTrackingPage = () => {
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const [exportFilter, setExportFilter] = useState<'all' | 'client' | 'project'>('all');
+  const [exportClientId, setExportClientId] = useState('');
+  const [exportProjectId, setExportProjectId] = useState('');
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
