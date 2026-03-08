@@ -98,175 +98,161 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 18;
   const contentW = pw - margin * 2;
-  let y = 18;
+  let y = 14;
 
   // ── Colors ──
-  const BLACK: [number, number, number] = [20, 20, 20];
-  const GRAY: [number, number, number] = [120, 120, 120];
-  const LIGHT_GRAY: [number, number, number] = [200, 200, 200];
-  const WHITE: [number, number, number] = [255, 255, 255];
-  const ACCENT: [number, number, number] = [0, 71, 255]; // Bold blue from brand
+  const BLACK: [number, number, number] = [30, 30, 30];
+  const DARK: [number, number, number] = [60, 60, 60];
+  const GRAY: [number, number, number] = [110, 110, 110];
+  const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
+  const BG_LIGHT: [number, number, number] = [248, 248, 250];
+  const ACCENT: [number, number, number] = [0, 71, 255];
 
-  // ── Thick top bar ──
+  // ── Thin top accent line ──
   doc.setFillColor(...ACCENT);
-  doc.rect(0, 0, pw, 5, 'F');
+  doc.rect(0, 0, pw, 2.5, 'F');
 
-  y = 16;
+  y = 14;
 
   // ── Header: Logo + Org info ──
   if (options.organization) {
     const org = options.organization;
-    let headerRightX = margin;
 
     if (org.logo_url) {
       const logoResult = await loadImageAsBase64(org.logo_url);
       if (logoResult) {
-        const maxLogoH = 18;
-        const maxLogoW = contentW * 0.3;
+        const maxLogoH = 16;
+        const maxLogoW = contentW * 0.28;
         const ratio = logoResult.width / logoResult.height;
         let logoW = maxLogoH * ratio;
         let logoH = maxLogoH;
         if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
-        doc.addImage(logoResult.data, 'PNG', margin, y - 2, logoW, logoH);
-        headerRightX = margin + logoW + 8;
-        y = Math.max(y, y - 2 + logoH + 4);
+        doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
+        y = Math.max(y, y + logoH + 3);
       }
     }
 
     if (!org.logo_url) {
-      doc.setFontSize(18);
+      doc.setFontSize(15);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...BLACK);
-      doc.text((org.trade_name || org.company_name || 'Empresa').toUpperCase(), margin, y + 4);
-      y += 12;
+      doc.text(org.trade_name || org.company_name || 'Empresa', margin, y + 5);
+      y += 10;
     }
 
     // Org contact — right aligned
     const orgInfoX = pw - margin;
-    let iy = 16;
+    let iy = 14;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
 
-    if (org.cnpj) {
-      const t = `CNPJ ${org.cnpj}`;
-      doc.text(t, orgInfoX - doc.getTextWidth(t), iy);
-      iy += 4;
-    }
-    if (org.business_email) {
-      doc.text(org.business_email, orgInfoX - doc.getTextWidth(org.business_email), iy);
-      iy += 4;
-    }
-    if (org.business_phone) {
-      doc.text(org.business_phone, orgInfoX - doc.getTextWidth(org.business_phone), iy);
-      iy += 4;
-    }
-    if (org.website) {
-      doc.text(org.website, orgInfoX - doc.getTextWidth(org.website), iy);
-    }
+    if (org.cnpj) { const t = `CNPJ ${org.cnpj}`; doc.text(t, orgInfoX - doc.getTextWidth(t), iy); iy += 4; }
+    if (org.business_email) { doc.text(org.business_email, orgInfoX - doc.getTextWidth(org.business_email), iy); iy += 4; }
+    if (org.business_phone) { doc.text(org.business_phone, orgInfoX - doc.getTextWidth(org.business_phone), iy); iy += 4; }
+    if (org.website) { doc.text(org.website, orgInfoX - doc.getTextWidth(org.website), iy); }
 
     y = Math.max(y, iy + 4);
   }
 
-  y += 2;
+  y += 4;
 
-  // ── Bold separator ──
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(1.5);
+  // ── Thin separator ──
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, pw - margin, y);
   y += 10;
 
-  // ── Title block ──
-  doc.setFontSize(28);
+  // ── Title ──
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...BLACK);
   doc.text('ORÇAMENTO', margin, y);
 
   if (options.budgetName) {
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     const nameW = doc.getTextWidth(options.budgetName);
     doc.text(options.budgetName, pw - margin - nameW, y);
   }
-  y += 14;
+  y += 12;
 
   // ── Two-column: Details | Client ──
   const colLeftX = margin;
-  const colRightX = margin + contentW / 2 + 10;
+  const colRightX = margin + contentW / 2 + 8;
   const metaStartY = y;
 
-  // Left — Dates block with border
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(0.8);
+  // Left — Details (light background, no border)
   const detailBlockW = contentW / 2 - 4;
-  doc.rect(colLeftX, y - 4, detailBlockW, 36);
+  const detailBlockH = 34;
+  doc.setFillColor(...BG_LIGHT);
+  doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...ACCENT);
-  doc.text('DETALHES', colLeftX + 4, y + 2);
+  doc.text('DETALHES', colLeftX + 5, y + 2);
   y += 8;
 
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   const addMetaRow = (label: string, value: string) => {
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    doc.text(label, colLeftX + 4, y);
+    doc.setTextColor(...DARK);
+    doc.text(label, colLeftX + 5, y);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.text(value, colLeftX + 28, y);
-    y += 5.5;
+    y += 6;
   };
 
   if (options.budgetDate) addMetaRow('Data', new Date(options.budgetDate + 'T12:00:00').toLocaleDateString('pt-BR'));
   if (options.validityDate) addMetaRow('Validade', new Date(options.validityDate + 'T12:00:00').toLocaleDateString('pt-BR'));
   if (options.deliveryDate) addMetaRow('Entrega', new Date(options.deliveryDate + 'T12:00:00').toLocaleDateString('pt-BR'));
 
-  // Right — Client block with border
+  // Right — Client (light background, no border)
   if (options.client) {
     const cl = options.client;
     let cy = metaStartY;
 
-    doc.setDrawColor(...BLACK);
-    doc.setLineWidth(0.8);
-    doc.rect(colRightX, cy - 4, contentW / 2 - 6, 36);
+    doc.setFillColor(...BG_LIGHT);
+    doc.roundedRect(colRightX, cy - 4, contentW / 2 - 4, detailBlockH, 2, 2, 'F');
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...ACCENT);
-    doc.text('CLIENTE', colRightX + 4, cy + 2);
+    doc.text('CLIENTE', colRightX + 5, cy + 2);
     cy += 8;
 
-    doc.setFontSize(10);
+    doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...BLACK);
-    doc.text(cl.name, colRightX + 4, cy);
-    cy += 5.5;
+    doc.text(cl.name, colRightX + 5, cy);
+    cy += 6;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    if (cl.document) { doc.text(cl.document, colRightX + 4, cy); cy += 4.5; }
-    if (cl.email) { doc.text(cl.email, colRightX + 4, cy); cy += 4.5; }
-    if (cl.phone) { doc.text(cl.phone, colRightX + 4, cy); cy += 4.5; }
+    if (cl.document) { doc.text(cl.document, colRightX + 5, cy); cy += 5; }
+    if (cl.email) { doc.text(cl.email, colRightX + 5, cy); cy += 5; }
+    if (cl.phone) { doc.text(cl.phone, colRightX + 5, cy); cy += 5; }
 
     y = Math.max(y, cy);
   }
 
-  y = metaStartY + 36 + 8;
+  y = metaStartY + detailBlockH + 6;
 
   // ── Items Table ──
-  // Header — solid black
-  doc.setFillColor(...BLACK);
-  doc.rect(margin, y, contentW, 9, 'F');
+  // Header — accent background
+  doc.setFillColor(...ACCENT);
+  doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...WHITE);
+  doc.setTextColor(255, 255, 255);
 
   const col1 = margin + 4;
   const col2 = margin + 100;
-  const col3 = margin + 120;
+  const col3 = margin + 122;
   const col4 = pw - margin - 4;
 
   doc.text('#', col1, y + 6.5);
@@ -278,25 +264,21 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   y += 12;
 
   // Rows
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   options.items.forEach((item, idx) => {
     if (y > 250) { doc.addPage(); y = 20; }
 
     // Alternating subtle bg
     if (idx % 2 === 0) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, y - 4.5, contentW, 9, 'F');
+      doc.setFillColor(245, 246, 250);
+      doc.rect(margin, y - 5, contentW, 10, 'F');
     }
-
-    // Left border accent on each row
-    doc.setFillColor(...ACCENT);
-    doc.rect(margin, y - 4.5, 1.5, 9, 'F');
 
     const sub = item.quantity * item.unitPrice;
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.text(String(idx + 1).padStart(2, '0'), col1, y);
-    doc.setTextColor(...BLACK);
+    doc.setTextColor(...DARK);
     doc.text(item.description || '-', col1 + 8, y);
     doc.setTextColor(...GRAY);
     doc.text(String(item.quantity), col2 + 2, y);
@@ -305,24 +287,24 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...BLACK);
     doc.text(subText, col4 - doc.getTextWidth(subText), y);
-    y += 9;
+    y += 10;
   });
 
-  // Table bottom border
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(1.5);
+  // Thin table bottom line
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, pw - margin, y);
   y += 10;
 
   // ── Totals ──
   const totalsX = margin + contentW - 75;
 
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...GRAY);
 
-  const rightAlign = (label: string, val: string, bold = false) => {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  const rightAlign = (label: string, val: string) => {
+    doc.setFont('helvetica', 'normal');
     doc.text(label, totalsX, y);
     const valW = doc.getTextWidth(val);
     doc.text(val, pw - margin - valW, y);
@@ -333,23 +315,23 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   rightAlign('Subtotal', formatCurrency(subtotal));
 
   if (options.discount > 0) {
-    doc.setTextColor(220, 50, 50);
+    doc.setTextColor(200, 60, 60);
     rightAlign('Desconto', `- ${formatCurrency(options.discount)}`);
   }
 
-  y += 2;
+  y += 4;
 
-  // Total block — neobrutalist black box
-  doc.setFillColor(...BLACK);
-  const totalBlockH = 12;
-  doc.rect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 'F');
+  // Total — accent background, clean
+  doc.setFillColor(...ACCENT);
+  const totalBlockH = 11;
+  doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...WHITE);
-  doc.text('TOTAL', totalsX, y + 7);
+  doc.setTextColor(255, 255, 255);
+  doc.text('TOTAL', totalsX, y + 6.5);
   const totalText = formatCurrency(options.total);
   const totalW = doc.getTextWidth(totalText);
-  doc.text(totalText, pw - margin - totalW, y + 7);
+  doc.text(totalText, pw - margin - totalW, y + 6.5);
   y += totalBlockH + 12;
 
   // ── Notes ──
@@ -357,7 +339,7 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
     if (y > 225) { doc.addPage(); y = 20; }
 
     doc.setDrawColor(...LIGHT_GRAY);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.3);
     doc.line(margin, y, pw - margin, y);
     y += 7;
 
@@ -367,25 +349,24 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
     doc.text('OBSERVAÇÕES', margin, y);
     y += 6;
 
-    doc.setFontSize(9);
+    doc.setFontSize(9.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     const noteLines = doc.splitTextToSize(options.notes, contentW);
     doc.text(noteLines, margin, y);
-    y += noteLines.length * 4.5 + 4;
+    y += noteLines.length * 5 + 4;
   }
 
   // ── Footer ──
-  // Bottom accent bar
   doc.setFillColor(...ACCENT);
-  doc.rect(0, pageH - 4, pw, 4, 'F');
+  doc.rect(0, pageH - 2, pw, 2, 'F');
 
   const footerY = pageH - 10;
   doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.3);
+  doc.setLineWidth(0.2);
   doc.line(margin, footerY - 4, pw - margin, footerY - 4);
 
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...GRAY);
 
@@ -430,18 +411,19 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 18;
   const contentW = pw - margin * 2;
-  let y = 18;
+  let y = 14;
 
-  const BLACK: [number, number, number] = [20, 20, 20];
-  const GRAY: [number, number, number] = [120, 120, 120];
-  const LIGHT_GRAY: [number, number, number] = [200, 200, 200];
-  const WHITE: [number, number, number] = [255, 255, 255];
+  const BLACK: [number, number, number] = [30, 30, 30];
+  const DARK: [number, number, number] = [60, 60, 60];
+  const GRAY: [number, number, number] = [110, 110, 110];
+  const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
+  const BG_LIGHT: [number, number, number] = [248, 248, 250];
   const ACCENT: [number, number, number] = [0, 71, 255];
 
-  // Top bar
+  // Thin top accent line
   doc.setFillColor(...ACCENT);
-  doc.rect(0, 0, pw, 5, 'F');
-  y = 16;
+  doc.rect(0, 0, pw, 2.5, 'F');
+  y = 14;
 
   // Header
   if (options.organization) {
@@ -450,27 +432,27 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     if (org.logo_url) {
       const logoResult = await loadImageAsBase64(org.logo_url);
       if (logoResult) {
-        const maxLogoH = 18;
-        const maxLogoW = contentW * 0.3;
+        const maxLogoH = 16;
+        const maxLogoW = contentW * 0.28;
         const ratio = logoResult.width / logoResult.height;
         let logoW = maxLogoH * ratio;
         let logoH = maxLogoH;
         if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
-        doc.addImage(logoResult.data, 'PNG', margin, y - 2, logoW, logoH);
-        y = Math.max(y, y - 2 + logoH + 4);
+        doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
+        y = Math.max(y, y + logoH + 3);
       }
     }
 
     if (!org.logo_url) {
-      doc.setFontSize(18);
+      doc.setFontSize(15);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...BLACK);
-      doc.text((org.trade_name || org.company_name || 'Empresa').toUpperCase(), margin, y + 4);
-      y += 12;
+      doc.text(org.trade_name || org.company_name || 'Empresa', margin, y + 5);
+      y += 10;
     }
 
     const orgInfoX = pw - margin;
-    let iy = 16;
+    let iy = 14;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
@@ -481,52 +463,52 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     y = Math.max(y, iy + 4);
   }
 
-  y += 2;
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(1.5);
+  y += 4;
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, pw - margin, y);
   y += 10;
 
   // Title
-  doc.setFontSize(28);
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...BLACK);
   doc.text('FATURA', margin, y);
 
   if (options.invoiceName) {
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     const nameW = doc.getTextWidth(options.invoiceName);
     doc.text(options.invoiceName, pw - margin - nameW, y);
   }
-  y += 14;
+  y += 12;
 
   // Two-column
   const colLeftX = margin;
-  const colRightX = margin + contentW / 2 + 10;
+  const colRightX = margin + contentW / 2 + 8;
   const metaStartY = y;
   const detailBlockW = contentW / 2 - 4;
+  const detailBlockH = 38;
 
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(0.8);
-  doc.rect(colLeftX, y - 4, detailBlockW, 40);
+  doc.setFillColor(...BG_LIGHT);
+  doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...ACCENT);
-  doc.text('DETALHES', colLeftX + 4, y + 2);
+  doc.text('DETALHES', colLeftX + 5, y + 2);
   y += 8;
 
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   const addMetaRow = (label: string, value: string) => {
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    doc.text(label, colLeftX + 4, y);
+    doc.setTextColor(...DARK);
+    doc.text(label, colLeftX + 5, y);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.text(value, colLeftX + 32, y);
-    y += 5.5;
+    y += 6;
   };
 
   addMetaRow('Status', options.status);
@@ -538,44 +520,43 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     const cl = options.client;
     let cy = metaStartY;
 
-    doc.setDrawColor(...BLACK);
-    doc.setLineWidth(0.8);
-    doc.rect(colRightX, cy - 4, contentW / 2 - 6, 40);
+    doc.setFillColor(...BG_LIGHT);
+    doc.roundedRect(colRightX, cy - 4, contentW / 2 - 4, detailBlockH, 2, 2, 'F');
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...ACCENT);
-    doc.text('CLIENTE', colRightX + 4, cy + 2);
+    doc.text('CLIENTE', colRightX + 5, cy + 2);
     cy += 8;
 
-    doc.setFontSize(10);
+    doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...BLACK);
-    doc.text(cl.name, colRightX + 4, cy);
-    cy += 5.5;
+    doc.text(cl.name, colRightX + 5, cy);
+    cy += 6;
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    if (cl.document) { doc.text(cl.document, colRightX + 4, cy); cy += 4.5; }
-    if (cl.email) { doc.text(cl.email, colRightX + 4, cy); cy += 4.5; }
-    if (cl.phone) { doc.text(cl.phone, colRightX + 4, cy); cy += 4.5; }
+    if (cl.document) { doc.text(cl.document, colRightX + 5, cy); cy += 5; }
+    if (cl.email) { doc.text(cl.email, colRightX + 5, cy); cy += 5; }
+    if (cl.phone) { doc.text(cl.phone, colRightX + 5, cy); cy += 5; }
 
     y = Math.max(y, cy);
   }
 
-  y = metaStartY + 40 + 8;
+  y = metaStartY + detailBlockH + 6;
 
   // Items table
-  doc.setFillColor(...BLACK);
-  doc.rect(margin, y, contentW, 9, 'F');
+  doc.setFillColor(...ACCENT);
+  doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...WHITE);
+  doc.setTextColor(255, 255, 255);
 
   const col1 = margin + 4;
   const col2 = margin + 100;
-  const col3 = margin + 120;
+  const col3 = margin + 122;
   const col4 = pw - margin - 4;
 
   doc.text('#', col1, y + 6.5);
@@ -586,18 +567,16 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
   doc.text(stH, col4 - doc.getTextWidth(stH), y + 6.5);
   y += 12;
 
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   options.items.forEach((item, idx) => {
     if (y > 250) { doc.addPage(); y = 20; }
-    if (idx % 2 === 0) { doc.setFillColor(245, 245, 245); doc.rect(margin, y - 4.5, contentW, 9, 'F'); }
-    doc.setFillColor(...ACCENT);
-    doc.rect(margin, y - 4.5, 1.5, 9, 'F');
+    if (idx % 2 === 0) { doc.setFillColor(245, 246, 250); doc.rect(margin, y - 5, contentW, 10, 'F'); }
 
     const sub = item.quantity * item.unitPrice;
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
     doc.text(String(idx + 1).padStart(2, '0'), col1, y);
-    doc.setTextColor(...BLACK);
+    doc.setTextColor(...DARK);
     doc.text(item.description || '-', col1 + 8, y);
     doc.setTextColor(...GRAY);
     doc.text(String(item.quantity), col2 + 2, y);
@@ -606,23 +585,23 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...BLACK);
     doc.text(subText, col4 - doc.getTextWidth(subText), y);
-    y += 9;
+    y += 10;
   });
 
-  doc.setDrawColor(...BLACK);
-  doc.setLineWidth(1.5);
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
   doc.line(margin, y, pw - margin, y);
   y += 10;
 
   // Totals
   const totalsX = margin + contentW - 75;
   const subtotal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...GRAY);
 
-  const rightAlign = (label: string, val: string, bold = false) => {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  const rightAlign = (label: string, val: string) => {
+    doc.setFont('helvetica', 'normal');
     doc.text(label, totalsX, y);
     const valW = doc.getTextWidth(val);
     doc.text(val, pw - margin - valW, y);
@@ -634,32 +613,32 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     rightAlign(`Impostos (${options.taxes}%)`, formatCurrency(subtotal * options.taxes / 100));
   }
   if (options.discount > 0) {
-    doc.setTextColor(220, 50, 50);
+    doc.setTextColor(200, 60, 60);
     rightAlign('Desconto', `- ${formatCurrency(options.discount)}`);
   }
 
-  y += 2;
-  doc.setFillColor(...BLACK);
-  const totalBlockH = 12;
-  doc.rect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 'F');
+  y += 4;
+  doc.setFillColor(...ACCENT);
+  const totalBlockH = 11;
+  doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...WHITE);
-  doc.text('TOTAL', totalsX, y + 7);
+  doc.setTextColor(255, 255, 255);
+  doc.text('TOTAL', totalsX, y + 6.5);
   const totalText = formatCurrency(options.total);
   const totalW = doc.getTextWidth(totalText);
-  doc.text(totalText, pw - margin - totalW, y + 7);
+  doc.text(totalText, pw - margin - totalW, y + 6.5);
 
   // Footer
   doc.setFillColor(...ACCENT);
-  doc.rect(0, pageH - 4, pw, 4, 'F');
+  doc.rect(0, pageH - 2, pw, 2, 'F');
 
   const footerY = pageH - 10;
   doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.3);
+  doc.setLineWidth(0.2);
   doc.line(margin, footerY - 4, pw - margin, footerY - 4);
 
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...GRAY);
 
