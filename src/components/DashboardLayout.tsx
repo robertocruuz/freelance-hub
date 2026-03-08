@@ -25,7 +25,7 @@ const navItems = [
 
 const labelMap: Record<string, (t: any) => string> = {
   home: () => 'Home',
-  passwords: (t) => t.passwordGenerator,
+  
   clients: (t) => t.clients,
   projects: (t) => t.projects,
   budgets: (t) => t.budgets,
