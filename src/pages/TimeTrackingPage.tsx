@@ -1160,7 +1160,7 @@ const TimeTrackingPage = () => {
         {/* Calendar View (Daily) */}
         {viewMode === 'calendar' && timeRange === 'daily' && (
           <div className="h-full flex flex-col">
-            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
+            <div ref={calendarRef} className="flex-1"
               onMouseDown={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('[data-entry-block]')) return;
