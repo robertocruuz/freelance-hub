@@ -85,7 +85,7 @@ const ProjectsPage = () => {
   const [clientId, setClientId] = useState('');
   const [search, setSearch] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [inlineEditItemId, setInlineEditItemId] = useState<string | null>(null);
@@ -294,12 +294,15 @@ const ProjectsPage = () => {
   };
 
   const toggleExpand = (id: string) => {
-    if (expandedId === id) {
-      setExpandedId(null);
-    } else {
-      setExpandedId(id);
-      if (!projectItems[id]) loadItems(id);
-    }
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else {
+        next.add(id);
+        if (!projectItems[id]) loadItems(id);
+      }
+      return next;
+    });
   };
 
   // Budget import
@@ -633,7 +636,7 @@ const ProjectsPage = () => {
                 </h2>
                 <div className="space-y-2">
                   {grouped[key].map(p => {
-            const isExpanded = expandedId === p.id;
+            const isExpanded = expandedIds.has(p.id);
             const items = projectItems[p.id] || [];
             const total = getProjectTotal(p.id);
 
