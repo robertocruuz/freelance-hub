@@ -697,6 +697,7 @@ const KanbanPage = () => {
                   onDeleteTask={(taskId) => kanban.deleteTask(taskId)}
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
+                  clientColorMap={clientColorMap}
                 />
               ))}
             </SortableContext>
