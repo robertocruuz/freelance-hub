@@ -22,13 +22,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isThisWeek, isThisMonth, isPast } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 type ViewMode = 'kanban' | 'list';
 
 const KanbanPage = () => {
   const kanban = useKanban();
   const { clients } = useClients();
+  const { user } = useAuth();
   const { columns, tasks, loading } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -38,8 +42,19 @@ const KanbanPage = () => {
   const [search, setSearch] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterClient, setFilterClient] = useState('all');
+  const [filterProject, setFilterProject] = useState('all');
+  const [filterType, setFilterType] = useState('all');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  // Load projects for filter
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('projects').select('id, name').eq('user_id', user.id).then(({ data }) => {
+      if (data) setProjects(data);
+    });
+  }, [user]);
 
   // Create task from budget item
   useEffect(() => {
@@ -74,14 +89,24 @@ const KanbanPage = () => {
   const completedMonth = tasks.filter((t) => t.completed_at && isThisMonth(new Date(t.completed_at)));
 
   // Filter tasks
+  const activeFilterCount = [filterPriority, filterClient, filterProject, filterType].filter(f => f !== 'all').length;
+
+  // Unique task types
+  const taskTypes = useMemo(() => {
+    const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
+    return Array.from(types) as string[];
+  }, [tasks]);
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
       if (filterClient !== 'all' && t.client_id !== filterClient) return false;
+      if (filterProject !== 'all' && t.project_id !== filterProject) return false;
+      if (filterType !== 'all' && t.task_type !== filterType) return false;
       return true;
     });
-  }, [tasks, search, filterPriority, filterClient]);
+  }, [tasks, search, filterPriority, filterClient, filterProject, filterType]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
@@ -172,28 +197,86 @@ const KanbanPage = () => {
           />
         </div>
 
-        <Select value={filterPriority} onValueChange={setFilterPriority}>
-          <SelectTrigger className="w-32 h-9 text-xs glass-input">
-            <Filter className="w-3 h-3 mr-1" /><SelectValue placeholder="Prioridade" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
-            <SelectItem value="low">Baixa</SelectItem>
-            <SelectItem value="medium">Média</SelectItem>
-            <SelectItem value="high">Alta</SelectItem>
-            <SelectItem value="urgent">Urgente</SelectItem>
-          </SelectContent>
-        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 w-9 p-0 relative glass-input">
+              <Filter className="w-4 h-4" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3 space-y-3" align="start">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Filtros</span>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => { setFilterClient('all'); setFilterProject('all'); setFilterPriority('all'); setFilterType('all'); }}
+                  className="text-[10px] text-muted-foreground hover:text-foreground transition"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
 
-        <Select value={filterClient} onValueChange={setFilterClient}>
-          <SelectTrigger className="w-36 h-9 text-xs glass-input">
-            <Filter className="w-3 h-3 mr-1" /><SelectValue placeholder="Cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Cliente</label>
+              <Select value={filterClient} onValueChange={setFilterClient}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Projeto</label>
+              <Select value={filterProject} onValueChange={setFilterProject}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Prioridade</label>
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="low">Baixa</SelectItem>
+                  <SelectItem value="medium">Média</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="urgent">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Por Tipo</label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {taskTypes.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5">
           <button
