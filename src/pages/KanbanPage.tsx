@@ -718,10 +718,13 @@ const KanbanPage = () => {
               <tr className="border-b border-border">
                 {[
                   { key: 'title', label: 'Tarefa' },
+                  { key: 'client', label: 'Cliente' },
+                  { key: 'project', label: 'Projeto' },
                   { key: 'status', label: 'Status' },
                   { key: 'priority', label: 'Prioridade' },
                   { key: 'due_date', label: 'Prazo' },
                   { key: 'task_type', label: 'Tipo' },
+                  { key: 'estimated_value', label: 'Valor Est.' },
                 ].map((col) => (
                   <th
                     key={col.key}
@@ -751,8 +754,12 @@ const KanbanPage = () => {
               {[...filteredTasks].sort((a, b) => {
                 const dir = listSortDir === 'asc' ? 1 : -1;
                 const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+                const getClientName = (t: Task) => clients.find(c => c.id === t.client_id)?.name || '';
+                const getProjectName = (t: Task) => projects.find(p => p.id === t.project_id)?.name || '';
                 switch (listSortField) {
                   case 'title': return dir * a.title.localeCompare(b.title);
+                  case 'client': return dir * getClientName(a).localeCompare(getClientName(b));
+                  case 'project': return dir * getProjectName(a).localeCompare(getProjectName(b));
                   case 'status': {
                     const colA = columns.find(c => c.id === a.column_id)?.name || '';
                     const colB = columns.find(c => c.id === b.column_id)?.name || '';
@@ -766,10 +773,13 @@ const KanbanPage = () => {
                     return dir * (new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
                   }
                   case 'task_type': return dir * (a.task_type || '').localeCompare(b.task_type || '');
+                  case 'estimated_value': return dir * ((a.estimated_value || 0) - (b.estimated_value || 0));
                   default: return 0;
                 }
               }).map((task) => {
                 const col = columns.find((c) => c.id === task.column_id);
+                const client = clients.find((c) => c.id === task.client_id);
+                const project = projects.find((p) => p.id === task.project_id);
                 const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
                 return (
                   <tr
@@ -778,6 +788,8 @@ const KanbanPage = () => {
                     className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition"
                   >
                     <td className="px-4 py-3 text-sm font-medium">{task.title}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{client?.name || '-'}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{project?.name || '-'}</td>
                     <td className="px-4 py-3">
                       <Badge variant="secondary" className="text-[10px]">{col?.name || '-'}</Badge>
                     </td>
@@ -788,12 +800,15 @@ const KanbanPage = () => {
                       {task.due_date || '-'}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{task.task_type || '-'}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {task.estimated_value ? `R$ ${Number(task.estimated_value).toFixed(2)}` : '-'}
+                    </td>
                   </tr>
                 );
               })}
               {filteredTasks.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     Nenhuma tarefa encontrada.
                   </td>
                 </tr>
