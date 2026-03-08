@@ -120,16 +120,28 @@ const ProjectsPage = () => {
     setPendingBudgetItems([]);
   };
 
+  const [allProjectItemNames, setAllProjectItemNames] = useState<Set<string>>(new Set());
+
   const loadAllBudgets = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from('budgets').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setAllBudgets(data.map(b => ({
+    const [budgetRes, itemsRes] = await Promise.all([
+      supabase.from('budgets').select('*').order('created_at', { ascending: false }),
+      supabase.from('project_items').select('name'),
+    ]);
+    if (budgetRes.data) {
+      setAllBudgets(budgetRes.data.map(b => ({
         ...b,
         items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
       })));
     }
+    if (itemsRes.data) {
+      setAllProjectItemNames(new Set(itemsRes.data.map(i => i.name)));
+    }
   }, [user]);
+
+  const isBudgetFullyImported = (budget: Budget) => {
+    return budget.items.length > 0 && budget.items.every(item => allProjectItemNames.has(item.description));
+  };
 
   const handleSelectBudget = (budgetId: string) => {
     setSelectedBudgetId(budgetId);
