@@ -284,7 +284,9 @@ const ProjectsPage = () => {
   const importAllBudgetItems = async (budget: Budget) => {
     if (!importProjectId) return;
     const currentItems = projectItems[importProjectId] || [];
-    const inserts = budget.items.map((item, idx) => ({
+    const newItems = budget.items.filter(item => !isItemImported(item));
+    if (newItems.length === 0) return toast.info('Todos os itens já foram importados.');
+    const inserts = newItems.map((item, idx) => ({
       project_id: importProjectId,
       name: item.description,
       value: item.quantity * item.unitPrice,
@@ -292,7 +294,7 @@ const ProjectsPage = () => {
     }));
     const { error } = await supabase.from('project_items').insert(inserts);
     if (error) return toast.error(error.message);
-    toast.success(`${budget.items.length} itens importados!`);
+    toast.success(`${inserts.length} itens importados!`);
     loadItems(importProjectId);
     setImportProjectId(null);
   };
