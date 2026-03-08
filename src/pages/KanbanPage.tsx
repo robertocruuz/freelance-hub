@@ -430,8 +430,6 @@ const KanbanPage = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <ShareButton resourceType="board" resourceId={activeBoardId} />
           </>
         )}
       </div>
