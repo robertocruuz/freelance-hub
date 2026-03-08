@@ -465,7 +465,7 @@ const ProfilePage = () => {
                         <div className="space-y-1">
                           <Label className="text-sm text-muted-foreground">CEP</Label>
                           {editingOrg ? (
-                            <Input value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: [data.logradouro, data.bairro].filter(Boolean).join(', '), complement: data.complemento || '', state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
+                            <Input value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: data.logradouro || '', complement: data.complemento || '', neighborhood: data.bairro || '', state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
                           ) : (
                             <FieldDisplay value={org.zip_code} />
                           )}
