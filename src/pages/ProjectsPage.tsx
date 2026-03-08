@@ -654,7 +654,7 @@ const ProjectsPage = () => {
                               {/* Value display */}
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-muted-foreground">Valor</label>
-                                <p className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</p>
+                                <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
                               </div>
 
                               {/* Actions */}
