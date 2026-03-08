@@ -239,17 +239,34 @@ const KanbanPage = () => {
           <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Stats */}
-          <Badge variant="outline" className="gap-1 text-xs">
-            <AlertTriangle className="w-3 h-3 text-destructive" /> {overdueTasks.length} atrasadas
-          </Badge>
-          <Badge variant="outline" className="gap-1 text-xs">
-            <CalendarDays className="w-3 h-3 text-primary" /> {weekTasks.length} esta semana
-          </Badge>
-          <Badge variant="outline" className="gap-1 text-xs">
-            <CheckCircle2 className="w-3 h-3 text-accent-foreground" /> {completedMonth.length} concluídas no mês
-          </Badge>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/20">
+            <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-destructive leading-none">{overdueTasks.length}</p>
+              <p className="text-[10px] text-destructive/70 font-medium">Atrasadas</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+              <CalendarDays className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-primary leading-none">{weekTasks.length}</p>
+              <p className="text-[10px] text-primary/70 font-medium">Esta semana</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-accent/50 border border-accent">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground leading-none">{completedMonth.length}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">Concluídas no mês</p>
+            </div>
+          </div>
         </div>
       </div>
 
