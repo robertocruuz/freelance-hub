@@ -230,6 +230,12 @@ const HomePage = () => {
               <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Registros' : 'Entries'}</span>
             </div>
           </div>
+
+          {/* Mini bar chart - last 7 days */}
+          <div className="mt-5 pt-4 border-t border-border">
+            <span className="text-[11px] text-muted-foreground font-medium mb-3 block">{isPt ? 'Últimos 7 dias' : 'Last 7 days'}</span>
+            <MiniBarChart data={timeStats.last7} />
+          </div>
         </div>
 
         {/* ═══ Faturas — tall card ═══ */}
