@@ -269,13 +269,19 @@ const BudgetsPage = () => {
   const statusLabel = (s: string) => (t as any)[s] || s;
 
   const exportBudgetPdf = (b: Budget) => {
-    generateDocumentPdf({
-      title: t.budgets,
-      type: 'budget',
+    const client = clients.find(c => c.id === b.client_id) || null;
+    generateBudgetPdf({
+      budgetName: b.name,
+      budgetDate: b.budget_date,
+      validityDate: b.validity_date,
+      deliveryDate: b.delivery_date,
       items: b.items,
       total: b.total,
-      status: statusLabel(b.status),
-      createdAt: b.created_at,
+      discount: b.discount,
+      notes: b.notes,
+      status: b.status,
+      organization: organization,
+      client: client,
     });
   };
 
