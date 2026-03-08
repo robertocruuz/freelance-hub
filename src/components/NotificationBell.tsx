@@ -124,7 +124,7 @@ const NotificationBell = () => {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0" sideOffset={8}>
+      <PopoverContent align="end" className="w-96 p-0" sideOffset={8}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <h3 className="text-sm font-semibold text-foreground">
@@ -143,7 +143,7 @@ const NotificationBell = () => {
         <Separator />
 
         {/* Notifications list */}
-        <ScrollArea className="max-h-[380px]">
+        <ScrollArea className="max-h-[440px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4">
               <Bell className="w-10 h-10 text-muted-foreground/30 mb-3" />
@@ -160,7 +160,7 @@ const NotificationBell = () => {
                 return (
                   <div
                     key={notification.id}
-                    className={`group flex gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/30 last:border-b-0 ${
+                    className={`group flex gap-3 px-4 py-4 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/30 last:border-b-0 ${
                       !notification.read ? 'bg-primary/[0.03]' : ''
                     }`}
                     onClick={() => {
@@ -171,12 +171,12 @@ const NotificationBell = () => {
                       }
                     }}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                      <Icon className="w-[18px] h-[18px]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm leading-tight ${!notification.read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+                        <p className={`text-sm leading-snug ${!notification.read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
                           {notification.title}
                         </p>
                         {!notification.read && (
@@ -184,7 +184,7 @@ const NotificationBell = () => {
                         )}
                       </div>
                       {notification.message && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-3 leading-relaxed">
                           {notification.message}
                         </p>
                       )}
