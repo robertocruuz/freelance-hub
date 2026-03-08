@@ -907,7 +907,7 @@ const TimeTrackingPage = () => {
             return acc;
           }, {});
           const projectData = Object.entries(byProject).map(([name, seconds]) => ({
-            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null),
+            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null, filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.client_id),
           }));
 
           const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
