@@ -226,6 +226,10 @@ const BudgetsPage = () => {
   const startEditing = (b: Budget) => {
     setEditingId(b.id);
     setClientId(b.client_id || '');
+    setBudgetName(b.name || '');
+    setBudgetDate(b.budget_date ? new Date(b.budget_date + 'T12:00:00') : new Date());
+    setValidityDate(b.validity_date ? new Date(b.validity_date + 'T12:00:00') : undefined);
+    setDeliveryDate(b.delivery_date ? new Date(b.delivery_date + 'T12:00:00') : undefined);
     setItems(b.items.length > 0 ? b.items : []);
     setDiscount(b.discount || 0);
     setNotes(b.notes || '');
