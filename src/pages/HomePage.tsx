@@ -4,7 +4,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface DashboardData {
@@ -89,7 +89,21 @@ const HomePage = () => {
       if (e.end_time) return sum + differenceInMinutes(parseISO(e.end_time), parseISO(e.start_time));
       return sum;
     }, 0);
-    return { todayMin: calcMinutes(todayEntries), weekMin: calcMinutes(weekEntries), activeTimer: data.timeEntries.find(e => !e.end_time && !e.duration) };
+
+    // Last 7 days chart data
+    const last7 = Array.from({ length: 7 }, (_, i) => {
+      const day = subDays(now, 6 - i);
+      const dayEntries = data.timeEntries.filter(e => e.start_time && isSameDay(parseISO(e.start_time), day));
+      const minutes = calcMinutes(dayEntries);
+      return {
+        label: format(day, 'EEE', { locale: isPt ? ptBR : undefined }),
+        minutes,
+        hours: +(minutes / 60).toFixed(1),
+        isToday: isToday(day),
+      };
+    });
+
+    return { todayMin: calcMinutes(todayEntries), weekMin: calcMinutes(weekEntries), activeTimer: data.timeEntries.find(e => !e.end_time && !e.duration), last7 };
   }, [data.timeEntries]);
 
   const invoiceStats = useMemo(() => {
@@ -215,6 +229,12 @@ const HomePage = () => {
               <div className="text-2xl font-extrabold text-foreground">{data.timeEntries.length}</div>
               <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Registros' : 'Entries'}</span>
             </div>
+          </div>
+
+          {/* Mini bar chart - last 7 days */}
+          <div className="mt-5 pt-4 border-t border-border">
+            <span className="text-[11px] text-muted-foreground font-medium mb-3 block">{isPt ? 'Últimos 7 dias' : 'Last 7 days'}</span>
+            <MiniBarChart data={timeStats.last7} />
           </div>
         </div>
 
@@ -363,5 +383,33 @@ const StatusRow = ({ label, count, dotColor }: { label: string; count: number; d
     <span className="text-sm font-bold text-foreground">{count}</span>
   </div>
 );
+
+const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours: number; isToday: boolean }[] }) => {
+  const maxMin = Math.max(...data.map(d => d.minutes), 1);
+  return (
+    <div className="flex items-end gap-1.5 h-16">
+      {data.map((d, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <div className="w-full relative flex items-end justify-center" style={{ height: '44px' }}>
+            {d.minutes > 0 && (
+              <div
+                className="absolute bottom-0 -top-6 flex items-start justify-center pointer-events-none opacity-0 group-hover:opacity-100"
+              >
+              </div>
+            )}
+            <div
+              className={`w-full rounded-md transition-all duration-300 ${d.isToday ? 'bg-cyan-500' : 'bg-cyan-500/30'}`}
+              style={{ height: `${Math.max((d.minutes / maxMin) * 44, d.minutes > 0 ? 4 : 2)}px` }}
+              title={`${d.hours}h`}
+            />
+          </div>
+          <span className={`text-[9px] font-medium ${d.isToday ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>
+            {d.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default HomePage;
