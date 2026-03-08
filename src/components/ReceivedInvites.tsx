@@ -99,6 +99,7 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
       toast({ title: isPt ? 'Convite aceito!' : 'Invite accepted!' });
       setInvites((prev) => prev.filter((i) => i.id !== invite.id));
       refresh();
+      onAccepted?.();
     }
   };
 

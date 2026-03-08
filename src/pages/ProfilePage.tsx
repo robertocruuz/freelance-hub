@@ -711,7 +711,7 @@ const ProfilePage = () => {
               <Separator className="opacity-50" />
 
               {/* Received invites */}
-              <ReceivedInvites />
+              <ReceivedInvites onAccepted={refreshOrg} />
 
               {/* Team section (embedded) */}
               <div>
