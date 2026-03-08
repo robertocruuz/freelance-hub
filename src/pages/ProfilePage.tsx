@@ -20,8 +20,8 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
-  const [profile, setProfile] = useState({ name: '', email: '' });
-  const [editForm, setEditForm] = useState({ name: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', document: '' });
+  const [editForm, setEditForm] = useState({ name: '', document: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
 
   useEffect(() => {
