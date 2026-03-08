@@ -446,7 +446,71 @@ const TimeTrackingPage = () => {
     return colors[idx % colors.length];
   };
 
-  // Autocomplete suggestions from recent entries + tasks
+  // Compute overlap layout for calendar entries (side-by-side when overlapping)
+  const computeOverlapLayout = (dayEntries: TimeEntry[]) => {
+    const items = dayEntries.map(entry => {
+      const start = new Date(entry.start_time);
+      const end = entry.end_time ? new Date(entry.end_time) : new Date();
+      const startMin = start.getHours() * 60 + start.getMinutes();
+      const endMin = Math.max(end.getHours() * 60 + end.getMinutes(), startMin + 10);
+      return { entry, startMin, endMin, col: 0, totalCols: 1 };
+    }).sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
+
+    // Greedy column assignment
+    const columns: { endMin: number }[][] = [];
+    for (const item of items) {
+      let placed = false;
+      for (let c = 0; c < columns.length; c++) {
+        if (columns[c].every(prev => prev.endMin <= item.startMin)) {
+          item.col = c;
+          columns[c].push({ endMin: item.endMin });
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        item.col = columns.length;
+        columns.push([{ endMin: item.endMin }]);
+      }
+    }
+
+    // Compute total columns for each overlapping group
+    const totalCols = columns.length;
+    for (const item of items) {
+      item.totalCols = totalCols;
+    }
+
+    // More precise: find actual max overlap per group
+    // Group items that transitively overlap
+    const groups: typeof items[] = [];
+    const visited = new Set<number>();
+    for (let i = 0; i < items.length; i++) {
+      if (visited.has(i)) continue;
+      const group = [items[i]];
+      visited.add(i);
+      const stack = [i];
+      while (stack.length > 0) {
+        const cur = stack.pop()!;
+        for (let j = 0; j < items.length; j++) {
+          if (visited.has(j)) continue;
+          if (items[cur].startMin < items[j].endMin && items[j].startMin < items[cur].endMin) {
+            visited.add(j);
+            group.push(items[j]);
+            stack.push(j);
+          }
+        }
+      }
+      groups.push(group);
+    }
+    for (const group of groups) {
+      const maxCol = Math.max(...group.map(it => it.col)) + 1;
+      for (const it of group) it.totalCols = maxCol;
+    }
+
+    return items;
+  };
+
+
   const [showSuggestions, setShowSuggestions] = useState(false);
   const descInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -703,17 +767,14 @@ const TimeTrackingPage = () => {
                 {/* Render time entries as blocks */}
                 {weekDays.map((day, dayIdx) => {
                   const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), day));
-                  return dayEntries.map((entry) => {
-                    const start = new Date(entry.start_time);
-                    const end = entry.end_time ? new Date(entry.end_time) : new Date();
-                    const startMinutes = start.getHours() * 60 + start.getMinutes();
-                    const endMinutes = end.getHours() * 60 + end.getMinutes();
-                    const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                    const top = startMinutes;
-                    const height = durationMinutes;
-                    const colWidth = `calc((100% - 64px) / 7)`;
-                    const left = `calc(64px + ${dayIdx} * ${colWidth})`;
+                  const layoutItems = computeOverlapLayout(dayEntries);
+                  const colWidth = `calc((100% - 64px) / 7)`;
+                  return layoutItems.map((item) => {
+                    const { entry, startMin, endMin, col, totalCols } = item;
+                    const durationMinutes = endMin - startMin;
                     const color = getProjectColor(entry.project_id, entry.client_id);
+                    const entryWidth = `calc((${colWidth} - 4px) / ${totalCols})`;
+                    const entryLeft = `calc(64px + ${dayIdx} * ${colWidth} + 2px + ${col} * (${colWidth} - 4px) / ${totalCols})`;
 
                     return (
                       <button
@@ -721,11 +782,10 @@ const TimeTrackingPage = () => {
                         onClick={() => openEdit(entry)}
                         className="absolute rounded-md px-1.5 py-0.5 text-[10px] text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm group z-10"
                         style={{
-                          top: `${top}px`,
-                          height: `${Math.max(height, 18)}px`,
-                          left,
-                          width: `calc(${colWidth} - 4px)`,
-                          marginLeft: '2px',
+                          top: `${startMin}px`,
+                          height: `${Math.max(durationMinutes, 18)}px`,
+                          left: entryLeft,
+                          width: entryWidth,
                           backgroundColor: color,
                         }}
                       >
@@ -735,7 +795,7 @@ const TimeTrackingPage = () => {
                             {entry.description || getProjectName(entry.project_id) || '—'}
                           </span>
                         </div>
-                        {height > 30 && (
+                        {durationMinutes > 30 && (
                           <p className="text-white/70 truncate">{formatDurationShort(entry.duration || 0)}</p>
                         )}
                       </button>
@@ -783,36 +843,39 @@ const TimeTrackingPage = () => {
                     <div className="relative hover:bg-muted/30 transition-colors" />
                   </div>
                 ))}
-                {filteredEntries.map((entry) => {
-                  const start = new Date(entry.start_time);
-                  const end = entry.end_time ? new Date(entry.end_time) : new Date();
-                  const startMinutes = start.getHours() * 60 + start.getMinutes();
-                  const endMinutes = end.getHours() * 60 + end.getMinutes();
-                  const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                  const color = getProjectColor(entry.project_id, entry.client_id);
-                  return (
-                    <button
-                      key={entry.id}
-                      onClick={() => openEdit(entry)}
-                      className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
-                      style={{
-                        top: `${startMinutes}px`,
-                        height: `${Math.max(durationMinutes, 20)}px`,
-                        left: '68px',
-                        width: 'calc(100% - 72px)',
-                        backgroundColor: color,
-                      }}
-                    >
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
-                        <span className="truncate font-medium">
-                          {entry.description || getProjectName(entry.project_id) || '—'}
-                        </span>
-                        <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                {(() => {
+                  const layoutItems = computeOverlapLayout(filteredEntries);
+                  return layoutItems.map((item) => {
+                    const { entry, startMin, endMin, col, totalCols } = item;
+                    const durationMinutes = endMin - startMin;
+                    const color = getProjectColor(entry.project_id, entry.client_id);
+                    const availableWidth = 'calc(100% - 72px)';
+                    const entryWidth = `calc(${availableWidth} / ${totalCols})`;
+                    const entryLeft = `calc(68px + ${col} * ${availableWidth} / ${totalCols})`;
+                    return (
+                      <button
+                        key={entry.id}
+                        onClick={() => openEdit(entry)}
+                        className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
+                        style={{
+                          top: `${startMin}px`,
+                          height: `${Math.max(durationMinutes, 20)}px`,
+                          left: entryLeft,
+                          width: entryWidth,
+                          backgroundColor: color,
+                        }}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
+                          <span className="truncate font-medium">
+                            {entry.description || getProjectName(entry.project_id) || '—'}
+                          </span>
+                          <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
