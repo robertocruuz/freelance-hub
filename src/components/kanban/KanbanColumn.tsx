@@ -222,10 +222,41 @@ export const KanbanColumnComponent = ({
             >
               <ChevronLeft className="w-3 h-3" /> Voltar
             </button>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Selecione o projeto</p>
+            {loadingItems ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
+            ) : projects.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Nenhum projeto encontrado</p>
+            ) : (
+              projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelectProject(p.id)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-secondary transition border border-border"
+                >
+                  <FolderKanban className="w-3 h-3 inline mr-1.5 text-primary" />{p.name}
+                </button>
+              ))
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+              Cancelar
+            </Button>
+          </div>
+        )}
+
+        {addMode === 'project-items' && (
+          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            <button
+              onClick={() => setAddMode('project')}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition mb-1"
+            >
+              <ChevronLeft className="w-3 h-3" /> Projetos
+            </button>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Selecione o item</p>
             {loadingItems ? (
               <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
             ) : projectItems.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-2">Nenhum item de projeto encontrado</p>
+              <p className="text-xs text-muted-foreground text-center py-2">Nenhum item neste projeto</p>
             ) : (
               projectItems.map((item) => (
                 <button
@@ -234,9 +265,7 @@ export const KanbanColumnComponent = ({
                   className="w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-secondary transition border border-border"
                 >
                   <p className="font-medium text-foreground truncate">{item.name}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {item.project_name} · R$ {item.value.toFixed(2)}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground">R$ {item.value.toFixed(2)}</p>
                 </button>
               ))
             )}
