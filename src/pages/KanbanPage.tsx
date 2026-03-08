@@ -389,6 +389,38 @@ const KanbanPage = () => {
                         {d.label}
                       </button>
                     ))}
+                   </div>
+
+                  {/* Date picker toggle */}
+                  <div className="mt-2">
+                    <button
+                      onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
+                      className={`w-full px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5 justify-center ${
+                        filterDeadlineDate
+                          ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                          : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                      }`}
+                    >
+                      <CalendarDays className="w-3 h-3" />
+                      {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Escolher data específica'}
+                      {filterDeadlineDate && (
+                        <X
+                          className="w-3 h-3 ml-auto hover:text-destructive"
+                          onClick={(e) => { e.stopPropagation(); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
+                        />
+                      )}
+                    </button>
+                    {showDeadlineCalendar && (
+                      <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                        <Calendar
+                          mode="single"
+                          selected={filterDeadlineDate}
+                          onSelect={(date) => { setFilterDeadlineDate(date); setShowDeadlineCalendar(false); }}
+                          locale={ptBR}
+                          className="p-2 pointer-events-auto"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
