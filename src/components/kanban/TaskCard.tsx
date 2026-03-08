@@ -4,6 +4,7 @@ import { Calendar, CheckSquare, MessageSquare, Paperclip, AlertTriangle, Clock }
 import { Task } from '@/hooks/useKanban';
 import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
   low: { label: 'Baixa', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -23,6 +24,7 @@ const taskTypeConfig: Record<string, string> = {
 interface TaskCardProps {
   task: Task;
   onClick: () => void;
+  onToggleComplete?: (taskId: string, completed: boolean) => void;
   checklistProgress?: { done: number; total: number } | null;
 }
 
