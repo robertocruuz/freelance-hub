@@ -6,7 +6,7 @@ export interface OrgMember {
   id: string;
   organization_id: string;
   user_id: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
   profile?: { name: string | null; email: string | null };
