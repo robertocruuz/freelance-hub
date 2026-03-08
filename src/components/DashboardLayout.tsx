@@ -94,6 +94,7 @@ const DashboardLayout = () => {
           {/* Timer indicator + Right controls */}
           <div className="flex items-center gap-2">
             <TimerIndicator navigate={navigate} />
+            <NotificationBell />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
