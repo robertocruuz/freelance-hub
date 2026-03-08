@@ -571,7 +571,7 @@ const BudgetsPage = () => {
               </div>
               {expandedBudget === b.id && b.items.length > 0 && (
                 <div className="border-t border-border px-4 pb-3 pt-2 space-y-1">
-                  <div className="grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
+                  <div className="grid grid-cols-[1fr_80px_100px_100px] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
                     <span>{t.description}</span>
                     <span className="text-center">{t.quantity}</span>
                     <span className="text-right">{t.unitPrice}</span>
