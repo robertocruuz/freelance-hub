@@ -79,6 +79,7 @@ const ProjectsPage = () => {
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
   const [search, setSearch] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
