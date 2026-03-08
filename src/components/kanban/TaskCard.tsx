@@ -74,7 +74,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         ref={setNodeRef}
         style={{
           ...style,
-          ...(!isOverdue && clientColor ? { borderLeftColor: clientColor } : {}),
+          ...(!isOverdue && clientColor ? { borderLeftColor: clientColor, backgroundColor: `${clientColor}15` } : {}),
         }}
         {...attributes}
         {...listeners}
