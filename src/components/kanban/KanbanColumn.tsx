@@ -78,19 +78,29 @@ export const KanbanColumnComponent = ({
 
   const loadProjectItems = async (projectId: string) => {
     setLoadingItems(true);
-    const { data } = await supabase
-      .from('project_items')
-      .select('id, name, value, project_id, projects(name, client_id)')
-      .eq('project_id', projectId)
-      .order('name');
-    if (data) {
-      setProjectItems(data.map((item: any) => ({
+    const [{ data: items }, { data: existingTasks }] = await Promise.all([
+      supabase
+        .from('project_items')
+        .select('id, name, value, project_id, projects(name, client_id)')
+        .eq('project_id', projectId)
+        .order('name'),
+      supabase
+        .from('tasks')
+        .select('title, project_id')
+        .eq('project_id', projectId),
+    ]);
+    const taskSet = new Set(
+      (existingTasks || []).map((t: any) => `${t.title}::${t.project_id}`)
+    );
+    if (items) {
+      setProjectItems(items.map((item: any) => ({
         id: item.id,
         name: item.name,
         value: item.value,
         project_id: item.project_id,
         project_name: item.projects?.name || '',
         client_id: item.projects?.client_id || null,
+        imported: taskSet.has(`${item.name}::${item.project_id}`),
       })));
     }
     setLoadingItems(false);
