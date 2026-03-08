@@ -636,7 +636,7 @@ const ProjectsPage = () => {
                 </h2>
                 <div className="space-y-2">
                   {grouped[key].map(p => {
-            const isExpanded = expandedId === p.id;
+            const isExpanded = expandedIds.has(p.id);
             const items = projectItems[p.id] || [];
             const total = getProjectTotal(p.id);
 
