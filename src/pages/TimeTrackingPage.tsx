@@ -1168,7 +1168,7 @@ const TimeTrackingPage = () => {
                 handleGridMouseDown(e, selectedDate, calendarRef.current);
               }}
             >
-              <div className="relative" style={{ minHeight: `${visibleHours.length * 60}px` }}>
+              <div className="relative overflow-hidden" style={{ minHeight: `${visibleHours.length * 60}px` }}>
                 {visibleHours.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px 1fr', height: '60px' }}>
                     <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
