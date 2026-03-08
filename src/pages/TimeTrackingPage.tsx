@@ -2125,6 +2125,62 @@ const TimeTrackingPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create entry dialog */}
+      <Dialog open={!!createModalData} onOpenChange={() => setCreateModalData(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo registro de tempo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {createModalData && (
+              <div className="text-sm text-muted-foreground">
+                {createModalData.dayDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {' · '}
+                {String(Math.floor(createModalData.startMin / 60)).padStart(2, '0')}:{String(createModalData.startMin % 60).padStart(2, '0')}
+                {' – '}
+                {String(Math.floor(createModalData.endMin / 60)).padStart(2, '0')}:{String(createModalData.endMin % 60).padStart(2, '0')}
+                {' · '}
+                {formatDurationShort((createModalData.endMin - createModalData.startMin) * 60)}
+              </div>
+            )}
+            <input
+              placeholder="No que você estava trabalhando?"
+              value={createDesc}
+              onChange={(e) => setCreateDesc(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              autoFocus
+            />
+            <CompactClientSelect clients={clients} value={createClientId} onChange={(v) => { setCreateClientId(v); setCreateProjectId(''); setCreateTaskId(''); }} placeholder="Cliente" fullWidth />
+            <select
+              value={createProjectId}
+              onChange={(e) => { setCreateProjectId(e.target.value); setCreateTaskId(''); }}
+              disabled={!createClientId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{createClientId ? t.project : 'Selecione um cliente primeiro'}</option>
+              {createFilteredProjects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <select
+              value={createTaskId}
+              onChange={(e) => setCreateTaskId(e.target.value)}
+              disabled={!createProjectId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{createProjectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
+              {createFilteredTasks.map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setCreateModalData(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
+              <button onClick={saveCreate} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
