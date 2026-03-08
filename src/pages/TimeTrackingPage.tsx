@@ -1458,7 +1458,24 @@ const TimeTrackingPage = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-2 px-3 text-muted-foreground font-medium w-8"></th>
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium w-8">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const allNames = projectData.map(p => p.name);
+                                const allCollapsed = allNames.every(n => collapsedProjects.has(n));
+                                if (allCollapsed) {
+                                  setCollapsedProjects(new Set());
+                                } else {
+                                  setCollapsedProjects(new Set(allNames));
+                                }
+                              }}
+                              className="p-0.5 rounded hover:bg-muted transition-colors"
+                              title={projectData.every(p => collapsedProjects.has(p.name)) ? 'Expandir todos' : 'Recolher todos'}
+                            >
+                              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${projectData.every(p => collapsedProjects.has(p.name)) ? '-rotate-90' : 'rotate-0'}`} />
+                            </button>
+                          </th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Projeto</th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Cliente</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Registros</th>
