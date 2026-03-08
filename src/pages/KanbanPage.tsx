@@ -486,20 +486,25 @@ const KanbanPage = () => {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                className={`w-full px-2 py-1 rounded-md text-[11px] font-medium border transition-all flex items-center gap-1.5 justify-center ${
-                  filterDeadlineDate
-                    ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                    : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                }`}
-              >
-                <CalendarDays className="w-3 h-3" />
-                {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data específica'}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
+                  className={`p-1.5 rounded-md border transition-all flex items-center justify-center ${
+                    filterDeadlineDate
+                      ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                      : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                  }`}
+                  title={filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data específica'}
+                >
+                  <CalendarDays className="w-3.5 h-3.5" />
+                </button>
                 {filterDeadlineDate && (
-                  <X className="w-3 h-3 ml-auto hover:text-destructive" onClick={(e) => { e.stopPropagation(); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }} />
+                  <span className="text-[11px] text-primary font-medium flex items-center gap-1">
+                    {format(filterDeadlineDate, "dd/MM/yyyy")}
+                    <X className="w-3 h-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }} />
+                  </span>
                 )}
-              </button>
+              </div>
               {showDeadlineCalendar && (
                 <div className="border border-border rounded-lg overflow-hidden">
                   <Calendar
