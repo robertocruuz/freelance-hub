@@ -905,8 +905,11 @@ const TimeTrackingPage = () => {
           }));
 
           const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
-            const proj = projects.find(p => p.id === e.project_id);
-            const client = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
+            // Use direct client_id first, fallback to project's client
+            const directClient = e.client_id ? clients.find(c => c.id === e.client_id) : null;
+            const proj = !directClient ? projects.find(p => p.id === e.project_id) : null;
+            const projClient = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
+            const client = directClient || projClient;
             const name = client?.name || 'Sem cliente';
             acc[name] = (acc[name] || 0) + (e.duration || 0);
             return acc;
