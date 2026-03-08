@@ -340,6 +340,22 @@ const ProjectsPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
+                          <button
+                            onClick={() => {
+                              const project = projects.find(pr => pr.id === item.project_id);
+                              const params = new URLSearchParams({
+                                from_budget: 'true',
+                                title: item.name,
+                                value: String(item.value),
+                                ...(project?.client_id ? { client: project.client_id } : {}),
+                              });
+                              navigate(`/dashboard/kanban?${params.toString()}`);
+                            }}
+                            className="p-1 rounded hover:bg-accent transition-colors"
+                            title="Criar tarefa no Kanban"
+                          >
+                            <ListPlus className="w-3.5 h-3.5 text-primary" />
+                          </button>
                           <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
