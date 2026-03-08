@@ -265,7 +265,7 @@ const ProfilePage = () => {
                 {org.trade_name || org.company_name || (lang === 'pt-BR' ? 'Organização' : 'Organization')}
               </CardTitle>
               <CardDescription className="mt-0.5">
-                {lang === 'pt-BR' ? 'Dados da sua empresa para orçamentos e faturas' : 'Company data for budgets and invoices'}
+                {lang === 'pt-BR' ? 'Dados da sua empresa' : 'Your company data'}
               </CardDescription>
             </div>
           </div>
