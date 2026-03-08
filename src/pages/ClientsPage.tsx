@@ -98,7 +98,7 @@ const ClientsPage = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setName(''); setEmail(''); setPhone(''); setDocument(''); setResponsible('');
+    setName(''); setEmail(''); setPhone(''); setDocument(''); setResponsible(''); setColor(null);
     setDialogOpen(true);
   };
 
