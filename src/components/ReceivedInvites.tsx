@@ -14,7 +14,7 @@ interface ReceivedInvite {
   organization_id: string;
   email: string | null;
   invite_token: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
   expires_at: string;
