@@ -374,6 +374,7 @@ const KanbanPage = () => {
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                      { value: 'today', label: 'Hoje', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' },
                       { value: 'this_week', label: 'Esta semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
                       { value: 'this_month', label: 'Este mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
                       { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
