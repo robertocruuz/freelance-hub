@@ -29,7 +29,7 @@ const roleLabels: Record<string, Record<string, string>> = {
   viewer: { 'pt-BR': 'Visualizador', en: 'Viewer' },
 };
 
-const ReceivedInvites = () => {
+const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
@@ -99,6 +99,7 @@ const ReceivedInvites = () => {
       toast({ title: isPt ? 'Convite aceito!' : 'Invite accepted!' });
       setInvites((prev) => prev.filter((i) => i.id !== invite.id));
       refresh();
+      onAccepted?.();
     }
   };
 
