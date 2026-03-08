@@ -422,8 +422,14 @@ const TimeTrackingPage = () => {
     return selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
-  // Get color for entry — uses client color if available, falls back to project-based color
-  const getProjectColor = (pid: string | null) => {
+  // Get color for entry — uses direct client color first, then project's client, then fallback
+  const getProjectColor = (pid: string | null, directClientId?: string | null) => {
+    // Priority 1: direct client_id on the entry
+    if (directClientId) {
+      const directClient = clients.find(c => c.id === directClientId);
+      if ((directClient as any)?.color) return (directClient as any).color;
+    }
+    // Priority 2: client from project
     if (pid) {
       const project = projects.find(p => p.id === pid);
       if (project?.client_id) {
@@ -605,7 +611,7 @@ const TimeTrackingPage = () => {
                     const height = durationMinutes;
                     const colWidth = `calc((100% - 64px) / 7)`;
                     const left = `calc(64px + ${dayIdx} * ${colWidth})`;
-                    const color = getProjectColor(entry.project_id);
+                    const color = getProjectColor(entry.project_id, entry.client_id);
 
                     return (
                       <button
@@ -681,7 +687,7 @@ const TimeTrackingPage = () => {
                   const startMinutes = start.getHours() * 60 + start.getMinutes();
                   const endMinutes = end.getHours() * 60 + end.getMinutes();
                   const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                  const color = getProjectColor(entry.project_id);
+                  const color = getProjectColor(entry.project_id, entry.client_id);
                   return (
                     <button
                       key={entry.id}
@@ -744,7 +750,7 @@ const TimeTrackingPage = () => {
                           <div
                             key={i}
                             className="h-1.5 rounded-full"
-                            style={{ width: '16px', backgroundColor: getProjectColor(e.project_id) }}
+                            style={{ width: '16px', backgroundColor: getProjectColor(e.project_id, e.client_id) }}
                           />
                         ))}
                       </div>
@@ -770,7 +776,7 @@ const TimeTrackingPage = () => {
                 <div key={entry.id} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors group">
                   <div
                     className="w-1 h-8 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: getProjectColor(entry.project_id) }}
+                    style={{ backgroundColor: getProjectColor(entry.project_id, entry.client_id) }}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{entry.description || '—'}</p>
@@ -836,7 +842,7 @@ const TimeTrackingPage = () => {
                     <tr key={entry.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors group">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(entry.project_id) }} />
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(entry.project_id, entry.client_id) }} />
                           <span className="truncate max-w-[180px]">{entry.description || '—'}</span>
                         </div>
                       </td>
@@ -901,7 +907,7 @@ const TimeTrackingPage = () => {
             return acc;
           }, {});
           const projectData = Object.entries(byProject).map(([name, seconds]) => ({
-            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null),
+            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null, filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.client_id),
           }));
 
           const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
