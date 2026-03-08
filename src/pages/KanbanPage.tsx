@@ -739,7 +739,7 @@ const KanbanPage = () => {
           <DragOverlay>
             {activeTask && (
               <div className="w-72 opacity-90 rotate-3">
-                <TaskCard task={activeTask} onClick={() => {}} />
+                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} />
               </div>
             )}
           </DragOverlay>
