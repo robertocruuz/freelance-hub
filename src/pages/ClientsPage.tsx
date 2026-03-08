@@ -92,6 +92,7 @@ const ClientsPage = () => {
     setEmail(c.email || '');
     setPhone(c.phone || '');
     setDocument(c.document || '');
+    setResponsible(c.responsible || '');
     setDialogOpen(true);
   };
 
