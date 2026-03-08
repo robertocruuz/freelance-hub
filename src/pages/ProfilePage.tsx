@@ -27,8 +27,8 @@ const ProfilePage = () => {
   const [editingOrg, setEditingOrg] = useState(false);
   const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
 
-  const [profile, setProfile] = useState({ name: '', email: '', document: '' });
-  const [editForm, setEditForm] = useState({ name: '', document: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
+  const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
   const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
   const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
@@ -38,15 +38,16 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('name, email, document')
+        .select('name, email, document, phone')
         .eq('user_id', user.id)
         .single();
       if (data) {
-        setProfile({ name: data.name || '', email: data.email || user.email || '', document: (data as any).document || '' });
-        setEditForm({ name: data.name || '', document: (data as any).document || '' });
+        const d = data as any;
+        setProfile({ name: d.name || '', email: d.email || user.email || '', document: d.document || '', phone: d.phone || '' });
+        setEditForm({ name: d.name || '', document: d.document || '', phone: d.phone || '' });
       } else {
-        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '' });
-        setEditForm({ name: user.user_metadata?.name || '', document: '' });
+        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '', phone: '' });
+        setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
       }
 
       const { data: orgData } = await supabase
@@ -78,13 +79,13 @@ const ProfilePage = () => {
     setLoading(true);
     const { error } = await supabase
       .from('profiles')
-      .update({ name: editForm.name, document: editForm.document } as any)
+      .update({ name: editForm.name, document: editForm.document, phone: editForm.phone } as any)
       .eq('user_id', user.id);
     setLoading(false);
     if (error) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
-      setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document }));
+      setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document, phone: editForm.phone }));
       setEditing(false);
       toast({ title: lang === 'pt-BR' ? 'Perfil atualizado!' : 'Profile updated!' });
     }
@@ -227,6 +228,24 @@ const ProfilePage = () => {
               )}
             </div>
 
+            {/* Phone */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
+              </Label>
+              {editing ? (
+                <Input
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: maskPhone(e.target.value) })}
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                />
+              ) : (
+                <FieldDisplay value={profile.phone} />
+              )}
+            </div>
+
             {/* Email (read-only) */}
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
@@ -249,7 +268,7 @@ const ProfilePage = () => {
           {editing && (
             <ActionButtons
               onSave={handleSave}
-              onCancel={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}
+              onCancel={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document, phone: profile.phone }); }}
             />
           )}
         </CardContent>
