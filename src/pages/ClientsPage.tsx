@@ -122,7 +122,8 @@ const ClientsPage = () => {
         phone: phone || null,
         document: document || null,
         responsible: responsible || null,
-      }).eq('id', editing.id);
+        color: color || null,
+      } as any).eq('id', editing.id);
       if (error) toast.error(error.message);
       else toast.success(t.save + '!');
     } else {
@@ -133,7 +134,8 @@ const ClientsPage = () => {
         phone: phone || null,
         document: document || null,
         responsible: responsible || null,
-      });
+        color: color || null,
+      } as any);
       if (error) toast.error(error.message);
       else toast.success(t.save + '!');
     }
