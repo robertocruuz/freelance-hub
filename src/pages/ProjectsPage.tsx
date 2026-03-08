@@ -187,9 +187,17 @@ const ProjectsPage = () => {
   };
 
   const handleDelete = async (id: string) => {
+    // Delete related time entries and tasks first
+    await supabase.from('time_entries').delete().eq('project_id', id);
+    await supabase.from('tasks').delete().eq('project_id', id);
+    await supabase.from('project_items').delete().eq('project_id', id);
     const { error } = await supabase.from('projects').delete().eq('id', id);
     if (error) toast.error(error.message);
-    else loadProjects();
+    else {
+      toast.success('Projeto e dados relacionados excluídos!');
+      loadProjects();
+    }
+  };
   };
 
   const handleSaveItem = async (projectId: string) => {
