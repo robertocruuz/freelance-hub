@@ -207,6 +207,113 @@ const ProfilePage = () => {
         </CardContent>
       </Card>
 
+      {/* Organization */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            {lang === 'pt-BR' ? 'Organização' : 'Organization'}
+          </CardTitle>
+          {!editingOrg && (
+            <Button variant="outline" size="sm" onClick={() => setEditingOrg(true)}>
+              <Pencil className="w-4 h-4 mr-1" />
+              {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+            </Button>
+          )}
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-6 space-y-5">
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <Building2 className="w-4 h-4" />
+              {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
+            </Label>
+            {editingOrg ? (
+              <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+            ) : (
+              <p className="text-foreground font-medium">{org.company_name || '—'}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <FileText className="w-4 h-4" />
+              CNPJ
+            </Label>
+            {editingOrg ? (
+              <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: e.target.value })} placeholder="00.000.000/0001-00" maxLength={18} />
+            ) : (
+              <p className="text-foreground font-medium">{org.cnpj || '—'}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <Mail className="w-4 h-4" />
+              {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
+            </Label>
+            {editingOrg ? (
+              <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
+            ) : (
+              <p className="text-foreground font-medium">{org.business_email || '—'}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <Phone className="w-4 h-4" />
+              {lang === 'pt-BR' ? 'Telefone Comercial' : 'Business Phone'}
+            </Label>
+            {editingOrg ? (
+              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: e.target.value })} placeholder="(00) 00000-0000" maxLength={15} />
+            ) : (
+              <p className="text-foreground font-medium">{org.business_phone || '—'}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <Globe className="w-4 h-4" />
+              Site
+            </Label>
+            {editingOrg ? (
+              <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
+            ) : (
+              <p className="text-foreground font-medium">{org.website || '—'}</p>
+            )}
+          </div>
+
+          {editingOrg && (
+            <div className="flex gap-2 pt-2">
+              <Button onClick={async () => {
+                if (!user) return;
+                setLoading(true);
+                // Upsert: insert if not exists, update if exists
+                const { error } = await (supabase.from('organizations' as any) as any).upsert({
+                  user_id: user.id,
+                  ...orgForm,
+                }, { onConflict: 'user_id' });
+                setLoading(false);
+                if (error) {
+                  toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+                } else {
+                  setOrg({ ...orgForm });
+                  setEditingOrg(false);
+                  toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+                }
+              }} disabled={loading} size="sm">
+                <Save className="w-4 h-4 mr-1" />
+                {t.save}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setEditingOrg(false); setOrgForm({ ...org }); }}>
+                <X className="w-4 h-4 mr-1" />
+                {t.cancel}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Change Password */}
       <Card>
         <CardHeader>
