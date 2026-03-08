@@ -93,7 +93,7 @@ const ProfilePage = () => {
       }
     };
     fetchProfile();
-  }, [user]);
+  }, [user, orgId]);
 
   // Load cities when orgForm.state changes
   useEffect(() => {
