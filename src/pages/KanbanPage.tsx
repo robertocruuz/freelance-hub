@@ -77,6 +77,7 @@ const KanbanPage = () => {
       const value = parseFloat(searchParams.get('value') || '0');
       const clientId = searchParams.get('client') || undefined;
       const projectId = searchParams.get('project') || undefined;
+      const dueDate = searchParams.get('due_date') || undefined;
       const firstColumn = columns.sort((a, b) => a.position - b.position)[0];
       kanban.addTask(firstColumn.id, title).then((newTask) => {
         if (newTask) {
@@ -84,6 +85,7 @@ const KanbanPage = () => {
             estimated_value: value,
             client_id: clientId || null,
             project_id: projectId || null,
+            due_date: dueDate || null,
             description: `Criado a partir de item de orçamento — Valor: R$ ${value.toFixed(2)}`,
           });
         }

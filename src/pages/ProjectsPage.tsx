@@ -503,6 +503,7 @@ const ProjectsPage = () => {
                                 value: String(item.value),
                                 ...(item.project_id ? { project: item.project_id } : {}),
                                 ...(project?.client_id ? { client: project.client_id } : {}),
+                                ...(project?.due_date ? { due_date: project.due_date } : {}),
                               });
                               navigate(`/dashboard/kanban?${params.toString()}`);
                             }}
