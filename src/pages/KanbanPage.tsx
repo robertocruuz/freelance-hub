@@ -140,7 +140,7 @@ const KanbanPage = () => {
       if (!matchesDeadline(t)) return false;
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
