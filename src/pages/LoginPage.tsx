@@ -21,7 +21,14 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isRegister) {
+      if (isForgotPassword) {
+        const { error } = await resetPassword(email);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+        }
+      } else if (isRegister) {
         const { error } = await signUp(email, password, name);
         if (error) {
           toast.error(error.message);
@@ -39,6 +46,18 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getTitle = () => {
+    if (isForgotPassword) return 'Recuperar senha';
+    if (isRegister) return 'Crie sua conta';
+    return 'Bem-vindo de volta';
+  };
+
+  const getSubtitle = () => {
+    if (isForgotPassword) return 'Informe seu email para receber o link de recuperação';
+    if (isRegister) return 'Preencha os dados para começar';
+    return 'Entre com suas credenciais para continuar';
   };
 
   return (
