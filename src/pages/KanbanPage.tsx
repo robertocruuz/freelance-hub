@@ -89,14 +89,24 @@ const KanbanPage = () => {
   const completedMonth = tasks.filter((t) => t.completed_at && isThisMonth(new Date(t.completed_at)));
 
   // Filter tasks
+  const activeFilterCount = [filterPriority, filterClient, filterProject, filterType].filter(f => f !== 'all').length;
+
+  // Unique task types
+  const taskTypes = useMemo(() => {
+    const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
+    return Array.from(types) as string[];
+  }, [tasks]);
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
       if (filterClient !== 'all' && t.client_id !== filterClient) return false;
+      if (filterProject !== 'all' && t.project_id !== filterProject) return false;
+      if (filterType !== 'all' && t.task_type !== filterType) return false;
       return true;
     });
-  }, [tasks, search, filterPriority, filterClient]);
+  }, [tasks, search, filterPriority, filterClient, filterProject, filterType]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
