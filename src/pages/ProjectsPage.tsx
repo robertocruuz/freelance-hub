@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -47,6 +48,7 @@ const ProjectsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectItems, setProjectItems] = useState<Record<string, ProjectItem[]>>({});
   const [showForm, setShowForm] = useState(false);
@@ -338,6 +340,22 @@ const ProjectsPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
+                          <button
+                            onClick={() => {
+                              const project = projects.find(pr => pr.id === item.project_id);
+                              const params = new URLSearchParams({
+                                from_budget: 'true',
+                                title: item.name,
+                                value: String(item.value),
+                                ...(project?.client_id ? { client: project.client_id } : {}),
+                              });
+                              navigate(`/dashboard/kanban?${params.toString()}`);
+                            }}
+                            className="p-1 rounded hover:bg-accent transition-colors"
+                            title="Criar tarefa no Kanban"
+                          >
+                            <ListPlus className="w-3.5 h-3.5 text-primary" />
+                          </button>
                           <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
