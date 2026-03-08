@@ -1038,7 +1038,7 @@ const TimeTrackingPage = () => {
             checkPageBreak(30);
             doc.setFontSize(13);
             doc.setFont('helvetica', 'bold');
-            doc.text('Detalhamento por Registro', 14, y); y += 8;
+            doc.text('Detalhamento', 14, y); y += 8;
 
             // Table header
             doc.setFontSize(9);
