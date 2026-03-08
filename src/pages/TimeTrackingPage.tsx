@@ -184,6 +184,7 @@ const TimeTrackingPage = () => {
   } | null>(null);
   const dragStateRef = useRef(dragState);
   dragStateRef.current = dragState;
+  const didDragRef = useRef(false);
 
   const handleDragStart = (e: React.MouseEvent, entryId: string, type: 'move' | 'resize', startMin: number, endMin: number, dayDate: Date) => {
     e.preventDefault();
