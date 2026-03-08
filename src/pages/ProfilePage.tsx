@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OrgMembersCard from '@/components/OrgMembersCard';
+import { useOrganization } from '@/hooks/useOrganization';
 import ReceivedInvites from '@/components/ReceivedInvites';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -25,6 +26,7 @@ const ProfilePage = () => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const { toast } = useToast();
+  const { orgId, isAdmin, refresh: refreshOrg } = useOrganization();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -60,36 +62,38 @@ const ProfilePage = () => {
         setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
       }
 
-      const { data: orgData } = await supabase
-        .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city, logo_url')
-        .eq('user_id', user.id)
-        .single();
-      if (orgData) {
-        const o = orgData as any;
-        const orgState = {
-          company_name: o.company_name || '',
-          trade_name: o.trade_name || '',
-          cnpj: o.cnpj || '',
-          state_registration: o.state_registration || '',
-          municipal_registration: o.municipal_registration || '',
-          business_email: o.business_email || '',
-          business_phone: o.business_phone || '',
-          website: o.website || '',
-          zip_code: o.zip_code || '',
-          address: o.address || '',
-          complement: o.complement || '',
-          neighborhood: o.neighborhood || '',
-          state: o.state || '',
-          city: o.city || '',
-        };
-        setOrg(orgState);
-        setOrgForm(orgState);
-        setLogoUrl(o.logo_url || null);
+      // Fetch org data: use orgId from useOrganization (covers both owner and member)
+      if (orgId) {
+        const { data: orgData } = await (supabase.from('organizations' as any) as any)
+          .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city, logo_url')
+          .eq('id', orgId)
+          .single();
+        if (orgData) {
+          const o = orgData as any;
+          const orgState = {
+            company_name: o.company_name || '',
+            trade_name: o.trade_name || '',
+            cnpj: o.cnpj || '',
+            state_registration: o.state_registration || '',
+            municipal_registration: o.municipal_registration || '',
+            business_email: o.business_email || '',
+            business_phone: o.business_phone || '',
+            website: o.website || '',
+            zip_code: o.zip_code || '',
+            address: o.address || '',
+            complement: o.complement || '',
+            neighborhood: o.neighborhood || '',
+            state: o.state || '',
+            city: o.city || '',
+          };
+          setOrg(orgState);
+          setOrgForm(orgState);
+          setLogoUrl(o.logo_url || null);
+        }
       }
     };
     fetchProfile();
-  }, [user]);
+  }, [user, orgId]);
 
   // Load cities when orgForm.state changes
   useEffect(() => {
@@ -122,24 +126,24 @@ const ProfilePage = () => {
   };
 
   const handleSaveOrg = async () => {
-    if (!user) return;
+    if (!user || !orgId) return;
     setLoading(true);
-    const { error } = await (supabase.from('organizations' as any) as any).upsert({
-      user_id: user.id,
-      ...orgForm,
-    }, { onConflict: 'user_id' });
+    const { error } = await (supabase.from('organizations' as any) as any)
+      .update({ ...orgForm })
+      .eq('id', orgId);
     setLoading(false);
     if (error) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
       setOrg({ ...orgForm });
       setEditingOrg(false);
+      refreshOrg();
       toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
     }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!user || !e.target.files || !e.target.files[0]) return;
+    if (!user || !orgId || !e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
     if (!file.type.startsWith('image/')) {
       toast({ title: lang === 'pt-BR' ? 'Selecione uma imagem' : 'Select an image', variant: 'destructive' });
@@ -147,7 +151,7 @@ const ProfilePage = () => {
     }
     setUploadingLogo(true);
     const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/logo.${fileExt}`;
+    const filePath = `${orgId}/logo.${fileExt}`;
     const { error: uploadError } = await supabase.storage.from('org-logos').upload(filePath, file, { upsert: true });
     if (uploadError) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao enviar logo' : 'Error uploading logo', variant: 'destructive' });
@@ -156,7 +160,7 @@ const ProfilePage = () => {
     }
     const { data: urlData } = supabase.storage.from('org-logos').getPublicUrl(filePath);
     const publicUrl = urlData.publicUrl + '?t=' + Date.now();
-    await (supabase.from('organizations' as any) as any).upsert({ user_id: user.id, logo_url: publicUrl }, { onConflict: 'user_id' });
+    await (supabase.from('organizations' as any) as any).update({ logo_url: publicUrl }).eq('id', orgId);
     setLogoUrl(publicUrl);
     setUploadingLogo(false);
     toast({ title: lang === 'pt-BR' ? 'Logo atualizado!' : 'Logo updated!' });
@@ -165,9 +169,9 @@ const ProfilePage = () => {
   const handleRemoveLogo = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) return;
+    if (!user || !orgId) return;
     setUploadingLogo(true);
-    await (supabase.from('organizations' as any) as any).update({ logo_url: null }).eq('user_id', user.id);
+    await (supabase.from('organizations' as any) as any).update({ logo_url: null }).eq('id', orgId);
     setLogoUrl(null);
     setUploadingLogo(false);
     toast({ title: lang === 'pt-BR' ? 'Logo removido!' : 'Logo removed!' });
@@ -395,7 +399,7 @@ const ProfilePage = () => {
                     <Building2 className="w-3.5 h-3.5" />
                     {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
                   </p>
-                  {!editingOrg && (
+                  {!editingOrg && isAdmin && (
                     <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setEditingOrg(true); }} className="gap-1.5 shrink-0">
                       <Pencil className="w-3.5 h-3.5" />
                       {lang === 'pt-BR' ? 'Editar' : 'Edit'}
