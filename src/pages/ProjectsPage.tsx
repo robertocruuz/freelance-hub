@@ -289,7 +289,7 @@ const ProjectsPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">{t.projects}</h1>
         <button
-          onClick={() => { resetForm(); setShowForm(true); }}
+          onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
         >
           <Plus className="w-4 h-4" /> {t.newProject}
