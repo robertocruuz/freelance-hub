@@ -577,12 +577,18 @@ const ProjectsPage = () => {
                         {new Date(b.created_at).toLocaleDateString()} · {statusLabel(b.status)}
                       </p>
                     </div>
-                    <button
-                      onClick={() => importAllBudgetItems(b)}
-                      className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
-                    >
-                      Importar todos
-                    </button>
+                    {b.items.every(item => isItemImported(item)) ? (
+                      <span className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-semibold">
+                        Todos importados
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => importAllBudgetItems(b)}
+                        className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
+                      >
+                        Importar todos
+                      </button>
+                    )}
                   </div>
                   <div className="divide-y divide-border">
                     {b.items.map((item, idx) => {
