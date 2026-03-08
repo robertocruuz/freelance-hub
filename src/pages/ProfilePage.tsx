@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users } from 'lucide-react';
 import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -446,11 +446,21 @@ const ProfilePage = () => {
               onCancel={() => { setEditingOrg(false); setOrgForm({ ...org }); }}
             />
           )}
+
+          <Separator className="opacity-50" />
+
+          {/* Team section (embedded) */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Equipe' : 'Team'}
+              </p>
+            </div>
+            <OrgMembersCard embedded />
+          </div>
         </CardContent>
       </Card>
-
-      {/* Team Card */}
-      <OrgMembersCard />
 
       {/* Security Card */}
       <Card>
