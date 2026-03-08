@@ -879,7 +879,7 @@ const TimeTrackingPage = () => {
             ]).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
-                onClick={() => setViewMode(key)}
+                onClick={() => { setViewMode(key); if (key === 'calendar' && timeRange === 'all') setTimeRange('weekly'); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${
                   viewMode === key
                     ? 'bg-primary text-primary-foreground'
