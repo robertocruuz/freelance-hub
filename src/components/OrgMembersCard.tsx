@@ -160,159 +160,48 @@ const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
     return str.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   };
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">{isPt ? 'Equipe' : 'Team'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Gerencie os membros da sua organização' : 'Manage your organization members'}
-            </CardDescription>
-          </div>
-        </div>
-        {isAdmin && (
-          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteLink(null); setInviteEmail(''); } }}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 shrink-0">
-                <UserPlus className="w-3.5 h-3.5" />
-                {isPt ? 'Convidar' : 'Invite'}
+  const teamContent = (
+    <>
+      {/* Invite link section */}
+      {isAdmin && (
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+            <Link2 className="w-3.5 h-3.5" />
+            {isPt ? 'Link de convite' : 'Invite link'}
+          </Label>
+          {inviteLink ? (
+            <div className="flex gap-2">
+              <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
+              <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
+                <Copy className="w-4 h-4" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{isPt ? 'Convidar membro' : 'Invite member'}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-2">
-                {/* Role selector */}
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{isPt ? 'Permissão' : 'Role'}</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">
-                        <span className="flex items-center gap-2"><Crown className="w-3.5 h-3.5" /> Admin</span>
-                      </SelectItem>
-                      <SelectItem value="editor">
-                        <span className="flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Editor</span>
-                      </SelectItem>
-                      <SelectItem value="viewer">
-                        <span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5" /> {isPt ? 'Visualizador' : 'Viewer'}</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {inviteRole === 'admin' && (isPt ? 'Pode gerenciar membros, editar e excluir dados' : 'Can manage members, edit and delete data')}
-                    {inviteRole === 'editor' && (isPt ? 'Pode visualizar e editar dados' : 'Can view and edit data')}
-                    {inviteRole === 'viewer' && (isPt ? 'Pode apenas visualizar dados' : 'Can only view data')}
-                  </p>
-                </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="editor">Editor</SelectItem>
+                  <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" className="flex-1 gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
+                <Link2 className="w-3.5 h-3.5" />
+                {isPt ? 'Gerar link de convite' : 'Generate invite link'}
+              </Button>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
+          </p>
+          <Separator className="opacity-50" />
+        </div>
+      )}
 
-                <Separator />
-
-                {/* Invite by email */}
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5" />
-                    {isPt ? 'Convidar por e-mail' : 'Invite by email'}
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="email@example.com"
-                      onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()}
-                    />
-                    <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} size="sm">
-                      {isPt ? 'Enviar' : 'Send'}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Separator className="flex-1" />
-                  <span className="text-xs text-muted-foreground">{isPt ? 'ou' : 'or'}</span>
-                  <Separator className="flex-1" />
-                </div>
-
-                {/* Invite by link */}
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-1.5">
-                    <Link2 className="w-3.5 h-3.5" />
-                    {isPt ? 'Gerar link de convite' : 'Generate invite link'}
-                  </Label>
-                  {inviteLink ? (
-                    <div className="flex gap-2">
-                      <Input value={inviteLink} readOnly className="text-xs" />
-                      <Button variant="outline" size="sm" onClick={handleCopyLink}>
-                        <Copy className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button variant="outline" className="w-full gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
-                      <Link2 className="w-3.5 h-3.5" />
-                      {isPt ? 'Gerar link' : 'Generate link'}
-                    </Button>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </CardHeader>
-
-      <Separator />
-
-      <CardContent className="pt-5 pb-6 space-y-4">
-        {/* Invite link section */}
-        {isAdmin && (
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" />
-              {isPt ? 'Link de convite' : 'Invite link'}
-            </Label>
-            {inviteLink ? (
-              <div className="flex gap-2">
-                <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
-                <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" className="flex-1 gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
-                  <Link2 className="w-3.5 h-3.5" />
-                  {isPt ? 'Gerar link de convite' : 'Generate invite link'}
-                </Button>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
-            </p>
-            <Separator className="opacity-50" />
-          </div>
-        )}
-
-        {/* Members list */}
+      {/* Members list */}
         <div className="space-y-2">
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
