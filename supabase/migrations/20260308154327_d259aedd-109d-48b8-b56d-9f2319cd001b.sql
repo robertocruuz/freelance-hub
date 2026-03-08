@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN state_registration text;
