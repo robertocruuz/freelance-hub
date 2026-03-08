@@ -50,7 +50,7 @@ interface TimeEntry {
 }
 
 type ViewMode = 'calendar' | 'list' | 'timesheet' | 'report';
-type TimeRange = 'daily' | 'weekly' | 'monthly';
+type TimeRange = 'all' | 'daily' | 'weekly' | 'monthly';
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
@@ -144,8 +144,8 @@ const TimeTrackingPage = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
@@ -555,6 +555,7 @@ const TimeTrackingPage = () => {
 
   // Filtered entries
   const filteredEntries = entries.filter((e) => {
+    if (timeRange === 'all') return true;
     const ed = new Date(e.start_time);
     if (timeRange === 'daily') return isSameDay(ed, selectedDate);
     if (timeRange === 'weekly') {
@@ -854,7 +855,7 @@ const TimeTrackingPage = () => {
         <div className="flex items-center gap-2">
           {/* Time range selector */}
           <div className="flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5">
-            {([['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
+            {([['all', 'Tudo'], ['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
               <button
                 key={value}
                 onClick={() => setTimeRange(value)}
@@ -878,7 +879,7 @@ const TimeTrackingPage = () => {
             ]).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
-                onClick={() => setViewMode(key)}
+                onClick={() => { setViewMode(key); if (key === 'calendar' && timeRange === 'all') setTimeRange('weekly'); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${
                   viewMode === key
                     ? 'bg-primary text-primary-foreground'
