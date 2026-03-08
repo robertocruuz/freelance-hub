@@ -204,6 +204,110 @@ const TimeTrackingPage = () => {
     dragStateRef.current = state;
   };
 
+  // Create-drag state for new entries from empty space
+  const [createDrag, setCreateDrag] = useState<{
+    dayDate: Date;
+    startMin: number;
+    currentMin: number;
+    gridTop: number;
+  } | null>(null);
+  const createDragRef = useRef(createDrag);
+  createDragRef.current = createDrag;
+
+  const [createModalData, setCreateModalData] = useState<{
+    dayDate: Date;
+    startMin: number;
+    endMin: number;
+  } | null>(null);
+  const [createDesc, setCreateDesc] = useState('');
+  const [createClientId, setCreateClientId] = useState('');
+  const [createProjectId, setCreateProjectId] = useState('');
+  const [createTaskId, setCreateTaskId] = useState('');
+
+  const handleGridMouseDown = (e: React.MouseEvent, dayDate: Date, gridEl: HTMLDivElement) => {
+    if (dragState) return;
+    const rect = gridEl.getBoundingClientRect();
+    const y = e.clientY - rect.top + gridEl.scrollTop;
+    const minute = Math.round(y / 5) * 5;
+    setCreateDrag({ dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop });
+    createDragRef.current = { dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop };
+  };
+
+  useEffect(() => {
+    if (!createDrag) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const cd = createDragRef.current;
+      if (!cd || !calendarRef.current) return;
+      const rect = calendarRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top + calendarRef.current.scrollTop;
+      const minute = Math.max(0, Math.min(24 * 60, Math.round(y / 5) * 5));
+      const next = { ...cd, currentMin: minute };
+      setCreateDrag(next);
+      createDragRef.current = next;
+    };
+
+    const handleMouseUp = () => {
+      const cd = createDragRef.current;
+      setCreateDrag(null);
+      createDragRef.current = null;
+      if (!cd) return;
+
+      const s = Math.min(cd.startMin, cd.currentMin);
+      const e = Math.max(cd.startMin, cd.currentMin);
+      if (e - s < 5) return; // too small, ignore
+
+      setCreateModalData({ dayDate: cd.dayDate, startMin: s, endMin: e });
+      setCreateDesc('');
+      setCreateClientId('');
+      setCreateProjectId('');
+      setCreateTaskId('');
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [createDrag]);
+
+  const createFilteredProjects = createClientId
+    ? projects.filter(p => p.client_id === createClientId)
+    : projects;
+
+  const createFilteredTasks = createProjectId
+    ? kanbanTasks.filter(t => t.project_id === createProjectId)
+    : kanbanTasks;
+
+  const saveCreate = async () => {
+    if (!createModalData || !user) return;
+    const { dayDate, startMin, endMin } = createModalData;
+    const newStart = new Date(dayDate);
+    newStart.setHours(Math.floor(startMin / 60), startMin % 60, 0, 0);
+    const newEnd = new Date(dayDate);
+    newEnd.setHours(Math.floor(endMin / 60), endMin % 60, 0, 0);
+    const duration = Math.floor((newEnd.getTime() - newStart.getTime()) / 1000);
+
+    const { error } = await supabase.from('time_entries').insert({
+      user_id: user.id,
+      description: createDesc || null,
+      client_id: createClientId || null,
+      project_id: createProjectId || null,
+      task_id: createTaskId || null,
+      start_time: newStart.toISOString(),
+      end_time: newEnd.toISOString(),
+      duration,
+    } as any);
+
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Registro criado');
+      setCreateModalData(null);
+      loadEntries();
+    }
+  };
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -852,7 +956,22 @@ const TimeTrackingPage = () => {
               })}
             </div>
             {/* Time grid */}
-            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin">
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
+              onMouseDown={(e) => {
+                // Only trigger on empty space (not on entry blocks)
+                const target = e.target as HTMLElement;
+                if (target.closest('[data-entry-block]')) return;
+                if (!calendarRef.current) return;
+                // Determine which day column was clicked
+                const rect = calendarRef.current.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const colStart = 64;
+                const colW = (rect.width - colStart) / 7;
+                const dayIdx = Math.floor((x - colStart) / colW);
+                if (dayIdx < 0 || dayIdx >= 7) return;
+                handleGridMouseDown(e, weekDays[dayIdx], calendarRef.current);
+              }}
+            >
               <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
                 {HOURS.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px repeat(7, 1fr)', height: '60px' }}>
@@ -882,6 +1001,7 @@ const TimeTrackingPage = () => {
                     return (
                       <div
                         key={entry.id}
+                        data-entry-block
                         className={`absolute rounded-md text-[10px] text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
                           top: `${displayStart}px`,
@@ -916,6 +1036,30 @@ const TimeTrackingPage = () => {
                     );
                   });
                 })}
+                {/* Create-drag preview (weekly) */}
+                {createDrag && (() => {
+                  const s = Math.min(createDrag.startMin, createDrag.currentMin);
+                  const e = Math.max(createDrag.startMin, createDrag.currentMin);
+                  if (e - s < 5) return null;
+                  const dayIdx = weekDays.findIndex(d => isSameDay(d, createDrag.dayDate));
+                  if (dayIdx === -1) return null;
+                  const colWidth = `calc((100% - 64px) / 7)`;
+                  return (
+                    <div
+                      className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
+                      style={{
+                        top: `${s}px`,
+                        height: `${e - s}px`,
+                        left: `calc(64px + ${dayIdx} * ${colWidth} + 2px)`,
+                        width: `calc(${colWidth} - 4px)`,
+                      }}
+                    >
+                      <span className="text-[10px] font-semibold text-primary">
+                        {String(Math.floor(s / 60)).padStart(2, '0')}:{String(s % 60).padStart(2, '0')} – {String(Math.floor(e / 60)).padStart(2, '0')}:{String(e % 60).padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
+                })()}
                 {/* Current time indicator */}
                 {weekDays.some(d => isSameDay(d, new Date())) && (() => {
                   const now = new Date();
@@ -947,7 +1091,14 @@ const TimeTrackingPage = () => {
         {/* Calendar View (Daily) */}
         {viewMode === 'calendar' && timeRange === 'daily' && (
           <div className="h-full flex flex-col">
-            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin">
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
+              onMouseDown={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('[data-entry-block]')) return;
+                if (!calendarRef.current) return;
+                handleGridMouseDown(e, selectedDate, calendarRef.current);
+              }}
+            >
               <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
                 {HOURS.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px 1fr', height: '60px' }}>
@@ -972,6 +1123,7 @@ const TimeTrackingPage = () => {
                     return (
                       <div
                         key={entry.id}
+                        data-entry-block
                         className={`absolute rounded-md text-xs text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
                           top: `${displayStart}px`,
@@ -1005,6 +1157,27 @@ const TimeTrackingPage = () => {
                       </div>
                     );
                   });
+                })()}
+                {/* Create-drag preview (daily) */}
+                {createDrag && (() => {
+                  const s = Math.min(createDrag.startMin, createDrag.currentMin);
+                  const e = Math.max(createDrag.startMin, createDrag.currentMin);
+                  if (e - s < 5) return null;
+                  return (
+                    <div
+                      className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
+                      style={{
+                        top: `${s}px`,
+                        height: `${e - s}px`,
+                        left: '68px',
+                        width: 'calc(100% - 72px)',
+                      }}
+                    >
+                      <span className="text-xs font-semibold text-primary">
+                        {String(Math.floor(s / 60)).padStart(2, '0')}:{String(s % 60).padStart(2, '0')} – {String(Math.floor(e / 60)).padStart(2, '0')}:{String(e % 60).padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
                 })()}
               </div>
             </div>
@@ -1952,6 +2125,62 @@ const TimeTrackingPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create entry dialog */}
+      <Dialog open={!!createModalData} onOpenChange={() => setCreateModalData(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo registro de tempo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {createModalData && (
+              <div className="text-sm text-muted-foreground">
+                {createModalData.dayDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {' · '}
+                {String(Math.floor(createModalData.startMin / 60)).padStart(2, '0')}:{String(createModalData.startMin % 60).padStart(2, '0')}
+                {' – '}
+                {String(Math.floor(createModalData.endMin / 60)).padStart(2, '0')}:{String(createModalData.endMin % 60).padStart(2, '0')}
+                {' · '}
+                {formatDurationShort((createModalData.endMin - createModalData.startMin) * 60)}
+              </div>
+            )}
+            <input
+              placeholder="No que você estava trabalhando?"
+              value={createDesc}
+              onChange={(e) => setCreateDesc(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              autoFocus
+            />
+            <CompactClientSelect clients={clients} value={createClientId} onChange={(v) => { setCreateClientId(v); setCreateProjectId(''); setCreateTaskId(''); }} placeholder="Cliente" fullWidth />
+            <select
+              value={createProjectId}
+              onChange={(e) => { setCreateProjectId(e.target.value); setCreateTaskId(''); }}
+              disabled={!createClientId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{createClientId ? t.project : 'Selecione um cliente primeiro'}</option>
+              {createFilteredProjects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <select
+              value={createTaskId}
+              onChange={(e) => setCreateTaskId(e.target.value)}
+              disabled={!createProjectId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{createProjectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
+              {createFilteredTasks.map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setCreateModalData(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
+              <button onClick={saveCreate} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
