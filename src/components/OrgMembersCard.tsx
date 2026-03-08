@@ -56,7 +56,7 @@ const roleColors = {
   viewer: 'bg-muted text-muted-foreground border-border',
 };
 
-const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization> }) => {
+const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization>; onLeave?: () => void }) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
