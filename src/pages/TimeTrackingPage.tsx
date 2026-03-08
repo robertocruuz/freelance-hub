@@ -4,6 +4,7 @@ import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, Ch
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, AreaChart, Area } from 'recharts';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
+import { useTimer } from '@/hooks/useTimer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClients } from '@/hooks/useClients';
@@ -137,15 +138,10 @@ const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente'
 const TimeTrackingPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const timer = useTimer();
+  const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer } = timer;
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [running, setRunning] = useState(false);
-  const [startTime, setStartTime] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [description, setDescription] = useState('');
-  const [clientId, setClientId] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
@@ -159,7 +155,6 @@ const TimeTrackingPage = () => {
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const { clients } = useClients();
-  const intervalRef = useRef<number>();
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
@@ -449,22 +444,11 @@ const TimeTrackingPage = () => {
         setProjectId(project);
       }
       if (task) setTaskId(task);
-      setStartTime(Date.now());
-      setElapsed(0);
-      setRunning(true);
+      startTimer();
       setSearchParams({}, { replace: true });
       toast.success('Timer iniciado a partir da tarefa!');
     }
   }, [searchParams, setSearchParams]);
-
-  useEffect(() => {
-    if (running) {
-      intervalRef.current = window.setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    }
-    return () => clearInterval(intervalRef.current);
-  }, [running, startTime]);
 
   // Scroll to current hour on mount
   useEffect(() => {
@@ -475,54 +459,10 @@ const TimeTrackingPage = () => {
     }
   }, [viewMode]);
 
-  const startTimer = () => {
-    setStartTime(Date.now());
-    setElapsed(0);
-    setRunning(true);
-  };
-
   const stopTimer = async () => {
-    setRunning(false);
-    clearInterval(intervalRef.current);
-    if (!user) return;
-    const end = new Date();
-    const start = new Date(startTime);
-    const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
-    const { error } = await supabase.from('time_entries').insert({
-      user_id: user.id,
-      client_id: clientId || null,
-      project_id: projectId || null,
-      task_id: taskId || null,
-      description: description || null,
-      start_time: start.toISOString(),
-      end_time: end.toISOString(),
-      duration,
-    } as any);
-    if (error) toast.error(error.message);
-    else {
-      // Log activity on the task if linked
-      if (taskId) {
-        const projectName = getProjectName(projectId || null);
-        const durationStr = formatDuration(duration);
-        await supabase.from('task_activity_logs').insert({
-          task_id: taskId,
-          user_id: user.id,
-          action: 'time_tracked',
-          details: {
-            duration,
-            duration_formatted: durationStr,
-            description: description || null,
-            project_name: projectName || null,
-          },
-        } as any);
-      }
-      setElapsed(0);
-      setDescription('');
-      setClientId('');
-      setProjectId('');
-      setTaskId('');
+    await globalStopTimer(() => {
       loadEntries();
-    }
+    });
   };
 
   const confirmDeleteEntry = (id: string) => {
