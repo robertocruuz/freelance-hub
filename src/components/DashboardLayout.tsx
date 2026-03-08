@@ -49,8 +49,8 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="relative z-20 bg-primary text-primary-foreground overflow-hidden">
-        <div className="relative flex items-center justify-between px-6 h-16">
+      <header className="z-20 bg-primary text-primary-foreground">
+        <div className="flex items-center justify-between px-6 h-16">
           {/* Logo */}
           <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
