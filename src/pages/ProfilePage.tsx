@@ -242,7 +242,7 @@ const ProfilePage = () => {
               CNPJ
             </Label>
             {editingOrg ? (
-              <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: e.target.value })} placeholder="00.000.000/0001-00" maxLength={18} />
+              <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
             ) : (
               <p className="text-foreground font-medium">{org.cnpj || '—'}</p>
             )}
