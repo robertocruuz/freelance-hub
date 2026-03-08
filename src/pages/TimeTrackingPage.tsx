@@ -894,8 +894,8 @@ const TimeTrackingPage = () => {
         </div>
       </div>
 
-      {/* Navigation bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-card">
+        {/* Navigation bar */}
+        <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2">
           <button onClick={() => navigateDate(-1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
