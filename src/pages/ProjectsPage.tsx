@@ -691,16 +691,7 @@ const ProjectsPage = () => {
                             <span
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const project = projects.find(pr => pr.id === item.project_id);
-                                const params = new URLSearchParams({
-                                  from_budget: 'true',
-                                  title: item.name,
-                                  value: String(item.value),
-                                  ...(item.project_id ? { project: item.project_id } : {}),
-                                  ...(project?.client_id ? { client: project.client_id } : {}),
-                                  ...(project?.due_date ? { due_date: project.due_date } : {}),
-                                });
-                                navigate(`/dashboard/kanban?${params.toString()}`);
+                                openBoardPicker(item);
                               }}
                               className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group shrink-0 cursor-pointer"
                             >
