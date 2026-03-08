@@ -318,9 +318,14 @@ const BudgetsPage = () => {
                     <span className="text-right">Subtotal</span>
                     <span></span>
                   </div>
-                  {b.items.map((item, idx) => (
-                    <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
-                      <span className="text-foreground truncate">{item.description || '—'}</span>
+                  {b.items.map((item, idx) => {
+                    const isImported = importedItemKeys.has(makeItemKey(item.description, item.quantity * item.unitPrice));
+                    return (
+                    <div key={idx} className={`grid grid-cols-[1fr_80px_100px_100px_auto] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50 ${isImported ? 'opacity-60' : ''}`}>
+                      <span className="text-foreground truncate flex items-center gap-1.5">
+                        {item.description || '—'}
+                        {isImported && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">No projeto</Badge>}
+                      </span>
                       <span className="text-center text-muted-foreground">{item.quantity}</span>
                       <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
                       <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
@@ -333,17 +338,25 @@ const BudgetsPage = () => {
                           <ListPlus className="w-3.5 h-3.5" />
                           Tarefa
                         </button>
-                        <button
-                          onClick={() => openProjectPicker(item, b)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
-                          title="Adicionar ao projeto"
-                        >
-                          <FolderKanban className="w-3.5 h-3.5" />
-                          Projeto
-                        </button>
+                        {isImported ? (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                            <FolderKanban className="w-3.5 h-3.5" />
+                            Importado
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => openProjectPicker(item, b)}
+                            className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
+                            title="Adicionar ao projeto"
+                          >
+                            <FolderKanban className="w-3.5 h-3.5" />
+                            Projeto
+                          </button>
+                        )}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
