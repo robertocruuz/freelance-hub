@@ -31,6 +31,7 @@ interface KanbanColumnProps {
   onAddTask: (columnId: string, title: string) => void;
   onAddTaskFromProject?: (columnId: string, item: ProjectItem) => void;
   onTaskClick: (task: Task) => void;
+  onToggleComplete?: (taskId: string, completed: boolean) => void;
   onUpdateColumn: (id: string, name: string) => void;
   onDeleteColumn: (id: string) => void;
 }
