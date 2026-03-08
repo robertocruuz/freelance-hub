@@ -72,7 +72,7 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 30, 30);
-    doc.text(org.company_name || org.trade_name || 'Empresa', margin, y);
+    doc.text(org.trade_name || 'Empresa', margin, y);
     y += 7;
 
     doc.setFontSize(8.5);
@@ -80,12 +80,7 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
     doc.setTextColor(110, 110, 110);
 
     const orgLines: string[] = [];
-    if (org.trade_name && org.company_name) orgLines.push(org.trade_name);
     if (org.cnpj) orgLines.push(`CNPJ: ${org.cnpj}`);
-    const regParts: string[] = [];
-    if (org.state_registration) regParts.push(`IE: ${org.state_registration}`);
-    if (org.municipal_registration) regParts.push(`IM: ${org.municipal_registration}`);
-    if (regParts.length) orgLines.push(regParts.join('  •  '));
     const contactParts: string[] = [];
     if (org.business_phone) contactParts.push(org.business_phone);
     if (org.business_email) contactParts.push(org.business_email);
@@ -327,15 +322,12 @@ export const generateInvoicePdf = (options: InvoicePdfOptions) => {
     const org = options.organization;
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text(org.company_name || org.trade_name || 'Empresa', 20, y);
+    doc.text(org.trade_name || 'Empresa', 20, y);
     y += 6;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
-    if (org.trade_name && org.company_name) { doc.text(`Nome Fantasia: ${org.trade_name}`, 20, y); y += 4.5; }
     if (org.cnpj) { doc.text(`CNPJ: ${org.cnpj}`, 20, y); y += 4.5; }
-    if (org.state_registration) { doc.text(`IE: ${org.state_registration}`, 20, y); y += 4.5; }
-    if (org.municipal_registration) { doc.text(`IM: ${org.municipal_registration}`, 20, y); y += 4.5; }
     if (org.business_phone) { doc.text(`Tel: ${org.business_phone}`, 20, y); y += 4.5; }
     if (org.business_email) { doc.text(`E-mail: ${org.business_email}`, 20, y); y += 4.5; }
     if (org.website) { doc.text(`Site: ${org.website}`, 20, y); y += 4.5; }
