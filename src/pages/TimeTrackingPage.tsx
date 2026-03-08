@@ -996,12 +996,12 @@ const TimeTrackingPage = () => {
       </div>
 
       {/* Main content area */}
-      <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {/* Calendar View (Weekly) */}
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
             {/* Day headers */}
-            <div className="grid border-b border-border bg-card" style={{ gridTemplateColumns: '64px repeat(7, 1fr)' }}>
+            <div className="grid border-b border-border bg-card rounded-t-xl overflow-hidden" style={{ gridTemplateColumns: '64px repeat(7, 1fr)' }}>
               <div className="p-2 border-r border-border" />
               {weekDays.map((d, i) => {
                 const isToday = isSameDay(d, new Date());
@@ -1255,8 +1255,8 @@ const TimeTrackingPage = () => {
 
         {/* Calendar View (Monthly) */}
         {viewMode === 'calendar' && timeRange === 'monthly' && (
-          <div className="h-full overflow-y-auto scrollbar-thin bg-card">
-            <div className="grid grid-cols-7 text-center border-b border-border">
+          <div className="h-full overflow-y-auto scrollbar-thin bg-card rounded-t-xl">
+            <div className="grid grid-cols-7 text-center border-b border-border rounded-t-xl overflow-hidden">
               {DAY_NAMES_SHORT.map(d => (
                 <div key={d} className="p-2.5 text-xs font-bold tracking-wider text-muted-foreground">{d}</div>
               ))}
