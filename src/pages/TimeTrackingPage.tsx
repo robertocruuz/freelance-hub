@@ -373,19 +373,25 @@ const TimeTrackingPage = () => {
         />
         <div className="flex items-center gap-1.5">
           <select
+            value={clientId}
+            onChange={(e) => { setClientId(e.target.value); setProjectId(''); setTaskId(''); }}
+            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">Cliente</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
-            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            disabled={!clientId}
+            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
           >
-            <option value="">{t.project}</option>
-            {projects.map((p) => {
-              const client = clients.find(c => c.id === p.client_id);
-              return (
-                <option key={p.id} value={p.id}>
-                  {p.name}{client ? ` (${client.name})` : ''}
-                </option>
-              );
-            })}
+            <option value="">{clientId ? t.project : 'Cliente primeiro'}</option>
+            {filteredProjects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
           </select>
           <select
             value={taskId}
