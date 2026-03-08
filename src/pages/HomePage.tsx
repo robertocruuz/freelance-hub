@@ -89,7 +89,7 @@ const HomePage = () => {
       return d >= weekStart && d <= weekEnd;
     });
     const calcMinutes = (entries: any[]) => entries.reduce((sum, e) => {
-      if (e.duration) return sum + e.duration;
+      if (e.duration) return sum + Math.round(e.duration / 60);
       if (e.end_time) return sum + differenceInMinutes(parseISO(e.end_time), parseISO(e.start_time));
       return sum;
     }, 0);
