@@ -33,7 +33,7 @@ interface KanbanColumnProps {
   onDeleteColumn: (id: string) => void;
 }
 
-type AddMode = 'choice' | 'blank' | 'project';
+type AddMode = 'choice' | 'blank' | 'project' | 'project-items';
 
 export const KanbanColumnComponent = ({
   column,
