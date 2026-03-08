@@ -1081,7 +1081,17 @@ const KanbanPage = () => {
             {boardClientId && (
               <div className="space-y-2">
                 <Label className="text-xs">Atrelar a projeto (opcional)</Label>
-                <Select value={boardProjectId || 'none'} onValueChange={(v) => setBoardProjectId(v === 'none' ? null : v)}>
+                <Select value={boardProjectId || 'none'} onValueChange={(v) => {
+                  const projectId = v === 'none' ? null : v;
+                  setBoardProjectId(projectId);
+                  if (projectId) {
+                    const project = projects.find(p => p.id === projectId);
+                    if (project) setBoardName(project.name);
+                  } else if (boardClientId) {
+                    const client = clients.find(c => c.id === boardClientId);
+                    if (client) setBoardName(client.name);
+                  }
+                }}>
                   <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
