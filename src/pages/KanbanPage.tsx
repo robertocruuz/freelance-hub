@@ -141,9 +141,19 @@ const KanbanPage = () => {
       if (filterProjects.size > 0 && (!t.project_id || !filterProjects.has(t.project_id))) return false;
       if (filterTypes.size > 0 && (!t.task_type || !filterTypes.has(t.task_type))) return false;
       if (!matchesDeadline(t)) return false;
+      if (filterComplexities.size > 0 && !filterComplexities.has(t.complexity)) return false;
+      if (filterEstimatedTime.size > 0) {
+        const hours = t.estimated_time ? t.estimated_time / 60 : 0;
+        let matched = false;
+        if (filterEstimatedTime.has('none') && !t.estimated_time) matched = true;
+        if (filterEstimatedTime.has('short') && hours > 0 && hours <= 2) matched = true;
+        if (filterEstimatedTime.has('medium') && hours > 2 && hours <= 8) matched = true;
+        if (filterEstimatedTime.has('long') && hours > 8) matched = true;
+        if (!matched) return false;
+      }
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate, filterComplexities, filterEstimatedTime]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
