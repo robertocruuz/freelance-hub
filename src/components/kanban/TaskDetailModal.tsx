@@ -225,7 +225,9 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 const projectId = v === 'none' ? null : v;
                 const project = projects.find(p => p.id === v);
                 const updates: Partial<Task> = { project_id: projectId };
-                if (project?.client_id) {
+                if (projectId === null) {
+                  updates.client_id = null;
+                } else if (project?.client_id) {
                   updates.client_id = project.client_id;
                 }
                 onUpdate(task.id, updates);
