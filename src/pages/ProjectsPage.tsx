@@ -146,7 +146,7 @@ const ProjectsPage = () => {
     }
   }, []);
 
-  useEffect(() => { loadProjects(); }, [loadProjects]);
+  useEffect(() => { loadProjects(); loadExistingTasks(); }, [loadProjects, loadExistingTasks]);
 
   const resetForm = () => {
     setName('');
