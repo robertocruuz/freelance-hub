@@ -249,6 +249,7 @@ const InvoicesPage = () => {
     if (!user) return;
     if (items.length === 0) return toast.error('Adicione pelo menos um item.');
     const invoiceData = {
+      name: invoiceName.trim() || null,
       client_id: clientId || null,
       items: items as unknown as Json,
       total,
