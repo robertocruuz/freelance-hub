@@ -117,6 +117,7 @@ export type Database = {
           due_date: string | null
           id: string
           items: Json
+          name: string | null
           payment_method: string | null
           status: string
           taxes: number
@@ -131,6 +132,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           items?: Json
+          name?: string | null
           payment_method?: string | null
           status?: string
           taxes?: number
@@ -145,6 +147,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           items?: Json
+          name?: string | null
           payment_method?: string | null
           status?: string
           taxes?: number
