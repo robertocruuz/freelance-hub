@@ -96,6 +96,12 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
     }
   };
 
+  // Reset state immediately when resource changes
+  useEffect(() => {
+    setShares([]);
+    setSharedWithOrg(false);
+  }, [resourceId]);
+
   useEffect(() => {
     if (open) {
       loadShares();
