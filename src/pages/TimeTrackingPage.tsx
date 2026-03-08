@@ -996,7 +996,7 @@ const TimeTrackingPage = () => {
       </div>
 
       {/* Main content area */}
-      <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {/* Calendar View (Weekly) */}
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
