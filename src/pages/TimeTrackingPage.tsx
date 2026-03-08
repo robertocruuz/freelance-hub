@@ -170,6 +170,25 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [showCalendarSettings, setShowCalendarSettings] = useState(false);
+  const [workHourStart, setWorkHourStart] = useState(() => {
+    const saved = localStorage.getItem('tt_work_hour_start');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [workHourEnd, setWorkHourEnd] = useState(() => {
+    const saved = localStorage.getItem('tt_work_hour_end');
+    return saved ? parseInt(saved) : 24;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tt_work_hour_start', String(workHourStart));
+    localStorage.setItem('tt_work_hour_end', String(workHourEnd));
+  }, [workHourStart, workHourEnd]);
+
+  const visibleHours = useMemo(() =>
+    HOURS.filter(h => h >= workHourStart && h < workHourEnd),
+    [workHourStart, workHourEnd]
+  );
 
   // Drag state for calendar entries
   const [dragState, setDragState] = useState<{
