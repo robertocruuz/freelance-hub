@@ -98,13 +98,28 @@ const KanbanPage = () => {
     });
   };
 
-  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size;
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size;
 
   // Unique task types
   const taskTypes = useMemo(() => {
     const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
     return Array.from(types) as string[];
   }, [tasks]);
+
+  // Deadline filter helper
+  const matchesDeadline = (task: Task): boolean => {
+    if (filterDeadlines.size === 0) return true;
+    const hasNoDueDate = !task.due_date;
+    const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
+    const isDueThisWeek = task.due_date && isThisWeek(new Date(task.due_date)) && !task.completed_at;
+    const isDueThisMonth = task.due_date && isThisMonth(new Date(task.due_date)) && !task.completed_at;
+
+    if (filterDeadlines.has('overdue') && isOverdue) return true;
+    if (filterDeadlines.has('this_week') && isDueThisWeek) return true;
+    if (filterDeadlines.has('this_month') && isDueThisMonth) return true;
+    if (filterDeadlines.has('no_deadline') && hasNoDueDate) return true;
+    return false;
+  };
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
@@ -113,9 +128,10 @@ const KanbanPage = () => {
       if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
       if (filterProjects.size > 0 && (!t.project_id || !filterProjects.has(t.project_id))) return false;
       if (filterTypes.size > 0 && (!t.task_type || !filterTypes.has(t.task_type))) return false;
+      if (!matchesDeadline(t)) return false;
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
