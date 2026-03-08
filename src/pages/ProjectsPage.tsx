@@ -471,7 +471,7 @@ const ProjectsPage = () => {
                             title="Criar tarefa no Kanban"
                           >
                             <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
-                            <span className="text-xs font-medium text-primary">Kanban</span>
+                            <span className="text-xs font-medium text-primary">Tarefa</span>
                           </button>
                           <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
