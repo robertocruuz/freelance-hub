@@ -28,7 +28,8 @@ interface TaskCardProps {
   checklistProgress?: { done: number; total: number } | null;
 }
 
-export const TaskCard = ({ task, onClick, checklistProgress }: TaskCardProps) => {
+export const TaskCard = ({ task, onClick, onToggleComplete, checklistProgress }: TaskCardProps) => {
+  const isCompleted = !!task.completed_at;
   const {
     attributes,
     listeners,
