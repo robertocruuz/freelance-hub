@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
@@ -44,6 +44,13 @@ const LoginPage = () => {
     <div className="min-h-screen flex bg-background">
       {/* Left side — Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-28 relative bg-background">
+        {/* Back button */}
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-6 left-6 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         {/* Logo / Brand */}
         <div className="mb-10">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-6">
