@@ -87,19 +87,6 @@ const DashboardLayout = () => {
           {/* Timer indicator + Right controls */}
           <div className="flex items-center gap-1.5">
             <TimerIndicator navigate={navigate} />
-            <button
-              onClick={toggle}
-              className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.08] hover:bg-white/15 transition text-white/70 hover:text-white"
-            >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            <button
-              onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-              className="h-8 px-2.5 rounded-lg bg-white/[0.08] hover:bg-white/15 transition text-[11px] font-bold text-white/70 hover:text-white tracking-wide"
-            >
-              {lang === 'pt-BR' ? 'PT' : 'EN'}
-            </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
