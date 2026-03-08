@@ -53,6 +53,11 @@ const formatDuration = (seconds: number) => {
   return `${h}h ${m}m`;
 };
 
+const priorityMap: Record<string, string> = { low: 'Baixa', medium: 'Média', high: 'Alta', urgent: 'Urgente' };
+const statusMap: Record<string, string> = { todo: 'A fazer', in_progress: 'Em andamento', done: 'Concluído', review: 'Revisão', blocked: 'Bloqueado' };
+const translatePriority = (v: string) => priorityMap[v] || v;
+const translateStatus = (v: string) => statusMap[v] || v;
+
 const ClientsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -271,17 +276,11 @@ const ClientsPage = () => {
                               <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/50 last:border-b-0">
                                 <div className="flex items-center gap-2">
                                   <SquareKanban className="w-3 h-3 text-muted-foreground" />
-                                  <span>{task.title}</span>
+                                  <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors">{task.title}</button>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
-                                  <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
-                                  <button
-                                    onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)}
-                                    className="text-xs text-primary hover:underline flex items-center gap-0.5"
-                                  >
-                                    <ExternalLink className="w-3 h-3" />
-                                  </button>
+                                  <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
+                                  <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
                                 </div>
                               </div>
                             ))}
@@ -311,16 +310,10 @@ const ClientsPage = () => {
                   <div className="space-y-1.5">
                     {orphanTasks.slice(0, 10).map(task => (
                       <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
-                        <span className="font-medium">{task.title}</span>
+                        <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="font-medium hover:text-primary hover:underline transition-colors">{task.title}</button>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
-                          <button
-                            onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)}
-                            className="text-xs text-primary hover:underline flex items-center gap-0.5"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </button>
+                          <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
                         </div>
                       </div>
                     ))}
