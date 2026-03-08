@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { Calendar } from '@/components/ui/calendar';
 import { isThisWeek, isThisMonth, isPast, isSameDay, format, isToday } from 'date-fns';
@@ -811,7 +812,20 @@ const KanbanPage = () => {
                     onClick={() => setSelectedTask(task)}
                     className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition"
                   >
-                    <td className="px-4 py-3 text-sm font-medium">{task.title}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={!!task.completed_at}
+                          onCheckedChange={(checked) => {
+                            kanban.updateTask(task.id, {
+                              completed_at: checked ? new Date().toISOString() : null,
+                            });
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span className={`text-sm font-medium ${task.completed_at ? 'line-through text-muted-foreground' : ''}`}>{task.title}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{client?.name || '-'}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{project?.name || '-'}</td>
                     <td className="px-4 py-3">
