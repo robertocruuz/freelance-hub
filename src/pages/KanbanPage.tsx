@@ -12,7 +12,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown } from 'lucide-react';
 import { useKanban, Task } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -51,6 +51,7 @@ const KanbanPage = () => {
   const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
   const [filterComplexities, setFilterComplexities] = useState<Set<number>>(new Set());
   const [filterEstimatedTime, setFilterEstimatedTime] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<string>('position');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -155,10 +156,26 @@ const KanbanPage = () => {
     });
   }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate, filterComplexities, filterEstimatedTime]);
 
+  const sortTasks = (a: Task, b: Task) => {
+    switch (sortBy) {
+      case 'value_desc': return (b.estimated_value || 0) - (a.estimated_value || 0);
+      case 'value_asc': return (a.estimated_value || 0) - (b.estimated_value || 0);
+      case 'complexity_desc': return (b.complexity || 0) - (a.complexity || 0);
+      case 'complexity_asc': return (a.complexity || 0) - (b.complexity || 0);
+      case 'due_date': {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      }
+      default: return a.position - b.position;
+    }
+  };
+
   const getColumnTasks = (columnId: string) =>
     filteredTasks
       .filter((t) => t.column_id === columnId)
-      .sort((a, b) => a.position - b.position);
+      .sort(sortTasks);
 
   // Drag handlers
   const handleDragStart = (event: DragStartEvent) => {
@@ -498,11 +515,41 @@ const KanbanPage = () => {
                 </div>
               </div>
 
-              {/* Result count */}
-              <div className="p-3 border-t border-border bg-muted/30">
-                <span className="text-[11px] text-muted-foreground">
-                  {filteredTasks.length} de {tasks.length} tarefas
-                </span>
+              {/* Sort + Result count */}
+              <div className="p-3 border-t border-border space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <ArrowUpDown className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Ordenar por</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'position', label: 'Posição' },
+                      { value: 'value_desc', label: 'Maior valor' },
+                      { value: 'value_asc', label: 'Menor valor' },
+                      { value: 'complexity_desc', label: 'Mais complexa' },
+                      { value: 'complexity_asc', label: 'Menos complexa' },
+                      { value: 'due_date', label: 'Prazo' },
+                    ].map((s) => (
+                      <button
+                        key={s.value}
+                        onClick={() => setSortBy(s.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          sortBy === s.value
+                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-muted/30 rounded-lg px-2 py-1.5">
+                  <span className="text-[11px] text-muted-foreground">
+                    {filteredTasks.length} de {tasks.length} tarefas
+                  </span>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
