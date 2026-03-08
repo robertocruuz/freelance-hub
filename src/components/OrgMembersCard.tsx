@@ -164,22 +164,16 @@ const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
     <>
       {/* Invite link section */}
       {isAdmin && (
-        <div className="space-y-2">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-            <Link2 className="w-3.5 h-3.5" />
-            {isPt ? 'Link de convite' : 'Invite link'}
-          </Label>
-          {inviteLink ? (
-            <div className="flex gap-2">
-              <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
-              <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
-          ) : (
+        <div className="space-y-3">
+          {/* Invite by email */}
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" />
+              {isPt ? 'Convidar por e-mail' : 'Invite by email'}
+            </Label>
             <div className="flex gap-2">
               <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -188,15 +182,44 @@ const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
                   <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" className="flex-1 gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
+              <Input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="email@example.com"
+                onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()}
+                className="flex-1"
+              />
+              <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} size="sm" className="gap-1.5 shrink-0">
+                <UserPlus className="w-3.5 h-3.5" />
+                {isPt ? 'Enviar' : 'Send'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Invite link */}
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5" />
+              {isPt ? 'Link de convite' : 'Invite link'}
+            </Label>
+            {inviteLink ? (
+              <div className="flex gap-2">
+                <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
+                <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" className="gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
                 <Link2 className="w-3.5 h-3.5" />
                 {isPt ? 'Gerar link de convite' : 'Generate invite link'}
               </Button>
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
-          </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
+            </p>
+          </div>
           <Separator className="opacity-50" />
         </div>
       )}
