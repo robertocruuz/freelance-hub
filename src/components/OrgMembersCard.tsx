@@ -230,7 +230,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
             const isCurrentUser = member.user_id === user?.id;
-            const canManage = isAdmin && !isCurrentUser;
+            const isOwner = member.user_id === ownerId;
+            const canManage = isAdmin && !isCurrentUser && !isOwner;
 
             return (
               <div
