@@ -1192,7 +1192,7 @@ const TimeTrackingPage = () => {
                         data-entry-block
                         className={`absolute rounded-md text-xs text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${displayStart}px`,
+                          top: `${displayStart - workHourStart * 60}px`,
                           height: `${Math.max(durationMinutes, 20)}px`,
                           left: entryLeft,
                           width: entryWidth,
