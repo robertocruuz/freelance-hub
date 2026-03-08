@@ -264,7 +264,7 @@ const InvoicesPage = () => {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <FolderKanban className="w-4 h-4" />
-                  {lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}
+                   {lang === 'pt-BR' ? 'Importar Fatura' : 'Import Invoice'}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
