@@ -271,7 +271,7 @@ const BudgetsPage = () => {
 
   const exportBudgetPdf = async (b: Budget) => {
     const client = clients.find(c => c.id === b.client_id) || null;
-    generateBudgetPdf({
+    await generateBudgetPdf({
       budgetName: b.name,
       budgetDate: b.budget_date,
       validityDate: b.validity_date,

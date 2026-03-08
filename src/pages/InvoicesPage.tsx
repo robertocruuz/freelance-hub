@@ -300,7 +300,7 @@ const InvoicesPage = () => {
 
   const exportInvoicePdf = async (inv: Invoice) => {
     const client = clients.find(c => c.id === inv.client_id) || null;
-    generateInvoicePdf({
+    await generateInvoicePdf({
       invoiceName: inv.name,
       items: inv.items,
       total: inv.total,
