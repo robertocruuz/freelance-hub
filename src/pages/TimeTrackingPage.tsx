@@ -86,6 +86,7 @@ const TimeTrackingPage = () => {
   const [startTime, setStartTime] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [description, setDescription] = useState('');
+  const [clientId, setClientId] = useState('');
   const [projectId, setProjectId] = useState('');
   const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -95,6 +96,7 @@ const TimeTrackingPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
+  const [editClientId, setEditClientId] = useState('');
   const [editProjectId, setEditProjectId] = useState('');
   const [editTaskId, setEditTaskId] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
@@ -133,6 +135,14 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
 
+  const filteredProjects = clientId
+    ? projects.filter(p => p.client_id === clientId)
+    : projects;
+
+  const editFilteredProjects = editClientId
+    ? projects.filter(p => p.client_id === editClientId)
+    : projects;
+
   const filteredTasks = projectId
     ? kanbanTasks.filter(t => t.project_id === projectId)
     : kanbanTasks;
@@ -146,7 +156,11 @@ const TimeTrackingPage = () => {
     if (desc || project || task) {
       prefillApplied.current = true;
       if (desc) setDescription(desc);
-      if (project) setProjectId(project);
+      if (project) {
+        const proj = projects.find(p => p.id === project);
+        if (proj?.client_id) setClientId(proj.client_id);
+        setProjectId(project);
+      }
       if (task) setTaskId(task);
       setStartTime(Date.now());
       setElapsed(0);
@@ -216,6 +230,8 @@ const TimeTrackingPage = () => {
       }
       setElapsed(0);
       setDescription('');
+      setClientId('');
+      setProjectId('');
       setTaskId('');
       loadEntries();
     }
@@ -237,6 +253,8 @@ const TimeTrackingPage = () => {
   const openEdit = (entry: TimeEntry) => {
     setEditingEntry(entry);
     setEditDesc(entry.description || '');
+    const entryProject = projects.find(p => p.id === entry.project_id);
+    setEditClientId(entryProject?.client_id || '');
     setEditProjectId(entry.project_id || '');
     setEditTaskId(entry.task_id || '');
     setEditStartTime(new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
@@ -361,19 +379,25 @@ const TimeTrackingPage = () => {
         />
         <div className="flex items-center gap-1.5">
           <select
+            value={clientId}
+            onChange={(e) => { setClientId(e.target.value); setProjectId(''); setTaskId(''); }}
+            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">Cliente</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
-            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            disabled={!clientId}
+            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
           >
-            <option value="">{t.project}</option>
-            {projects.map((p) => {
-              const client = clients.find(c => c.id === p.client_id);
-              return (
-                <option key={p.id} value={p.id}>
-                  {p.name}{client ? ` (${client.name})` : ''}
-                </option>
-              );
-            })}
+            <option value="">{clientId ? t.project : 'Cliente primeiro'}</option>
+            {filteredProjects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
           </select>
           <select
             value={taskId}
@@ -817,12 +841,23 @@ const TimeTrackingPage = () => {
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <select
-              value={editProjectId}
-              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
+              value={editClientId}
+              onChange={(e) => { setEditClientId(e.target.value); setEditProjectId(''); setEditTaskId(''); }}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">{t.project}</option>
-              {projects.map((p) => (
+              <option value="">Cliente</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <select
+              value={editProjectId}
+              onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
+              disabled={!editClientId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">{editClientId ? t.project : 'Selecione um cliente primeiro'}</option>
+              {editFilteredProjects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
