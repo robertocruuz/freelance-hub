@@ -270,7 +270,7 @@ const BudgetsPage = () => {
     navigate(`/dashboard/kanban?${params.toString()}`);
   };
 
-  const openProjectPicker = async (item: BudgetItem, budget: Budget) => {
+  const openProjectPicker = async (item: BudgetItem | null, budget: Budget) => {
     setProjectPickerItem({ item, budget });
     const query = supabase.from('projects').select('id, name, client_id').order('name');
     if (budget.client_id) query.eq('client_id', budget.client_id);
@@ -280,15 +280,30 @@ const BudgetsPage = () => {
 
   const addItemToProject = async (projectId: string) => {
     if (!projectPickerItem) return;
-    const { item } = projectPickerItem;
-    const { error } = await supabase.from('project_items').insert({
-      project_id: projectId,
-      name: item.description,
-      value: item.quantity * item.unitPrice,
-      position: 0,
-    });
-    if (error) return toast.error(error.message);
-    toast.success(`"${item.description}" adicionado ao projeto!`);
+    const { item, budget } = projectPickerItem;
+    
+    if (item) {
+      // Single item import
+      const { error } = await supabase.from('project_items').insert({
+        project_id: projectId,
+        name: item.description,
+        value: item.quantity * item.unitPrice,
+        position: 0,
+      });
+      if (error) return toast.error(error.message);
+      toast.success(`"${item.description}" adicionado ao projeto!`);
+    } else {
+      // All items from budget
+      const inserts = budget.items.map((bi, idx) => ({
+        project_id: projectId,
+        name: bi.description,
+        value: bi.quantity * bi.unitPrice,
+        position: idx,
+      }));
+      const { error } = await supabase.from('project_items').insert(inserts);
+      if (error) return toast.error(error.message);
+      toast.success(`${inserts.length} itens enviados ao projeto!`);
+    }
     setProjectPickerItem(null);
     loadImportedItems();
   };
