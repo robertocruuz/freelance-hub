@@ -478,8 +478,8 @@ const BudgetsPage = () => {
                         <>
                           <td className="py-3 px-3 text-foreground">{item.description}</td>
                           <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
                           <td className="py-3 px-3">
                             <div className="flex items-center justify-center gap-2">
                               <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">Editar</button>
