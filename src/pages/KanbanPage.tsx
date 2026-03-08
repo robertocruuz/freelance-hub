@@ -58,10 +58,11 @@ import { useAuth } from '@/hooks/useAuth';
 type ViewMode = 'kanban' | 'list';
 
 const KanbanPage = () => {
-  const kanban = useKanban();
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
+  const kanban = useKanban(activeBoardId);
   const { clients } = useClients();
   const { user } = useAuth();
-  const { columns, tasks, loading } = kanban;
+  const { columns, tasks, boards, loading } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [view, setView] = useState<ViewMode>('kanban');
@@ -84,6 +85,21 @@ const KanbanPage = () => {
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+
+  // Board management state
+  const [showBoardDialog, setShowBoardDialog] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<KanbanBoard | null>(null);
+  const [boardName, setBoardName] = useState('');
+  const [boardClientId, setBoardClientId] = useState<string | null>(null);
+  const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
+  const [deletingBoard, setDeletingBoard] = useState<KanbanBoard | null>(null);
+
+  // Auto-select first board
+  useEffect(() => {
+    if (!loading && boards.length > 0 && !activeBoardId) {
+      setActiveBoardId(boards[0].id);
+    }
+  }, [loading, boards, activeBoardId]);
 
   // Load projects for filter
   useEffect(() => {
