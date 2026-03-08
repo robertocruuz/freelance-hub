@@ -243,6 +243,15 @@ const InvoicesPage = () => {
     loadInvoices();
   };
 
+  const updateInvoiceStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('invoices').update({ status }).eq('id', id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(lang === 'pt-BR' ? 'Status atualizado!' : 'Status updated!');
+      loadInvoices();
+    }
+  };
+
   const statusLabel = (s: string) => (t as any)[s] || s;
 
   const exportInvoicePdf = (inv: Invoice) => {
