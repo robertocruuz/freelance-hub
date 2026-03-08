@@ -156,10 +156,26 @@ const KanbanPage = () => {
     });
   }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate, filterComplexities, filterEstimatedTime]);
 
+  const sortTasks = (a: Task, b: Task) => {
+    switch (sortBy) {
+      case 'value_desc': return (b.estimated_value || 0) - (a.estimated_value || 0);
+      case 'value_asc': return (a.estimated_value || 0) - (b.estimated_value || 0);
+      case 'complexity_desc': return (b.complexity || 0) - (a.complexity || 0);
+      case 'complexity_asc': return (a.complexity || 0) - (b.complexity || 0);
+      case 'due_date': {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      }
+      default: return a.position - b.position;
+    }
+  };
+
   const getColumnTasks = (columnId: string) =>
     filteredTasks
       .filter((t) => t.column_id === columnId)
-      .sort((a, b) => a.position - b.position);
+      .sort(sortTasks);
 
   // Drag handlers
   const handleDragStart = (event: DragStartEvent) => {
