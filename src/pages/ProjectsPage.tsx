@@ -551,42 +551,107 @@ const ProjectsPage = () => {
                     {items.length === 0 && (
                       <p className="text-xs text-muted-foreground py-2">Nenhum item neste projeto.</p>
                     )}
-                    {items.map(item => (
-                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
-                        <div className="flex items-center gap-2">
-                          <Package className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="text-sm font-medium text-foreground">{item.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
+                    {items.map(item => {
+                      const isItemExpanded = expandedItemId === item.id;
+                      return (
+                        <div key={item.id} className="rounded-lg border border-border bg-muted/50 overflow-hidden">
+                          {/* Item header - clickable to expand */}
                           <button
-                            onClick={() => {
-                              const project = projects.find(pr => pr.id === item.project_id);
-                              const params = new URLSearchParams({
-                                from_budget: 'true',
-                                title: item.name,
-                                value: String(item.value),
-                                ...(item.project_id ? { project: item.project_id } : {}),
-                                ...(project?.client_id ? { client: project.client_id } : {}),
-                                ...(project?.due_date ? { due_date: project.due_date } : {}),
-                              });
-                              navigate(`/dashboard/kanban?${params.toString()}`);
-                            }}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group"
-                            title="Criar tarefa no Kanban"
+                            onClick={() => setExpandedItemId(isItemExpanded ? null : item.id)}
+                            className="w-full flex items-center gap-2 p-3 text-left hover:bg-muted/80 transition-colors"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
-                            <span className="text-xs font-medium text-primary">Tarefa</span>
+                            {isItemExpanded ? (
+                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            )}
+                            <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
+                            <span className="text-xs text-muted-foreground shrink-0">R$ {item.value.toFixed(2)}</span>
                           </button>
-                          <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
-                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                          </button>
-                          <button onClick={() => handleDeleteItem(item)} className="p-1 rounded hover:bg-destructive/10 transition-colors">
-                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                          </button>
+
+                          {/* Expanded content */}
+                          {isItemExpanded && (
+                            <div className="px-3 pb-3 pt-1 border-t border-border space-y-3">
+                              {/* Editable name */}
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">Nome</label>
+                                {inlineEditItemId === item.id ? (
+                                  <div className="flex gap-2">
+                                    <input
+                                      value={inlineEditName}
+                                      onChange={e => setInlineEditName(e.target.value)}
+                                      className={inputClass + " flex-1 !py-1.5 text-sm"}
+                                      autoFocus
+                                    />
+                                    <button
+                                      onClick={async () => {
+                                        if (!inlineEditName.trim()) return;
+                                        await supabase.from('project_items').update({ name: inlineEditName.trim() }).eq('id', item.id);
+                                        setInlineEditItemId(null);
+                                        loadItems(item.project_id);
+                                      }}
+                                      className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
+                                    >
+                                      {t.save}
+                                    </button>
+                                    <button
+                                      onClick={() => setInlineEditItemId(null)}
+                                      className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-semibold"
+                                    >
+                                      {t.cancel}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => { setInlineEditItemId(item.id); setInlineEditName(item.name); }}
+                                    className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors"
+                                  >
+                                    {item.name}
+                                    <Pencil className="w-3 h-3 text-muted-foreground" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Value display */}
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">Valor</label>
+                                <p className="text-sm font-semibold text-foreground">R$ {item.value.toFixed(2)}</p>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  onClick={() => {
+                                    const project = projects.find(pr => pr.id === item.project_id);
+                                    const params = new URLSearchParams({
+                                      from_budget: 'true',
+                                      title: item.name,
+                                      value: String(item.value),
+                                      ...(item.project_id ? { project: item.project_id } : {}),
+                                      ...(project?.client_id ? { client: project.client_id } : {}),
+                                      ...(project?.due_date ? { due_date: project.due_date } : {}),
+                                    });
+                                    navigate(`/dashboard/kanban?${params.toString()}`);
+                                  }}
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
+                                  <span className="text-xs font-medium text-primary">Criar Tarefa</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteItem(item)}
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                  <span className="text-xs font-medium text-destructive">Excluir</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {/* Add/edit item form */}
                     {showItemForm === p.id ? (
