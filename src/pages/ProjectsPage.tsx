@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +43,7 @@ interface Project {
   id: string;
   name: string;
   client_id: string | null;
+  due_date: string | null;
   created_at: string;
 }
 
@@ -55,6 +57,7 @@ interface Budget {
   id: string;
   name: string | null;
   client_id: string | null;
+  delivery_date: string | null;
   items: BudgetItem[];
   total: number;
   status: string;
@@ -162,10 +165,12 @@ const ProjectsPage = () => {
 
   const handleSave = async () => {
     if (!user || !name.trim()) return;
+    const selectedBudget = allBudgets.find(b => b.id === selectedBudgetId);
     const payload = {
       user_id: user.id,
       name: name.trim(),
       client_id: clientId || null,
+      due_date: selectedBudget?.delivery_date || null,
     };
 
     if (editingId) {
@@ -447,6 +452,9 @@ const ProjectsPage = () => {
                       <p className="font-semibold text-foreground">{p.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {clientName(p.client_id)}
+                        {p.due_date && (
+                          <> · Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
+                        )}
                         {isExpanded && items.length > 0 && (
                           <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}</>
                         )}
