@@ -264,6 +264,7 @@ export const useOrganization = () => {
     updateMemberRole,
     removeMember,
     cancelInvite,
+    leaveOrganization,
     refresh: fetchOrgData,
   };
 };
