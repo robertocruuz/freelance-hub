@@ -144,8 +144,8 @@ const TimeTrackingPage = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
