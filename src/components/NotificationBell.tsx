@@ -143,7 +143,7 @@ const NotificationBell = () => {
         <Separator />
 
         {/* Notifications list */}
-        <ScrollArea className="max-h-[380px]">
+        <ScrollArea className="max-h-[440px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4">
               <Bell className="w-10 h-10 text-muted-foreground/30 mb-3" />
