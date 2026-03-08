@@ -795,9 +795,11 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto space-y-0 animate-fade-in h-full flex flex-col">
-      {/* Timer bar - Toggl style */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
+    <div className="max-w-full mx-auto animate-fade-in h-full flex flex-col gap-3 p-3">
+      {/* Header section */}
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex-shrink-0">
+        {/* Timer bar - Toggl style */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
         <div className="relative flex-1 min-w-[150px]">
           <input
             ref={descInputRef}
@@ -892,8 +894,8 @@ const TimeTrackingPage = () => {
         </div>
       </div>
 
-      {/* Navigation bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-card">
+        {/* Navigation bar */}
+        <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2">
           <button onClick={() => navigateDate(-1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
@@ -991,9 +993,10 @@ const TimeTrackingPage = () => {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Main content area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {/* Calendar View (Weekly) */}
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
