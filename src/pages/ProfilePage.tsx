@@ -148,7 +148,7 @@ const ProfilePage = () => {
               <Input
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                placeholder={lang === 'pt-BR' ? 'Seu nome' : 'Your name'}
+                placeholder={lang === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
               />
             ) : (
               <p className="text-foreground font-medium">{profile.name || '—'}</p>
