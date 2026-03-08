@@ -294,12 +294,15 @@ const ProjectsPage = () => {
   };
 
   const toggleExpand = (id: string) => {
-    if (expandedId === id) {
-      setExpandedId(null);
-    } else {
-      setExpandedId(id);
-      if (!projectItems[id]) loadItems(id);
-    }
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else {
+        next.add(id);
+        if (!projectItems[id]) loadItems(id);
+      }
+      return next;
+    });
   };
 
   // Budget import
