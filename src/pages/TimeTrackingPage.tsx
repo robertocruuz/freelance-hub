@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid, ChevronDown } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,6 +76,61 @@ const getWeekNumber = (date: Date) => {
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const DAY_NAMES_SHORT = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
 const DAY_NAMES_EN = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente', fullWidth = false }: {
+  clients: { id: string; name: string; color?: string | null }[];
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  fullWidth?: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = clients.find(c => c.id === value);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className={`relative ${fullWidth ? 'w-full' : 'max-w-[160px]'}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`flex items-center justify-between gap-1 rounded-lg border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring ${fullWidth ? 'w-full px-4 py-2 bg-muted text-sm' : 'px-2 py-1.5 bg-transparent'}`}
+      >
+        <span className="flex items-center gap-1.5 min-w-0 truncate">
+          {selected ? (
+            <>
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: (selected as any).color || 'hsl(var(--muted-foreground))' }} />
+              <span className="text-foreground truncate">{selected.name}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+        </span>
+        <ChevronDown className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full min-w-[180px] max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+          <button type="button" onClick={() => { onChange(''); setOpen(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-muted transition-colors ${!value ? 'bg-muted font-medium' : ''}`}>
+            <span className="text-muted-foreground">{placeholder}</span>
+          </button>
+          {clients.map((c) => (
+            <button key={c.id} type="button" onClick={() => { onChange(c.id); setOpen(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-muted transition-colors ${c.id === value ? 'bg-muted font-medium' : ''}`}>
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: (c as any).color || 'hsl(var(--muted-foreground))' }} />
+              <span className="truncate text-foreground">{c.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const TimeTrackingPage = () => {
   const { t } = useI18n();
@@ -378,16 +433,7 @@ const TimeTrackingPage = () => {
           className="flex-1 min-w-[150px] px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
         />
         <div className="flex items-center gap-1.5">
-          <select
-            value={clientId}
-            onChange={(e) => { setClientId(e.target.value); setProjectId(''); setTaskId(''); }}
-            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            <option value="">Cliente</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <CompactClientSelect clients={clients} value={clientId} onChange={(v) => { setClientId(v); setProjectId(''); setTaskId(''); }} placeholder="Cliente" />
           <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
@@ -840,16 +886,7 @@ const TimeTrackingPage = () => {
               onChange={(e) => setEditDesc(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <select
-              value={editClientId}
-              onChange={(e) => { setEditClientId(e.target.value); setEditProjectId(''); setEditTaskId(''); }}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Cliente</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <CompactClientSelect clients={clients} value={editClientId} onChange={(v) => { setEditClientId(v); setEditProjectId(''); setEditTaskId(''); }} placeholder="Cliente" fullWidth />
             <select
               value={editProjectId}
               onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
