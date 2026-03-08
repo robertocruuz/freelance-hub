@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import NotificationBell from '@/components/NotificationBell';
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
