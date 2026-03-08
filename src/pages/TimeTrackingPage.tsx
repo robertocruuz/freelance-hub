@@ -318,7 +318,7 @@ const TimeTrackingPage = () => {
     setEditingEntry(entry);
     setEditDesc(entry.description || '');
     const entryProject = projects.find(p => p.id === entry.project_id);
-    setEditClientId(entryProject?.client_id || '');
+    setEditClientId((entry as any).client_id || entryProject?.client_id || '');
     setEditProjectId(entry.project_id || '');
     setEditTaskId(entry.task_id || '');
     setEditStartTime(new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
