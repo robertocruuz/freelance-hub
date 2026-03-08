@@ -84,7 +84,7 @@ const KanbanPage = () => {
   const [listSortDir, setListSortDir] = useState<'asc' | 'desc'>('asc');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
-  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
@@ -104,7 +104,7 @@ const KanbanPage = () => {
   // Load projects for filter
   useEffect(() => {
     if (!user) return;
-    supabase.from('projects').select('id, name').eq('user_id', user.id).then(({ data }) => {
+    supabase.from('projects').select('id, name, client_id').eq('user_id', user.id).then(({ data }) => {
       if (data) setProjects(data);
     });
   }, [user]);
@@ -1061,7 +1061,10 @@ const KanbanPage = () => {
             </div>
             <div className="space-y-2">
               <Label className="text-xs">Atrelar a cliente (opcional)</Label>
-              <Select value={boardClientId || 'none'} onValueChange={(v) => setBoardClientId(v === 'none' ? null : v)}>
+              <Select value={boardClientId || 'none'} onValueChange={(v) => {
+                setBoardClientId(v === 'none' ? null : v);
+                setBoardProjectId(null); // Reset project when client changes
+              }}>
                 <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum (livre)</SelectItem>
@@ -1069,23 +1072,21 @@ const KanbanPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Atrelar a projeto (opcional)</Label>
-              <Select value={boardProjectId || 'none'} onValueChange={(v) => {
-                setBoardProjectId(v === 'none' ? null : v);
-                // Auto-set client from project
-                if (v !== 'none') {
-                  const proj = projects.find(p => p.id === v);
-                  // projects here only have id/name, need to check if we have client info
-                }
-              }}>
-                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum (livre)</SelectItem>
-                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {boardClientId && (
+              <div className="space-y-2">
+                <Label className="text-xs">Atrelar a projeto (opcional)</Label>
+                <Select value={boardProjectId || 'none'} onValueChange={(v) => setBoardProjectId(v === 'none' ? null : v)}>
+                  <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {projects.filter(p => p.client_id === boardClientId).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {projects.filter(p => p.client_id === boardClientId).length === 0 && (
+                  <p className="text-[11px] text-muted-foreground">Nenhum projeto encontrado para este cliente.</p>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowBoardDialog(false)}>Cancelar</Button>
