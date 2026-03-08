@@ -19,10 +19,13 @@ const ProfilePage = () => {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [editingOrg, setEditingOrg] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
+  const [org, setOrg] = useState({ company_name: '', cnpj: '', business_email: '', business_phone: '', website: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', cnpj: '', business_email: '', business_phone: '', website: '' });
 
   useEffect(() => {
     if (!user) return;
