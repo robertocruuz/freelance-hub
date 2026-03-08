@@ -77,6 +77,7 @@ const BudgetsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [expandedBudget, setExpandedBudget] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
