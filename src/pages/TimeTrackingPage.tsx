@@ -958,32 +958,48 @@ const TimeTrackingPage = () => {
                   const layoutItems = computeOverlapLayout(filteredEntries);
                   return layoutItems.map((item) => {
                     const { entry, startMin, endMin, col, totalCols } = item;
-                    const durationMinutes = endMin - startMin;
+                    const isDragging = dragState?.entryId === entry.id;
+                    const displayStart = isDragging ? dragState.currentStartMin : startMin;
+                    const displayEnd = isDragging ? dragState.currentEndMin : endMin;
+                    const durationMinutes = displayEnd - displayStart;
                     const color = getProjectColor(entry.project_id, entry.client_id);
                     const availableWidth = 'calc(100% - 72px)';
                     const entryWidth = `calc(${availableWidth} / ${totalCols})`;
                     const entryLeft = `calc(68px + ${col} * ${availableWidth} / ${totalCols})`;
                     return (
-                      <button
+                      <div
                         key={entry.id}
-                        onClick={() => openEdit(entry)}
-                        className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
+                        className={`absolute rounded-md text-xs text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${startMin}px`,
+                          top: `${displayStart}px`,
                           height: `${Math.max(durationMinutes, 20)}px`,
                           left: entryLeft,
                           width: entryWidth,
                           backgroundColor: color,
+                          cursor: isDragging ? 'grabbing' : 'grab',
                         }}
+                        onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, selectedDate)}
+                        onClick={() => { if (!dragState) openEdit(entry); }}
                       >
-                        <div className="flex items-center gap-1.5 truncate">
+                        <div className="flex items-center gap-1.5 truncate px-2 py-1">
                           <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
                           <span className="truncate font-medium">
                             {entry.description || getProjectName(entry.project_id) || '—'}
                           </span>
-                          <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
+                          <span className="ml-auto text-white/70 flex-shrink-0">
+                            {isDragging
+                              ? `${String(Math.floor(displayStart / 60)).padStart(2, '0')}:${String(displayStart % 60).padStart(2, '0')} – ${String(Math.floor(displayEnd / 60)).padStart(2, '0')}:${String(displayEnd % 60).padStart(2, '0')}`
+                              : formatDurationShort(entry.duration || 0)}
+                          </span>
                         </div>
-                      </button>
+                        {/* Resize handle */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-2.5 cursor-s-resize hover:bg-white/20 flex items-center justify-center"
+                          onMouseDown={(e) => { e.stopPropagation(); handleDragStart(e, entry.id, 'resize', startMin, endMin, selectedDate); }}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-white/50" />
+                        </div>
+                      </div>
                     );
                   });
                 })()}
