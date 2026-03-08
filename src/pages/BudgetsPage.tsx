@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderKanban } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderKanban, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,6 +39,10 @@ interface Budget {
   id: string;
   client_id: string | null;
   client_name?: string;
+  name: string | null;
+  budget_date: string | null;
+  validity_date: string | null;
+  delivery_date: string | null;
   items: BudgetItem[];
   total: number;
   discount: number;
@@ -60,6 +70,10 @@ const BudgetsPage = () => {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
+  const [budgetName, setBudgetName] = useState('');
+  const [budgetDate, setBudgetDate] = useState<Date | undefined>(new Date());
+  const [validityDate, setValidityDate] = useState<Date | undefined>(undefined);
+  const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
@@ -100,6 +114,10 @@ const BudgetsPage = () => {
         return {
           ...b,
           client_name: cl?.name,
+          name: (b as any).name ?? null,
+          budget_date: (b as any).budget_date ?? null,
+          validity_date: (b as any).validity_date ?? null,
+          delivery_date: (b as any).delivery_date ?? null,
           discount: (b as any).discount ?? 0,
           notes: (b as any).notes ?? null,
           items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
@@ -166,6 +184,10 @@ const BudgetsPage = () => {
 
     const payload = {
       client_id: clientId || null,
+      name: budgetName || null,
+      budget_date: budgetDate ? format(budgetDate, 'yyyy-MM-dd') : null,
+      validity_date: validityDate ? format(validityDate, 'yyyy-MM-dd') : null,
+      delivery_date: deliveryDate ? format(deliveryDate, 'yyyy-MM-dd') : null,
       items: items as unknown as Json,
       total,
       discount,
@@ -191,6 +213,10 @@ const BudgetsPage = () => {
     setCreating(false);
     setEditingId(null);
     setClientId('');
+    setBudgetName('');
+    setBudgetDate(new Date());
+    setValidityDate(undefined);
+    setDeliveryDate(undefined);
     setItems([]);
     setDiscount(0);
     setNotes('');
@@ -200,6 +226,10 @@ const BudgetsPage = () => {
   const startEditing = (b: Budget) => {
     setEditingId(b.id);
     setClientId(b.client_id || '');
+    setBudgetName(b.name || '');
+    setBudgetDate(b.budget_date ? new Date(b.budget_date + 'T12:00:00') : new Date());
+    setValidityDate(b.validity_date ? new Date(b.validity_date + 'T12:00:00') : undefined);
+    setDeliveryDate(b.delivery_date ? new Date(b.delivery_date + 'T12:00:00') : undefined);
     setItems(b.items.length > 0 ? b.items : []);
     setDiscount(b.discount || 0);
     setNotes(b.notes || '');
@@ -280,8 +310,68 @@ const BudgetsPage = () => {
 
       {isFormOpen && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Budget name */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Nome do Orçamento</label>
+            <input
+              placeholder="Ex: Projeto Website Corporativo"
+              value={budgetName}
+              onChange={(e) => setBudgetName(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
+          </div>
+
           {/* Client select */}
-          <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Cliente</label>
+            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Data</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !budgetDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {budgetDate ? format(budgetDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={budgetDate} onSelect={setBudgetDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Validade</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !validityDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {validityDate ? format(validityDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={validityDate} onSelect={setValidityDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Prazo de Entrega</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !deliveryDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {deliveryDate ? format(deliveryDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={deliveryDate} onSelect={setDeliveryDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
 
           {/* Add items section */}
           <div className="space-y-4">
@@ -443,8 +533,12 @@ const BudgetsPage = () => {
                 <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
                   <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedBudget === b.id ? 'rotate-90' : ''}`} />
                   <div>
-                    <p className="font-semibold text-foreground">{b.client_name || 'Sem cliente'} · {b.items.length} itens</p>
-                    <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+                    <p className="font-semibold text-foreground">{b.name || b.client_name || 'Sem nome'} · {b.items.length} itens</p>
+                    <p className="text-xs text-muted-foreground">
+                      {b.client_name && b.name ? `${b.client_name} · ` : ''}
+                      {b.budget_date ? format(new Date(b.budget_date + 'T12:00:00'), 'dd/MM/yyyy') : new Date(b.created_at).toLocaleDateString()}
+                      {b.validity_date && ` · Validade: ${format(new Date(b.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
+                    </p>
                   </div>
                 </button>
                 <div className="flex items-center gap-3">
