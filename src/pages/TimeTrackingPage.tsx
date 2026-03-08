@@ -1091,7 +1091,14 @@ const TimeTrackingPage = () => {
         {/* Calendar View (Daily) */}
         {viewMode === 'calendar' && timeRange === 'daily' && (
           <div className="h-full flex flex-col">
-            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin">
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
+              onMouseDown={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('[data-entry-block]')) return;
+                if (!calendarRef.current) return;
+                handleGridMouseDown(e, selectedDate, calendarRef.current);
+              }}
+            >
               <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
                 {HOURS.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px 1fr', height: '60px' }}>
