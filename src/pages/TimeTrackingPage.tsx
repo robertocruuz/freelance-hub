@@ -880,6 +880,202 @@ const TimeTrackingPage = () => {
             </table>
           </div>
         )}
+
+        {/* Report View */}
+        {viewMode === 'report' && (() => {
+          const CHART_COLORS = ['hsl(280, 70%, 60%)', 'hsl(200, 80%, 55%)', 'hsl(150, 60%, 45%)', 'hsl(35, 90%, 55%)', 'hsl(340, 75%, 55%)', 'hsl(180, 60%, 45%)', 'hsl(60, 70%, 50%)', 'hsl(310, 60%, 55%)'];
+
+          const byProject = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+            const name = getProjectName(e.project_id) || 'Sem projeto';
+            acc[name] = (acc[name] || 0) + (e.duration || 0);
+            return acc;
+          }, {});
+          const projectData = Object.entries(byProject).map(([name, seconds]) => ({
+            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null),
+          }));
+
+          const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+            const proj = projects.find(p => p.id === e.project_id);
+            const client = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
+            const name = client?.name || 'Sem cliente';
+            acc[name] = (acc[name] || 0) + (e.duration || 0);
+            return acc;
+          }, {});
+          const clientData = Object.entries(byClient).map(([name, seconds], i) => ({
+            name, hours: +(seconds / 3600).toFixed(2), color: (() => {
+              const client = clients.find(c => c.name === name);
+              return (client as any)?.color || CHART_COLORS[i % CHART_COLORS.length];
+            })(),
+          }));
+
+          const byDay = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+            const d = new Date(e.start_time);
+            const key = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            acc[key] = (acc[key] || 0) + (e.duration || 0);
+            return acc;
+          }, {});
+          const dayData = Object.entries(byDay)
+            .map(([day, seconds]) => ({ day, hours: +(seconds / 3600).toFixed(2) }))
+            .sort((a, b) => a.day.localeCompare(b.day));
+
+          const totalHours = (totalFiltered / 3600).toFixed(1);
+
+          const handleExportPDF = async () => {
+            const { default: jsPDF } = await import('jspdf');
+            const doc = new jsPDF();
+            const pdfTitle = `Relatório de Tempo - ${dateLabel()}`;
+            doc.setFontSize(16);
+            doc.text(pdfTitle, 14, 20);
+            doc.setFontSize(11);
+            doc.text(`Total: ${totalHours}h`, 14, 30);
+
+            let y = 42;
+            doc.setFontSize(13);
+            doc.text('Por Projeto', 14, y); y += 8;
+            doc.setFontSize(10);
+            projectData.forEach(p => { doc.text(`${p.name}: ${p.hours}h`, 18, y); y += 6; });
+
+            y += 6;
+            doc.setFontSize(13);
+            doc.text('Por Cliente', 14, y); y += 8;
+            doc.setFontSize(10);
+            clientData.forEach(c => { doc.text(`${c.name}: ${c.hours}h`, 18, y); y += 6; });
+
+            y += 6;
+            doc.setFontSize(13);
+            doc.text('Por Dia', 14, y); y += 8;
+            doc.setFontSize(10);
+            dayData.forEach(d => { doc.text(`${d.day}: ${d.hours}h`, 18, y); y += 6; });
+
+            doc.save(`relatorio-tempo-${new Date().toISOString().slice(0, 10)}.pdf`);
+            toast.success('PDF exportado com sucesso!');
+          };
+
+          return (
+            <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Relatório de Tempo</h2>
+                  <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {filteredEntries.length} registros</p>
+                </div>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Exportar PDF
+                </button>
+              </div>
+
+              {filteredEntries.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-medium">Sem dados para o período selecionado</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">Horas por Projeto</h3>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart data={projectData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis type="number" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} unit="h" />
+                        <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 11, fill: 'hsl(var(--foreground))' }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                          formatter={(value: number) => [`${value}h`, 'Horas']}
+                        />
+                        <Bar dataKey="hours" radius={[0, 4, 4, 0]}>
+                          {projectData.map((entry, i) => (
+                            <Cell key={i} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">Horas por Cliente</h3>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <PieChart>
+                        <Pie data={clientData} dataKey="hours" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, hours }) => `${name} (${hours}h)`} labelLine={false} style={{ fontSize: '11px' }}>
+                          {clientData.map((entry, i) => (
+                            <Cell key={i} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                          formatter={(value: number) => [`${value}h`, 'Horas']}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">Horas por Dia</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={dayData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+                        <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} unit="h" />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                          formatter={(value: number) => [`${value}h`, 'Horas']}
+                        />
+                        <Area type="monotone" dataKey="hours" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">Resumo Detalhado</h3>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium">Projeto</th>
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium">Cliente</th>
+                          <th className="text-right py-2 px-3 text-muted-foreground font-medium">Registros</th>
+                          <th className="text-right py-2 px-3 text-muted-foreground font-medium">Horas</th>
+                          <th className="text-right py-2 px-3 text-muted-foreground font-medium">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectData.sort((a, b) => b.hours - a.hours).map((p, i) => {
+                          const projEntries = filteredEntries.filter(e => (getProjectName(e.project_id) || 'Sem projeto') === p.name);
+                          const proj = projects.find(pr => pr.name === p.name);
+                          const client = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
+                          const pct = +totalHours > 0 ? ((p.hours / (+totalHours)) * 100).toFixed(1) : '0';
+                          return (
+                            <tr key={i} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                              <td className="py-2.5 px-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                                  <span className="font-medium text-foreground">{p.name}</span>
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3 text-muted-foreground">{client?.name || '—'}</td>
+                              <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{projEntries.length}</td>
+                              <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{p.hours}h</td>
+                              <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{pct}%</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t-2 border-border">
+                          <td colSpan={2} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
+                          <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{filteredEntries.length}</td>
+                          <td className="py-2.5 px-3 text-right tabular-nums font-bold text-foreground">{totalHours}h</td>
+                          <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">100%</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Edit dialog */}
