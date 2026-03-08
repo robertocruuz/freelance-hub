@@ -664,7 +664,7 @@ const KanbanPage = () => {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 flex-1 scrollbar-thin">
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 flex-1 scrollbar-thin scroll-smooth snap-x snap-mandatory md:snap-none">
             <SortableContext items={columns.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
               {columns.map((col) => (
                 <KanbanColumnComponent
