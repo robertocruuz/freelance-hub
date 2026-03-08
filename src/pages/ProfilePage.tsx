@@ -29,15 +29,15 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('name, email')
+        .select('name, email, document')
         .eq('user_id', user.id)
         .single();
       if (data) {
-        setProfile({ name: data.name || '', email: data.email || user.email || '' });
-        setEditForm({ name: data.name || '' });
+        setProfile({ name: data.name || '', email: data.email || user.email || '', document: (data as any).document || '' });
+        setEditForm({ name: data.name || '', document: (data as any).document || '' });
       } else {
-        setProfile({ name: user.user_metadata?.name || '', email: user.email || '' });
-        setEditForm({ name: user.user_metadata?.name || '' });
+        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '' });
+        setEditForm({ name: user.user_metadata?.name || '', document: '' });
       }
     };
     fetchProfile();
