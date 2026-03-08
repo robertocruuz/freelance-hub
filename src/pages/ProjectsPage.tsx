@@ -99,6 +99,7 @@ const ProjectsPage = () => {
   const [allBudgets, setAllBudgets] = useState<Budget[]>([]);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
   const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
+  const [projectDiscount, setProjectDiscount] = useState(0);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
