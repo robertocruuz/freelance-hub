@@ -271,6 +271,52 @@ const KanbanPage = () => {
     setShowAddColumn(false);
   };
 
+  const handleSaveBoard = async () => {
+    if (!boardName.trim()) return;
+    if (editingBoard) {
+      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId });
+    } else {
+      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId);
+      if (newBoard) setActiveBoardId(newBoard.id);
+    }
+    setShowBoardDialog(false);
+    setBoardName('');
+    setBoardClientId(null);
+    setBoardProjectId(null);
+    setEditingBoard(null);
+  };
+
+  const openEditBoard = (board: KanbanBoard) => {
+    setEditingBoard(board);
+    setBoardName(board.name);
+    setBoardClientId(board.client_id);
+    setBoardProjectId(board.project_id);
+    setShowBoardDialog(true);
+  };
+
+  const handleDeleteBoard = async () => {
+    if (!deletingBoard) return;
+    const wasActive = activeBoardId === deletingBoard.id;
+    await kanban.deleteBoard(deletingBoard.id);
+    setDeletingBoard(null);
+    if (wasActive) {
+      const remaining = boards.filter(b => b.id !== deletingBoard.id);
+      setActiveBoardId(remaining.length > 0 ? remaining[0].id : null);
+    }
+  };
+
+  const getBoardSubtitle = (board: KanbanBoard) => {
+    if (board.project_id) {
+      const project = projects.find(p => p.id === board.project_id);
+      return project ? `📂 ${project.name}` : '';
+    }
+    if (board.client_id) {
+      const client = clients.find(c => c.id === board.client_id);
+      return client ? `👤 ${client.name}` : '';
+    }
+    return '';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
