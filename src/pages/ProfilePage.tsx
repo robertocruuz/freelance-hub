@@ -602,7 +602,7 @@ const ProfilePage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">
-                          {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
+                          {lang === 'pt-BR' ? 'Email' : 'Email'}
                         </Label>
                         {editingOrg ? (
                           <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
