@@ -62,32 +62,34 @@ const ProfilePage = () => {
         setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
       }
 
-      const { data: orgData } = await supabase
-        .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city, logo_url')
-        .eq('user_id', user.id)
-        .single();
-      if (orgData) {
-        const o = orgData as any;
-        const orgState = {
-          company_name: o.company_name || '',
-          trade_name: o.trade_name || '',
-          cnpj: o.cnpj || '',
-          state_registration: o.state_registration || '',
-          municipal_registration: o.municipal_registration || '',
-          business_email: o.business_email || '',
-          business_phone: o.business_phone || '',
-          website: o.website || '',
-          zip_code: o.zip_code || '',
-          address: o.address || '',
-          complement: o.complement || '',
-          neighborhood: o.neighborhood || '',
-          state: o.state || '',
-          city: o.city || '',
-        };
-        setOrg(orgState);
-        setOrgForm(orgState);
-        setLogoUrl(o.logo_url || null);
+      // Fetch org data: use orgId from useOrganization (covers both owner and member)
+      if (orgId) {
+        const { data: orgData } = await (supabase.from('organizations' as any) as any)
+          .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, neighborhood, state, city, logo_url')
+          .eq('id', orgId)
+          .single();
+        if (orgData) {
+          const o = orgData as any;
+          const orgState = {
+            company_name: o.company_name || '',
+            trade_name: o.trade_name || '',
+            cnpj: o.cnpj || '',
+            state_registration: o.state_registration || '',
+            municipal_registration: o.municipal_registration || '',
+            business_email: o.business_email || '',
+            business_phone: o.business_phone || '',
+            website: o.website || '',
+            zip_code: o.zip_code || '',
+            address: o.address || '',
+            complement: o.complement || '',
+            neighborhood: o.neighborhood || '',
+            state: o.state || '',
+            city: o.city || '',
+          };
+          setOrg(orgState);
+          setOrgForm(orgState);
+          setLogoUrl(o.logo_url || null);
+        }
       }
     };
     fetchProfile();
