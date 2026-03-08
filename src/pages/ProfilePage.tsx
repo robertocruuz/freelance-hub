@@ -446,11 +446,21 @@ const ProfilePage = () => {
               onCancel={() => { setEditingOrg(false); setOrgForm({ ...org }); }}
             />
           )}
+
+          <Separator className="opacity-50" />
+
+          {/* Team section (embedded) */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Equipe' : 'Team'}
+              </p>
+            </div>
+            <OrgMembersCard embedded />
+          </div>
         </CardContent>
       </Card>
-
-      {/* Team Card */}
-      <OrgMembersCard />
 
       {/* Security Card */}
       <Card>
