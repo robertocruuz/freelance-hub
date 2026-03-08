@@ -164,20 +164,16 @@ const ProfilePage = () => {
       {/* Profile Card */}
       <Card className="overflow-hidden">
         {/* Profile banner */}
-        <div className="h-20 bg-gradient-to-r from-primary to-primary/70" />
+        <div className="h-16 bg-gradient-to-r from-primary to-primary/70" />
         <CardHeader className="relative pt-0 pb-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-10">
-            <Avatar className="w-20 h-20 border-4 border-card shadow-lg">
-              <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-8">
+            <Avatar className="w-16 h-16 border-4 border-card shadow-lg">
+              <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 pt-2 sm:pt-0 sm:pb-1">
               <CardTitle className="text-xl">{profile.name || profile.email}</CardTitle>
-              <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                <Mail className="w-3.5 h-3.5" />
-                {profile.email}
-              </p>
             </div>
             <div className="sm:pb-1">
               {!editing ? (
