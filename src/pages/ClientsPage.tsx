@@ -137,7 +137,7 @@ const ClientsPage = () => {
     setLoadingDetails(true);
     const [projectsRes, tasksRes, invoicesRes, budgetsRes] = await Promise.all([
       supabase.from('projects').select('id, name').eq('client_id', clientId),
-      supabase.from('tasks').select('id, title, status, priority, column_id').eq('client_id', clientId),
+      supabase.from('tasks').select('id, title, status, priority, column_id, project_id').eq('client_id', clientId),
       supabase.from('invoices').select('id, total, status, created_at').eq('client_id', clientId).order('created_at', { ascending: false }),
       supabase.from('budgets').select('id, total, status, created_at').eq('client_id', clientId).order('created_at', { ascending: false }),
     ]);
