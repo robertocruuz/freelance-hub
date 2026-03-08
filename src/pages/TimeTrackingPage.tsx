@@ -521,6 +521,7 @@ const TimeTrackingPage = () => {
               { key: 'calendar' as ViewMode, label: 'Calendário', icon: LayoutGrid },
               { key: 'list' as ViewMode, label: 'Lista', icon: List },
               { key: 'timesheet' as ViewMode, label: 'Timesheet', icon: Layers },
+              { key: 'report' as ViewMode, label: 'Relatório', icon: BarChart3 },
             ]).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
