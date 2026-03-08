@@ -437,6 +437,65 @@ const KanbanPage = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Complexity - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Gauge className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Complexidade</span>
+                    {filterComplexities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterComplexities.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[1, 2, 3, 4, 5].map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          setFilterComplexities(prev => {
+                            const next = new Set(prev);
+                            if (next.has(c)) next.delete(c); else next.add(c);
+                            return next;
+                          });
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterComplexities.has(c)
+                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Estimated Time - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Timer className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Tempo estimado</span>
+                    {filterEstimatedTime.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterEstimatedTime.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'none', label: 'Sem estimativa', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                      { value: 'short', label: '≤ 2h', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
+                      { value: 'medium', label: '2h–8h', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                      { value: 'long', label: '> 8h', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+                    ].map((t) => (
+                      <button
+                        key={t.value}
+                        onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterEstimatedTime.has(t.value)
+                            ? `${t.color} shadow-sm ring-1 ring-current/20`
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Result count */}
