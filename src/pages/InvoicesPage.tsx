@@ -83,6 +83,7 @@ const InvoicesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
