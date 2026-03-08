@@ -458,6 +458,7 @@ const ProfilePage = () => {
                       <MapPin className="w-3.5 h-3.5" />
                       {lang === 'pt-BR' ? 'Endereço' : 'Address'}
                     </p>
+                    <div className="grid grid-cols-1 gap-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                         <div className="space-y-1">
                           <Label className="text-sm text-muted-foreground">CEP</Label>
