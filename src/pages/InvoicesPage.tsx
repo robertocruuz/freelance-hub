@@ -1,11 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Receipt, Download } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, FolderKanban } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
@@ -30,6 +38,15 @@ interface Invoice {
   created_at: string;
 }
 
+interface ProjectWithItems {
+  id: string;
+  name: string;
+  client_id: string | null;
+  client_name?: string;
+  due_date: string | null;
+  items: { name: string; value: number }[];
+}
+
 const statusColors: Record<string, string> = {
   pending: 'bg-accent text-accent-foreground',
   paid: 'bg-primary/10 text-primary',
@@ -37,7 +54,7 @@ const statusColors: Record<string, string> = {
 };
 
 const InvoicesPage = () => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -48,6 +65,8 @@ const InvoicesPage = () => {
   const [discount, setDiscount] = useState(0);
   const [dueDate, setDueDate] = useState('');
   const { clients } = useClients();
+  const [projects, setProjects] = useState<ProjectWithItems[]>([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const total = subtotal + (subtotal * taxes) / 100 - discount;
