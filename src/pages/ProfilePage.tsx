@@ -27,8 +27,8 @@ const ProfilePage = () => {
   const [editingOrg, setEditingOrg] = useState(false);
   const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
 
-  const [profile, setProfile] = useState({ name: '', email: '', document: '' });
-  const [editForm, setEditForm] = useState({ name: '', document: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
+  const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
   const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
   const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
