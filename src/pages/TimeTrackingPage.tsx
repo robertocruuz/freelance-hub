@@ -611,7 +611,7 @@ const TimeTrackingPage = () => {
                     const height = durationMinutes;
                     const colWidth = `calc((100% - 64px) / 7)`;
                     const left = `calc(64px + ${dayIdx} * ${colWidth})`;
-                    const color = getProjectColor(entry.project_id);
+                    const color = getProjectColor(entry.project_id, entry.client_id);
 
                     return (
                       <button
