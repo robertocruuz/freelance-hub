@@ -125,7 +125,7 @@ const DashboardLayout = () => {
 
         {/* Mobile nav */}
         {mobileMenuOpen && (
-          <div className="relative md:hidden border-t border-white/10 px-5 py-3">
+          <div className="md:hidden border-t border-white/10 px-5 py-3">
             <div className="grid grid-cols-4 gap-2">
               {navItems.map((item) => {
                 const isActive = item.path === '/dashboard'
