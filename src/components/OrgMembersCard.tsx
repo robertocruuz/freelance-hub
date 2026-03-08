@@ -339,7 +339,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )
+                  )}
                 </div>
               </div>
             );
