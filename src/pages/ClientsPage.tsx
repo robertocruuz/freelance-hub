@@ -189,8 +189,9 @@ const ClientsPage = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{selectedClient.name}</h1>
             <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-              {selectedClient.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{selectedClient.email}</span>}
-              {selectedClient.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.phone}</span>}
+              {selectedClient.email && <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1 hover:text-foreground transition-colors"><Mail className="w-3 h-3" />{selectedClient.email}</a>}
+              {selectedClient.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}</span>}
+              {selectedClient.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}</span>}
             </div>
           </div>
           <button onClick={() => openEdit(selectedClient)} className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">
