@@ -567,10 +567,31 @@ const BudgetsPage = () => {
           <p className="text-sm">Nenhum orçamento criado ainda.</p>
         </div>
       ) : (
+      {/* Status filter */}
+      {!isFormOpen && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {['all', ...statuses].map(s => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+                statusFilter === s
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              {s === 'all' ? 'Todos' : statusLabel(s)}
+            </button>
+          ))}
+        </div>
+      )}
+
         <div className="space-y-6">
           {(() => {
+            const filtered = statusFilter === 'all' ? budgets : budgets.filter(b => b.status === statusFilter);
             const grouped: Record<string, Budget[]> = {};
-            budgets.forEach(b => {
+            filtered.forEach(b => {
               const key = b.client_id || '__no_client__';
               if (!grouped[key]) grouped[key] = [];
               grouped[key].push(b);
