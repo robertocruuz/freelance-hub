@@ -444,9 +444,7 @@ const TimeTrackingPage = () => {
         setProjectId(project);
       }
       if (task) setTaskId(task);
-      setStartTime(Date.now());
-      setElapsed(0);
-      setRunning(true);
+      startTimer();
       setSearchParams({}, { replace: true });
       toast.success('Timer iniciado a partir da tarefa!');
     }
