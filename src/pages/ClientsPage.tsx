@@ -229,44 +229,108 @@ const ClientsPage = () => {
               </div>
             </div>
 
-            {/* Projects */}
+            {/* Projects with expandable tasks */}
             {details.projects.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                   <FolderKanban className="w-4 h-4" /> Projetos
                 </h2>
                 <div className="space-y-1.5">
-                  {details.projects.map(p => (
-                    <div key={p.id} className="p-3 rounded-xl border border-border bg-card text-sm">
-                      <span className="font-medium">{p.name}</span>
-                    </div>
-                  ))}
+                  {details.projects.map(p => {
+                    const isExpanded = expandedProjects.has(p.id);
+                    const projectTasks = details.tasks.filter(t => t.project_id === p.id);
+                    return (
+                      <div key={p.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                        <div
+                          className="flex items-center justify-between p-3 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => {
+                            setExpandedProjects(prev => {
+                              const next = new Set(prev);
+                              if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+                              return next;
+                            });
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
+                            <span className="font-medium">{p.name}</span>
+                            {projectTasks.length > 0 && (
+                              <Badge variant="secondary" className="text-[10px]">{projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}</Badge>
+                            )}
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate('/dashboard/projects'); }}
+                            className="flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Ver projeto
+                          </button>
+                        </div>
+                        {isExpanded && projectTasks.length > 0 && (
+                          <div className="border-t border-border bg-muted/30">
+                            {projectTasks.map(task => (
+                              <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/50 last:border-b-0">
+                                <div className="flex items-center gap-2">
+                                  <SquareKanban className="w-3 h-3 text-muted-foreground" />
+                                  <span>{task.title}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
+                                  <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
+                                  <button
+                                    onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)}
+                                    className="text-xs text-primary hover:underline flex items-center gap-0.5"
+                                  >
+                                    <ExternalLink className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {isExpanded && projectTasks.length === 0 && (
+                          <div className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+                            Nenhuma tarefa neste projeto.
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Tasks */}
-            {details.tasks.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                  <SquareKanban className="w-4 h-4" /> Tarefas
-                </h2>
-                <div className="space-y-1.5">
-                  {details.tasks.slice(0, 10).map(task => (
-                    <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
-                      <span className="font-medium">{task.title}</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
-                        <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
+            {/* Tasks without project */}
+            {(() => {
+              const orphanTasks = details.tasks.filter(t => !t.project_id);
+              if (orphanTasks.length === 0) return null;
+              return (
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                    <SquareKanban className="w-4 h-4" /> Tarefas sem projeto
+                  </h2>
+                  <div className="space-y-1.5">
+                    {orphanTasks.slice(0, 10).map(task => (
+                      <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                        <span className="font-medium">{task.title}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
+                          <button
+                            onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)}
+                            className="text-xs text-primary hover:underline flex items-center gap-0.5"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {details.tasks.length > 10 && (
-                    <p className="text-xs text-muted-foreground text-center">+{details.tasks.length - 10} mais</p>
-                  )}
+                    ))}
+                    {orphanTasks.length > 10 && (
+                      <p className="text-xs text-muted-foreground text-center">+{orphanTasks.length - 10} mais</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Time entries */}
             {details.timeEntries.length > 0 && (
