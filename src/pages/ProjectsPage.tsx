@@ -360,6 +360,86 @@ const ProjectsPage = () => {
     return map[s] || s;
   };
 
+  const openBoardPicker = async (item: ProjectItem) => {
+    const project = projects.find(pr => pr.id === item.project_id);
+    setPendingTaskItem({
+      name: item.name,
+      value: item.value,
+      projectId: item.project_id,
+      clientId: project?.client_id || null,
+      dueDate: project?.due_date || null,
+    });
+    // Load boards
+    const { data } = await supabase.from('kanban_boards').select('id, name').order('position');
+    setAvailableBoards(data || []);
+    setSelectedBoardId(data && data.length > 0 ? data[0].id : null);
+    setNewBoardName('');
+    setCreatingBoard(false);
+    setShowBoardPicker(true);
+  };
+
+  const handleCreateTaskInBoard = async () => {
+    if (!user || !pendingTaskItem) return;
+    let boardId = selectedBoardId;
+
+    // Create board if needed
+    if (creatingBoard && newBoardName.trim()) {
+      const { data: newBoard } = await supabase
+        .from('kanban_boards')
+        .insert({ name: newBoardName.trim(), user_id: user.id, position: availableBoards.length })
+        .select()
+        .single();
+      if (!newBoard) return toast.error('Erro ao criar painel');
+      boardId = newBoard.id;
+
+      // Create default columns for new board
+      const defaultCols = [
+        { name: 'Para Fazer', position: 0 },
+        { name: 'Em Andamento', position: 1 },
+        { name: 'Alteração', position: 2 },
+        { name: 'Concluído', position: 3 },
+        { name: 'Arquivado', position: 4 },
+      ];
+      await supabase.from('kanban_columns').insert(
+        defaultCols.map(c => ({ ...c, user_id: user.id, board_id: newBoard.id }))
+      );
+    }
+
+    if (!boardId) return toast.error('Selecione ou crie um painel');
+
+    // Get first column of the board
+    const { data: cols } = await supabase
+      .from('kanban_columns')
+      .select('id')
+      .eq('board_id', boardId)
+      .order('position')
+      .limit(1);
+
+    if (!cols || cols.length === 0) return toast.error('Painel sem colunas');
+
+    const { data: newTask, error } = await supabase
+      .from('tasks')
+      .insert({
+        title: pendingTaskItem.name,
+        column_id: cols[0].id,
+        position: 0,
+        user_id: user.id,
+        estimated_value: pendingTaskItem.value,
+        project_id: pendingTaskItem.projectId,
+        client_id: pendingTaskItem.clientId,
+        due_date: pendingTaskItem.dueDate,
+        description: `Criado a partir de item de projeto — Valor: ${formatCurrency(pendingTaskItem.value)}`,
+      })
+      .select()
+      .single();
+
+    if (error) return toast.error(error.message);
+    toast.success(`Tarefa "${pendingTaskItem.name}" criada!`);
+    setShowBoardPicker(false);
+    setPendingTaskItem(null);
+  };
+
+
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
