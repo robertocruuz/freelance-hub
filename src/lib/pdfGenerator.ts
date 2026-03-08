@@ -59,7 +59,7 @@ interface BudgetPdfOptions {
   client?: ClientInfo | null;
 }
 
-const loadImageAsBase64 = (url: string): Promise<string | null> => {
+const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number } | null> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -70,7 +70,7 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
+        resolve({ data: canvas.toDataURL('image/png'), width: img.naturalWidth, height: img.naturalHeight });
       } else {
         resolve(null);
       }
