@@ -360,7 +360,13 @@ const ProjectsPage = () => {
           )}
 
           <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-          <ClientSelect value={clientId} onChange={setClientId} />
+          {editingId ? (
+            <div className="px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground">
+              Cliente: <span className="font-medium text-foreground">{clientName(clientId || null)}</span>
+            </div>
+          ) : (
+            <ClientSelect value={clientId} onChange={setClientId} />
+          )}
 
           {/* Preview of items to import */}
           {pendingBudgetItems.length > 0 && (
