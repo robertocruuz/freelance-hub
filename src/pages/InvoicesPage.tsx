@@ -506,7 +506,7 @@ const InvoicesPage = () => {
                             <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-foreground">
-                            R$ {(editQty * editPrice).toFixed(2)}
+                            R$ {(editQty * editPrice).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center justify-center gap-2">
