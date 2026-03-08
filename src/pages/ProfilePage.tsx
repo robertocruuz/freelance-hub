@@ -169,9 +169,9 @@ const ProfilePage = () => {
   const handleRemoveLogo = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) return;
+    if (!user || !orgId) return;
     setUploadingLogo(true);
-    await (supabase.from('organizations' as any) as any).update({ logo_url: null }).eq('user_id', user.id);
+    await (supabase.from('organizations' as any) as any).update({ logo_url: null }).eq('id', orgId);
     setLogoUrl(null);
     setUploadingLogo(false);
     toast({ title: lang === 'pt-BR' ? 'Logo removido!' : 'Logo removed!' });
