@@ -584,7 +584,7 @@ const InvoicesPage = () => {
             {taxes > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t.taxes} ({taxes}%)</span>
-                <span className="text-foreground">+ R$ {taxesValue.toFixed(2)}</span>
+                <span className="text-foreground">+ {formatCurrency(taxesValue)}</span>
               </div>
             )}
             {discount > 0 && (
