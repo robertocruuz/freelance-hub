@@ -145,7 +145,11 @@ export const KanbanColumnComponent = ({
           />
         ) : (
           <div className="flex items-center gap-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            <h3
+              onClick={() => { setEditName(column.name); setIsEditing(true); }}
+              className="text-xs font-bold uppercase tracking-wider text-foreground cursor-pointer hover:text-primary transition-colors"
+              title="Clique para editar"
+            >
               {column.name}
             </h3>
             <span className="text-[10px] font-semibold text-muted-foreground bg-secondary rounded-full w-5 h-5 flex items-center justify-center">
