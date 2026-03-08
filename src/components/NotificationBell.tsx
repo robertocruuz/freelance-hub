@@ -238,6 +238,7 @@ const NotificationBell = () => {
             </div>
           </>
         )}
+      </PopoverContent>
     </Popover>
   );
 };
