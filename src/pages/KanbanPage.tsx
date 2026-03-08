@@ -249,7 +249,7 @@ const KanbanPage = () => {
                 <span className="text-sm font-semibold text-foreground">Filtros</span>
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); }}
+                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
                     className="text-xs text-primary hover:text-primary/80 font-medium transition"
                   >
                     Limpar tudo
