@@ -842,6 +842,18 @@ const TimeTrackingPage = () => {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  if (editingEntry) {
+                    setEditingEntry(null);
+                    confirmDeleteEntry(editingEntry.id);
+                  }
+                }}
+                className="py-2 px-3 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 font-medium flex items-center gap-1.5 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t.deleteEntry}
+              </button>
               <button onClick={() => setEditingEntry(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
               <button onClick={saveEdit} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
             </div>
