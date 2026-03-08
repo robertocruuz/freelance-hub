@@ -303,17 +303,11 @@ const TimeTrackingPage = () => {
         </select>
         <select
           value={taskId}
-          onChange={(e) => {
-            setTaskId(e.target.value);
-            // Auto-fill project from task if not set
-            if (e.target.value && !projectId) {
-              const task = kanbanTasks.find(t => t.id === e.target.value);
-              if (task?.project_id) setProjectId(task.project_id);
-            }
-          }}
-          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
+          onChange={(e) => setTaskId(e.target.value)}
+          disabled={!projectId}
+          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <option value="">Tarefa</option>
+          <option value="">{projectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
           {filteredTasks.map((t) => (
             <option key={t.id} value={t.id}>{t.title}</option>
           ))}
