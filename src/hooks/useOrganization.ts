@@ -39,7 +39,7 @@ export const useOrganization = () => {
     // Get user's organization
     const { data: orgData } = await supabase
       .from('organizations' as any)
-      .select('id')
+      .select('id, user_id')
       .eq('user_id', user.id)
       .single();
 
