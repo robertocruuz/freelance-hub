@@ -367,12 +367,22 @@ const ProjectsPage = () => {
         </button>
       </div>
 
-      <input
-        placeholder={t.search}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className={inputClass + " max-w-sm"}
-      />
+      <div className="relative max-w-sm">
+        <input
+          placeholder={t.search}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={inputClass + " w-full pr-8"}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
 
       {showForm && (
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
