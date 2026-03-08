@@ -28,6 +28,13 @@ interface OrganizationInfo {
   business_phone?: string | null;
   business_email?: string | null;
   website?: string | null;
+  logo_url?: string | null;
+  address?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  complement?: string | null;
 }
 
 interface ClientInfo {
@@ -52,7 +59,40 @@ interface BudgetPdfOptions {
   client?: ClientInfo | null;
 }
 
-export const generateBudgetPdf = (options: BudgetPdfOptions) => {
+const loadImageAsBase64 = (url: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } else {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
+const buildOrgAddress = (org: OrganizationInfo): string => {
+  const parts: string[] = [];
+  if (org.address) parts.push(org.address);
+  if (org.complement) parts.push(org.complement);
+  if (org.neighborhood) parts.push(org.neighborhood);
+  if (org.city && org.state) parts.push(`${org.city} - ${org.state}`);
+  else if (org.city) parts.push(org.city);
+  else if (org.state) parts.push(org.state);
+  if (org.zip_code) parts.push(`CEP: ${org.zip_code}`);
+  return parts.join(', ');
+};
+
+export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -60,14 +100,34 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
   const contentW = pw - margin * 2;
   let y = 20;
 
-  // ── Organization Header ──
+  // ── Organization Header with Logo ──
   if (options.organization) {
     const org = options.organization;
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(25, 25, 25);
-    doc.text(org.trade_name || 'Empresa', margin, y);
-    y += 8;
+    let logoX = margin;
+
+    // Try to load logo
+    if (org.logo_url) {
+      const logoBase64 = await loadImageAsBase64(org.logo_url);
+      if (logoBase64) {
+        const logoH = 14;
+        const img = new Image();
+        img.src = logoBase64;
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const logoW = logoH * ratio;
+        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        logoX = margin + logoW + 6;
+        // Adjust y if logo is taller
+        y = Math.max(y, y - 4 + logoH + 2);
+      }
+    }
+
+    if (!org.logo_url) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(25, 25, 25);
+      doc.text(org.trade_name || 'Empresa', margin, y);
+      y += 8;
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -278,17 +338,38 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
   }
 
   // ── Footer ──
+  const footerLineY = pageH - 22;
   doc.setDrawColor(200, 210, 225);
   doc.setLineWidth(0.3);
-  doc.line(margin, pageH - 16, pw - margin, pageH - 16);
+  doc.line(margin, footerLineY, pw - margin, footerLineY);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(150, 150, 150);
-  doc.text('Documento gerado automaticamente', margin, pageH - 10);
+
+  let footerY = footerLineY + 5;
+  if (options.organization) {
+    const org = options.organization;
+    const companyName = org.company_name || org.trade_name || '';
+    if (companyName) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(companyName, margin, footerY);
+      doc.setFont('helvetica', 'normal');
+    }
+    const addr = buildOrgAddress(org);
+    if (addr) {
+      const addrX = companyName ? margin + doc.getTextWidth(companyName) + 4 : margin;
+      const maxAddrW = pw - margin - addrX;
+      const addrText = doc.splitTextToSize(addr, maxAddrW);
+      doc.text(addrText[0] || '', addrX, footerY);
+    }
+  } else {
+    doc.text('Documento gerado automaticamente', margin, footerY);
+  }
+
   if (options.budgetDate) {
     const dateStr = new Date(options.budgetDate + 'T12:00:00').toLocaleDateString('pt-BR');
     const dateW = doc.getTextWidth(dateStr);
-    doc.text(dateStr, pw - margin - dateW, pageH - 10);
+    doc.text(dateStr, pw - margin - dateW, footerY);
   }
 
   const datePart = options.budgetDate || new Date().toISOString().slice(0, 10);
@@ -309,7 +390,7 @@ interface InvoicePdfOptions {
   client?: ClientInfo | null;
 }
 
-export const generateInvoicePdf = (options: InvoicePdfOptions) => {
+export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -317,14 +398,30 @@ export const generateInvoicePdf = (options: InvoicePdfOptions) => {
   const contentW = pw - margin * 2;
   let y = 20;
 
-  // ── Organization Header ──
+  // ── Organization Header with Logo ──
   if (options.organization) {
     const org = options.organization;
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(25, 25, 25);
-    doc.text(org.trade_name || 'Empresa', margin, y);
-    y += 8;
+
+    if (org.logo_url) {
+      const logoBase64 = await loadImageAsBase64(org.logo_url);
+      if (logoBase64) {
+        const logoH = 14;
+        const img = new Image();
+        img.src = logoBase64;
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const logoW = logoH * ratio;
+        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        y = Math.max(y, y - 4 + logoH + 2);
+      }
+    }
+
+    if (!org.logo_url) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(25, 25, 25);
+      doc.text(org.trade_name || 'Empresa', margin, y);
+      y += 8;
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -515,16 +612,37 @@ export const generateInvoicePdf = (options: InvoicePdfOptions) => {
   doc.text(totalText, pw - margin - totalW, y + 4);
 
   // ── Footer ──
+  const footerLineY = pageH - 22;
   doc.setDrawColor(200, 210, 225);
   doc.setLineWidth(0.3);
-  doc.line(margin, pageH - 16, pw - margin, pageH - 16);
+  doc.line(margin, footerLineY, pw - margin, footerLineY);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(150, 150, 150);
-  doc.text('Documento gerado automaticamente', margin, pageH - 10);
+
+  let footerY = footerLineY + 5;
+  if (options.organization) {
+    const org = options.organization;
+    const companyName = org.company_name || org.trade_name || '';
+    if (companyName) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(companyName, margin, footerY);
+      doc.setFont('helvetica', 'normal');
+    }
+    const addr = buildOrgAddress(org);
+    if (addr) {
+      const addrX = companyName ? margin + doc.getTextWidth(companyName) + 4 : margin;
+      const maxAddrW = pw - margin - addrX;
+      const addrText = doc.splitTextToSize(addr, maxAddrW);
+      doc.text(addrText[0] || '', addrX, footerY);
+    }
+  } else {
+    doc.text('Documento gerado automaticamente', margin, footerY);
+  }
+
   const dateStr = new Date(options.createdAt).toLocaleDateString('pt-BR');
   const dateW = doc.getTextWidth(dateStr);
-  doc.text(dateStr, pw - margin - dateW, pageH - 10);
+  doc.text(dateStr, pw - margin - dateW, footerY);
 
   const datePart = new Date(options.createdAt).toISOString().slice(0, 10);
   doc.save(`fatura_${datePart}.pdf`);

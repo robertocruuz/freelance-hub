@@ -298,9 +298,9 @@ const InvoicesPage = () => {
 
   const statusLabel = (s: string) => (t as any)[s] || s;
 
-  const exportInvoicePdf = (inv: Invoice) => {
+  const exportInvoicePdf = async (inv: Invoice) => {
     const client = clients.find(c => c.id === inv.client_id) || null;
-    generateInvoicePdf({
+    await generateInvoicePdf({
       invoiceName: inv.name,
       items: inv.items,
       total: inv.total,
