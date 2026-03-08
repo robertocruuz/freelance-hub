@@ -16,8 +16,15 @@ interface Client {
   phone: string | null;
   document: string | null;
   responsible: string | null;
+  color: string | null;
   created_at: string;
 }
+
+const CLIENT_COLORS = [
+  '#EF4444', '#F97316', '#F59E0B', '#84CC16', '#22C55E',
+  '#14B8A6', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6',
+  '#A855F7', '#EC4899', '#F43F5E', '#78716C',
+];
 
 const maskPhone = (v: string) => {
   const d = v.replace(/\D/g, '').slice(0, 11);
@@ -72,6 +79,7 @@ const ClientsPage = () => {
   const [phone, setPhone] = useState('');
   const [document, setDocument] = useState('');
   const [responsible, setResponsible] = useState('');
+  const [color, setColor] = useState<string | null>(null);
   // 360° view
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
@@ -90,7 +98,7 @@ const ClientsPage = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setName(''); setEmail(''); setPhone(''); setDocument(''); setResponsible('');
+    setName(''); setEmail(''); setPhone(''); setDocument(''); setResponsible(''); setColor(null);
     setDialogOpen(true);
   };
 
@@ -101,6 +109,7 @@ const ClientsPage = () => {
     setPhone(c.phone || '');
     setDocument(c.document || '');
     setResponsible(c.responsible || '');
+    setColor(c.color || null);
     setDialogOpen(true);
   };
 
@@ -113,7 +122,8 @@ const ClientsPage = () => {
         phone: phone || null,
         document: document || null,
         responsible: responsible || null,
-      }).eq('id', editing.id);
+        color: color || null,
+      } as any).eq('id', editing.id);
       if (error) toast.error(error.message);
       else toast.success(t.save + '!');
     } else {
@@ -124,7 +134,8 @@ const ClientsPage = () => {
         phone: phone || null,
         document: document || null,
         responsible: responsible || null,
-      });
+        color: color || null,
+      } as any);
       if (error) toast.error(error.message);
       else toast.success(t.save + '!');
     }
@@ -416,6 +427,14 @@ const ClientsPage = () => {
               <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               <input placeholder={t.document} value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Cor do cliente</label>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {CLIENT_COLORS.map((c) => (
+                    <button key={c} type="button" onClick={() => setColor(color === c ? null : c)} className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setDialogOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
                 <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
@@ -463,13 +482,16 @@ const ClientsPage = () => {
         <div className="space-y-2">
           {filtered.map((c) => (
             <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer" onClick={() => openClient360(c)}>
-              <div className="min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--muted-foreground))' }} />
+                <div className="min-w-0">
                 <p className="font-semibold text-foreground">{c.name}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                   {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
                   {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>}
                   {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(c.document)}</span>}
                 </div>
+              </div>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={(e) => { e.stopPropagation(); openEdit(c); }} className="text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
@@ -491,6 +513,14 @@ const ClientsPage = () => {
             <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
             <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
             <input placeholder={t.document} value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">Cor do cliente</label>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {CLIENT_COLORS.map((c) => (
+                  <button key={c} type="button" onClick={() => setColor(color === c ? null : c)} className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setDialogOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
               <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
