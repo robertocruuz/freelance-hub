@@ -84,7 +84,7 @@ const KanbanPage = () => {
   const [listSortDir, setListSortDir] = useState<'asc' | 'desc'>('asc');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
-  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
