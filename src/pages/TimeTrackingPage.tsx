@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid, Tag, DollarSign, FolderOpen } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -326,17 +326,10 @@ const TimeTrackingPage = () => {
           className="flex-1 min-w-[150px] px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
         />
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => {}}
-            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            title="Projeto"
-          >
-            <FolderOpen className="w-4 h-4" />
-          </button>
           <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
-            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="">{t.project}</option>
             {projects.map((p) => {
@@ -352,19 +345,13 @@ const TimeTrackingPage = () => {
             value={taskId}
             onChange={(e) => setTaskId(e.target.value)}
             disabled={!projectId}
-            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
+            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
           >
             <option value="">{projectId ? 'Tarefa' : 'Projeto primeiro'}</option>
             {filteredTasks.map((t) => (
               <option key={t.id} value={t.id}>{t.title}</option>
             ))}
           </select>
-          <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Tags">
-            <Tag className="w-4 h-4" />
-          </button>
-          <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Faturável">
-            <DollarSign className="w-4 h-4" />
-          </button>
         </div>
         <div className="flex items-center gap-3 ml-2">
           <span className="font-mono text-lg font-semibold text-foreground tabular-nums min-w-[80px] text-right">
