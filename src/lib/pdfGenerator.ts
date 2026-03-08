@@ -390,7 +390,7 @@ interface InvoicePdfOptions {
   client?: ClientInfo | null;
 }
 
-export const generateInvoicePdf = (options: InvoicePdfOptions) => {
+export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -398,14 +398,30 @@ export const generateInvoicePdf = (options: InvoicePdfOptions) => {
   const contentW = pw - margin * 2;
   let y = 20;
 
-  // ── Organization Header ──
+  // ── Organization Header with Logo ──
   if (options.organization) {
     const org = options.organization;
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(25, 25, 25);
-    doc.text(org.trade_name || 'Empresa', margin, y);
-    y += 8;
+
+    if (org.logo_url) {
+      const logoBase64 = await loadImageAsBase64(org.logo_url);
+      if (logoBase64) {
+        const logoH = 14;
+        const img = new Image();
+        img.src = logoBase64;
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const logoW = logoH * ratio;
+        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        y = Math.max(y, y - 4 + logoH + 2);
+      }
+    }
+
+    if (!org.logo_url) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(25, 25, 25);
+      doc.text(org.trade_name || 'Empresa', margin, y);
+      y += 8;
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -596,16 +612,37 @@ export const generateInvoicePdf = (options: InvoicePdfOptions) => {
   doc.text(totalText, pw - margin - totalW, y + 4);
 
   // ── Footer ──
+  const footerLineY = pageH - 22;
   doc.setDrawColor(200, 210, 225);
   doc.setLineWidth(0.3);
-  doc.line(margin, pageH - 16, pw - margin, pageH - 16);
+  doc.line(margin, footerLineY, pw - margin, footerLineY);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(150, 150, 150);
-  doc.text('Documento gerado automaticamente', margin, pageH - 10);
+
+  let footerY = footerLineY + 5;
+  if (options.organization) {
+    const org = options.organization;
+    const companyName = org.company_name || org.trade_name || '';
+    if (companyName) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(companyName, margin, footerY);
+      doc.setFont('helvetica', 'normal');
+    }
+    const addr = buildOrgAddress(org);
+    if (addr) {
+      const addrX = companyName ? margin + doc.getTextWidth(companyName) + 4 : margin;
+      const maxAddrW = pw - margin - addrX;
+      const addrText = doc.splitTextToSize(addr, maxAddrW);
+      doc.text(addrText[0] || '', addrX, footerY);
+    }
+  } else {
+    doc.text('Documento gerado automaticamente', margin, footerY);
+  }
+
   const dateStr = new Date(options.createdAt).toLocaleDateString('pt-BR');
   const dateW = doc.getTextWidth(dateStr);
-  doc.text(dateStr, pw - margin - dateW, pageH - 10);
+  doc.text(dateStr, pw - margin - dateW, footerY);
 
   const datePart = new Date(options.createdAt).toISOString().slice(0, 10);
   doc.save(`fatura_${datePart}.pdf`);
