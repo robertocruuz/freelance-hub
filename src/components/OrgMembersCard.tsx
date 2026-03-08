@@ -282,8 +282,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="editor">Editor</SelectItem>
-                        <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                        <SelectItem value="collaborator">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
