@@ -47,6 +47,7 @@ const App = () => (
                   <Route path="kanban" element={<KanbanPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
+                <Route path="/invite/:token" element={<InvitePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

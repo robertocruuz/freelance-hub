@@ -449,6 +449,9 @@ const ProfilePage = () => {
         </CardContent>
       </Card>
 
+      {/* Team Card */}
+      <OrgMembersCard />
+
       {/* Security Card */}
       <Card>
         <CardHeader className="flex flex-row items-start gap-3">
