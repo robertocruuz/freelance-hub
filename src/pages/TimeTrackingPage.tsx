@@ -687,7 +687,7 @@ const TimeTrackingPage = () => {
                   const startMinutes = start.getHours() * 60 + start.getMinutes();
                   const endMinutes = end.getHours() * 60 + end.getMinutes();
                   const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                  const color = getProjectColor(entry.project_id);
+                  const color = getProjectColor(entry.project_id, entry.client_id);
                   return (
                     <button
                       key={entry.id}
