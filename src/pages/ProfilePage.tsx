@@ -142,7 +142,7 @@ const ProfilePage = () => {
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-muted-foreground">
               <User className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Nome' : 'Name'}
+              {lang === 'pt-BR' ? 'Nome completo' : 'Full name'}
             </Label>
             {editing ? (
               <Input
