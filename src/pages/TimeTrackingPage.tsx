@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Play, Square, Pencil, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid, Tag, DollarSign, FolderOpen } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +36,8 @@ interface TimeEntry {
   duration: number | null;
 }
 
-type ViewMode = 'daily' | 'weekly' | 'monthly';
+type ViewMode = 'calendar' | 'list' | 'timesheet';
+type TimeRange = 'daily' | 'weekly' | 'monthly';
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
@@ -45,7 +46,26 @@ const formatDuration = (seconds: number) => {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
+const formatDurationShort = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+};
+
 const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+const getWeekNumber = (date: Date) => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const DAY_NAMES_SHORT = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+const DAY_NAMES_EN = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
 const TimeTrackingPage = () => {
   const { t } = useI18n();
@@ -60,7 +80,8 @@ const TimeTrackingPage = () => {
   const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
@@ -71,6 +92,7 @@ const TimeTrackingPage = () => {
   const { clients } = useClients();
   const intervalRef = useRef<number>();
   const prefillApplied = useRef(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -101,7 +123,6 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
 
-  // Filter tasks by selected project
   const filteredTasks = projectId
     ? kanbanTasks.filter(t => t.project_id === projectId)
     : kanbanTasks;
@@ -117,11 +138,9 @@ const TimeTrackingPage = () => {
       if (desc) setDescription(desc);
       if (project) setProjectId(project);
       if (task) setTaskId(task);
-      // Auto-start timer
       setStartTime(Date.now());
       setElapsed(0);
       setRunning(true);
-      // Clear params
       setSearchParams({}, { replace: true });
       toast.success('Timer iniciado a partir da tarefa!');
     }
@@ -135,6 +154,15 @@ const TimeTrackingPage = () => {
     }
     return () => clearInterval(intervalRef.current);
   }, [running, startTime]);
+
+  // Scroll to current hour on mount
+  useEffect(() => {
+    if (calendarRef.current) {
+      const currentHour = new Date().getHours();
+      const scrollTarget = Math.max(0, (currentHour - 2) * 60);
+      calendarRef.current.scrollTop = scrollTarget;
+    }
+  }, [viewMode]);
 
   const startTimer = () => {
     setStartTime(Date.now());
@@ -185,7 +213,6 @@ const TimeTrackingPage = () => {
     if (!editingEntry) return;
     const entryDate = new Date(editingEntry.start_time);
     const dateStr = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${String(entryDate.getDate()).padStart(2, '0')}`;
-
     const newStart = new Date(`${dateStr}T${editStartTime}:00`);
     const newEnd = editEndTime ? new Date(`${dateStr}T${editEndTime}:00`) : null;
     const duration = newEnd ? Math.floor((newEnd.getTime() - newStart.getTime()) / 1000) : null;
@@ -208,57 +235,56 @@ const TimeTrackingPage = () => {
 
   const getProjectName = (pid: string | null) => {
     if (!pid) return '';
-    const p = projects.find(pr => pr.id === pid);
-    return p?.name || '';
+    return projects.find(pr => pr.id === pid)?.name || '';
   };
 
   const getTaskName = (tid: string | null) => {
     if (!tid) return '';
-    const t = kanbanTasks.find(tk => tk.id === tid);
-    return t?.title || '';
+    return kanbanTasks.find(tk => tk.id === tid)?.title || '';
   };
 
   const editFilteredTasks = editProjectId
     ? kanbanTasks.filter(t => t.project_id === editProjectId)
     : kanbanTasks;
 
-  // Navigation
   const navigateDate = (dir: number) => {
     const d = new Date(selectedDate);
-    if (viewMode === 'daily') d.setDate(d.getDate() + dir);
-    else if (viewMode === 'weekly') d.setDate(d.getDate() + dir * 7);
+    if (timeRange === 'daily') d.setDate(d.getDate() + dir);
+    else if (timeRange === 'weekly') d.setDate(d.getDate() + dir * 7);
     else d.setMonth(d.getMonth() + dir);
     setSelectedDate(d);
   };
 
+  // Week calculations
+  const weekStart = useMemo(() => {
+    const ws = new Date(selectedDate);
+    const day = ws.getDay();
+    const diff = day === 0 ? -6 : 1 - day; // Monday start
+    ws.setDate(ws.getDate() + diff);
+    ws.setHours(0, 0, 0, 0);
+    return ws;
+  }, [selectedDate]);
+
+  const weekDays = useMemo(() =>
+    Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    }), [weekStart]);
+
   // Filtered entries
   const filteredEntries = entries.filter((e) => {
     const ed = new Date(e.start_time);
-    if (viewMode === 'daily') return isSameDay(ed, selectedDate);
-    if (viewMode === 'weekly') {
-      const ws = new Date(selectedDate);
-      ws.setDate(selectedDate.getDate() - selectedDate.getDay());
-      ws.setHours(0, 0, 0, 0);
-      const we = new Date(ws);
-      we.setDate(ws.getDate() + 7);
-      return ed >= ws && ed < we;
+    if (timeRange === 'daily') return isSameDay(ed, selectedDate);
+    if (timeRange === 'weekly') {
+      const we = new Date(weekStart);
+      we.setDate(weekStart.getDate() + 7);
+      return ed >= weekStart && ed < we;
     }
     return ed.getMonth() === selectedDate.getMonth() && ed.getFullYear() === selectedDate.getFullYear();
   });
 
   const totalFiltered = filteredEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
-  const todayEntries = entries.filter((e) => isSameDay(new Date(e.start_time), new Date()));
-  const todayTotal = todayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
-
-  // Weekly grid
-  const weekStart = new Date(selectedDate);
-  weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
-  weekStart.setHours(0, 0, 0, 0);
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    return d;
-  });
 
   // Monthly grid
   const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
@@ -266,215 +292,495 @@ const TimeTrackingPage = () => {
     return new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i + 1);
   });
 
+  const weekNumber = getWeekNumber(selectedDate);
+
   const dateLabel = () => {
-    if (viewMode === 'daily') return selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-    if (viewMode === 'weekly') {
+    if (timeRange === 'daily') return selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+    if (timeRange === 'weekly') {
       const we = new Date(weekStart);
       we.setDate(weekStart.getDate() + 6);
-      return `${weekStart.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} – ${we.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}`;
+      return `Esta semana · S${weekNumber}`;
     }
     return selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
+  // Get color for project
+  const getProjectColor = (pid: string | null) => {
+    if (!pid) return 'hsl(var(--primary))';
+    const idx = projects.findIndex(p => p.id === pid);
+    const colors = [
+      'hsl(280 70% 60%)', 'hsl(200 80% 55%)', 'hsl(150 60% 45%)',
+      'hsl(35 90% 55%)', 'hsl(340 75% 55%)', 'hsl(180 60% 45%)',
+    ];
+    return colors[idx % colors.length];
+  };
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-      {/* Timer bar */}
-      <div className="flex flex-wrap items-center gap-3 p-4 rounded-3xl glass">
+    <div className="max-w-full mx-auto space-y-0 animate-fade-in h-full flex flex-col">
+      {/* Timer bar - Toggl style */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
         <input
-          placeholder={t.description}
+          placeholder="No que você está trabalhando?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-4 py-2 rounded-xl glass-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+          className="flex-1 min-w-[150px] px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
         />
-        <select
-          value={projectId}
-          onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
-          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none"
-        >
-          <option value="">{t.project}</option>
-          {projects.map((p) => {
-            const client = clients.find(c => c.id === p.client_id);
-            return (
-              <option key={p.id} value={p.id}>
-                {p.name}{client ? ` (${client.name})` : ''}
-              </option>
-            );
-          })}
-        </select>
-        <select
-          value={taskId}
-          onChange={(e) => setTaskId(e.target.value)}
-          disabled={!projectId}
-          className="w-48 px-4 py-2 rounded-xl glass-input text-foreground text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">{projectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
-          {filteredTasks.map((t) => (
-            <option key={t.id} value={t.id}>{t.title}</option>
-          ))}
-        </select>
-        <span className="font-mono text-lg font-semibold text-foreground w-24 text-center">
-          {formatDuration(elapsed)}
-        </span>
-        {running ? (
-          <button onClick={stopTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm">
-            <Square className="w-4 h-4" /> {t.stopTimer}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {}}
+            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            title="Projeto"
+          >
+            <FolderOpen className="w-4 h-4" />
           </button>
-        ) : (
-          <button onClick={startTimer} className="flex items-center gap-2 px-5 py-2 rounded-xl btn-glow text-primary-foreground font-semibold text-sm">
-            <Play className="w-4 h-4" /> {t.startTimer}
-          </button>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{t.todayTotal}</p>
-          <p className="text-xl font-bold text-foreground">{formatDuration(todayTotal)}</p>
-        </div>
-        <div className="p-4 rounded-2xl glass text-center">
-          <p className="text-xs text-muted-foreground">{viewMode === 'daily' ? t.todayTotal : viewMode === 'weekly' ? t.weekTotal : t.monthlyView}</p>
-          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
-        </div>
-        <div className="p-4 rounded-2xl glass text-center hidden sm:block">
-          <p className="text-xs text-muted-foreground">{t.billable}</p>
-          <p className="text-xl font-bold text-foreground">{formatDuration(totalFiltered)}</p>
-        </div>
-      </div>
-
-      {/* View mode toggle + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 rounded-xl glass-pill">
-          {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === mode ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              {mode === 'daily' ? t.dailyView : mode === 'weekly' ? t.weeklyView : t.monthlyView}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigateDate(-1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg glass-pill text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className="capitalize">{dateLabel()}</span>
-          </button>
-          <button onClick={() => navigateDate(1)} className="p-2 rounded-lg hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
-        </div>
-      </div>
-
-      {/* Daily view */}
-      {viewMode === 'daily' && (
-        <div className="space-y-2">
-          {filteredEntries.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="w-10 h-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t.noEntries}</p>
-            </div>
-          ) : (
-            filteredEntries.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 p-4 rounded-2xl glass text-sm">
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                  <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ') || t.project}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                  <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Weekly view */}
-      {viewMode === 'weekly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border">
-            {weekDays.map((d, i) => {
-              const isToday = isSameDay(d, new Date());
-              const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
-              const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
+          <select
+            value={projectId}
+            onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
+            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">{t.project}</option>
+            {projects.map((p) => {
+              const client = clients.find(c => c.id === p.client_id);
               return (
-                <div key={i} className={`p-3 text-center border-l first:border-l-0 border-border ${isToday ? 'bg-primary/5' : ''}`}>
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                  <p className="text-lg font-bold text-foreground">{d.getDate()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{formatDuration(dayTotal)}</p>
-                </div>
+                <option key={p.id} value={p.id}>
+                  {p.name}{client ? ` (${client.name})` : ''}
+                </option>
               );
             })}
+          </select>
+          <select
+            value={taskId}
+            onChange={(e) => setTaskId(e.target.value)}
+            disabled={!projectId}
+            className="max-w-[140px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
+          >
+            <option value="">{projectId ? 'Tarefa' : 'Projeto primeiro'}</option>
+            {filteredTasks.map((t) => (
+              <option key={t.id} value={t.id}>{t.title}</option>
+            ))}
+          </select>
+          <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Tags">
+            <Tag className="w-4 h-4" />
+          </button>
+          <button className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Faturável">
+            <DollarSign className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex items-center gap-3 ml-2">
+          <span className="font-mono text-lg font-semibold text-foreground tabular-nums min-w-[80px] text-right">
+            {formatDuration(elapsed)}
+          </span>
+          {running ? (
+            <button
+              onClick={stopTimer}
+              className="w-11 h-11 rounded-full bg-destructive flex items-center justify-center text-destructive-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              <Square className="w-4 h-4 fill-current" />
+            </button>
+          ) : (
+            <button
+              onClick={startTimer}
+              className="w-11 h-11 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              <Play className="w-5 h-5 fill-current ml-0.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation bar */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-card">
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigateDate(-1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button onClick={() => setSelectedDate(new Date())} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted text-sm font-medium text-foreground transition-colors">
+            <CalendarIcon className="w-4 h-4" />
+            <span className="capitalize">{dateLabel()}</span>
+          </button>
+          <button onClick={() => navigateDate(1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <span className="ml-3 text-sm text-muted-foreground font-medium">
+            TOTAL: <span className="text-foreground font-semibold">{formatDuration(totalFiltered)}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Time range selector */}
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+            className="px-3 py-1.5 rounded-lg border border-border text-sm text-foreground bg-card focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="daily">Dia</option>
+            <option value="weekly">Semana</option>
+            <option value="monthly">Mês</option>
+          </select>
+          {/* View mode toggle */}
+          <div className="flex items-center rounded-lg border border-border overflow-hidden">
+            {([
+              { key: 'calendar' as ViewMode, label: 'Calendário', icon: LayoutGrid },
+              { key: 'list' as ViewMode, label: 'Lista', icon: List },
+              { key: 'timesheet' as ViewMode, label: 'Timesheet', icon: Layers },
+            ]).map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setViewMode(key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${
+                  viewMode === key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </button>
+            ))}
           </div>
-          <div className="divide-y divide-border/50 max-h-[350px] overflow-y-auto">
+        </div>
+      </div>
+
+      {/* Main content area */}
+      <div className="flex-1 overflow-hidden">
+        {/* Calendar View (Weekly) */}
+        {viewMode === 'calendar' && timeRange === 'weekly' && (
+          <div className="h-full flex flex-col">
+            {/* Day headers */}
+            <div className="grid border-b border-border bg-card" style={{ gridTemplateColumns: '64px repeat(7, 1fr)' }}>
+              <div className="p-2 border-r border-border" />
+              {weekDays.map((d, i) => {
+                const isToday = isSameDay(d, new Date());
+                const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
+                const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
+                return (
+                  <div key={i} className={`px-2 py-2.5 text-center border-r last:border-r-0 border-border ${isToday ? 'bg-primary/5' : ''}`}>
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className={`text-2xl font-bold ${isToday ? 'text-primary bg-primary/10 w-9 h-9 rounded-full flex items-center justify-center' : 'text-foreground'}`}>
+                        {d.getDate()}
+                      </span>
+                      <div className="text-left">
+                        <p className={`text-[10px] font-bold tracking-wider ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {DAY_NAMES_SHORT[i]}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground tabular-nums">{formatDuration(dayTotal)}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Time grid */}
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin">
+              <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
+                {HOURS.map((hour) => (
+                  <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px repeat(7, 1fr)', height: '60px' }}>
+                    <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
+                      {hour === 0 ? '12:00 AM' : hour < 12 ? `${hour}:00 AM` : hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`}
+                    </div>
+                    {weekDays.map((d, di) => (
+                      <div key={di} className="border-r last:border-r-0 border-border/30 relative hover:bg-muted/30 transition-colors" />
+                    ))}
+                  </div>
+                ))}
+                {/* Render time entries as blocks */}
+                {weekDays.map((day, dayIdx) => {
+                  const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), day));
+                  return dayEntries.map((entry) => {
+                    const start = new Date(entry.start_time);
+                    const end = entry.end_time ? new Date(entry.end_time) : new Date();
+                    const startMinutes = start.getHours() * 60 + start.getMinutes();
+                    const endMinutes = end.getHours() * 60 + end.getMinutes();
+                    const durationMinutes = Math.max(endMinutes - startMinutes, 10);
+                    const top = startMinutes;
+                    const height = durationMinutes;
+                    const colWidth = `calc((100% - 64px) / 7)`;
+                    const left = `calc(64px + ${dayIdx} * ${colWidth})`;
+                    const color = getProjectColor(entry.project_id);
+
+                    return (
+                      <button
+                        key={entry.id}
+                        onClick={() => openEdit(entry)}
+                        className="absolute rounded-md px-1.5 py-0.5 text-[10px] text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm group z-10"
+                        style={{
+                          top: `${top}px`,
+                          height: `${Math.max(height, 18)}px`,
+                          left,
+                          width: `calc(${colWidth} - 4px)`,
+                          marginLeft: '2px',
+                          backgroundColor: color,
+                        }}
+                      >
+                        <div className="flex items-center gap-1 truncate">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0" />
+                          <span className="truncate font-medium">
+                            {entry.description || getProjectName(entry.project_id) || '—'}
+                          </span>
+                        </div>
+                        {height > 30 && (
+                          <p className="text-white/70 truncate">{formatDurationShort(entry.duration || 0)}</p>
+                        )}
+                      </button>
+                    );
+                  });
+                })}
+                {/* Current time indicator */}
+                {weekDays.some(d => isSameDay(d, new Date())) && (() => {
+                  const now = new Date();
+                  const todayIdx = weekDays.findIndex(d => isSameDay(d, now));
+                  if (todayIdx === -1) return null;
+                  const minutes = now.getHours() * 60 + now.getMinutes();
+                  const colWidth = `calc((100% - 64px) / 7)`;
+                  return (
+                    <div
+                      className="absolute pointer-events-none z-20"
+                      style={{
+                        top: `${minutes}px`,
+                        left: `calc(64px + ${todayIdx} * ${colWidth})`,
+                        width: colWidth,
+                      }}
+                    >
+                      <div className="relative">
+                        <div className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-destructive" />
+                        <div className="h-[2px] bg-destructive" />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Calendar View (Daily) */}
+        {viewMode === 'calendar' && timeRange === 'daily' && (
+          <div className="h-full flex flex-col">
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin">
+              <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
+                {HOURS.map((hour) => (
+                  <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px 1fr', height: '60px' }}>
+                    <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
+                      {hour === 0 ? '12:00 AM' : hour < 12 ? `${hour}:00 AM` : hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`}
+                    </div>
+                    <div className="relative hover:bg-muted/30 transition-colors" />
+                  </div>
+                ))}
+                {filteredEntries.map((entry) => {
+                  const start = new Date(entry.start_time);
+                  const end = entry.end_time ? new Date(entry.end_time) : new Date();
+                  const startMinutes = start.getHours() * 60 + start.getMinutes();
+                  const endMinutes = end.getHours() * 60 + end.getMinutes();
+                  const durationMinutes = Math.max(endMinutes - startMinutes, 10);
+                  const color = getProjectColor(entry.project_id);
+                  return (
+                    <button
+                      key={entry.id}
+                      onClick={() => openEdit(entry)}
+                      className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
+                      style={{
+                        top: `${startMinutes}px`,
+                        height: `${Math.max(durationMinutes, 20)}px`,
+                        left: '68px',
+                        width: 'calc(100% - 72px)',
+                        backgroundColor: color,
+                      }}
+                    >
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
+                        <span className="truncate font-medium">
+                          {entry.description || getProjectName(entry.project_id) || '—'}
+                        </span>
+                        <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Calendar View (Monthly) */}
+        {viewMode === 'calendar' && timeRange === 'monthly' && (
+          <div className="h-full overflow-y-auto scrollbar-thin bg-card">
+            <div className="grid grid-cols-7 text-center border-b border-border">
+              {DAY_NAMES_SHORT.map(d => (
+                <div key={d} className="p-2.5 text-xs font-bold tracking-wider text-muted-foreground">{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {Array.from({ length: (monthStart.getDay() + 6) % 7 }, (_, i) => (
+                <div key={`empty-${i}`} className="p-2 min-h-[80px] border-b border-r border-border/30" />
+              ))}
+              {monthDays.map((d) => {
+                const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
+                const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
+                const isToday = isSameDay(d, new Date());
+                return (
+                  <button
+                    key={d.getDate()}
+                    onClick={() => { setSelectedDate(d); setTimeRange('daily'); }}
+                    className={`p-2 min-h-[80px] border-b border-r border-border/30 text-left hover:bg-muted/30 transition-colors ${isToday ? 'bg-primary/5' : ''}`}
+                  >
+                    <p className={`text-xs font-semibold ${isToday ? 'text-primary-foreground bg-primary w-6 h-6 rounded-full flex items-center justify-center' : 'text-foreground'}`}>
+                      {d.getDate()}
+                    </p>
+                    {dayTotal > 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-1.5 font-mono">{formatDuration(dayTotal)}</p>
+                    )}
+                    {dayEntries.length > 0 && (
+                      <div className="mt-1 flex gap-0.5 flex-wrap">
+                        {dayEntries.slice(0, 3).map((e, i) => (
+                          <div
+                            key={i}
+                            className="h-1.5 rounded-full"
+                            style={{ width: '16px', backgroundColor: getProjectColor(e.project_id) }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* List View */}
+        {viewMode === 'list' && (
+          <div className="h-full overflow-y-auto scrollbar-thin p-4 space-y-1.5">
             {filteredEntries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">{t.noEntries}</div>
+              <div className="text-center py-16 text-muted-foreground">
+                <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium">{t.noEntries}</p>
+                <p className="text-xs mt-1">Inicie o timer para registrar seu tempo</p>
+              </div>
             ) : (
               filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent/20 transition-colors">
+                <div key={entry.id} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors group">
+                  <div
+                    className="w-1 h-8 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: getProjectColor(entry.project_id) }}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium truncate">{entry.description || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{[getProjectName(entry.project_id), getTaskName((entry as any).task_id)].filter(Boolean).join(' · ')} · {new Date(entry.start_time).toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{entry.description || '—'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {[getProjectName(entry.project_id), getTaskName(entry.task_id)].filter(Boolean).join(' · ') || 'Sem projeto'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-mono font-semibold text-foreground">{formatDuration(entry.duration || 0)}</span>
-                    <button onClick={() => openEdit(entry)} className="text-muted-foreground hover:text-primary"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {' – '}
+                      {entry.end_time ? new Date(entry.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                    </span>
+                    <span className="font-mono text-sm font-semibold text-foreground tabular-nums min-w-[70px] text-right">
+                      {formatDuration(entry.duration || 0)}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEdit(entry)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-primary transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => deleteEntry(entry.id)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Monthly view */}
-      {viewMode === 'monthly' && (
-        <div className="rounded-3xl glass overflow-hidden">
-          <div className="grid grid-cols-7 text-center border-b border-border">
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
-              <div key={d} className="p-2 text-xs font-medium text-muted-foreground">{d}</div>
-            ))}
+        {/* Timesheet View */}
+        {viewMode === 'timesheet' && (
+          <div className="h-full overflow-auto scrollbar-thin">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 font-semibold text-foreground">Descrição</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground">Projeto</th>
+                  <th className="text-left px-4 py-3 font-semibold text-foreground">Tarefa</th>
+                  {timeRange === 'weekly' && weekDays.map((d, i) => {
+                    const isToday = isSameDay(d, new Date());
+                    return (
+                      <th key={i} className={`text-center px-2 py-3 font-semibold min-w-[70px] ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                        <span className="text-[10px] block tracking-wider text-muted-foreground">{DAY_NAMES_SHORT[i]}</span>
+                        <span>{d.getDate()}</span>
+                      </th>
+                    );
+                  })}
+                  <th className="text-center px-4 py-3 font-semibold text-foreground">Total</th>
+                  <th className="px-2 py-3 w-16" />
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.length === 0 ? (
+                  <tr>
+                    <td colSpan={timeRange === 'weekly' ? 11 : 6} className="text-center py-12 text-muted-foreground text-sm">
+                      {t.noEntries}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredEntries.map((entry) => (
+                    <tr key={entry.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors group">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(entry.project_id) }} />
+                          <span className="truncate max-w-[180px]">{entry.description || '—'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{getProjectName(entry.project_id) || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{getTaskName(entry.task_id) || '—'}</td>
+                      {timeRange === 'weekly' && weekDays.map((d, i) => {
+                        const isEntryDay = isSameDay(new Date(entry.start_time), d);
+                        return (
+                          <td key={i} className="text-center px-2 py-3 tabular-nums text-xs">
+                            {isEntryDay ? formatDuration(entry.duration || 0) : ''}
+                          </td>
+                        );
+                      })}
+                      <td className="text-center px-4 py-3 font-mono font-semibold tabular-nums">
+                        {formatDuration(entry.duration || 0)}
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEdit(entry)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => deleteEntry(entry.id)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              {filteredEntries.length > 0 && (
+                <tfoot>
+                  <tr className="border-t-2 border-border bg-muted/20">
+                    <td colSpan={timeRange === 'weekly' ? 3 : 3} className="px-4 py-3 font-semibold text-foreground">Total</td>
+                    {timeRange === 'weekly' && weekDays.map((d, i) => {
+                      const dayEntries = filteredEntries.filter(e => isSameDay(new Date(e.start_time), d));
+                      const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
+                      return (
+                        <td key={i} className="text-center px-2 py-3 font-mono font-semibold text-xs tabular-nums">
+                          {dayTotal > 0 ? formatDuration(dayTotal) : ''}
+                        </td>
+                      );
+                    })}
+                    <td className="text-center px-4 py-3 font-mono font-bold text-foreground tabular-nums">
+                      {formatDuration(totalFiltered)}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
+            </table>
           </div>
-          <div className="grid grid-cols-7">
-            {Array.from({ length: monthStart.getDay() }, (_, i) => (
-              <div key={`empty-${i}`} className="p-2 min-h-[70px] border-t border-l first:border-l-0 border-border/30" />
-            ))}
-            {monthDays.map((d) => {
-              const dayEntries = entries.filter(e => isSameDay(new Date(e.start_time), d));
-              const dayTotal = dayEntries.reduce((s, e) => s + (e.duration || 0), 0);
-              const isToday = isSameDay(d, new Date());
-              return (
-                <button
-                  key={d.getDate()}
-                  onClick={() => { setSelectedDate(d); setViewMode('daily'); }}
-                  className={`p-2 min-h-[70px] border-t border-l border-border/30 text-left hover:bg-accent/20 transition-colors ${isToday ? 'bg-primary/5' : ''}`}
-                >
-                  <p className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-foreground'}`}>{d.getDate()}</p>
-                  {dayTotal > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1 font-mono">{formatDuration(dayTotal)}</p>
-                  )}
-                  {dayEntries.length > 0 && (
-                    <div className="mt-1 flex gap-0.5">
-                      {dayEntries.slice(0, 3).map((_, i) => (
-                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                      ))}
-                      {dayEntries.length > 3 && (
-                        <span className="text-[8px] text-muted-foreground">+{dayEntries.length - 3}</span>
-                      )}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
