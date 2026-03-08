@@ -127,20 +127,47 @@ const ProfilePage = () => {
   };
 
   const handleSaveOrg = async () => {
-    if (!user || !orgId) return;
+    if (!user) return;
     setLoading(true);
-    const { error } = await (supabase.from('organizations' as any) as any)
-      .update({ ...orgForm })
-      .eq('id', orgId);
-    setLoading(false);
-    if (error) {
-      toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+
+    if (orgId) {
+      // Update existing org
+      const { error } = await (supabase.from('organizations' as any) as any)
+        .update({ ...orgForm })
+        .eq('id', orgId);
+      setLoading(false);
+      if (error) {
+        toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+      } else {
+        setOrg({ ...orgForm });
+        setEditingOrg(false);
+        refreshOrg();
+        toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+      }
     } else {
-      setOrg({ ...orgForm });
-      setEditingOrg(false);
-      refreshOrg();
-      toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+      // Create new org
+      const { error } = await (supabase.from('organizations' as any) as any)
+        .insert({ ...orgForm, user_id: user.id });
+      setLoading(false);
+      if (error) {
+        toast({ title: lang === 'pt-BR' ? 'Erro ao criar organização' : 'Error creating organization', variant: 'destructive' });
+      } else {
+        setOrg({ ...orgForm });
+        setEditingOrg(false);
+        refreshOrg();
+        toast({ title: lang === 'pt-BR' ? 'Organização criada!' : 'Organization created!' });
+      }
     }
+  };
+
+  const emptyOrg = { company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', complement: '', neighborhood: '', state: '', city: '' };
+
+  const handleLeaveTeam = () => {
+    setOrg(emptyOrg);
+    setOrgForm(emptyOrg);
+    setLogoUrl(null);
+    setEditingOrg(false);
+    refreshOrg();
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
