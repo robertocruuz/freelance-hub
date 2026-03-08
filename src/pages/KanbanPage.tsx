@@ -54,6 +54,8 @@ const KanbanPage = () => {
   const [filterEstimatedTime, setFilterEstimatedTime] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<string>('position');
   const [showFilters, setShowFilters] = useState(false);
+  const [listSortField, setListSortField] = useState<string>('title');
+  const [listSortDir, setListSortDir] = useState<'asc' | 'desc'>('asc');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
