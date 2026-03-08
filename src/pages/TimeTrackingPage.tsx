@@ -138,15 +138,10 @@ const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente'
 const TimeTrackingPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const timer = useTimer();
+  const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer } = timer;
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [running, setRunning] = useState(false);
-  const [startTime, setStartTime] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [description, setDescription] = useState('');
-  const [clientId, setClientId] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [taskId, setTaskId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
@@ -160,7 +155,6 @@ const TimeTrackingPage = () => {
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const { clients } = useClients();
-  const intervalRef = useRef<number>();
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
