@@ -149,11 +149,16 @@ const ReceivedInvites = () => {
                   <p className="text-sm font-semibold text-foreground truncate">
                     {invite.org_name}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex flex-wrap items-center gap-2 mt-0.5">
                     <Badge variant="outline" className="text-[10px] gap-1 px-1.5">
                       <RoleIcon className="w-3 h-3" />
                       {roleLabels[invite.role]?.[lang] || invite.role}
                     </Badge>
+                    {invite.invited_by_name && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {isPt ? 'Convidado por' : 'Invited by'} <span className="font-medium text-foreground/70">{invite.invited_by_name}</span>
+                      </span>
+                    )}
                     {isExpired ? (
                       <span className="text-[10px] text-destructive font-medium">
                         {isPt ? 'Expirado' : 'Expired'}
