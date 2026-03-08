@@ -831,16 +831,7 @@ const TimeTrackingPage = () => {
               onChange={(e) => setEditDesc(e.target.value)}
               className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <select
-              value={editClientId}
-              onChange={(e) => { setEditClientId(e.target.value); setEditProjectId(''); setEditTaskId(''); }}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Cliente</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <CompactClientSelect clients={clients} value={editClientId} onChange={(v) => { setEditClientId(v); setEditProjectId(''); setEditTaskId(''); }} placeholder="Cliente" fullWidth />
             <select
               value={editProjectId}
               onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
