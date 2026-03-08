@@ -481,17 +481,14 @@ const ClientsPage = () => {
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer" onClick={() => openClient360(c)}>
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--muted-foreground))' }} />
-                <div className="min-w-0">
+            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border overflow-hidden hover:border-primary/30 transition-colors cursor-pointer" style={(c as any).color ? { backgroundColor: `${(c as any).color}15`, borderLeftWidth: '4px', borderLeftColor: (c as any).color, borderColor: undefined } : { backgroundColor: 'hsl(var(--card))' }} onClick={() => openClient360(c)}>
+              <div className="min-w-0">
                 <p className="font-semibold text-foreground">{c.name}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                   {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
                   {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>}
                   {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(c.document)}</span>}
                 </div>
-              </div>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={(e) => { e.stopPropagation(); openEdit(c); }} className="text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
