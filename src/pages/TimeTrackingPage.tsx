@@ -930,8 +930,8 @@ const TimeTrackingPage = () => {
           const handleExportPDF = async () => {
             const { default: jsPDF } = await import('jspdf');
 
-            // Filter entries based on export settings
-            let exportEntries = [...filteredEntries];
+            // Use all entries when custom dates are set, otherwise use filtered by period
+            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
             if (exportFilter === 'client' && exportClientId) {
               const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
               exportEntries = exportEntries.filter(e => e.project_id && clientProjectIds.includes(e.project_id));
