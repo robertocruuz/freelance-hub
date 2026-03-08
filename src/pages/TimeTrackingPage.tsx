@@ -1042,7 +1042,7 @@ const TimeTrackingPage = () => {
                 {visibleHours.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px repeat(7, 1fr)', height: '60px' }}>
                     <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
-                      {hour === 0 ? '12:00 AM' : hour < 12 ? `${hour}:00 AM` : hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`}
+                      {`${String(hour).padStart(2, '0')}:00`}
                     </div>
                     {weekDays.map((d, di) => (
                       <div key={di} className="border-r last:border-r-0 border-border/30 relative hover:bg-muted/30 transition-colors" />
