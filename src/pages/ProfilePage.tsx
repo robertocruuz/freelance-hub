@@ -84,6 +84,7 @@ const ProfilePage = () => {
         };
         setOrg(orgState);
         setOrgForm(orgState);
+        setLogoUrl(o.logo_url || null);
       }
     };
     fetchProfile();
