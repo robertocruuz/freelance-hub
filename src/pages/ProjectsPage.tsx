@@ -244,6 +244,8 @@ const ProjectsPage = () => {
   // Budget import
   const openImportModal = async (project: Project) => {
     setImportProjectId(project.id);
+    // Ensure items are loaded for this project
+    if (!projectItems[project.id]) await loadItems(project.id);
     setLoadingBudgets(true);
     const query = supabase.from('budgets').select('*').order('created_at', { ascending: false });
     if (project.client_id) {
@@ -257,6 +259,12 @@ const ProjectsPage = () => {
       })));
     }
     setLoadingBudgets(false);
+  };
+
+  const isItemImported = (item: BudgetItem) => {
+    if (!importProjectId) return false;
+    const existing = projectItems[importProjectId] || [];
+    return existing.some(e => e.name === item.description);
   };
 
   const importBudgetItem = async (item: BudgetItem) => {
