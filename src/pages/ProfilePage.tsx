@@ -47,7 +47,7 @@ const ProfilePage = () => {
       // Fetch organization
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, cnpj, business_email, business_phone, website')
+        .select('company_name, cnpj, state_registration, business_email, business_phone, website')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -55,6 +55,7 @@ const ProfilePage = () => {
         const orgState = {
           company_name: o.company_name || '',
           cnpj: o.cnpj || '',
+          state_registration: o.state_registration || '',
           business_email: o.business_email || '',
           business_phone: o.business_phone || '',
           website: o.website || '',
