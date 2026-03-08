@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,12 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -235,6 +241,15 @@ const InvoicesPage = () => {
   const deleteInvoice = async (id: string) => {
     await supabase.from('invoices').delete().eq('id', id);
     loadInvoices();
+  };
+
+  const updateInvoiceStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('invoices').update({ status }).eq('id', id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(lang === 'pt-BR' ? 'Status atualizado!' : 'Status updated!');
+      loadInvoices();
+    }
   };
 
   const statusLabel = (s: string) => (t as any)[s] || s;
@@ -554,7 +569,28 @@ const InvoicesPage = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
-                <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="focus:outline-none">
+                      <Badge className={cn(statusColors[inv.status], "cursor-pointer gap-1")}>
+                        {statusLabel(inv.status)}
+                        <ChevronDown className="w-3 h-3" />
+                      </Badge>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {['pending', 'paid', 'overdue'].map((s) => (
+                      <DropdownMenuItem
+                        key={s}
+                        onClick={() => updateInvoiceStatus(inv.id, s)}
+                        className={cn("text-sm", inv.status === s && "font-bold")}
+                      >
+                        <span className={cn("inline-block w-2 h-2 rounded-full mr-2", s === 'pending' ? 'bg-accent-foreground' : s === 'paid' ? 'bg-primary' : 'bg-destructive')} />
+                        {statusLabel(s)}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
                 <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
