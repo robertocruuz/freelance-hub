@@ -84,7 +84,7 @@ const HomePage = () => {
     <div className="max-w-5xl mx-auto relative z-10">
       <div className="mb-10">
         <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-3 leading-tight">
-          {isPt ? 'Bem-vindo à sua\nPlataforma' : 'Welcome to your\nPlatform'}
+          {isPt ? `Olá, ${firstName || 'Usuário'}` : `Hello, ${firstName || 'User'}`}
         </h1>
         <p className="text-muted-foreground text-lg max-w-lg">
           {t.heroSubtitle}
