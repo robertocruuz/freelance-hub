@@ -470,6 +470,12 @@ const KanbanPage = () => {
                   </Badge>
                 );
               })}
+              {filterDeadlineDate && (
+                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterDeadlineDate(undefined)}>
+                  {format(filterDeadlineDate, "dd/MM/yyyy")}
+                  <X className="w-3 h-3" />
+                </Badge>
+              )}
             </div>
           )}
 
