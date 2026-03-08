@@ -49,11 +49,12 @@ const roleColors = {
   viewer: 'bg-muted text-muted-foreground border-border',
 };
 
-const OrgMembersCard = ({ embedded = false }: { embedded?: boolean }) => {
+const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization> }) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
-  const { orgId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = useOrganization();
+  const internalOrgHook = useOrganization();
+  const { orgId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');

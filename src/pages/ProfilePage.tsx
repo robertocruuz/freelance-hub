@@ -26,7 +26,8 @@ const ProfilePage = () => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const { toast } = useToast();
-  const { orgId, isAdmin, refresh: refreshOrg } = useOrganization();
+  const orgHook = useOrganization();
+  const { orgId, isAdmin, refresh: refreshOrg } = orgHook;
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -721,7 +722,7 @@ const ProfilePage = () => {
                     {lang === 'pt-BR' ? 'Equipe' : 'Team'}
                   </p>
                 </div>
-                <OrgMembersCard embedded />
+                <OrgMembersCard embedded orgHook={orgHook} />
               </div>
             </CardContent>
           </CollapsibleContent>
