@@ -1108,6 +1108,12 @@ const KanbanPage = () => {
               </div>
             )}
           </div>
+          {editingBoard && (
+            <div className="pt-2">
+              <Label className="text-xs mb-2 block">Compartilhamento</Label>
+              <ShareButton resourceType="board" resourceId={editingBoard.id} />
+            </div>
+          )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowBoardDialog(false)}>Cancelar</Button>
             <Button onClick={handleSaveBoard} disabled={!boardName.trim()} className="btn-glow">
