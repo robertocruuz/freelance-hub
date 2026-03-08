@@ -111,7 +111,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
     }
   };
 
-  const handleRoleChange = async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
+  const handleRoleChange = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await updateMemberRole(memberId, role);
     if (error) {
       toast({ title: isPt ? 'Erro ao atualizar' : 'Error updating', variant: 'destructive' });
