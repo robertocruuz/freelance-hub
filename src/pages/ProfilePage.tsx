@@ -379,32 +379,25 @@ const ProfilePage = () => {
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
-                <label className="relative cursor-pointer group shrink-0" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="relative cursor-pointer group shrink-0"
+                  onClick={(e) => { e.stopPropagation(); if (isAdmin || !orgId) setLogoModalOpen(true); }}
+                >
                   {logoUrl ? (
                     <div className="h-12 max-w-[120px] overflow-hidden flex items-center justify-center relative">
-                      <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain" />
-                      <button
-                        type="button"
-                        onClick={handleRemoveLogo}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-destructive/90 z-10"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                      <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain rounded-lg" />
                     </div>
                   ) : (
                     <div className="w-12 h-12 rounded-xl border-2 border-border bg-primary/10 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-primary" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    {uploadingLogo ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
-                </label>
+                  {(isAdmin || !orgId) && (
+                    <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
                 <div>
                   <CardTitle className="text-lg">
                     {org.trade_name || org.company_name || (lang === 'pt-BR' ? 'Organização' : 'Organization')}
