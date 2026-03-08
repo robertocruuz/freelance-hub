@@ -909,6 +909,86 @@ const ProjectsPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Board picker dialog for task creation */}
+      <Dialog open={showBoardPicker} onOpenChange={setShowBoardPicker}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Kanban className="w-5 h-5 text-primary" />
+              Criar tarefa no painel
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {pendingTaskItem && (
+              <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                <p className="text-sm font-medium text-foreground">{pendingTaskItem.name}</p>
+                <p className="text-xs text-muted-foreground">{formatCurrency(pendingTaskItem.value)}</p>
+              </div>
+            )}
+
+            {!creatingBoard ? (
+              <>
+                {availableBoards.length > 0 ? (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Selecione o painel</label>
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {availableBoards.map((board) => (
+                        <button
+                          key={board.id}
+                          onClick={() => setSelectedBoardId(board.id)}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition border ${
+                            selectedBoardId === board.id
+                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                              : 'bg-secondary/50 text-foreground border-transparent hover:bg-secondary'
+                          }`}
+                        >
+                          <Kanban className="w-3.5 h-3.5 inline mr-2" />
+                          {board.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">Nenhum painel encontrado. Crie um para continuar.</p>
+                )}
+                <button
+                  onClick={() => setCreatingBoard(true)}
+                  className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition border border-dashed border-border"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Criar novo painel
+                </button>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Nome do novo painel</label>
+                <UIInput
+                  value={newBoardName}
+                  onChange={(e) => setNewBoardName(e.target.value)}
+                  placeholder="Ex: Marketing, Sprint 1..."
+                  autoFocus
+                />
+                <button
+                  onClick={() => setCreatingBoard(false)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition"
+                >
+                  ← Voltar para a lista
+                </button>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBoardPicker(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreateTaskInBoard}
+              disabled={!creatingBoard ? !selectedBoardId : !newBoardName.trim()}
+              className="btn-glow"
+            >
+              Criar tarefa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
