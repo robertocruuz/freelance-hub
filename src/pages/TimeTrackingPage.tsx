@@ -135,6 +135,14 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
 
+  const filteredProjects = clientId
+    ? projects.filter(p => p.client_id === clientId)
+    : projects;
+
+  const editFilteredProjects = editClientId
+    ? projects.filter(p => p.client_id === editClientId)
+    : projects;
+
   const filteredTasks = projectId
     ? kanbanTasks.filter(t => t.project_id === projectId)
     : kanbanTasks;
