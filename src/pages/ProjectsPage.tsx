@@ -453,7 +453,7 @@ const ProjectsPage = () => {
               {pendingBudgetItems.map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-sm">
                   <span className="text-foreground">{item.description}</span>
-                  <span className="text-muted-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                  <span className="text-muted-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
                 </div>
               ))}
             </div>
