@@ -266,6 +266,45 @@ const OrgMembersCard = () => {
       <Separator />
 
       <CardContent className="pt-5 pb-6 space-y-4">
+        {/* Invite link section */}
+        {isAdmin && (
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5" />
+              {isPt ? 'Link de convite' : 'Invite link'}
+            </Label>
+            {inviteLink ? (
+              <div className="flex gap-2">
+                <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
+                <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="editor">Editor</SelectItem>
+                    <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" className="flex-1 gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
+                  <Link2 className="w-3.5 h-3.5" />
+                  {isPt ? 'Gerar link de convite' : 'Generate invite link'}
+                </Button>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
+            </p>
+            <Separator className="opacity-50" />
+          </div>
+        )}
+
         {/* Members list */}
         <div className="space-y-2">
           {members.map((member) => {
