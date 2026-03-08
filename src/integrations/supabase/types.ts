@@ -16,40 +16,52 @@ export type Database = {
     Tables: {
       budgets: {
         Row: {
+          budget_date: string | null
           client_id: string | null
           created_at: string
+          delivery_date: string | null
           discount: number
           id: string
           items: Json
+          name: string | null
           notes: string | null
           status: string
           total: number
           updated_at: string
           user_id: string
+          validity_date: string | null
         }
         Insert: {
+          budget_date?: string | null
           client_id?: string | null
           created_at?: string
+          delivery_date?: string | null
           discount?: number
           id?: string
           items?: Json
+          name?: string | null
           notes?: string | null
           status?: string
           total?: number
           updated_at?: string
           user_id: string
+          validity_date?: string | null
         }
         Update: {
+          budget_date?: string | null
           client_id?: string | null
           created_at?: string
+          delivery_date?: string | null
           discount?: number
           id?: string
           items?: Json
+          name?: string | null
           notes?: string | null
           status?: string
           total?: number
           updated_at?: string
           user_id?: string
+          validity_date?: string | null
         }
         Relationships: [
           {
