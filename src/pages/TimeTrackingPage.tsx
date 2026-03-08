@@ -842,7 +842,7 @@ const TimeTrackingPage = () => {
                     <tr key={entry.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors group">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(entry.project_id) }} />
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getProjectColor(entry.project_id, entry.client_id) }} />
                           <span className="truncate max-w-[180px]">{entry.description || '—'}</span>
                         </div>
                       </td>
