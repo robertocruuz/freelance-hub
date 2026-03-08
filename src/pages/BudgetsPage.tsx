@@ -596,6 +596,7 @@ const BudgetsPage = () => {
                 grouped[key].push(b);
               });
             const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+            const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
               if (a === '__no_client__') return 1;
               if (b === '__no_client__') return -1;
@@ -608,7 +609,7 @@ const BudgetsPage = () => {
                 </h2>
                 <div className="space-y-2">
           {grouped[key].map((b) => (
-            <div key={b.id} className="rounded-xl border border-border bg-card overflow-hidden">
+            <div key={b.id} className="rounded-xl border border-border overflow-hidden" style={clientColorFn(b.client_id) ? { backgroundColor: `${clientColorFn(b.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColorFn(b.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
               <div className="flex items-center justify-between p-4">
                 <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
                   <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedBudget === b.id ? 'rotate-90' : ''}`} />
