@@ -458,16 +458,25 @@ const ProfilePage = () => {
                       <MapPin className="w-3.5 h-3.5" />
                       {lang === 'pt-BR' ? 'Endereço' : 'Address'}
                     </p>
-                    <div className="grid grid-cols-1 gap-y-4">
-                      <div className="space-y-1">
-                        <Label className="text-sm text-muted-foreground">
-                          {lang === 'pt-BR' ? 'Endereço' : 'Address'}
-                        </Label>
-                        {editingOrg ? (
-                          <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
-                        ) : (
-                          <FieldDisplay value={org.address} />
-                        )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">CEP</Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.zip_code} onChange={(e) => setOrgForm({ ...orgForm, zip_code: maskCEP(e.target.value) })} placeholder="00000-000" maxLength={9} />
+                          ) : (
+                            <FieldDisplay value={org.zip_code} />
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                          </Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
+                          ) : (
+                            <FieldDisplay value={org.address} />
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
