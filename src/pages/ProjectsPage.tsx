@@ -452,6 +452,9 @@ const ProjectsPage = () => {
                       <p className="font-semibold text-foreground">{p.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {clientName(p.client_id)}
+                        {p.due_date && (
+                          <> · Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
+                        )}
                         {isExpanded && items.length > 0 && (
                           <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}</>
                         )}
