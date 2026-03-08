@@ -814,6 +814,61 @@ const ProfilePage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Logo Upload Modal */}
+      <Dialog open={logoModalOpen} onOpenChange={setLogoModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{lang === 'pt-BR' ? 'Logo da empresa' : 'Company logo'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {logoUrl ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-full max-h-48 flex items-center justify-center bg-muted/30 rounded-lg p-4 border border-border">
+                  <img src={logoUrl} alt="Logo" className="max-h-40 w-auto object-contain" />
+                </div>
+                <div className="flex gap-2 w-full">
+                  <label className="flex-1">
+                    <Button variant="outline" className="w-full gap-2" disabled={uploadingLogo} asChild>
+                      <span>
+                        <Upload className="w-4 h-4" />
+                        {lang === 'pt-BR' ? 'Alterar logo' : 'Change logo'}
+                      </span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { handleLogoUpload(e); }} disabled={uploadingLogo} />
+                  </label>
+                  <Button
+                    variant="destructive"
+                    className="gap-2"
+                    disabled={uploadingLogo}
+                    onClick={(e) => { handleRemoveLogo(e); }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {lang === 'pt-BR' ? 'Remover' : 'Remove'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/30 transition-colors">
+                {uploadingLogo ? (
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Clique para enviar' : 'Click to upload'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG {lang === 'pt-BR' ? 'até' : 'up to'} 2MB</p>
+                    </div>
+                  </>
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+              </label>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
