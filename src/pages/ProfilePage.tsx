@@ -18,7 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
+import { maskCPF, maskCNPJ, maskPhone, maskCEP } from '@/lib/masks';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -37,8 +37,8 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', address: '', state: '', city: '' });
-  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', address: '', state: '', city: '' });
+  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', state: '', city: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', state: '', city: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -59,7 +59,7 @@ const ProfilePage = () => {
 
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, address, state, city')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, state, city')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -73,6 +73,7 @@ const ProfilePage = () => {
           business_email: o.business_email || '',
           business_phone: o.business_phone || '',
           website: o.website || '',
+          zip_code: o.zip_code || '',
           address: o.address || '',
           state: o.state || '',
           city: o.city || '',
@@ -458,15 +459,25 @@ const ProfilePage = () => {
                       {lang === 'pt-BR' ? 'Endereço' : 'Address'}
                     </p>
                     <div className="grid grid-cols-1 gap-y-4">
-                      <div className="space-y-1">
-                        <Label className="text-sm text-muted-foreground">
-                          {lang === 'pt-BR' ? 'Endereço' : 'Address'}
-                        </Label>
-                        {editingOrg ? (
-                          <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
-                        ) : (
-                          <FieldDisplay value={org.address} />
-                        )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">CEP</Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.zip_code} onChange={(e) => setOrgForm({ ...orgForm, zip_code: maskCEP(e.target.value) })} placeholder="00000-000" maxLength={9} />
+                          ) : (
+                            <FieldDisplay value={org.zip_code} />
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                          </Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
+                          ) : (
+                            <FieldDisplay value={org.address} />
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
