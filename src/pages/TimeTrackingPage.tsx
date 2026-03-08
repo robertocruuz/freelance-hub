@@ -795,7 +795,7 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto animate-fade-in h-full flex flex-col gap-3 p-3">
+    <div className="max-w-full mx-auto animate-fade-in flex flex-col gap-3 p-3">
       {/* Header section */}
       <div className="rounded-xl border border-border bg-card shadow-sm flex-shrink-0 relative z-10">
         {/* Timer bar - Toggl style */}
@@ -996,7 +996,7 @@ const TimeTrackingPage = () => {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 overflow-y-auto rounded-xl border border-border bg-card shadow-sm scrollbar-thin">
+      <div className="rounded-xl border border-border bg-card shadow-sm">
         {/* Calendar View (Weekly) */}
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
