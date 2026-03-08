@@ -77,10 +77,10 @@ const LoginPage = () => {
             <span className="text-primary-foreground font-black text-lg">F</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            {isRegister ? 'Crie sua conta' : 'Bem-vindo de volta'}
+            {getTitle()}
           </h1>
           <p className="text-muted-foreground text-sm mt-2">
-            {isRegister ? 'Preencha os dados para começar' : 'Entre com suas credenciais para continuar'}
+            {getSubtitle()}
           </p>
         </div>
 
