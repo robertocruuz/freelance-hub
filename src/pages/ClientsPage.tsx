@@ -70,7 +70,7 @@ const ClientsPage = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const loadClients = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
