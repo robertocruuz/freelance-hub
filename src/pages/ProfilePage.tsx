@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Calendar, Save, Pencil, X, Lock } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -20,8 +20,8 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
-  const [profile, setProfile] = useState({ name: '', email: '' });
-  const [editForm, setEditForm] = useState({ name: '' });
+  const [profile, setProfile] = useState({ name: '', email: '', document: '' });
+  const [editForm, setEditForm] = useState({ name: '', document: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
 
   useEffect(() => {
@@ -29,15 +29,15 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('name, email')
+        .select('name, email, document')
         .eq('user_id', user.id)
         .single();
       if (data) {
-        setProfile({ name: data.name || '', email: data.email || user.email || '' });
-        setEditForm({ name: data.name || '' });
+        setProfile({ name: data.name || '', email: data.email || user.email || '', document: (data as any).document || '' });
+        setEditForm({ name: data.name || '', document: (data as any).document || '' });
       } else {
-        setProfile({ name: user.user_metadata?.name || '', email: user.email || '' });
-        setEditForm({ name: user.user_metadata?.name || '' });
+        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '' });
+        setEditForm({ name: user.user_metadata?.name || '', document: '' });
       }
     };
     fetchProfile();
@@ -48,13 +48,13 @@ const ProfilePage = () => {
     setLoading(true);
     const { error } = await supabase
       .from('profiles')
-      .update({ name: editForm.name })
+      .update({ name: editForm.name, document: editForm.document } as any)
       .eq('user_id', user.id);
     setLoading(false);
     if (error) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
-      setProfile((p) => ({ ...p, name: editForm.name }));
+      setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document }));
       setEditing(false);
       toast({ title: lang === 'pt-BR' ? 'Perfil atualizado!' : 'Profile updated!' });
     }
@@ -142,6 +142,24 @@ const ProfilePage = () => {
             <p className="text-foreground font-medium">{profile.email}</p>
           </div>
 
+          {/* CPF/CNPJ */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5 text-muted-foreground">
+              <FileText className="w-4 h-4" />
+              CPF/CNPJ
+            </Label>
+            {editing ? (
+              <Input
+                value={editForm.document}
+                onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
+                placeholder="000.000.000-00"
+                maxLength={18}
+              />
+            ) : (
+              <p className="text-foreground font-medium">{profile.document || '—'}</p>
+            )}
+          </div>
+
           {/* Created at */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-muted-foreground">
@@ -158,7 +176,7 @@ const ProfilePage = () => {
                 <Save className="w-4 h-4 mr-1" />
                 {t.save}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditForm({ name: profile.name }); }}>
+              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}>
                 <X className="w-4 h-4 mr-1" />
                 {t.cancel}
               </Button>
