@@ -85,7 +85,7 @@ export const generateDocumentPdf = (options: PdfOptions) => {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text(`Total: R$ ${total.toFixed(2)}`, 140, y);
+  doc.text(`Total: ${formatCurrency(total)}`, 140, y);
 
   // Footer
   doc.setFontSize(8);
