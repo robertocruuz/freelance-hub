@@ -685,6 +685,11 @@ const KanbanPage = () => {
                     });
                   }}
                   onTaskClick={(task) => setSelectedTask(task)}
+                  onToggleComplete={(taskId, completed) => {
+                    kanban.updateTask(taskId, {
+                      completed_at: completed ? new Date().toISOString() : null,
+                    });
+                  }}
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
                 />
