@@ -642,7 +642,7 @@ const InvoicesPage = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(inv.total)}</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="focus:outline-none">
