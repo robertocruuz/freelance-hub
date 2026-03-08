@@ -54,7 +54,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
   const { lang } = useI18n();
   const { toast } = useToast();
   const internalOrgHook = useOrganization();
-  const { orgId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
+  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
