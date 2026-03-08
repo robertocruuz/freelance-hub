@@ -264,12 +264,12 @@ const InvoicesPage = () => {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <FolderKanban className="w-4 h-4" />
-                  {lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}
+                   {lang === 'pt-BR' ? 'Importar Fatura' : 'Import Invoice'}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>{lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}</DialogTitle>
+                  <DialogTitle>{lang === 'pt-BR' ? 'Importar Fatura' : 'Import Invoice'}</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground mb-3">
                   {lang === 'pt-BR' ? 'Selecione um projeto para importar os dados na fatura.' : 'Select a project to import data into the invoice.'}
