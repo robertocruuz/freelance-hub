@@ -33,7 +33,14 @@ const LoginPage = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Conta criada! Verifique seu email para confirmar.');
+          // Auto-login after signup
+          const { error: loginError } = await signIn(email, password);
+          if (loginError) {
+            toast.success('Conta criada! Faça login para continuar.');
+          } else {
+            toast.success('Conta criada com sucesso!');
+            navigate('/dashboard');
+          }
         }
       } else {
         const { error } = await signIn(email, password);
