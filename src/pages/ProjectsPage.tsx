@@ -120,16 +120,28 @@ const ProjectsPage = () => {
     setPendingBudgetItems([]);
   };
 
+  const [allProjectItemNames, setAllProjectItemNames] = useState<Set<string>>(new Set());
+
   const loadAllBudgets = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from('budgets').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setAllBudgets(data.map(b => ({
+    const [budgetRes, itemsRes] = await Promise.all([
+      supabase.from('budgets').select('*').order('created_at', { ascending: false }),
+      supabase.from('project_items').select('name'),
+    ]);
+    if (budgetRes.data) {
+      setAllBudgets(budgetRes.data.map(b => ({
         ...b,
         items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
       })));
     }
+    if (itemsRes.data) {
+      setAllProjectItemNames(new Set(itemsRes.data.map(i => i.name)));
+    }
   }, [user]);
+
+  const isBudgetFullyImported = (budget: Budget) => {
+    return budget.items.length > 0 && budget.items.every(item => allProjectItemNames.has(item.description));
+  };
 
   const handleSelectBudget = (budgetId: string) => {
     setSelectedBudgetId(budgetId);
@@ -355,11 +367,14 @@ const ProjectsPage = () => {
                 className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Selecione um orçamento...</option>
-                {allBudgets.map(b => (
-                  <option key={b.id} value={b.id}>
-                    {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}
-                  </option>
-                ))}
+                {allBudgets.map(b => {
+                  const imported = isBudgetFullyImported(b);
+                  return (
+                    <option key={b.id} value={b.id} disabled={imported}>
+                      {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
+                    </option>
+                  );
+                })}
               </select>
               {selectedBudgetId && pendingBudgetItems.length > 0 && (
                 <div className="text-xs text-muted-foreground">
