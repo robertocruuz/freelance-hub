@@ -83,6 +83,7 @@ const InvoicesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
@@ -213,6 +214,7 @@ const InvoicesPage = () => {
 
   const resetForm = () => {
     setCreating(false);
+    setEditingInvoiceId(null);
     setClientId('');
     setItems([]);
     setTaxes(0);
@@ -227,23 +229,39 @@ const InvoicesPage = () => {
     setNewPrice(0);
   };
 
+  const editInvoice = (inv: Invoice) => {
+    setEditingInvoiceId(inv.id);
+    setClientId(inv.client_id || '');
+    setItems(inv.items);
+    setTaxes(inv.taxes);
+    setDiscount(inv.discount);
+    setDueDate(inv.due_date ? new Date(inv.due_date + 'T12:00:00') : undefined);
+    setPaymentMethods(inv.payment_method ? inv.payment_method.split(', ') : []);
+    setCreating(true);
+  };
+
   const saveInvoice = async () => {
     if (!user) return;
     if (items.length === 0) return toast.error('Adicione pelo menos um item.');
-    const { error } = await supabase.from('invoices').insert({
-      user_id: user.id,
+    const invoiceData = {
       client_id: clientId || null,
       items: items as unknown as Json,
       total,
       taxes,
       discount,
-      status: 'pending',
       due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
       payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
-    });
+    };
+
+    let error;
+    if (editingInvoiceId) {
+      ({ error } = await supabase.from('invoices').update(invoiceData).eq('id', editingInvoiceId));
+    } else {
+      ({ error } = await supabase.from('invoices').insert({ ...invoiceData, user_id: user.id, status: 'pending' }));
+    }
     if (error) toast.error(error.message);
     else {
-      toast.success(t.save + '!');
+      toast.success(editingInvoiceId ? (lang === 'pt-BR' ? 'Fatura atualizada!' : 'Invoice updated!') : (t.save + '!'));
       resetForm();
       loadInvoices();
     }
@@ -610,6 +628,10 @@ const InvoicesPage = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
+                      <Pencil className="w-4 h-4" />
+                      {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+                    </DropdownMenuItem>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
