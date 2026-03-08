@@ -749,7 +749,7 @@ const ProjectsPage = () => {
                   <div className="flex items-center justify-between p-3 bg-muted/30">
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        {clientName(b.client_id)} · R$ {b.total.toFixed(2)}
+                        {clientName(b.client_id)} · {formatCurrency(b.total)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(b.created_at).toLocaleDateString()} · {statusLabel(b.status)}
