@@ -611,8 +611,29 @@ const InvoicesPage = () => {
           <p className="text-sm">{lang === 'pt-BR' ? 'Nenhuma fatura criada ainda.' : 'No invoices yet.'}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {invoices.map((inv) => (
+        <div className="space-y-6">
+          {(() => {
+            const grouped: Record<string, Invoice[]> = {};
+            invoices.forEach(inv => {
+              const key = inv.client_id || '__no_client__';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(inv);
+            });
+            const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+              if (a === '__no_client__') return 1;
+              if (b === '__no_client__') return -1;
+              return clientNameFn(a).localeCompare(clientNameFn(b));
+            });
+
+            return sortedKeys.map(key => (
+              <div key={key} className="space-y-2">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  {key === '__no_client__' ? (lang === 'pt-BR' ? 'Sem cliente' : 'No client') : clientNameFn(key)}
+                  <span className="ml-2 text-xs font-normal">({grouped[key].length})</span>
+                </h2>
+                <div className="space-y-2">
+                  {grouped[key].map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
                 <p className="font-semibold text-foreground">{inv.name || inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
@@ -682,7 +703,11 @@ const InvoicesPage = () => {
                 </DropdownMenu>
               </div>
             </div>
-          ))}
+                  ))}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
     </div>
