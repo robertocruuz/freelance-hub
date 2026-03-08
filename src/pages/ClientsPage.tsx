@@ -41,7 +41,7 @@ const maskDocument = (v: string) => {
 
 interface ClientDetails {
   projects: { id: string; name: string }[];
-  tasks: { id: string; title: string; status: string; priority: string; column_id: string | null }[];
+  tasks: { id: string; title: string; status: string; priority: string; column_id: string | null; project_id: string | null }[];
   timeEntries: { id: string; description: string | null; duration: number | null; project_id: string | null; start_time: string }[];
   invoices: { id: string; total: number; status: string; created_at: string }[];
   budgets: { id: string; total: number; status: string; created_at: string }[];
