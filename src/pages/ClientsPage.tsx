@@ -396,8 +396,8 @@ const ClientsPage = () => {
                 <p className="font-semibold text-foreground">{c.name}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                   {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
-                  {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{c.phone}</span>}
-                  {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{c.document}</span>}
+                  {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>}
+                  {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(c.document)}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
