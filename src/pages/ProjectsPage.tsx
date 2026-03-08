@@ -37,6 +37,7 @@ interface BudgetItem {
 
 interface Budget {
   id: string;
+  name: string | null;
   client_id: string | null;
   items: BudgetItem[];
   total: number;
@@ -69,6 +70,11 @@ const ProjectsPage = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loadingBudgets, setLoadingBudgets] = useState(false);
 
+  // Import budget on create
+  const [allBudgets, setAllBudgets] = useState<Budget[]>([]);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
+  const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -93,6 +99,29 @@ const ProjectsPage = () => {
     setClientId('');
     setEditingId(null);
     setShowForm(false);
+    setSelectedBudgetId(null);
+    setPendingBudgetItems([]);
+  };
+
+  const loadAllBudgets = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('budgets').select('*').order('created_at', { ascending: false });
+    if (data) {
+      setAllBudgets(data.map(b => ({
+        ...b,
+        items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
+      })));
+    }
+  }, [user]);
+
+  const handleSelectBudget = (budgetId: string) => {
+    setSelectedBudgetId(budgetId);
+    const budget = allBudgets.find(b => b.id === budgetId);
+    if (budget) {
+      setName(budget.name || '');
+      setClientId(budget.client_id || '');
+      setPendingBudgetItems(budget.items);
+    }
   };
 
   const resetItemForm = () => {
@@ -114,8 +143,20 @@ const ProjectsPage = () => {
       const { error } = await supabase.from('projects').update(payload).eq('id', editingId);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from('projects').insert(payload);
+      const { data, error } = await supabase.from('projects').insert(payload).select('id').single();
       if (error) return toast.error(error.message);
+      // Import budget items if a budget was selected
+      if (data && pendingBudgetItems.length > 0) {
+        const inserts = pendingBudgetItems.map((item, idx) => ({
+          project_id: data.id,
+          name: item.description,
+          value: item.quantity * item.unitPrice,
+          position: idx,
+        }));
+        const { error: itemsError } = await supabase.from('project_items').insert(inserts);
+        if (itemsError) toast.error(itemsError.message);
+        else toast.success(`${inserts.length} itens importados do orçamento!`);
+      }
     }
     resetForm();
     loadProjects();
@@ -248,7 +289,7 @@ const ProjectsPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">{t.projects}</h1>
         <button
-          onClick={() => { resetForm(); setShowForm(true); }}
+          onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
         >
           <Plus className="w-4 h-4" /> {t.newProject}
@@ -267,8 +308,49 @@ const ProjectsPage = () => {
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? t.editProject : t.newProject}
           </h2>
+
+          {/* Budget import suggestion - only for new projects */}
+          {!editingId && allBudgets.length > 0 && (
+            <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+              <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" /> Importar de um orçamento
+              </p>
+              <select
+                value={selectedBudgetId || ''}
+                onChange={(e) => e.target.value ? handleSelectBudget(e.target.value) : null}
+                className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Selecione um orçamento...</option>
+                {allBudgets.map(b => (
+                  <option key={b.id} value={b.id}>
+                    {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}
+                  </option>
+                ))}
+              </select>
+              {selectedBudgetId && pendingBudgetItems.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {pendingBudgetItems.length} {pendingBudgetItems.length === 1 ? 'item será importado' : 'itens serão importados'} ao salvar.
+                </div>
+              )}
+            </div>
+          )}
+
           <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
           <ClientSelect value={clientId} onChange={setClientId} />
+
+          {/* Preview of items to import */}
+          {pendingBudgetItems.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-muted-foreground">Itens do orçamento:</p>
+              {pendingBudgetItems.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-sm">
+                  <span className="text-foreground">{item.description}</span>
+                  <span className="text-muted-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
               {t.save}
