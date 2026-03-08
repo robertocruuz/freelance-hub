@@ -95,6 +95,14 @@ const InvoicesPage = () => {
   const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
+  const [organization, setOrganization] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('organizations').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) setOrganization(data);
+    });
+  }, [user]);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
