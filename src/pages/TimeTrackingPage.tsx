@@ -39,6 +39,7 @@ interface KanbanTask {
 
 interface TimeEntry {
   id: string;
+  client_id: string | null;
   project_id: string | null;
   task_id: string | null;
   description: string | null;
@@ -266,6 +267,7 @@ const TimeTrackingPage = () => {
     const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
     const { error } = await supabase.from('time_entries').insert({
       user_id: user.id,
+      client_id: clientId || null,
       project_id: projectId || null,
       task_id: taskId || null,
       description: description || null,
@@ -317,7 +319,7 @@ const TimeTrackingPage = () => {
     setEditingEntry(entry);
     setEditDesc(entry.description || '');
     const entryProject = projects.find(p => p.id === entry.project_id);
-    setEditClientId(entryProject?.client_id || '');
+    setEditClientId((entry as any).client_id || entryProject?.client_id || '');
     setEditProjectId(entry.project_id || '');
     setEditTaskId(entry.task_id || '');
     setEditStartTime(new Date(entry.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
@@ -334,6 +336,7 @@ const TimeTrackingPage = () => {
 
     const { error } = await supabase.from('time_entries').update({
       description: editDesc || null,
+      client_id: editClientId || null,
       project_id: editProjectId || null,
       task_id: editTaskId || null,
       start_time: newStart.toISOString(),
