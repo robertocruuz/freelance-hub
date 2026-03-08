@@ -335,7 +335,7 @@ const ProfilePage = () => {
               <div className="flex items-start gap-3">
                 <label className="relative cursor-pointer group shrink-0" onClick={(e) => e.stopPropagation()}>
                   {logoUrl ? (
-                    <div className="h-12 max-w-[120px] rounded-xl border-2 border-border overflow-hidden flex items-center justify-center bg-background">
+                    <div className="h-12 max-w-[120px] overflow-hidden flex items-center justify-center">
                       <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain" />
                     </div>
                   ) : (
