@@ -160,7 +160,7 @@ const NotificationBell = () => {
                 return (
                   <div
                     key={notification.id}
-                    className={`group flex gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/30 last:border-b-0 ${
+                    className={`group flex gap-3 px-4 py-4 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/30 last:border-b-0 ${
                       !notification.read ? 'bg-primary/[0.03]' : ''
                     }`}
                     onClick={() => {
