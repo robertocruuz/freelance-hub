@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Receipt, Download, FolderKanban } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +40,7 @@ interface Invoice {
   discount: number;
   status: string;
   due_date: string | null;
+  payment_method: string | null;
   created_at: string;
 }
 
@@ -60,16 +66,31 @@ const InvoicesPage = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
   const [clientId, setClientId] = useState('');
-  const [items, setItems] = useState<InvoiceItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [notes, setNotes] = useState('');
   const { clients } = useClients();
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
+  // New item input
+  const [newDesc, setNewDesc] = useState('');
+  const [newQty, setNewQty] = useState(1);
+  const [newPrice, setNewPrice] = useState(0);
+
+  // Editing item inline
+  const [editingItemIdx, setEditingItemIdx] = useState<number | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editQty, setEditQty] = useState(1);
+  const [editPrice, setEditPrice] = useState(0);
+
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-  const total = subtotal + (subtotal * taxes) / 100 - discount;
+  const taxesValue = subtotal * (taxes / 100);
+  const discountValue = subtotal * (discount / 100);
+  const total = subtotal + taxesValue - discountValue;
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
@@ -78,14 +99,12 @@ const InvoicesPage = () => {
       .select('id, name, client_id, due_date')
       .order('name', { ascending: true });
     if (!projData) return;
-
     const projectIds = projData.map(p => p.id);
     const { data: itemsData } = await supabase
       .from('project_items')
       .select('project_id, name, value')
       .in('project_id', projectIds)
       .order('position', { ascending: true });
-
     const mapped: ProjectWithItems[] = projData.map(p => {
       const cl = clients.find(c => c.id === p.client_id);
       return {
@@ -99,11 +118,11 @@ const InvoicesPage = () => {
 
   const importProject = (project: ProjectWithItems) => {
     setClientId(project.client_id || '');
-    setDueDate(project.due_date || '');
+    if (project.due_date) setDueDate(new Date(project.due_date + 'T12:00:00'));
     setItems(
       project.items.length > 0
         ? project.items.map(i => ({ description: i.name, quantity: 1, unitPrice: i.value }))
-        : [{ description: '', quantity: 1, unitPrice: 0 }]
+        : []
     );
     setTaxes(0);
     setDiscount(0);
@@ -147,14 +166,50 @@ const InvoicesPage = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const addItem = () => setItems((prev) => [...prev, { description: '', quantity: 1, unitPrice: 0 }]);
-  const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
-  const updateItem = (idx: number, field: keyof InvoiceItem, value: string | number) => {
-    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
+  const addItem = () => {
+    if (!newDesc.trim()) return toast.error('Informe a descrição do item.');
+    setItems(prev => [...prev, { description: newDesc.trim(), quantity: newQty, unitPrice: newPrice }]);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
+  };
+
+  const removeItem = (idx: number) => setItems(prev => prev.filter((_, i) => i !== idx));
+
+  const startEditItem = (idx: number) => {
+    const item = items[idx];
+    setEditingItemIdx(idx);
+    setEditDesc(item.description);
+    setEditQty(item.quantity);
+    setEditPrice(item.unitPrice);
+  };
+
+  const saveEditItem = () => {
+    if (editingItemIdx === null) return;
+    setItems(prev => prev.map((item, i) => i === editingItemIdx ? { description: editDesc, quantity: editQty, unitPrice: editPrice } : item));
+    setEditingItemIdx(null);
+  };
+
+  const cancelEditItem = () => setEditingItemIdx(null);
+
+  const resetForm = () => {
+    setCreating(false);
+    setClientId('');
+    setItems([]);
+    setTaxes(0);
+    setDiscount(0);
+    setDueDate(undefined);
+    setPaymentMethod('');
+    setNotes('');
+    setEditingItemIdx(null);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
   };
 
   const saveInvoice = async () => {
     if (!user) return;
+    if (items.length === 0) return toast.error('Adicione pelo menos um item.');
     const { error } = await supabase.from('invoices').insert({
       user_id: user.id,
       client_id: clientId || null,
@@ -163,17 +218,13 @@ const InvoicesPage = () => {
       taxes,
       discount,
       status: 'pending',
-      due_date: dueDate || null,
+      due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
+      payment_method: paymentMethod || null,
     });
     if (error) toast.error(error.message);
     else {
       toast.success(t.save + '!');
-      setCreating(false);
-      setClientId('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
-      setTaxes(0);
-      setDiscount(0);
-      setDueDate('');
+      resetForm();
       loadInvoices();
     }
   };
@@ -198,6 +249,8 @@ const InvoicesPage = () => {
       dueDate: inv.due_date,
     });
   };
+
+  const inputClass = "px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
@@ -260,36 +313,199 @@ const InvoicesPage = () => {
       </div>
 
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Client & Due Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t.client}</label>
+              <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t.dueDate}</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : (lang === 'pt-BR' ? 'Selecionar' : 'Select')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+
+          {/* Payment method */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">{t.paymentMethod}</label>
+            <input
+              placeholder={lang === 'pt-BR' ? 'Ex: PIX, Boleto, Cartão...' : 'Ex: Wire, Card...'}
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
+          </div>
+
+          {/* Add items section */}
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-foreground">{lang === 'pt-BR' ? 'Adicionar Itens' : 'Add Items'}</h3>
+            <div className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-center">
+              <input
+                placeholder={t.description}
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={inputClass}
+              />
+              <input
+                type="number"
+                placeholder="Qtd"
+                min={1}
+                value={newQty}
+                onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
+                className={`${inputClass} text-center`}
+              />
+              <input
+                type="number"
+                placeholder={lang === 'pt-BR' ? 'Valor' : 'Price'}
+                min={0}
+                step={0.01}
+                value={newPrice || ''}
+                onChange={(e) => setNewPrice(+e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={`${inputClass} text-right`}
+              />
+              <button
+                onClick={addItem}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                {lang === 'pt-BR' ? 'Adicionar' : 'Add'}
+              </button>
+            </div>
+          </div>
+
+          {/* Items table */}
+          {items.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-3 font-semibold text-foreground">{t.description}</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-20">Qtd</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">{lang === 'pt-BR' ? 'Valor Unit.' : 'Unit Price'}</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">Total</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-32">{lang === 'pt-BR' ? 'Ações' : 'Actions'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      {editingItemIdx === idx ? (
+                        <>
+                          <td className="py-2 px-3">
+                            <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={`${inputClass} w-full`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className={`${inputClass} w-full text-center`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
+                          </td>
+                          <td className="py-2 px-3 text-right font-medium text-foreground">
+                            R$ {(editQty * editPrice).toFixed(2)}
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <button onClick={saveEditItem} className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">{lang === 'pt-BR' ? 'Salvar' : 'Save'}</button>
+                              <button onClick={cancelEditItem} className="px-3 py-1 rounded-md bg-secondary text-secondary-foreground text-xs font-semibold hover:opacity-90">{t.cancel}</button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-3 px-3 text-foreground">{item.description}</td>
+                          <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">{lang === 'pt-BR' ? 'Editar' : 'Edit'}</button>
+                              <button onClick={() => removeItem(idx)} className="px-3 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90">{lang === 'pt-BR' ? 'Excluir' : 'Delete'}</button>
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Taxes, Discount & Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t.taxes} (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={taxes}
+                onChange={(e) => setTaxes(Math.min(100, Math.max(0, +e.target.value)))}
+                className={`${inputClass} w-full max-w-[200px]`}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t.discount} (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={discount}
+                onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
+                className={`${inputClass} w-full max-w-[200px]`}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Observação' : 'Notes'}</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder={lang === 'pt-BR' ? 'Observações sobre a fatura...' : 'Invoice notes...'}
+              className={`${inputClass} w-full resize-y`}
+            />
+          </div>
+
+          {/* Summary & actions */}
+          <div className="border-t border-border pt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+            </div>
+            {taxes > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t.taxes} ({taxes}%)</span>
+                <span className="text-foreground">+ R$ {taxesValue.toFixed(2)}</span>
               </div>
-            ))}
-          </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.taxes} (%)</span>
-              <input type="number" value={taxes} onChange={(e) => setTaxes(+e.target.value)} className="w-20 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
+            )}
+            {discount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t.discount} ({discount}%)</span>
+                <span className="text-destructive">- R$ {discountValue.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-lg font-bold">
+              <span className="text-foreground">Total</span>
+              <span className="text-foreground">R$ {total.toFixed(2)}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t.discount}</span>
-              <input type="number" value={discount} onChange={(e) => setDiscount(+e.target.value)} className="w-24 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
-              <button onClick={() => setCreating(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
               <button onClick={saveInvoice} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
             </div>
           </div>
@@ -299,15 +515,17 @@ const InvoicesPage = () => {
       {invoices.length === 0 && !creating ? (
         <div className="text-center py-16 text-muted-foreground">
           <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhuma fatura criada ainda.</p>
+          <p className="text-sm">{lang === 'pt-BR' ? 'Nenhuma fatura criada ainda.' : 'No invoices yet.'}</p>
         </div>
       ) : (
         <div className="space-y-2">
           {invoices.map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{inv.client_name || 'Sem cliente'} · {inv.items.length} itens</p>
-                <p className="text-xs text-muted-foreground">Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}</p>
+                <p className="font-semibold text-foreground">{inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
+                <p className="text-xs text-muted-foreground">
+                  {lang === 'pt-BR' ? 'Venc' : 'Due'}: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
