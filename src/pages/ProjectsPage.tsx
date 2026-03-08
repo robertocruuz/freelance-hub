@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
@@ -467,10 +467,11 @@ const ProjectsPage = () => {
                               });
                               navigate(`/dashboard/kanban?${params.toString()}`);
                             }}
-                            className="p-1 rounded hover:bg-accent transition-colors"
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group"
                             title="Criar tarefa no Kanban"
                           >
-                            <ListPlus className="w-3.5 h-3.5 text-primary" />
+                            <Sparkles className="w-3.5 h-3.5 text-primary group-hover:animate-pulse" />
+                            <span className="text-xs font-medium text-primary">Kanban</span>
                           </button>
                           <button onClick={() => handleEditItem(item)} className="p-1 rounded hover:bg-accent transition-colors">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
