@@ -1087,9 +1087,6 @@ const TimeTrackingPage = () => {
             setShowExportPanel(false);
           };
 
-          const exportFilteredProjects = exportClientId
-            ? projects.filter(p => p.client_id === exportClientId)
-            : projects;
 
           return (
             <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
@@ -1108,95 +1105,177 @@ const TimeTrackingPage = () => {
                 </button>
               </div>
 
-              {/* Export filter panel */}
-              {showExportPanel && (
-                <div className="rounded-xl border border-border bg-card p-5 space-y-4 animate-fade-in">
-                  <h3 className="text-sm font-semibold text-foreground">Configurar Exportação</h3>
+              {showExportPanel && (() => {
+                const expFilteredProjects = exportClientId
+                  ? projects.filter(p => p.client_id === exportClientId)
+                  : projects;
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Filter type */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Filtrar por</label>
-                      <select
-                        value={exportFilter}
-                        onChange={(e) => { setExportFilter(e.target.value as any); setExportClientId(''); setExportProjectId(''); }}
-                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value="all">Tudo</option>
-                        <option value="client">Por Cliente</option>
-                        <option value="project">Por Projeto</option>
-                      </select>
-                    </div>
+                // Live preview of what will be exported
+                let previewEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+                if (exportFilter === 'client' && exportClientId) {
+                  const ids = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
+                  previewEntries = previewEntries.filter(e => e.project_id && ids.includes(e.project_id));
+                } else if (exportFilter === 'project' && exportProjectId) {
+                  previewEntries = previewEntries.filter(e => e.project_id === exportProjectId);
+                }
+                if (exportStartDate) previewEntries = previewEntries.filter(e => new Date(e.start_time) >= new Date(exportStartDate + 'T00:00:00'));
+                if (exportEndDate) previewEntries = previewEntries.filter(e => new Date(e.start_time) <= new Date(exportEndDate + 'T23:59:59'));
+                const previewTotal = previewEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+                const previewHours = (previewTotal / 3600).toFixed(1);
 
-                    {/* Client select */}
-                    {exportFilter === 'client' && (
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-muted-foreground">Cliente</label>
-                        <CompactClientSelect clients={clients} value={exportClientId} onChange={(v) => { setExportClientId(v); setExportProjectId(''); }} placeholder="Selecione o cliente" fullWidth />
+                const selectedClient = exportClientId ? clients.find(c => c.id === exportClientId) : null;
+                const selectedProject = exportProjectId ? projects.find(p => p.id === exportProjectId) : null;
+
+                const filterTypes = [
+                  { value: 'all' as const, label: 'Tudo', icon: <Layers className="w-3.5 h-3.5" /> },
+                  { value: 'client' as const, label: 'Cliente', icon: <span className="w-3.5 h-3.5 rounded-full border-2 border-current" /> },
+                  { value: 'project' as const, label: 'Projeto', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+                ];
+
+                return (
+                  <div className="rounded-xl border border-border bg-card overflow-hidden animate-fade-in">
+                    {/* Header with live stats */}
+                    <div className="px-5 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Download className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground">Configurar Exportação</h3>
+                          <p className="text-xs text-muted-foreground">Selecione os filtros e gere o relatório</p>
+                        </div>
                       </div>
-                    )}
-
-                    {/* Project select */}
-                    {exportFilter === 'project' && (
-                      <>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-muted-foreground">Cliente</label>
-                          <CompactClientSelect clients={clients} value={exportClientId} onChange={(v) => { setExportClientId(v); setExportProjectId(''); }} placeholder="Filtrar por cliente" fullWidth />
+                      <div className="flex items-center gap-4 text-right">
+                        <div>
+                          <p className="text-lg font-bold text-foreground tabular-nums">{previewHours}h</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{previewEntries.length} registros</p>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 space-y-5">
+                      {/* Filter type toggle */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tipo de filtro</label>
+                        <div className="flex gap-2">
+                          {filterTypes.map((ft) => (
+                            <button
+                              key={ft.value}
+                              onClick={() => { setExportFilter(ft.value); setExportClientId(''); setExportProjectId(''); }}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                exportFilter === ft.value
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                              }`}
+                            >
+                              {ft.icon}
+                              {ft.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Dynamic filter fields */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {(exportFilter === 'client' || exportFilter === 'project') && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                            <CompactClientSelect
+                              clients={clients}
+                              value={exportClientId}
+                              onChange={(v) => { setExportClientId(v); setExportProjectId(''); }}
+                              placeholder={exportFilter === 'client' ? 'Selecione o cliente' : 'Filtrar por cliente'}
+                              fullWidth
+                            />
+                          </div>
+                        )}
+
+                        {exportFilter === 'project' && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-muted-foreground">Projeto</label>
+                            <select
+                              value={exportProjectId}
+                              onChange={(e) => setExportProjectId(e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Todos os projetos</option>
+                              {expFilteredProjects.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-muted-foreground">Projeto</label>
-                          <select
-                            value={exportProjectId}
-                            onChange={(e) => setExportProjectId(e.target.value)}
+                          <label className="text-xs font-medium text-muted-foreground">Data início</label>
+                          <input
+                            type="date"
+                            value={exportStartDate}
+                            onChange={(e) => setExportStartDate(e.target.value)}
                             className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                          >
-                            <option value="">Selecione o projeto</option>
-                            {exportFilteredProjects.map(p => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                          </select>
+                          />
                         </div>
-                      </>
-                    )}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-muted-foreground">Data fim</label>
+                          <input
+                            type="date"
+                            value={exportEndDate}
+                            onChange={(e) => setExportEndDate(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                      </div>
 
-                    {/* Period */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Data início</label>
-                      <input
-                        type="date"
-                        value={exportStartDate}
-                        onChange={(e) => setExportStartDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+                      {/* Active filters badges */}
+                      {(exportFilter !== 'all' || exportStartDate || exportEndDate) && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Filtros ativos:</span>
+                          {exportFilter !== 'all' && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                              {exportFilter === 'client' ? 'Cliente' : 'Projeto'}
+                              {selectedClient && `: ${selectedClient.name}`}
+                              {selectedProject && `: ${selectedProject.name}`}
+                            </span>
+                          )}
+                          {exportStartDate && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+                              De: {new Date(exportStartDate).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                          {exportEndDate && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+                              Até: {new Date(exportEndDate).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                          <button
+                            onClick={() => { setExportFilter('all'); setExportClientId(''); setExportProjectId(''); setExportStartDate(''); setExportEndDate(''); }}
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            Limpar tudo
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Data fim</label>
-                      <input
-                        type="date"
-                        value={exportEndDate}
-                        onChange={(e) => setExportEndDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+
+                    {/* Footer actions */}
+                    <div className="px-5 py-3 border-t border-border bg-muted/20 flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        {previewEntries.length === 0
+                          ? 'Nenhum registro encontrado para os filtros'
+                          : `${previewEntries.length} registros serão exportados`}
+                      </p>
+                      <button
+                        onClick={handleExportPDF}
+                        disabled={previewEntries.length === 0}
+                        className="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Download className="w-4 h-4" />
+                        Gerar PDF
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      onClick={() => { setExportFilter('all'); setExportClientId(''); setExportProjectId(''); setExportStartDate(''); setExportEndDate(''); }}
-                      className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
-                    >
-                      Limpar filtros
-                    </button>
-                    <button
-                      onClick={handleExportPDF}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Gerar PDF
-                    </button>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {filteredEntries.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
