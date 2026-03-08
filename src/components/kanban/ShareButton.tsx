@@ -101,7 +101,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
       loadShares();
       loadOrgMembers();
     }
-  }, [open]);
+  }, [open, resourceId]);
 
   const toggleOrgShare = async () => {
     if (!user) return;
