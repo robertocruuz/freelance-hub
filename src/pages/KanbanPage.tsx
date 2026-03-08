@@ -259,8 +259,13 @@ const KanbanPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar tarefas..."
-            className="pl-9 h-9 text-sm glass-input"
+            className="pl-9 pr-8 h-9 text-sm glass-input"
           />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <Button
