@@ -552,8 +552,28 @@ const BudgetsPage = () => {
           <p className="text-sm">Nenhum orçamento criado ainda.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {budgets.map((b) => (
+        <div className="space-y-6">
+          {(() => {
+            const grouped: Record<string, Budget[]> = {};
+            budgets.forEach(b => {
+              const key = b.client_id || '__no_client__';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(b);
+            });
+            const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+              if (a === '__no_client__') return 1;
+              if (b === '__no_client__') return -1;
+              return clientNameFn(a).localeCompare(clientNameFn(b));
+            });
+            return sortedKeys.map(key => (
+              <div key={key} className="space-y-2">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
+                  <span className="ml-2 text-xs font-normal">({grouped[key].length})</span>
+                </h2>
+                <div className="space-y-2">
+          {grouped[key].map((b) => (
             <div key={b.id} className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="flex items-center justify-between p-4">
                 <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
