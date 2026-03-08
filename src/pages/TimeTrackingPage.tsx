@@ -843,36 +843,39 @@ const TimeTrackingPage = () => {
                     <div className="relative hover:bg-muted/30 transition-colors" />
                   </div>
                 ))}
-                {filteredEntries.map((entry) => {
-                  const start = new Date(entry.start_time);
-                  const end = entry.end_time ? new Date(entry.end_time) : new Date();
-                  const startMinutes = start.getHours() * 60 + start.getMinutes();
-                  const endMinutes = end.getHours() * 60 + end.getMinutes();
-                  const durationMinutes = Math.max(endMinutes - startMinutes, 10);
-                  const color = getProjectColor(entry.project_id, entry.client_id);
-                  return (
-                    <button
-                      key={entry.id}
-                      onClick={() => openEdit(entry)}
-                      className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
-                      style={{
-                        top: `${startMinutes}px`,
-                        height: `${Math.max(durationMinutes, 20)}px`,
-                        left: '68px',
-                        width: 'calc(100% - 72px)',
-                        backgroundColor: color,
-                      }}
-                    >
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
-                        <span className="truncate font-medium">
-                          {entry.description || getProjectName(entry.project_id) || '—'}
-                        </span>
-                        <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                {(() => {
+                  const layoutItems = computeOverlapLayout(filteredEntries);
+                  return layoutItems.map((item) => {
+                    const { entry, startMin, endMin, col, totalCols } = item;
+                    const durationMinutes = endMin - startMin;
+                    const color = getProjectColor(entry.project_id, entry.client_id);
+                    const availableWidth = 'calc(100% - 72px)';
+                    const entryWidth = `calc(${availableWidth} / ${totalCols})`;
+                    const entryLeft = `calc(68px + ${col} * ${availableWidth} / ${totalCols})`;
+                    return (
+                      <button
+                        key={entry.id}
+                        onClick={() => openEdit(entry)}
+                        className="absolute rounded-md px-2 py-1 text-xs text-white overflow-hidden cursor-pointer hover:brightness-110 transition-all shadow-sm z-10"
+                        style={{
+                          top: `${startMin}px`,
+                          height: `${Math.max(durationMinutes, 20)}px`,
+                          left: entryLeft,
+                          width: entryWidth,
+                          backgroundColor: color,
+                        }}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
+                          <span className="truncate font-medium">
+                            {entry.description || getProjectName(entry.project_id) || '—'}
+                          </span>
+                          <span className="ml-auto text-white/70">{formatDurationShort(entry.duration || 0)}</span>
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
