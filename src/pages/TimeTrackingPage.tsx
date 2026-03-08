@@ -1343,6 +1343,7 @@ const TimeTrackingPage = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium w-8"></th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Projeto</th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Cliente</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Registros</th>
@@ -1352,28 +1353,71 @@ const TimeTrackingPage = () => {
                       </thead>
                       <tbody>
                         {projectData.sort((a, b) => b.hours - a.hours).map((p, i) => {
-                          const projEntries = filteredEntries.filter(e => (getProjectName(e.project_id) || 'Sem projeto') === p.name);
+                          const projEntries = filteredEntries
+                            .filter(e => (getProjectName(e.project_id) || 'Sem projeto') === p.name)
+                            .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
                           const proj = projects.find(pr => pr.name === p.name);
                           const client = proj?.client_id ? clients.find(c => c.id === proj.client_id) : null;
                           const pct = +totalHours > 0 ? ((p.hours / (+totalHours)) * 100).toFixed(1) : '0';
+                          const isExpanded = expandedProjects.has(p.name);
+                          const toggleExpand = () => {
+                            setExpandedProjects(prev => {
+                              const next = new Set(prev);
+                              if (next.has(p.name)) next.delete(p.name);
+                              else next.add(p.name);
+                              return next;
+                            });
+                          };
                           return (
-                            <tr key={i} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                              <td className="py-2.5 px-3">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-                                  <span className="font-medium text-foreground">{p.name}</span>
-                                </div>
-                              </td>
-                              <td className="py-2.5 px-3 text-muted-foreground">{client?.name || '—'}</td>
-                              <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{projEntries.length}</td>
-                              <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{p.hours}h</td>
-                              <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{pct}%</td>
-                            </tr>
+                            <React.Fragment key={i}>
+                              <tr
+                                onClick={toggleExpand}
+                                className="border-b border-border/30 hover:bg-muted/20 transition-colors cursor-pointer group"
+                              >
+                                <td className="py-2.5 px-3">
+                                  <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                                </td>
+                                <td className="py-2.5 px-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                                    <span className="font-medium text-foreground">{p.name}</span>
+                                  </div>
+                                </td>
+                                <td className="py-2.5 px-3 text-muted-foreground">{client?.name || '—'}</td>
+                                <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{projEntries.length}</td>
+                                <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{p.hours}h</td>
+                                <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{pct}%</td>
+                              </tr>
+                              {isExpanded && projEntries.map((entry) => {
+                                const d = new Date(entry.start_time);
+                                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', weekday: 'short' });
+                                const startStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                const endStr = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                                const desc = entry.description || getTaskName(entry.task_id) || 'Sem descrição';
+                                const dur = entry.duration ? formatDurationShort(entry.duration) : '—';
+                                return (
+                                  <tr key={entry.id} className="border-b border-border/10 bg-muted/10 hover:bg-muted/30 transition-colors">
+                                    <td className="py-2 px-3"></td>
+                                    <td className="py-2 px-3" colSpan={2}>
+                                      <div className="flex items-center gap-2 pl-4">
+                                        <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                                        <span className="text-foreground text-xs">{desc}</span>
+                                        <span className="text-muted-foreground text-[10px]">· {dateStr}</span>
+                                      </div>
+                                    </td>
+                                    <td className="py-2 px-3 text-right text-xs tabular-nums text-muted-foreground">{startStr} – {endStr}</td>
+                                    <td className="py-2 px-3 text-right text-xs tabular-nums font-medium text-foreground">{dur}</td>
+                                    <td className="py-2 px-3"></td>
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
                           );
                         })}
                       </tbody>
                       <tfoot>
                         <tr className="border-t-2 border-border">
+                          <td className="py-2.5 px-3"></td>
                           <td colSpan={2} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{filteredEntries.length}</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-bold text-foreground">{totalHours}h</td>
