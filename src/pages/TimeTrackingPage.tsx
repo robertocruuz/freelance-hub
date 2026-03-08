@@ -776,7 +776,7 @@ const TimeTrackingPage = () => {
                 <div key={entry.id} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors group">
                   <div
                     className="w-1 h-8 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: getProjectColor(entry.project_id) }}
+                    style={{ backgroundColor: getProjectColor(entry.project_id, entry.client_id) }}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{entry.description || '—'}</p>
