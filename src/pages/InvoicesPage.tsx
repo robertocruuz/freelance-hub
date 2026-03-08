@@ -595,7 +595,7 @@ const InvoicesPage = () => {
             )}
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="text-foreground">Total</span>
-              <span className="text-foreground">R$ {total.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(total)}</span>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
