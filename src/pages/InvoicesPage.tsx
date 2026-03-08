@@ -606,7 +606,7 @@ const InvoicesPage = () => {
           {invoices.map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
+                <p className="font-semibold text-foreground">{inv.name || inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
                 <p className="text-xs text-muted-foreground">
                   {lang === 'pt-BR' ? 'Venc' : 'Due'}: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}
                 </p>
