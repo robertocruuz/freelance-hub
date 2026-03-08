@@ -63,7 +63,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'collaborator'>('collaborator');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -73,8 +73,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const roleLabel = (role: string) => {
     const labels: Record<string, Record<string, string>> = {
       admin: { 'pt-BR': 'Admin', en: 'Admin' },
-      editor: { 'pt-BR': 'Editor', en: 'Editor' },
-      viewer: { 'pt-BR': 'Visualizador', en: 'Viewer' },
+      collaborator: { 'pt-BR': 'Colaborador', en: 'Collaborator' },
     };
     return labels[role]?.[lang] || role;
   };
