@@ -221,7 +221,15 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Projeto</label>
-              <Select value={task.project_id || 'none'} onValueChange={(v) => onUpdate(task.id, { project_id: v === 'none' ? null : v })}>
+              <Select value={task.project_id || 'none'} onValueChange={(v) => {
+                const projectId = v === 'none' ? null : v;
+                const project = projects.find(p => p.id === v);
+                const updates: Partial<Task> = { project_id: projectId };
+                if (project?.client_id) {
+                  updates.client_id = project.client_id;
+                }
+                onUpdate(task.id, updates);
+              }}>
                 <SelectTrigger className="h-9 text-sm glass-input"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
