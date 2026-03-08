@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
@@ -45,7 +46,6 @@ const ProfilePage = () => {
         setEditForm({ name: user.user_metadata?.name || '', document: '' });
       }
 
-      // Fetch organization
       const { data: orgData } = await supabase
         .from('organizations' as any)
         .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
@@ -87,6 +87,23 @@ const ProfilePage = () => {
     }
   };
 
+  const handleSaveOrg = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { error } = await (supabase.from('organizations' as any) as any).upsert({
+      user_id: user.id,
+      ...orgForm,
+    }, { onConflict: 'user_id' });
+    setLoading(false);
+    if (error) {
+      toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+    } else {
+      setOrg({ ...orgForm });
+      setEditingOrg(false);
+      toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+    }
+  };
+
   const handleChangePassword = async () => {
     if (passwordForm.password.length < 6) {
       toast({ title: lang === 'pt-BR' ? 'A senha deve ter pelo menos 6 caracteres' : 'Password must be at least 6 characters', variant: 'destructive' });
@@ -117,322 +134,385 @@ const ProfilePage = () => {
 
   const createdAt = user?.created_at ? format(new Date(user.created_at), 'dd/MM/yyyy') : '—';
 
-  return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">{t.profile}</h1>
+  const ActionButtons = ({ onSave, onCancel, saveLabel }: { onSave: () => void; onCancel: () => void; saveLabel?: string }) => (
+    <div className="flex items-center gap-2 pt-4">
+      <Button onClick={onSave} disabled={loading} size="sm" className="gap-1.5">
+        <Save className="w-4 h-4" />
+        {saveLabel || t.save}
+      </Button>
+      <Button variant="ghost" size="sm" onClick={onCancel} className="gap-1.5 text-muted-foreground">
+        <X className="w-4 h-4" />
+        {t.cancel}
+      </Button>
+    </div>
+  );
 
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-4">
-          <Avatar className="w-16 h-16 text-lg">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <CardTitle className="text-xl">{profile.name || profile.email}</CardTitle>
-            <p className="text-sm text-muted-foreground">{profile.email}</p>
+  const FieldDisplay = ({ value }: { value: string }) => (
+    <p className="text-foreground font-medium text-sm py-1.5">{value || '—'}</p>
+  );
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6 pb-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t.profile}</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {lang === 'pt-BR' ? 'Gerencie suas informações pessoais e da sua empresa' : 'Manage your personal and company information'}
+        </p>
+      </div>
+
+      {/* Profile Card */}
+      <Card className="overflow-hidden">
+        {/* Profile banner */}
+        <div className="h-20 bg-gradient-to-r from-primary to-primary/70" />
+        <CardHeader className="relative pt-0 pb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-10">
+            <Avatar className="w-20 h-20 border-4 border-card shadow-lg">
+              <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 pt-2 sm:pt-0 sm:pb-1">
+              <CardTitle className="text-xl">{profile.name || profile.email}</CardTitle>
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                <Mail className="w-3.5 h-3.5" />
+                {profile.email}
+              </p>
+            </div>
+            <div className="sm:pb-1">
+              {!editing ? (
+                <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
+                  <Pencil className="w-3.5 h-3.5" />
+                  {lang === 'pt-BR' ? 'Editar' : 'Edit'}
+                </Button>
+              ) : null}
+            </div>
           </div>
-          {!editing && (
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-              <Pencil className="w-4 h-4 mr-1" />
-              {lang === 'pt-BR' ? 'Editar' : 'Edit'}
-            </Button>
-          )}
         </CardHeader>
 
         <Separator />
 
-        <CardContent className="pt-6 space-y-5">
-          {/* Name */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <User className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Nome completo' : 'Full name'}
-            </Label>
-            {editing ? (
-              <Input
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                placeholder={lang === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
-              />
-            ) : (
-              <p className="text-foreground font-medium">{profile.name || '—'}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Mail className="w-4 h-4" />
-              Email
-            </Label>
-            <p className="text-foreground font-medium">{profile.email}</p>
-          </div>
-
-          {/* CPF */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <FileText className="w-4 h-4" />
-              CPF
-            </Label>
-            {editing ? (
-              <Input
-                value={editForm.document}
-                onChange={(e) => setEditForm({ ...editForm, document: maskCPF(e.target.value) })}
-                placeholder="000.000.000-00"
-                maxLength={14}
-              />
-            ) : (
-              <p className="text-foreground font-medium">{profile.document || '—'}</p>
-            )}
-          </div>
-
-          {/* Created at */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Membro desde' : 'Member since'}
-            </Label>
-            <p className="text-foreground font-medium">{createdAt}</p>
-          </div>
-
-          {/* Edit actions */}
-          {editing && (
-            <div className="flex gap-2 pt-2">
-              <Button onClick={handleSave} disabled={loading} size="sm">
-                <Save className="w-4 h-4 mr-1" />
-                {t.save}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}>
-                <X className="w-4 h-4 mr-1" />
-                {t.cancel}
-              </Button>
+        <CardContent className="pt-5 pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            {/* Name */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Nome completo' : 'Full name'}
+              </Label>
+              {editing ? (
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  placeholder={lang === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
+                />
+              ) : (
+                <FieldDisplay value={profile.name} />
+              )}
             </div>
+
+            {/* CPF */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                CPF
+              </Label>
+              {editing ? (
+                <Input
+                  value={editForm.document}
+                  onChange={(e) => setEditForm({ ...editForm, document: maskCPF(e.target.value) })}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                />
+              ) : (
+                <FieldDisplay value={profile.document} />
+              )}
+            </div>
+
+            {/* Email (read-only) */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
+                Email
+              </Label>
+              <FieldDisplay value={profile.email} />
+            </div>
+
+            {/* Member since */}
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Membro desde' : 'Member since'}
+              </Label>
+              <FieldDisplay value={createdAt} />
+            </div>
+          </div>
+
+          {editing && (
+            <ActionButtons
+              onSave={handleSave}
+              onCancel={() => { setEditing(false); setEditForm({ name: profile.name, document: profile.document }); }}
+            />
           )}
         </CardContent>
       </Card>
 
-      {/* Organization */}
+      {/* Organization Card */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            {lang === 'pt-BR' ? 'Organização' : 'Organization'}
-          </CardTitle>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">
+                {lang === 'pt-BR' ? 'Organização' : 'Organization'}
+              </CardTitle>
+              <CardDescription className="mt-0.5">
+                {lang === 'pt-BR' ? 'Dados da sua empresa para orçamentos e faturas' : 'Company data for budgets and invoices'}
+              </CardDescription>
+            </div>
+          </div>
           {!editingOrg && (
-            <Button variant="outline" size="sm" onClick={() => setEditingOrg(true)}>
-              <Pencil className="w-4 h-4 mr-1" />
+            <Button variant="outline" size="sm" onClick={() => setEditingOrg(true)} className="gap-1.5 shrink-0">
+              <Pencil className="w-3.5 h-3.5" />
               {lang === 'pt-BR' ? 'Editar' : 'Edit'}
             </Button>
           )}
         </CardHeader>
+
         <Separator />
-        <CardContent className="pt-6 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-muted-foreground">
-                <Building2 className="w-4 h-4" />
-                {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
-              </Label>
-              {editingOrg ? (
-                <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
-              ) : (
-                <p className="text-foreground font-medium">{org.company_name || '—'}</p>
-              )}
-            </div>
 
-            <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-muted-foreground">
-                <Building2 className="w-4 h-4" />
-                {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
-              </Label>
-              {editingOrg ? (
-                <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
-              ) : (
-                <p className="text-foreground font-medium">{org.trade_name || '—'}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-muted-foreground">
-                <FileText className="w-4 h-4" />
-                CNPJ
-              </Label>
-              {editingOrg ? (
-                <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
-              ) : (
-                <p className="text-foreground font-medium">{org.cnpj || '—'}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-1.5 text-muted-foreground">
-                  <FileText className="w-4 h-4" />
-                  {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Registration'}
+        <CardContent className="pt-5 pb-6 space-y-6">
+          {/* Identification section */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5" />
+              {lang === 'pt-BR' ? 'Identificação' : 'Identification'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">
+                  {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
                 </Label>
-                {editingOrg && (
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                    <Checkbox
-                      checked={orgForm.state_registration === 'ISENTO'}
-                      onCheckedChange={(checked) => setOrgForm({ ...orgForm, state_registration: checked ? 'ISENTO' : '' })}
-                    />
-                    {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
-                  </label>
+                {editingOrg ? (
+                  <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+                ) : (
+                  <FieldDisplay value={org.company_name} />
                 )}
               </div>
-              {editingOrg ? (
-                <Input
-                  value={orgForm.state_registration}
-                  onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
-                  placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
-                  disabled={orgForm.state_registration === 'ISENTO'}
-                />
-              ) : (
-                <p className="text-foreground font-medium">{org.state_registration || '—'}</p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-1.5 text-muted-foreground">
-                  <FileText className="w-4 h-4" />
-                  {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Registration'}
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">
+                  {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
                 </Label>
-                {editingOrg && (
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                    <Checkbox
-                      checked={orgForm.municipal_registration === 'ISENTO'}
-                      onCheckedChange={(checked) => setOrgForm({ ...orgForm, municipal_registration: checked ? 'ISENTO' : '' })}
-                    />
-                    {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
-                  </label>
+                {editingOrg ? (
+                  <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
+                ) : (
+                  <FieldDisplay value={org.trade_name} />
                 )}
               </div>
-              {editingOrg ? (
-                <Input
-                  value={orgForm.municipal_registration}
-                  onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
-                  placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
-                  disabled={orgForm.municipal_registration === 'ISENTO'}
-                />
-              ) : (
-                <p className="text-foreground font-medium">{org.municipal_registration || '—'}</p>
-              )}
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Mail className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
-            </Label>
-            {editingOrg ? (
-              <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
-            ) : (
-              <p className="text-foreground font-medium">{org.business_email || '—'}</p>
-            )}
+          <Separator className="opacity-50" />
+
+          {/* Tax section */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" />
+              {lang === 'pt-BR' ? 'Documentação Fiscal' : 'Tax Documentation'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">CNPJ</Label>
+                {editingOrg ? (
+                  <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
+                ) : (
+                  <FieldDisplay value={org.cnpj} />
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm text-muted-foreground">
+                    {lang === 'pt-BR' ? 'Inscrição Estadual' : 'State Reg.'}
+                  </Label>
+                  {editingOrg && (
+                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                      <Checkbox
+                        className="w-3.5 h-3.5"
+                        checked={orgForm.state_registration === 'ISENTO'}
+                        onCheckedChange={(checked) => setOrgForm({ ...orgForm, state_registration: checked ? 'ISENTO' : '' })}
+                      />
+                      {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                    </label>
+                  )}
+                </div>
+                {editingOrg ? (
+                  <Input
+                    value={orgForm.state_registration}
+                    onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
+                    placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                    disabled={orgForm.state_registration === 'ISENTO'}
+                    className={orgForm.state_registration === 'ISENTO' ? 'opacity-50' : ''}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <FieldDisplay value={org.state_registration} />
+                    {org.state_registration === 'ISENTO' && (
+                      <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm text-muted-foreground">
+                    {lang === 'pt-BR' ? 'Inscrição Municipal' : 'Municipal Reg.'}
+                  </Label>
+                  {editingOrg && (
+                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                      <Checkbox
+                        className="w-3.5 h-3.5"
+                        checked={orgForm.municipal_registration === 'ISENTO'}
+                        onCheckedChange={(checked) => setOrgForm({ ...orgForm, municipal_registration: checked ? 'ISENTO' : '' })}
+                      />
+                      {lang === 'pt-BR' ? 'Isento' : 'Exempt'}
+                    </label>
+                  )}
+                </div>
+                {editingOrg ? (
+                  <Input
+                    value={orgForm.municipal_registration}
+                    onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
+                    placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
+                    disabled={orgForm.municipal_registration === 'ISENTO'}
+                    className={orgForm.municipal_registration === 'ISENTO' ? 'opacity-50' : ''}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <FieldDisplay value={org.municipal_registration} />
+                    {org.municipal_registration === 'ISENTO' && (
+                      <Badge variant="secondary" className="text-[10px] h-5">{lang === 'pt-BR' ? 'Isento' : 'Exempt'}</Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Phone className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Telefone Comercial' : 'Business Phone'}
-            </Label>
-            {editingOrg ? (
-              <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
-            ) : (
-              <p className="text-foreground font-medium">{org.business_phone || '—'}</p>
-            )}
-          </div>
+          <Separator className="opacity-50" />
 
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-muted-foreground">
-              <Globe className="w-4 h-4" />
-              Site
-            </Label>
-            {editingOrg ? (
-              <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
-            ) : (
-              <p className="text-foreground font-medium">{org.website || '—'}</p>
-            )}
+          {/* Contact section */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" />
+              {lang === 'pt-BR' ? 'Contato Comercial' : 'Business Contact'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">
+                  {lang === 'pt-BR' ? 'Email Comercial' : 'Business Email'}
+                </Label>
+                {editingOrg ? (
+                  <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
+                ) : (
+                  <FieldDisplay value={org.business_email} />
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">
+                  {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
+                </Label>
+                {editingOrg ? (
+                  <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
+                ) : (
+                  <FieldDisplay value={org.business_phone} />
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-sm text-muted-foreground">Site</Label>
+                {editingOrg ? (
+                  <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
+                ) : (
+                  <FieldDisplay value={org.website} />
+                )}
+              </div>
+            </div>
           </div>
 
           {editingOrg && (
-            <div className="flex gap-2 pt-2">
-              <Button onClick={async () => {
-                if (!user) return;
-                setLoading(true);
-                // Upsert: insert if not exists, update if exists
-                const { error } = await (supabase.from('organizations' as any) as any).upsert({
-                  user_id: user.id,
-                  ...orgForm,
-                }, { onConflict: 'user_id' });
-                setLoading(false);
-                if (error) {
-                  toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
-                } else {
-                  setOrg({ ...orgForm });
-                  setEditingOrg(false);
-                  toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
-                }
-              }} disabled={loading} size="sm">
-                <Save className="w-4 h-4 mr-1" />
-                {t.save}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditingOrg(false); setOrgForm({ ...org }); }}>
-                <X className="w-4 h-4 mr-1" />
-                {t.cancel}
-              </Button>
-            </div>
+            <ActionButtons
+              onSave={handleSaveOrg}
+              onCancel={() => { setEditingOrg(false); setOrgForm({ ...org }); }}
+            />
           )}
         </CardContent>
       </Card>
 
-      {/* Change Password */}
+      {/* Security Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Lock className="w-5 h-5" />
-            {lang === 'pt-BR' ? 'Alterar Senha' : 'Change Password'}
-          </CardTitle>
+        <CardHeader className="flex flex-row items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-destructive" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">
+              {lang === 'pt-BR' ? 'Segurança' : 'Security'}
+            </CardTitle>
+            <CardDescription className="mt-0.5">
+              {lang === 'pt-BR' ? 'Gerencie sua senha de acesso' : 'Manage your access password'}
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+
+        <Separator />
+
+        <CardContent className="pt-5 pb-6">
           {!changingPassword ? (
-            <Button variant="outline" size="sm" onClick={() => setChangingPassword(true)}>
-              {lang === 'pt-BR' ? 'Alterar senha' : 'Change password'}
-            </Button>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+              <div className="flex items-center gap-3">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Senha' : 'Password'}</p>
+                  <p className="text-xs text-muted-foreground">••••••••</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setChangingPassword(true)} className="gap-1.5">
+                <Pencil className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Alterar' : 'Change'}
+              </Button>
+            </div>
           ) : (
-            <>
-              <div className="space-y-1.5">
-                <Label>{lang === 'pt-BR' ? 'Nova senha' : 'New password'}</Label>
-                <Input
-                  type="password"
-                  value={passwordForm.password}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
-                />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Nova senha' : 'New password'}</Label>
+                  <Input
+                    type="password"
+                    value={passwordForm.password}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Confirmar senha' : 'Confirm password'}</Label>
+                  <Input
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>{lang === 'pt-BR' ? 'Confirmar senha' : 'Confirm password'}</Label>
-                <Input
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleChangePassword} disabled={loading} size="sm">
-                  <Save className="w-4 h-4 mr-1" />
-                  {t.save}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { setChangingPassword(false); setPasswordForm({ password: '', confirmPassword: '' }); }}>
-                  <X className="w-4 h-4 mr-1" />
-                  {t.cancel}
-                </Button>
-              </div>
-            </>
+              <ActionButtons
+                onSave={handleChangePassword}
+                onCancel={() => { setChangingPassword(false); setPasswordForm({ password: '', confirmPassword: '' }); }}
+              />
+            </div>
           )}
         </CardContent>
       </Card>
