@@ -353,6 +353,35 @@ const KanbanPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Deadline - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Prazo</span>
+                    {filterDeadlines.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterDeadlines.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'overdue', label: 'Atrasadas', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-800' },
+                      { value: 'this_week', label: 'Esta semana', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                      { value: 'this_month', label: 'Este mês', color: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
+                      { value: 'no_deadline', label: 'Sem prazo', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                    ].map((d) => (
+                      <button
+                        key={d.value}
+                        onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterDeadlines.has(d.value)
+                            ? `${d.color} shadow-sm ring-1 ring-current/20`
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Result count */}
