@@ -12,7 +12,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useKanban, Task } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -54,6 +54,8 @@ const KanbanPage = () => {
   const [filterEstimatedTime, setFilterEstimatedTime] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<string>('position');
   const [showFilters, setShowFilters] = useState(false);
+  const [listSortField, setListSortField] = useState<string>('title');
+  const [listSortDir, setListSortDir] = useState<'asc' | 'desc'>('asc');
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -714,15 +716,59 @@ const KanbanPage = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tarefa</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prioridade</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prazo</th>
-                <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tipo</th>
+                {[
+                  { key: 'title', label: 'Tarefa' },
+                  { key: 'status', label: 'Status' },
+                  { key: 'priority', label: 'Prioridade' },
+                  { key: 'due_date', label: 'Prazo' },
+                  { key: 'task_type', label: 'Tipo' },
+                ].map((col) => (
+                  <th
+                    key={col.key}
+                    onClick={() => {
+                      if (listSortField === col.key) {
+                        setListSortDir(listSortDir === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setListSortField(col.key);
+                        setListSortDir('asc');
+                      }
+                    }}
+                    className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                  >
+                    <span className="flex items-center gap-1">
+                      {col.label}
+                      {listSortField === col.key ? (
+                        listSortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 opacity-30" />
+                      )}
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {filteredTasks.map((task) => {
+              {[...filteredTasks].sort((a, b) => {
+                const dir = listSortDir === 'asc' ? 1 : -1;
+                const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+                switch (listSortField) {
+                  case 'title': return dir * a.title.localeCompare(b.title);
+                  case 'status': {
+                    const colA = columns.find(c => c.id === a.column_id)?.name || '';
+                    const colB = columns.find(c => c.id === b.column_id)?.name || '';
+                    return dir * colA.localeCompare(colB);
+                  }
+                  case 'priority': return dir * ((priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99));
+                  case 'due_date': {
+                    if (!a.due_date && !b.due_date) return 0;
+                    if (!a.due_date) return dir;
+                    if (!b.due_date) return -dir;
+                    return dir * (new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+                  }
+                  case 'task_type': return dir * (a.task_type || '').localeCompare(b.task_type || '');
+                  default: return 0;
+                }
+              }).map((task) => {
                 const col = columns.find((c) => c.id === task.column_id);
                 const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
                 return (
