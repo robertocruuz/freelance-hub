@@ -709,12 +709,25 @@ const ProjectsPage = () => {
                             <span
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openBoardPicker(item);
+                                if (!isTaskCreated(item)) openBoardPicker(item);
                               }}
-                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors group shrink-0 cursor-pointer"
+                              className={`flex items-center gap-1 px-2 py-1 rounded-lg border shrink-0 ${
+                                isTaskCreated(item)
+                                  ? 'bg-muted/50 border-border opacity-50 cursor-default'
+                                  : 'bg-primary/10 border-primary/20 hover:bg-primary/20 transition-colors group cursor-pointer'
+                              }`}
                             >
-                              <Sparkles className="w-3 h-3 text-primary group-hover:animate-pulse" />
-                              <span className="text-xs font-medium text-primary">Tarefa</span>
+                              {isTaskCreated(item) ? (
+                                <>
+                                  <Sparkles className="w-3 h-3 text-muted-foreground" />
+                                  <span className="text-xs font-medium text-muted-foreground">Criada</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-3 h-3 text-primary group-hover:animate-pulse" />
+                                  <span className="text-xs font-medium text-primary">Tarefa</span>
+                                </>
+                              )}
                             </span>
                           </button>
 
