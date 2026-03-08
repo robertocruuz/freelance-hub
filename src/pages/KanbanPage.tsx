@@ -489,7 +489,7 @@ const KanbanPage = () => {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                  className={`p-1.5 rounded-md border transition-all flex items-center justify-center ${
+                  className={`px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium ${
                     filterDeadlineDate
                       ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                       : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -497,6 +497,7 @@ const KanbanPage = () => {
                   title={filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data específica'}
                 >
                   <CalendarDays className="w-3.5 h-3.5" />
+                  Data
                 </button>
                 {filterDeadlineDate && (
                   <span className="text-[11px] text-primary font-medium flex items-center gap-1">
