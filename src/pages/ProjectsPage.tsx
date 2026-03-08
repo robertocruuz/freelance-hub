@@ -216,6 +216,7 @@ const ProjectsPage = () => {
     setName(p.name);
     setClientId(p.client_id || '');
     setDueDate(p.due_date ? new Date(p.due_date + 'T12:00:00') : undefined);
+    setProjectDiscount(p.discount || 0);
     setShowForm(true);
   };
 
