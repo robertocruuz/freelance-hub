@@ -213,6 +213,10 @@ const BudgetsPage = () => {
     setCreating(false);
     setEditingId(null);
     setClientId('');
+    setBudgetName('');
+    setBudgetDate(new Date());
+    setValidityDate(undefined);
+    setDeliveryDate(undefined);
     setItems([]);
     setDiscount(0);
     setNotes('');
