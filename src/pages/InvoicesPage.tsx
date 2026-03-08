@@ -221,7 +221,7 @@ const InvoicesPage = () => {
       discount,
       status: 'pending',
       due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
-      payment_method: paymentMethod || null,
+      payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
     });
     if (error) toast.error(error.message);
     else {
