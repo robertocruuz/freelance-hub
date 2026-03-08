@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Share2, Users, UserPlus, X, Building2, Globe } from 'lucide-react';
+import { Share2, Users, UserPlus, X, Building2, Globe, Mail, Loader2 } from 'lucide-react';
 
 interface ShareButtonProps {
   resourceType: 'board' | 'task';
