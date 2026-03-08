@@ -235,6 +235,7 @@ const InvoicesPage = () => {
 
   const editInvoice = (inv: Invoice) => {
     setEditingInvoiceId(inv.id);
+    setInvoiceName(inv.name || '');
     setClientId(inv.client_id || '');
     setItems(inv.items);
     setTaxes(inv.taxes);
