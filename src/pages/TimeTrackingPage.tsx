@@ -1137,7 +1137,7 @@ const TimeTrackingPage = () => {
                     <div
                       className="absolute pointer-events-none z-20"
                       style={{
-                        top: `${minutes}px`,
+                        top: `${minutes - workHourStart * 60}px`,
                         left: `calc(64px + ${todayIdx} * ${colWidth})`,
                         width: colWidth,
                       }}
