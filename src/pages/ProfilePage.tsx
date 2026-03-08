@@ -29,6 +29,10 @@ const ProfilePage = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingOrg, setEditingOrg] = useState(false);
   const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [statePopoverOpen, setStatePopoverOpen] = useState(false);
+  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
