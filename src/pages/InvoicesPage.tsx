@@ -50,6 +50,7 @@ interface ProjectWithItems {
   client_id: string | null;
   client_name?: string;
   due_date: string | null;
+  discount: number;
   items: { name: string; value: number }[];
 }
 
