@@ -37,8 +37,8 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', state: '', city: '' });
-  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', state: '', city: '' });
+  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', complement: '', state: '', city: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', complement: '', state: '', city: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -59,7 +59,7 @@ const ProfilePage = () => {
 
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, state, city')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, zip_code, address, complement, state, city')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -75,6 +75,7 @@ const ProfilePage = () => {
           website: o.website || '',
           zip_code: o.zip_code || '',
           address: o.address || '',
+          complement: o.complement || '',
           state: o.state || '',
           city: o.city || '',
         };
@@ -463,7 +464,7 @@ const ProfilePage = () => {
                         <div className="space-y-1">
                           <Label className="text-sm text-muted-foreground">CEP</Label>
                           {editingOrg ? (
-                            <Input value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: [data.logradouro, data.complemento, data.bairro].filter(Boolean).join(', '), state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
+                            <Input value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: [data.logradouro, data.bairro].filter(Boolean).join(', '), complement: data.complemento || '', state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
                           ) : (
                             <FieldDisplay value={org.zip_code} />
                           )}
@@ -476,6 +477,16 @@ const ProfilePage = () => {
                             <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
                           ) : (
                             <FieldDisplay value={org.address} />
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Complemento' : 'Complement'}
+                          </Label>
+                          {editingOrg ? (
+                            <Input value={orgForm.complement} onChange={(e) => setOrgForm({ ...orgForm, complement: e.target.value })} placeholder={lang === 'pt-BR' ? 'Apto, sala, bloco...' : 'Apt, suite, block...'} />
+                          ) : (
+                            <FieldDisplay value={org.complement} />
                           )}
                         </div>
                       </div>
