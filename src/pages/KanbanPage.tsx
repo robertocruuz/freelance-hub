@@ -367,6 +367,78 @@ const KanbanPage = () => {
         </div>
       </div>
 
+      {/* Board tabs */}
+      <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-thin pb-1">
+        {boards.map((board) => (
+          <div
+            key={board.id}
+            className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all border shrink-0 ${
+              activeBoardId === board.id
+                ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground'
+            }`}
+            onClick={() => setActiveBoardId(board.id)}
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            <span>{board.name}</span>
+            {getBoardSubtitle(board) && (
+              <span className="text-[10px] opacity-70">{getBoardSubtitle(board)}</span>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-secondary transition"
+                >
+                  <MoreHorizontal className="w-3 h-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditBoard(board); }}>
+                  <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeletingBoard(board); }} className="text-destructive focus:text-destructive">
+                  <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ))}
+        <button
+          onClick={() => {
+            setEditingBoard(null);
+            setBoardName('');
+            setBoardClientId(null);
+            setBoardProjectId(null);
+            setShowBoardDialog(true);
+          }}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition border border-dashed border-border shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo painel
+        </button>
+      </div>
+
+      {/* No board selected */}
+      {!activeBoardId && boards.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <Kanban className="w-10 h-10 opacity-30" />
+          <p className="text-sm">Crie seu primeiro painel Kanban para começar</p>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingBoard(null);
+              setBoardName('');
+              setBoardClientId(null);
+              setBoardProjectId(null);
+              setShowBoardDialog(true);
+            }}
+            className="btn-glow"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Criar painel
+          </Button>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap mb-3">
         <div className="relative flex-1 min-w-[140px] max-w-xs">
