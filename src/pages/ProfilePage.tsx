@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
