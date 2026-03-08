@@ -99,6 +99,29 @@ const ProjectsPage = () => {
     setClientId('');
     setEditingId(null);
     setShowForm(false);
+    setSelectedBudgetId(null);
+    setPendingBudgetItems([]);
+  };
+
+  const loadAllBudgets = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('budgets').select('*').order('created_at', { ascending: false });
+    if (data) {
+      setAllBudgets(data.map(b => ({
+        ...b,
+        items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
+      })));
+    }
+  }, [user]);
+
+  const handleSelectBudget = (budgetId: string) => {
+    setSelectedBudgetId(budgetId);
+    const budget = allBudgets.find(b => b.id === budgetId);
+    if (budget) {
+      setName(budget.name || '');
+      setClientId(budget.client_id || '');
+      setPendingBudgetItems(budget.items);
+    }
   };
 
   const resetItemForm = () => {
