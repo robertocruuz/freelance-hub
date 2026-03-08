@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization, OrgMember, OrgInvite } from '@/hooks/useOrganization';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,8 +35,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown, Clock } from 'lucide-react';
+import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown, Clock, MoreVertical, LogOut } from 'lucide-react';
 
 const roleIcons = {
   admin: Crown,
@@ -53,14 +60,16 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const internalOrgHook = useOrganization();
-  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
+  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   const isPt = lang === 'pt-BR';
 
@@ -129,6 +138,16 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
     if (error) {
       toast({ title: isPt ? 'Erro ao cancelar' : 'Error canceling', variant: 'destructive' });
     }
+  };
+  const handleLeaveOrganization = async () => {
+    const { error } = await leaveOrganization();
+    if (error) {
+      toast({ title: isPt ? 'Erro ao sair da equipe' : 'Error leaving team', variant: 'destructive' });
+    } else {
+      toast({ title: isPt ? 'Você saiu da equipe' : 'You left the team' });
+      navigate('/dashboard');
+    }
+    setLeaveDialogOpen(false);
   };
 
   if (!orgId && !loading) {
@@ -303,6 +322,24 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+                  {isCurrentUser && !isOwner && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive gap-2"
+                          onClick={() => setLeaveDialogOpen(true)}
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          {isPt ? 'Sair da equipe' : 'Leave team'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
             );
@@ -346,6 +383,25 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
             </div>
           </>
         )}
+        {/* Leave team confirmation dialog */}
+        <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{isPt ? 'Sair da equipe?' : 'Leave team?'}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {isPt
+                  ? 'Você perderá acesso aos dados compartilhados da organização. Esta ação não pode ser desfeita.'
+                  : 'You will lose access to shared organization data. This action cannot be undone.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLeaveOrganization} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {isPt ? 'Sair' : 'Leave'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </>
   );
 

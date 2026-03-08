@@ -232,6 +232,25 @@ export const useOrganization = () => {
     return { error };
   };
 
+  const leaveOrganization = async () => {
+    if (!user || !orgId) return { error: 'No organization' };
+    const currentMember = members.find((m) => m.user_id === user.id);
+    if (!currentMember) return { error: 'Not a member' };
+
+    const { error } = await (supabase.from('organization_members' as any) as any)
+      .delete()
+      .eq('id', currentMember.id);
+
+    if (!error) {
+      setOrgId(null);
+      setOwnerId(null);
+      setMembers([]);
+      setInvites([]);
+      setIsAdmin(false);
+    }
+    return { error };
+  };
+
   return {
     orgId,
     ownerId,
@@ -245,6 +264,7 @@ export const useOrganization = () => {
     updateMemberRole,
     removeMember,
     cancelInvite,
+    leaveOrganization,
     refresh: fetchOrgData,
   };
 };
