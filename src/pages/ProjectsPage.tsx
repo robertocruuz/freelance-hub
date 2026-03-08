@@ -367,11 +367,14 @@ const ProjectsPage = () => {
                 className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Selecione um orçamento...</option>
-                {allBudgets.map(b => (
-                  <option key={b.id} value={b.id}>
-                    {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}
-                  </option>
-                ))}
+                {allBudgets.map(b => {
+                  const imported = isBudgetFullyImported(b);
+                  return (
+                    <option key={b.id} value={b.id} disabled={imported}>
+                      {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
+                    </option>
+                  );
+                })}
               </select>
               {selectedBudgetId && pendingBudgetItems.length > 0 && (
                 <div className="text-xs text-muted-foreground">
