@@ -398,6 +398,9 @@ const KanbanPage = () => {
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditBoard(board); }}>
                   <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()} asChild>
+                  <div><ShareButton resourceType="board" resourceId={board.id} compact /></div>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeletingBoard(board); }} className="text-destructive focus:text-destructive">
                   <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
                 </DropdownMenuItem>
