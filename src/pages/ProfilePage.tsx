@@ -42,11 +42,12 @@ const ProfilePage = () => {
         .eq('user_id', user.id)
         .single();
       if (data) {
-        setProfile({ name: data.name || '', email: data.email || user.email || '', document: (data as any).document || '' });
-        setEditForm({ name: data.name || '', document: (data as any).document || '' });
+        const d = data as any;
+        setProfile({ name: d.name || '', email: d.email || user.email || '', document: d.document || '', phone: d.phone || '' });
+        setEditForm({ name: d.name || '', document: d.document || '', phone: d.phone || '' });
       } else {
-        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '' });
-        setEditForm({ name: user.user_metadata?.name || '', document: '' });
+        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '', phone: '' });
+        setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
       }
 
       const { data: orgData } = await supabase
