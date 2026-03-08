@@ -470,7 +470,7 @@ const TimeTrackingPage = () => {
   useEffect(() => {
     if (calendarRef.current) {
       const currentHour = new Date().getHours();
-      const scrollTarget = Math.max(0, (currentHour - 2) * 60);
+      const scrollTarget = Math.max(0, (currentHour - workHourStart - 2) * 60);
       calendarRef.current.scrollTop = scrollTarget;
     }
   }, [viewMode]);
