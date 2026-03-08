@@ -271,17 +271,11 @@ const ClientsPage = () => {
                               <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/50 last:border-b-0">
                                 <div className="flex items-center gap-2">
                                   <SquareKanban className="w-3 h-3 text-muted-foreground" />
-                                  <span>{task.title}</span>
+                                  <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors">{task.title}</button>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
-                                  <Badge variant="secondary" className="text-[10px]">{task.status}</Badge>
-                                  <button
-                                    onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)}
-                                    className="text-xs text-primary hover:underline flex items-center gap-0.5"
-                                  >
-                                    <ExternalLink className="w-3 h-3" />
-                                  </button>
+                                  <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
+                                  <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
                                 </div>
                               </div>
                             ))}
