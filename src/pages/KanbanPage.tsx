@@ -549,6 +549,21 @@ const KanbanPage = () => {
                   <X className="w-3 h-3" />
                 </Badge>
               )}
+              {Array.from(filterComplexities).map(c => (
+                <Badge key={`c-${c}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterComplexities(prev => { const n = new Set(prev); n.delete(c); return n; })}>
+                  Complexidade {c}
+                  <X className="w-3 h-3" />
+                </Badge>
+              ))}
+              {Array.from(filterEstimatedTime).map(t => {
+                const labels: Record<string, string> = { none: 'Sem estimativa', short: '≤ 2h', medium: '2h–8h', long: '> 8h' };
+                return (
+                  <Badge key={`et-${t}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t)}>
+                    {labels[t] || t}
+                    <X className="w-3 h-3" />
+                  </Badge>
+                );
+              })}
             </div>
           )}
 
