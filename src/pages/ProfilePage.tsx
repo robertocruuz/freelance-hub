@@ -142,13 +142,13 @@ const ProfilePage = () => {
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-muted-foreground">
               <User className="w-4 h-4" />
-              {lang === 'pt-BR' ? 'Nome' : 'Name'}
+              {lang === 'pt-BR' ? 'Nome completo' : 'Full name'}
             </Label>
             {editing ? (
               <Input
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                placeholder={lang === 'pt-BR' ? 'Seu nome' : 'Your name'}
+                placeholder={lang === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
               />
             ) : (
               <p className="text-foreground font-medium">{profile.name || '—'}</p>
@@ -164,18 +164,18 @@ const ProfilePage = () => {
             <p className="text-foreground font-medium">{profile.email}</p>
           </div>
 
-          {/* CPF/CNPJ */}
+          {/* CPF */}
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-muted-foreground">
               <FileText className="w-4 h-4" />
-              CPF/CNPJ
+              CPF
             </Label>
             {editing ? (
               <Input
                 value={editForm.document}
                 onChange={(e) => setEditForm({ ...editForm, document: e.target.value })}
                 placeholder="000.000.000-00"
-                maxLength={18}
+                maxLength={14}
               />
             ) : (
               <p className="text-foreground font-medium">{profile.document || '—'}</p>
