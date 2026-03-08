@@ -85,7 +85,7 @@ const ProjectsPage = () => {
   const [clientId, setClientId] = useState('');
   const [search, setSearch] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [inlineEditItemId, setInlineEditItemId] = useState<string | null>(null);
