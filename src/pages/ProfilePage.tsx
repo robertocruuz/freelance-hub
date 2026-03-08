@@ -18,7 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { maskCPF, maskCNPJ, maskPhone } from '@/lib/masks';
+import { maskCPF, maskCNPJ, maskPhone, maskCEP } from '@/lib/masks';
 
 const ProfilePage = () => {
   const { user } = useAuth();
