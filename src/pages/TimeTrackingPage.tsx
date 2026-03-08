@@ -1049,15 +1049,14 @@ const TimeTrackingPage = () => {
             doc.text('Duração', 80, y);
             doc.text('Membro', 102, y);
             doc.text('Projeto', 135, y);
-            doc.text('Tempo', 165, y);
-            doc.text('Data', 186, y);
+            doc.text('Tempo / Data', 168, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
             exportEntries
               .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
               .forEach((entry) => {
-                checkPageBreak(8);
+                checkPageBreak(12);
                 const d = new Date(entry.start_time);
                 const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 const desc = entry.description || getTaskName(entry.task_id) || '—';
@@ -1074,9 +1073,13 @@ const TimeTrackingPage = () => {
                 doc.text(memberTruncated, 102, y);
                 const projTruncated = projName.length > 16 ? projName.substring(0, 13) + '...' : projName;
                 doc.text(projTruncated, 135, y);
-                doc.text(`${startStr}-${endStr}`, 165, y);
-                doc.text(dateStr, 186, y);
-                y += 6;
+                doc.text(`${startStr} - ${endStr}`, 168, y);
+                doc.setFontSize(8);
+                doc.setTextColor(120, 120, 120);
+                doc.text(dateStr, 168, y + 4);
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(9);
+                y += 10;
 
                 // light separator
                 doc.setDrawColor(230, 230, 230);
