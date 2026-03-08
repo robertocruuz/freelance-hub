@@ -28,6 +28,7 @@ export const useOrganization = () => {
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [invites, setInvites] = useState<OrgInvite[]>([]);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [ownerId, setOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -38,7 +39,7 @@ export const useOrganization = () => {
     // Get user's organization
     const { data: orgData } = await supabase
       .from('organizations' as any)
-      .select('id')
+      .select('id, user_id')
       .eq('user_id', user.id)
       .single();
 
@@ -51,13 +52,21 @@ export const useOrganization = () => {
         .single();
 
       if (memberData) {
-        setOrgId((memberData as any).organization_id);
+        const memberOrgId = (memberData as any).organization_id;
+        setOrgId(memberOrgId);
+        // Fetch owner of the org
+        const { data: ownerOrg } = await (supabase.from('organizations' as any) as any)
+          .select('user_id')
+          .eq('id', memberOrgId)
+          .single();
+        if (ownerOrg) setOwnerId((ownerOrg as any).user_id);
       } else {
         setLoading(false);
         return;
       }
     } else {
       setOrgId((orgData as any).id);
+      setOwnerId((orgData as any).user_id);
     }
 
     const currentOrgId = orgData ? (orgData as any).id : null;
@@ -225,6 +234,7 @@ export const useOrganization = () => {
 
   return {
     orgId,
+    ownerId,
     members,
     invites,
     loading,

@@ -54,7 +54,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
   const { lang } = useI18n();
   const { toast } = useToast();
   const internalOrgHook = useOrganization();
-  const { orgId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
+  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -230,7 +230,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
             const isCurrentUser = member.user_id === user?.id;
-            const canManage = isAdmin && !isCurrentUser;
+            const isOwner = member.user_id === ownerId;
+            const canManage = isAdmin && !isCurrentUser && !isOwner;
 
             return (
               <div
@@ -245,7 +246,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
                     {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
-                    {isCurrentUser && <span className="text-xs text-muted-foreground ml-1.5">({isPt ? 'você' : 'you'})</span>}
+                    {isOwner && <span className="text-xs text-primary ml-1.5">({isPt ? 'proprietário' : 'owner'})</span>}
+                    {isCurrentUser && !isOwner && <span className="text-xs text-muted-foreground ml-1.5">({isPt ? 'você' : 'you'})</span>}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
                     {member.profile?.email || ''}
