@@ -430,8 +430,6 @@ const KanbanPage = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <ShareButton resourceType="board" resourceId={activeBoardId} />
           </>
         )}
       </div>
@@ -490,6 +488,8 @@ const KanbanPage = () => {
           )}
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </Button>
+
+        <ShareButton resourceType="board" resourceId={activeBoardId} />
 
         {/* Active filter pills inline */}
         {!showFilters && activeFilterCount > 0 && (
