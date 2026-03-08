@@ -33,7 +33,7 @@ interface KanbanColumnProps {
   onDeleteColumn: (id: string) => void;
 }
 
-type AddMode = 'choice' | 'blank' | 'project';
+type AddMode = 'choice' | 'blank' | 'project' | 'project-items';
 
 export const KanbanColumnComponent = ({
   column,
@@ -49,6 +49,8 @@ export const KanbanColumnComponent = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(column.name);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loadingItems, setLoadingItems] = useState(false);
 
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -66,11 +68,19 @@ export const KanbanColumnComponent = ({
     setIsEditing(false);
   };
 
-  const loadProjectItems = async () => {
+  const loadProjects = async () => {
+    setLoadingItems(true);
+    const { data } = await supabase.from('projects').select('id, name').order('name');
+    if (data) setProjects(data);
+    setLoadingItems(false);
+  };
+
+  const loadProjectItems = async (projectId: string) => {
     setLoadingItems(true);
     const { data } = await supabase
       .from('project_items')
       .select('id, name, value, project_id, projects(name, client_id)')
+      .eq('project_id', projectId)
       .order('name');
     if (data) {
       setProjectItems(data.map((item: any) => ({
@@ -85,6 +95,12 @@ export const KanbanColumnComponent = ({
     setLoadingItems(false);
   };
 
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setAddMode('project-items');
+    loadProjectItems(projectId);
+  };
+
   const handleSelectProjectItem = (item: ProjectItem) => {
     if (onAddTaskFromProject) {
       onAddTaskFromProject(column.id, item);
@@ -94,7 +110,8 @@ export const KanbanColumnComponent = ({
 
   const openProjectPicker = () => {
     setAddMode('project');
-    loadProjectItems();
+    setSelectedProjectId(null);
+    loadProjects();
   };
 
   return (
@@ -205,10 +222,41 @@ export const KanbanColumnComponent = ({
             >
               <ChevronLeft className="w-3 h-3" /> Voltar
             </button>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Selecione o projeto</p>
+            {loadingItems ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
+            ) : projects.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">Nenhum projeto encontrado</p>
+            ) : (
+              projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelectProject(p.id)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-secondary transition border border-border"
+                >
+                  <FolderKanban className="w-3 h-3 inline mr-1.5 text-primary" />{p.name}
+                </button>
+              ))
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+              Cancelar
+            </Button>
+          </div>
+        )}
+
+        {addMode === 'project-items' && (
+          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            <button
+              onClick={() => setAddMode('project')}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition mb-1"
+            >
+              <ChevronLeft className="w-3 h-3" /> Projetos
+            </button>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">Selecione o item</p>
             {loadingItems ? (
               <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
             ) : projectItems.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-2">Nenhum item de projeto encontrado</p>
+              <p className="text-xs text-muted-foreground text-center py-2">Nenhum item neste projeto</p>
             ) : (
               projectItems.map((item) => (
                 <button
@@ -217,9 +265,7 @@ export const KanbanColumnComponent = ({
                   className="w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-secondary transition border border-border"
                 >
                   <p className="font-medium text-foreground truncate">{item.name}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {item.project_name} · R$ {item.value.toFixed(2)}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground">R$ {item.value.toFixed(2)}</p>
                 </button>
               ))
             )}
