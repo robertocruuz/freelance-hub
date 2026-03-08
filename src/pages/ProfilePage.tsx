@@ -126,18 +126,18 @@ const ProfilePage = () => {
   };
 
   const handleSaveOrg = async () => {
-    if (!user) return;
+    if (!user || !orgId) return;
     setLoading(true);
-    const { error } = await (supabase.from('organizations' as any) as any).upsert({
-      user_id: user.id,
-      ...orgForm,
-    }, { onConflict: 'user_id' });
+    const { error } = await (supabase.from('organizations' as any) as any)
+      .update({ ...orgForm })
+      .eq('id', orgId);
     setLoading(false);
     if (error) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
       setOrg({ ...orgForm });
       setEditingOrg(false);
+      refreshOrg();
       toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
     }
   };
