@@ -139,8 +139,18 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
       toast({ title: isPt ? 'Erro ao cancelar' : 'Error canceling', variant: 'destructive' });
     }
   };
+  const handleLeaveOrganization = async () => {
+    const { error } = await leaveOrganization();
+    if (error) {
+      toast({ title: isPt ? 'Erro ao sair da equipe' : 'Error leaving team', variant: 'destructive' });
+    } else {
+      toast({ title: isPt ? 'Você saiu da equipe' : 'You left the team' });
+      navigate('/dashboard');
+    }
+    setLeaveDialogOpen(false);
+  };
 
-  if (!orgId && !loading) {
+
     if (embedded) {
       return (
         <div className="text-sm text-muted-foreground py-2">
