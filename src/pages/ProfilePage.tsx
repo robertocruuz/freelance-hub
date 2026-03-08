@@ -26,6 +26,7 @@ const ProfilePage = () => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const { toast } = useToast();
+  const { orgId, isAdmin, refresh: refreshOrg } = useOrganization();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
