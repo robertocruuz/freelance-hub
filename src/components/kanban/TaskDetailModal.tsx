@@ -42,6 +42,7 @@ const taskTypes = [
 export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, kanban }: TaskDetailModalProps) => {
   const navigate = useNavigate();
   const { clients } = useClients();
+  const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [checklists, setChecklists] = useState<TaskChecklist[]>([]);
