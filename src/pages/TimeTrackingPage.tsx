@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid, ChevronDown, BarChart3, Download } from 'lucide-react';
+import { Play, Square, Pencil, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Layers, List, LayoutGrid, ChevronDown, BarChart3, Download, Settings } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, AreaChart, Area } from 'recharts';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -170,6 +170,25 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [showCalendarSettings, setShowCalendarSettings] = useState(false);
+  const [workHourStart, setWorkHourStart] = useState(() => {
+    const saved = localStorage.getItem('tt_work_hour_start');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [workHourEnd, setWorkHourEnd] = useState(() => {
+    const saved = localStorage.getItem('tt_work_hour_end');
+    return saved ? parseInt(saved) : 24;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tt_work_hour_start', String(workHourStart));
+    localStorage.setItem('tt_work_hour_end', String(workHourEnd));
+  }, [workHourStart, workHourEnd]);
+
+  const visibleHours = useMemo(() =>
+    HOURS.filter(h => h >= workHourStart && h < workHourEnd),
+    [workHourStart, workHourEnd]
+  );
 
   // Drag state for calendar entries
   const [dragState, setDragState] = useState<{
@@ -228,7 +247,7 @@ const TimeTrackingPage = () => {
     if (dragState) return;
     const rect = gridEl.getBoundingClientRect();
     const y = e.clientY - rect.top + gridEl.scrollTop;
-    const minute = Math.round(y / 5) * 5;
+    const minute = Math.round(y / 5) * 5 + workHourStart * 60;
     setCreateDrag({ dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop });
     createDragRef.current = { dayDate, startMin: minute, currentMin: minute, gridTop: rect.top - gridEl.scrollTop };
   };
@@ -241,7 +260,7 @@ const TimeTrackingPage = () => {
       if (!cd || !calendarRef.current) return;
       const rect = calendarRef.current.getBoundingClientRect();
       const y = e.clientY - rect.top + calendarRef.current.scrollTop;
-      const minute = Math.max(0, Math.min(24 * 60, Math.round(y / 5) * 5));
+      const minute = Math.max(workHourStart * 60, Math.min(workHourEnd * 60, Math.round(y / 5) * 5 + workHourStart * 60));
       const next = { ...cd, currentMin: minute };
       setCreateDrag(next);
       createDragRef.current = next;
@@ -451,7 +470,7 @@ const TimeTrackingPage = () => {
   useEffect(() => {
     if (calendarRef.current) {
       const currentHour = new Date().getHours();
-      const scrollTarget = Math.max(0, (currentHour - 2) * 60);
+      const scrollTarget = Math.max(0, (currentHour - workHourStart - 2) * 60);
       calendarRef.current.scrollTop = scrollTarget;
     }
   }, [viewMode]);
@@ -923,6 +942,53 @@ const TimeTrackingPage = () => {
               </button>
             ))}
           </div>
+          {/* Calendar settings gear */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCalendarSettings(!showCalendarSettings)}
+              className={`p-1.5 rounded-md transition-colors ${showCalendarSettings ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              title="Configurações do calendário"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            {showCalendarSettings && (
+              <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-lg border border-border bg-popover shadow-lg p-4 space-y-3">
+                <p className="text-xs font-semibold text-foreground">Horário de trabalho</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Início</label>
+                    <select
+                      value={workHourStart}
+                      onChange={(e) => setWorkHourStart(parseInt(e.target.value))}
+                      className="w-full px-2 py-1.5 rounded-md bg-muted border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Fim</label>
+                    <select
+                      value={workHourEnd}
+                      onChange={(e) => setWorkHourEnd(parseInt(e.target.value))}
+                      className="w-full px-2 py-1.5 rounded-md bg-muted border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => i + 1).filter(i => i > workHourStart).map(i => (
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setWorkHourStart(0); setWorkHourEnd(24); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Mostrar todas as horas
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -972,8 +1038,8 @@ const TimeTrackingPage = () => {
                 handleGridMouseDown(e, weekDays[dayIdx], calendarRef.current);
               }}
             >
-              <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
-                {HOURS.map((hour) => (
+              <div className="relative" style={{ minHeight: `${visibleHours.length * 60}px` }}>
+                {visibleHours.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px repeat(7, 1fr)', height: '60px' }}>
                     <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
                       {hour === 0 ? '12:00 AM' : hour < 12 ? `${hour}:00 AM` : hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`}
@@ -1004,7 +1070,7 @@ const TimeTrackingPage = () => {
                         data-entry-block
                         className={`absolute rounded-md text-[10px] text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${displayStart}px`,
+                          top: `${displayStart - workHourStart * 60}px`,
                           height: `${Math.max(durationMinutes, 18)}px`,
                           left: entryLeft,
                           width: entryWidth,
@@ -1048,7 +1114,7 @@ const TimeTrackingPage = () => {
                     <div
                       className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
                       style={{
-                        top: `${s}px`,
+                        top: `${s - workHourStart * 60}px`,
                         height: `${e - s}px`,
                         left: `calc(64px + ${dayIdx} * ${colWidth} + 2px)`,
                         width: `calc(${colWidth} - 4px)`,
@@ -1071,7 +1137,7 @@ const TimeTrackingPage = () => {
                     <div
                       className="absolute pointer-events-none z-20"
                       style={{
-                        top: `${minutes}px`,
+                        top: `${minutes - workHourStart * 60}px`,
                         left: `calc(64px + ${todayIdx} * ${colWidth})`,
                         width: colWidth,
                       }}
@@ -1099,8 +1165,8 @@ const TimeTrackingPage = () => {
                 handleGridMouseDown(e, selectedDate, calendarRef.current);
               }}
             >
-              <div className="relative" style={{ minHeight: `${HOURS.length * 60}px` }}>
-                {HOURS.map((hour) => (
+              <div className="relative" style={{ minHeight: `${visibleHours.length * 60}px` }}>
+                {visibleHours.map((hour) => (
                   <div key={hour} className="grid border-b border-border/30" style={{ gridTemplateColumns: '64px 1fr', height: '60px' }}>
                     <div className="px-2 pt-1 text-[11px] text-muted-foreground text-right pr-3 border-r border-border">
                       {hour === 0 ? '12:00 AM' : hour < 12 ? `${hour}:00 AM` : hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`}
@@ -1126,7 +1192,7 @@ const TimeTrackingPage = () => {
                         data-entry-block
                         className={`absolute rounded-md text-xs text-white overflow-hidden shadow-sm z-10 select-none ${isDragging ? 'opacity-80 ring-2 ring-white/50 z-30' : 'hover:brightness-110'}`}
                         style={{
-                          top: `${displayStart}px`,
+                          top: `${displayStart - workHourStart * 60}px`,
                           height: `${Math.max(durationMinutes, 20)}px`,
                           left: entryLeft,
                           width: entryWidth,
@@ -1167,7 +1233,7 @@ const TimeTrackingPage = () => {
                     <div
                       className="absolute rounded-md bg-primary/30 border-2 border-primary border-dashed z-20 pointer-events-none flex items-center justify-center"
                       style={{
-                        top: `${s}px`,
+                        top: `${s - workHourStart * 60}px`,
                         height: `${e - s}px`,
                         left: '68px',
                         width: 'calc(100% - 72px)',
