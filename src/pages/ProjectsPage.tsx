@@ -491,8 +491,29 @@ const ProjectsPage = () => {
           <p className="text-sm">{t.noProjects}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(p => {
+        <div className="space-y-6">
+          {(() => {
+            const grouped: Record<string, Project[]> = {};
+            filtered.forEach(p => {
+              const key = p.client_id || '__no_client__';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(p);
+            });
+            // Sort: clients with name first, "sem cliente" last
+            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+              if (a === '__no_client__') return 1;
+              if (b === '__no_client__') return -1;
+              return clientName(a).localeCompare(clientName(b));
+            });
+
+            return sortedKeys.map(key => (
+              <div key={key} className="space-y-2">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  {key === '__no_client__' ? 'Sem cliente' : clientName(key)}
+                  <span className="ml-2 text-xs font-normal">({grouped[key].length})</span>
+                </h2>
+                <div className="space-y-2">
+                  {grouped[key].map(p => {
             const isExpanded = expandedId === p.id;
             const items = projectItems[p.id] || [];
             const total = getProjectTotal(p.id);
@@ -514,9 +535,8 @@ const ProjectsPage = () => {
                     <div>
                       <p className="font-semibold text-foreground">{p.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {clientName(p.client_id)}
                         {p.due_date && (
-                          <> · Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
+                          <>Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
                         )}
                         {isExpanded && items.length > 0 && (
                           <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · R$ {total.toFixed(2)}
@@ -704,7 +724,11 @@ const ProjectsPage = () => {
                 )}
               </div>
             );
-          })}
+                  })}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
 
