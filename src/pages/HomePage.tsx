@@ -7,7 +7,33 @@ import { supabase } from '@/integrations/supabase/client';
 
 const HomePage = () => {
   const { t, lang } = useI18n();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const isPt = lang === 'pt-BR';
+  const [firstName, setFirstName] = useState('');
+
+  useEffect(() => {
+    const fetchName = async () => {
+      // Try auth metadata first
+      const metaName = user?.user_metadata?.name;
+      if (metaName) {
+        setFirstName(metaName.split(' ')[0]);
+        return;
+      }
+      // Fallback to profiles table
+      if (user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data?.name) {
+          setFirstName(data.name.split(' ')[0]);
+        }
+      }
+    };
+    if (user) fetchName();
+  }, [user]);
   const isPt = lang === 'pt-BR';
 
   const cards = [
