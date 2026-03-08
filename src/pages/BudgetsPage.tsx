@@ -693,8 +693,9 @@ const BudgetsPage = () => {
               </div>
             ));
           })()}
-        </div>
-      )}
+          </div>
+        </>
+      ) : null}
 
       {/* Project picker modal */}
       <Dialog open={!!projectPickerItem} onOpenChange={(open) => { if (!open) setProjectPickerItem(null); }}>
