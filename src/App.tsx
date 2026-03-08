@@ -44,6 +44,7 @@ const App = () => (
                   <Route path="time" element={<TimeTrackingPage />} />
                   <Route path="invoices" element={<InvoicesPage />} />
                   <Route path="kanban" element={<KanbanPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
