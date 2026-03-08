@@ -244,6 +244,8 @@ const ProjectsPage = () => {
   // Budget import
   const openImportModal = async (project: Project) => {
     setImportProjectId(project.id);
+    // Ensure items are loaded for this project
+    if (!projectItems[project.id]) await loadItems(project.id);
     setLoadingBudgets(true);
     const query = supabase.from('budgets').select('*').order('created_at', { ascending: false });
     if (project.client_id) {
@@ -257,6 +259,12 @@ const ProjectsPage = () => {
       })));
     }
     setLoadingBudgets(false);
+  };
+
+  const isItemImported = (item: BudgetItem) => {
+    if (!importProjectId) return false;
+    const existing = projectItems[importProjectId] || [];
+    return existing.some(e => e.name === item.description);
   };
 
   const importBudgetItem = async (item: BudgetItem) => {
@@ -276,7 +284,9 @@ const ProjectsPage = () => {
   const importAllBudgetItems = async (budget: Budget) => {
     if (!importProjectId) return;
     const currentItems = projectItems[importProjectId] || [];
-    const inserts = budget.items.map((item, idx) => ({
+    const newItems = budget.items.filter(item => !isItemImported(item));
+    if (newItems.length === 0) return toast.info('Todos os itens já foram importados.');
+    const inserts = newItems.map((item, idx) => ({
       project_id: importProjectId,
       name: item.description,
       value: item.quantity * item.unitPrice,
@@ -284,7 +294,7 @@ const ProjectsPage = () => {
     }));
     const { error } = await supabase.from('project_items').insert(inserts);
     if (error) return toast.error(error.message);
-    toast.success(`${budget.items.length} itens importados!`);
+    toast.success(`${inserts.length} itens importados!`);
     loadItems(importProjectId);
     setImportProjectId(null);
   };
@@ -575,22 +585,30 @@ const ProjectsPage = () => {
                     </button>
                   </div>
                   <div className="divide-y divide-border">
-                    {b.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between px-3 py-2">
-                        <div>
-                          <p className="text-sm text-foreground">{item.description || '—'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
-                          </p>
+                    {b.items.map((item, idx) => {
+                      const imported = isItemImported(item);
+                      return (
+                        <div key={idx} className={`flex items-center justify-between px-3 py-2 ${imported ? 'opacity-50' : ''}`}>
+                          <div>
+                            <p className="text-sm text-foreground flex items-center gap-1.5">
+                              {item.description || '—'}
+                              {imported && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-medium">Importado</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                            </p>
+                          </div>
+                          {!imported && (
+                            <button
+                              onClick={() => importBudgetItem(item)}
+                              className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
+                            >
+                              Importar
+                            </button>
+                          )}
                         </div>
-                        <button
-                          onClick={() => importBudgetItem(item)}
-                          className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
-                        >
-                          Importar
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
