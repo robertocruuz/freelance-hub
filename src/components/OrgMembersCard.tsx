@@ -60,14 +60,16 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const internalOrgHook = useOrganization();
-  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite } = externalOrgHook || internalOrgHook;
+  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   const isPt = lang === 'pt-BR';
 
