@@ -446,16 +446,118 @@ const TimeTrackingPage = () => {
     return colors[idx % colors.length];
   };
 
+  // Autocomplete suggestions from recent entries + tasks
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const descInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  const recentDescriptions = useMemo(() => {
+    const seen = new Set<string>();
+    const results: { label: string; source: 'recent' | 'task'; projectId?: string | null; clientId?: string | null; taskId?: string | null }[] = [];
+    // Recent entries (unique descriptions)
+    for (const e of [...entries].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())) {
+      const desc = e.description?.trim();
+      if (desc && !seen.has(desc.toLowerCase())) {
+        seen.add(desc.toLowerCase());
+        results.push({ label: desc, source: 'recent', projectId: e.project_id, clientId: e.client_id, taskId: e.task_id });
+      }
+      if (results.length >= 15) break;
+    }
+    // Kanban tasks not yet in recents
+    for (const t of kanbanTasks) {
+      if (!seen.has(t.title.toLowerCase())) {
+        seen.add(t.title.toLowerCase());
+        results.push({ label: t.title, source: 'task', projectId: t.project_id, taskId: t.id });
+      }
+      if (results.length >= 25) break;
+    }
+    return results;
+  }, [entries, kanbanTasks]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (!description.trim()) return recentDescriptions.slice(0, 8);
+    const q = description.toLowerCase();
+    return recentDescriptions.filter(s => s.label.toLowerCase().includes(q)).slice(0, 8);
+  }, [description, recentDescriptions]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
+        descInputRef.current && !descInputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const applySuggestion = (s: typeof recentDescriptions[0]) => {
+    setDescription(s.label);
+    if (s.clientId) {
+      setClientId(s.clientId);
+      if (s.projectId) setProjectId(s.projectId);
+    } else if (s.projectId) {
+      const proj = projects.find(p => p.id === s.projectId);
+      if (proj?.client_id) setClientId(proj.client_id);
+      setProjectId(s.projectId);
+    }
+    if (s.taskId) setTaskId(s.taskId);
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="max-w-full mx-auto space-y-0 animate-fade-in h-full flex flex-col">
       {/* Timer bar - Toggl style */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
-        <input
-          placeholder="No que você está trabalhando?"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="flex-1 min-w-[150px] px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
-        />
+        <div className="relative flex-1 min-w-[150px]">
+          <input
+            ref={descInputRef}
+            placeholder="No que você está trabalhando?"
+            value={description}
+            onChange={(e) => { setDescription(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            className="w-full px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+          />
+          {showSuggestions && filteredSuggestions.length > 0 && (
+            <div
+              ref={suggestionsRef}
+              className="absolute left-0 top-full mt-1 w-full max-w-md z-50 rounded-lg border border-border bg-popover shadow-lg overflow-hidden"
+            >
+              {!description.trim() && (
+                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/50">
+                  Recentes
+                </div>
+              )}
+              {filteredSuggestions.map((s, i) => {
+                const proj = s.projectId ? projects.find(p => p.id === s.projectId) : null;
+                const cl = s.clientId ? clients.find(c => c.id === s.clientId) : (proj?.client_id ? clients.find(c => c.id === proj.client_id) : null);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); applySuggestion(s); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-muted/60 transition-colors"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-foreground truncate block">{s.label}</span>
+                      {(proj || cl) && (
+                        <span className="text-[10px] text-muted-foreground truncate block">
+                          {[proj?.name, cl?.name].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
+                    </div>
+                    {s.source === 'task' && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0">tarefa</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-1.5">
           <CompactClientSelect clients={clients} value={clientId} onChange={(v) => { setClientId(v); setProjectId(''); setTaskId(''); }} placeholder="Cliente" />
           <select
