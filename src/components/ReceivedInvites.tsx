@@ -19,6 +19,7 @@ interface ReceivedInvite {
   created_at: string;
   expires_at: string;
   org_name?: string;
+  invited_by_name?: string;
 }
 
 const roleIcons = { admin: Crown, editor: Pencil, viewer: Eye };
@@ -53,17 +54,27 @@ const ReceivedInvites = () => {
         .order('created_at', { ascending: false });
 
       if (inviteData && inviteData.length > 0) {
-        // Fetch org names
+        // Fetch org names and inviter profiles in parallel
         const orgIds = [...new Set((inviteData as any[]).map((i: any) => i.organization_id))];
-        const { data: orgs } = await (supabase.from('organizations' as any) as any)
-          .select('id, company_name, trade_name')
-          .in('id', orgIds);
+        const inviterIds = [...new Set((inviteData as any[]).map((i: any) => i.invited_by))];
+
+        const [{ data: orgs }, { data: inviterProfiles }] = await Promise.all([
+          (supabase.from('organizations' as any) as any)
+            .select('id, company_name, trade_name')
+            .in('id', orgIds),
+          supabase
+            .from('profiles')
+            .select('user_id, name, email')
+            .in('user_id', inviterIds),
+        ]);
 
         const invitesWithOrgs = (inviteData as any[]).map((inv: any) => {
           const org = orgs?.find((o: any) => o.id === inv.organization_id);
+          const inviter = inviterProfiles?.find((p: any) => p.user_id === inv.invited_by);
           return {
             ...inv,
             org_name: org?.trade_name || org?.company_name || (isPt ? 'Organização' : 'Organization'),
+            invited_by_name: inviter?.name || inviter?.email || null,
           };
         });
 
@@ -138,11 +149,16 @@ const ReceivedInvites = () => {
                   <p className="text-sm font-semibold text-foreground truncate">
                     {invite.org_name}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex flex-wrap items-center gap-2 mt-0.5">
                     <Badge variant="outline" className="text-[10px] gap-1 px-1.5">
                       <RoleIcon className="w-3 h-3" />
                       {roleLabels[invite.role]?.[lang] || invite.role}
                     </Badge>
+                    {invite.invited_by_name && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {isPt ? 'Convidado por' : 'Invited by'} <span className="font-medium text-foreground/70">{invite.invited_by_name}</span>
+                      </span>
+                    )}
                     {isExpired ? (
                       <span className="text-[10px] text-destructive font-medium">
                         {isPt ? 'Expirado' : 'Expired'}
