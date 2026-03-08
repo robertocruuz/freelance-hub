@@ -34,7 +34,6 @@ const HomePage = () => {
     };
     if (user) fetchName();
   }, [user]);
-  const isPt = lang === 'pt-BR';
 
   const cards = [
     {
