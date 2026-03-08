@@ -942,6 +942,53 @@ const TimeTrackingPage = () => {
               </button>
             ))}
           </div>
+          {/* Calendar settings gear */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCalendarSettings(!showCalendarSettings)}
+              className={`p-1.5 rounded-md transition-colors ${showCalendarSettings ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              title="Configurações do calendário"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            {showCalendarSettings && (
+              <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-lg border border-border bg-popover shadow-lg p-4 space-y-3">
+                <p className="text-xs font-semibold text-foreground">Horário de trabalho</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Início</label>
+                    <select
+                      value={workHourStart}
+                      onChange={(e) => setWorkHourStart(parseInt(e.target.value))}
+                      className="w-full px-2 py-1.5 rounded-md bg-muted border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Fim</label>
+                    <select
+                      value={workHourEnd}
+                      onChange={(e) => setWorkHourEnd(parseInt(e.target.value))}
+                      className="w-full px-2 py-1.5 rounded-md bg-muted border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => i + 1).filter(i => i > workHourStart).map(i => (
+                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setWorkHourStart(0); setWorkHourEnd(24); }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Mostrar todas as horas
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
