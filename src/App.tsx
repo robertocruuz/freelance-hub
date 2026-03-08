@@ -10,7 +10,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PasswordGeneratorPage from "./pages/PasswordGeneratorPage";
+
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
 import InvoicesPage from "./pages/InvoicesPage";
@@ -36,7 +36,7 @@ const App = () => (
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                   <Route index element={<HomePage />} />
-                  <Route path="passwords" element={<PasswordGeneratorPage />} />
+                  
                   <Route path="clients" element={<ClientsPage />} />
                   <Route path="projects" element={<ProjectsPage />} />
                   <Route path="budgets" element={<BudgetsPage />} />
