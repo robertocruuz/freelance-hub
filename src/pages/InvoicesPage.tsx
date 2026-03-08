@@ -98,7 +98,7 @@ const InvoicesPage = () => {
     if (!user) return;
     const { data: projData } = await supabase
       .from('projects')
-      .select('id, name, client_id, due_date')
+      .select('id, name, client_id, due_date, discount')
       .order('name', { ascending: true });
     if (!projData) return;
     const projectIds = projData.map(p => p.id);
