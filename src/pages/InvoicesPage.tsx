@@ -569,7 +569,28 @@ const InvoicesPage = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-foreground">R$ {inv.total.toFixed(2)}</span>
-                <Badge className={statusColors[inv.status]}>{statusLabel(inv.status)}</Badge>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="focus:outline-none">
+                      <Badge className={cn(statusColors[inv.status], "cursor-pointer gap-1")}>
+                        {statusLabel(inv.status)}
+                        <ChevronDown className="w-3 h-3" />
+                      </Badge>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {['pending', 'paid', 'overdue'].map((s) => (
+                      <DropdownMenuItem
+                        key={s}
+                        onClick={() => updateInvoiceStatus(inv.id, s)}
+                        className={cn("text-sm", inv.status === s && "font-bold")}
+                      >
+                        <span className={cn("inline-block w-2 h-2 rounded-full mr-2", s === 'pending' ? 'bg-accent-foreground' : s === 'paid' ? 'bg-primary' : 'bg-destructive')} />
+                        {statusLabel(s)}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
                 <button onClick={() => deleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
               </div>
