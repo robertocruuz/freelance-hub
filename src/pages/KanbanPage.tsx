@@ -486,37 +486,34 @@ const KanbanPage = () => {
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                  className={`px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium ${
-                    filterDeadlineDate
-                      ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                      : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
-                  }`}
-                  title={filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data específica'}
-                >
-                  <CalendarDays className="w-3.5 h-3.5" />
-                  Data
-                </button>
-                {filterDeadlineDate && (
-                  <span className="text-[11px] text-primary font-medium flex items-center gap-1">
-                    {format(filterDeadlineDate, "dd/MM/yyyy")}
-                    <X className="w-3 h-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }} />
-                  </span>
-                )}
-              </div>
-              {showDeadlineCalendar && (
-                <div className="border border-border rounded-lg overflow-hidden">
+              <Popover open={showDeadlineCalendar} onOpenChange={setShowDeadlineCalendar}>
+                <div className="flex items-center gap-1">
+                  <PopoverTrigger asChild>
+                    <button
+                      className={`px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium ${
+                        filterDeadlineDate
+                          ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                          : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                      }`}
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      {filterDeadlineDate ? format(filterDeadlineDate, "dd/MM/yyyy") : 'Data'}
+                    </button>
+                  </PopoverTrigger>
+                  {filterDeadlineDate && (
+                    <X className="w-3 h-3 cursor-pointer text-muted-foreground hover:text-destructive" onClick={() => { setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }} />
+                  )}
+                </div>
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={filterDeadlineDate}
                     onSelect={(date) => { setFilterDeadlineDate(date); setShowDeadlineCalendar(false); }}
                     locale={ptBR}
-                    className="p-2 pointer-events-auto"
+                    className="p-3 pointer-events-auto"
                   />
-                </div>
-              )}
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Type */}
