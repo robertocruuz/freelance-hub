@@ -70,6 +70,10 @@ const BudgetsPage = () => {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
+  const [budgetName, setBudgetName] = useState('');
+  const [budgetDate, setBudgetDate] = useState<Date | undefined>(new Date());
+  const [validityDate, setValidityDate] = useState<Date | undefined>(undefined);
+  const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
