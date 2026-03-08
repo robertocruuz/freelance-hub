@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const HomePage = () => {
   const { t, lang } = useI18n();
