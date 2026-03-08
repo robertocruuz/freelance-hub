@@ -693,6 +693,7 @@ const KanbanPage = () => {
                       completed_at: completed ? new Date().toISOString() : null,
                     });
                   }}
+                  onDeleteTask={(taskId) => kanban.deleteTask(taskId)}
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
                 />
