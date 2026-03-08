@@ -617,8 +617,8 @@ const BudgetsPage = () => {
                     <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
                       <span className="text-foreground truncate">{item.description || '—'}</span>
                       <span className="text-center text-muted-foreground">{item.quantity}</span>
-                      <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
-                      <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
+                      <span className="text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</span>
+                      <span className="text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
                     </div>
                   ))}
                   {(b.discount > 0 || b.notes) && (
