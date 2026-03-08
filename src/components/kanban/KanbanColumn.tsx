@@ -68,11 +68,19 @@ export const KanbanColumnComponent = ({
     setIsEditing(false);
   };
 
-  const loadProjectItems = async () => {
+  const loadProjects = async () => {
+    setLoadingItems(true);
+    const { data } = await supabase.from('projects').select('id, name').order('name');
+    if (data) setProjects(data);
+    setLoadingItems(false);
+  };
+
+  const loadProjectItems = async (projectId: string) => {
     setLoadingItems(true);
     const { data } = await supabase
       .from('project_items')
       .select('id, name, value, project_id, projects(name, client_id)')
+      .eq('project_id', projectId)
       .order('name');
     if (data) {
       setProjectItems(data.map((item: any) => ({
@@ -85,6 +93,12 @@ export const KanbanColumnComponent = ({
       })));
     }
     setLoadingItems(false);
+  };
+
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setAddMode('project-items');
+    loadProjectItems(projectId);
   };
 
   const handleSelectProjectItem = (item: ProjectItem) => {
