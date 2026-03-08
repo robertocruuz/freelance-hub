@@ -115,6 +115,12 @@ const KanbanPage = () => {
 
   const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0) + filterComplexities.size + filterEstimatedTime.size;
 
+  const clientColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    clients.forEach((c) => { if ((c as any).color) map[c.id] = (c as any).color; });
+    return map;
+  }, [clients]);
+
   // Unique task types
   const taskTypes = useMemo(() => {
     const types = new Set(tasks.map(t => t.task_type).filter(Boolean));
