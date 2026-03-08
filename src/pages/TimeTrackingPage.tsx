@@ -450,15 +450,6 @@ const TimeTrackingPage = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  useEffect(() => {
-    if (running) {
-      intervalRef.current = window.setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    }
-    return () => clearInterval(intervalRef.current);
-  }, [running, startTime]);
-
   // Scroll to current hour on mount
   useEffect(() => {
     if (calendarRef.current) {
@@ -468,54 +459,10 @@ const TimeTrackingPage = () => {
     }
   }, [viewMode]);
 
-  const startTimer = () => {
-    setStartTime(Date.now());
-    setElapsed(0);
-    setRunning(true);
-  };
-
   const stopTimer = async () => {
-    setRunning(false);
-    clearInterval(intervalRef.current);
-    if (!user) return;
-    const end = new Date();
-    const start = new Date(startTime);
-    const duration = Math.floor((end.getTime() - start.getTime()) / 1000);
-    const { error } = await supabase.from('time_entries').insert({
-      user_id: user.id,
-      client_id: clientId || null,
-      project_id: projectId || null,
-      task_id: taskId || null,
-      description: description || null,
-      start_time: start.toISOString(),
-      end_time: end.toISOString(),
-      duration,
-    } as any);
-    if (error) toast.error(error.message);
-    else {
-      // Log activity on the task if linked
-      if (taskId) {
-        const projectName = getProjectName(projectId || null);
-        const durationStr = formatDuration(duration);
-        await supabase.from('task_activity_logs').insert({
-          task_id: taskId,
-          user_id: user.id,
-          action: 'time_tracked',
-          details: {
-            duration,
-            duration_formatted: durationStr,
-            description: description || null,
-            project_name: projectName || null,
-          },
-        } as any);
-      }
-      setElapsed(0);
-      setDescription('');
-      setClientId('');
-      setProjectId('');
-      setTaskId('');
+    await globalStopTimer(() => {
       loadEntries();
-    }
+    });
   };
 
   const confirmDeleteEntry = (id: string) => {
