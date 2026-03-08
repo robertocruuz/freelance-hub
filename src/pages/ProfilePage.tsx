@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OrgMembersCard from '@/components/OrgMembersCard';
+import ReceivedInvites from '@/components/ReceivedInvites';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { maskCPF, maskCNPJ, maskPhone, maskCEP } from '@/lib/masks';
@@ -704,6 +705,9 @@ const ProfilePage = () => {
               </div>
 
               <Separator className="opacity-50" />
+
+              {/* Received invites */}
+              <ReceivedInvites />
 
               {/* Team section (embedded) */}
               <div>
