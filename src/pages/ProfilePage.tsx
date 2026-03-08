@@ -333,9 +333,24 @@ const ProfilePage = () => {
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-primary" />
-                </div>
+                <label className="relative cursor-pointer group shrink-0">
+                  <Avatar className="w-12 h-12 rounded-xl border-2 border-border">
+                    {logoUrl ? (
+                      <AvatarImage src={logoUrl} alt="Logo" className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="rounded-xl bg-primary/10">
+                      <Building2 className="w-5 h-5 text-primary" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {uploadingLogo ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                </label>
                 <div>
                   <CardTitle className="text-lg">
                     {org.trade_name || org.company_name || (lang === 'pt-BR' ? 'Organização' : 'Organization')}
