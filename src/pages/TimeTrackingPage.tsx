@@ -103,7 +103,7 @@ const TimeTrackingPage = () => {
   const intervalRef = useRef<number>();
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
-
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
