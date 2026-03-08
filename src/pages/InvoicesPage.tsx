@@ -354,7 +354,7 @@ const InvoicesPage = () => {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-sm text-foreground">R$ {totalValue.toFixed(2)}</p>
+                              <p className="font-semibold text-sm text-foreground">{formatCurrency(totalValue)}</p>
                               {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
                             </div>
                           </div>
