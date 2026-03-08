@@ -337,6 +337,7 @@ const ProjectsPage = () => {
   };
 
   const clientName = (id: string | null) => clients.find(c => c.id === id)?.name || '-';
+  const clientColor = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
 
   const getProjectTotal = (projectId: string) => {
     const items = projectItems[projectId] || [];
@@ -528,7 +529,7 @@ const ProjectsPage = () => {
             const total = getProjectTotal(p.id);
 
             return (
-              <div key={p.id} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div key={p.id} className="rounded-xl border border-border overflow-hidden" style={clientColor(p.client_id) ? { backgroundColor: `${clientColor(p.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColor(p.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
                 {/* Project header */}
                 <div className="flex items-center justify-between p-4">
                   <button
