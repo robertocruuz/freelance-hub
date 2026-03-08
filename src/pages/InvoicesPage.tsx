@@ -331,15 +331,23 @@ const InvoicesPage = () => {
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {projects.map((p) => {
                       const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
+                      const alreadyImported = invoices.some(inv => inv.name === p.name);
                       return (
                         <button
                           key={p.id}
-                          onClick={() => importProject(p)}
-                          className="w-full text-left p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                          onClick={() => alreadyImported ? toast.error(lang === 'pt-BR' ? 'Este projeto já foi importado como fatura.' : 'This project was already imported as an invoice.') : importProject(p)}
+                          disabled={alreadyImported}
+                          className={cn(
+                            "w-full text-left p-3 rounded-xl border border-border transition-colors",
+                            alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-muted/30 hover:bg-muted/60"
+                          )}
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-semibold text-sm text-foreground">{p.name}</p>
+                              <p className="font-semibold text-sm text-foreground flex items-center gap-2">
+                                {p.name}
+                                {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{lang === 'pt-BR' ? 'Já importado' : 'Already imported'}</Badge>}
+                              </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {p.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')}
                                 {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
