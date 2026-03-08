@@ -531,7 +531,7 @@ const BudgetsPage = () => {
             {discount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Desconto ({discount}%)</span>
-                <span className="text-destructive">- R$ {discountValue.toFixed(2)}</span>
+                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-lg font-bold">
