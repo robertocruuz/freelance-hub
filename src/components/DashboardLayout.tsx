@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const navItems = [
   { key: 'home', icon: Home, path: '/dashboard' },
-  { key: 'passwords', icon: KeyRound, path: '/dashboard/passwords' },
+  
   { key: 'clients', icon: Users, path: '/dashboard/clients' },
   { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
   { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
