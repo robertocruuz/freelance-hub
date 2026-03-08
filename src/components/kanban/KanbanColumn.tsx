@@ -21,6 +21,7 @@ interface ProjectItem {
   project_id: string;
   project_name?: string;
   client_id?: string | null;
+  imported?: boolean;
 }
 
 interface KanbanColumnProps {
