@@ -87,6 +87,7 @@ const DashboardLayout = () => {
           {/* Timer indicator + Right controls */}
           <div className="flex items-center gap-1.5">
             <TimerIndicator navigate={navigate} />
+            <button
               onClick={toggle}
               className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.08] hover:bg-white/15 transition text-white/70 hover:text-white"
             >
