@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { brazilianStates, fetchCitiesByState } from '@/lib/brazilData';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OrgMembersCard from '@/components/OrgMembersCard';
 import { useToast } from '@/hooks/use-toast';
@@ -26,12 +29,16 @@ const ProfilePage = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingOrg, setEditingOrg] = useState(false);
   const [orgDetailsOpen, setOrgDetailsOpen] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [statePopoverOpen, setStatePopoverOpen] = useState(false);
+  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
 
   const [profile, setProfile] = useState({ name: '', email: '', document: '', phone: '' });
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
-  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '' });
+  const [org, setOrg] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', address: '', state: '', city: '' });
+  const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', address: '', state: '', city: '' });
 
   useEffect(() => {
     if (!user) return;
@@ -52,7 +59,7 @@ const ProfilePage = () => {
 
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, address, state, city')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
@@ -66,6 +73,9 @@ const ProfilePage = () => {
           business_email: o.business_email || '',
           business_phone: o.business_phone || '',
           website: o.website || '',
+          address: o.address || '',
+          state: o.state || '',
+          city: o.city || '',
         };
         setOrg(orgState);
         setOrgForm(orgState);
@@ -73,6 +83,19 @@ const ProfilePage = () => {
     };
     fetchProfile();
   }, [user]);
+
+  // Load cities when orgForm.state changes
+  useEffect(() => {
+    if (!orgForm.state) {
+      setCities([]);
+      return;
+    }
+    setCitiesLoading(true);
+    fetchCitiesByState(orgForm.state).then((c) => {
+      setCities(c);
+      setCitiesLoading(false);
+    });
+  }, [orgForm.state]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -427,6 +450,116 @@ const ProfilePage = () => {
                   </div>
 
                   <Separator className="opacity-50" />
+
+                  {/* Address section */}
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                    </p>
+                    <div className="grid grid-cols-1 gap-y-4">
+                      <div className="space-y-1">
+                        <Label className="text-sm text-muted-foreground">
+                          {lang === 'pt-BR' ? 'Endereço' : 'Address'}
+                        </Label>
+                        {editingOrg ? (
+                          <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
+                        ) : (
+                          <FieldDisplay value={org.address} />
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        {/* State */}
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Estado' : 'State'}
+                          </Label>
+                          {editingOrg ? (
+                            <Popover open={statePopoverOpen} onOpenChange={setStatePopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()}>
+                                  {orgForm.state
+                                    ? brazilianStates.find(s => s.value === orgForm.state)?.label || orgForm.state
+                                    : (lang === 'pt-BR' ? 'Selecione o estado' : 'Select state')}
+                                  <ChevronDown className="w-4 h-4 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[280px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder={lang === 'pt-BR' ? 'Buscar estado...' : 'Search state...'} />
+                                  <CommandList>
+                                    <CommandEmpty>{lang === 'pt-BR' ? 'Nenhum estado encontrado' : 'No state found'}</CommandEmpty>
+                                    <CommandGroup>
+                                      {brazilianStates.map((state) => (
+                                        <CommandItem
+                                          key={state.value}
+                                          value={state.label}
+                                          onSelect={() => {
+                                            setOrgForm({ ...orgForm, state: state.value, city: '' });
+                                            setStatePopoverOpen(false);
+                                          }}
+                                        >
+                                          {state.label} ({state.value})
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <FieldDisplay value={orgForm.state ? (brazilianStates.find(s => s.value === org.state)?.label || org.state) : ''} />
+                          )}
+                        </div>
+
+                        {/* City */}
+                        <div className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {lang === 'pt-BR' ? 'Cidade' : 'City'}
+                          </Label>
+                          {editingOrg ? (
+                            <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()} disabled={!orgForm.state}>
+                                  {orgForm.city || (lang === 'pt-BR' ? 'Selecione a cidade' : 'Select city')}
+                                  <ChevronDown className="w-4 h-4 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[280px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder={lang === 'pt-BR' ? 'Buscar cidade...' : 'Search city...'} />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      {citiesLoading
+                                        ? (lang === 'pt-BR' ? 'Carregando...' : 'Loading...')
+                                        : (lang === 'pt-BR' ? 'Nenhuma cidade encontrada' : 'No city found')}
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {cities.map((city) => (
+                                        <CommandItem
+                                          key={city}
+                                          value={city}
+                                          onSelect={() => {
+                                            setOrgForm({ ...orgForm, city });
+                                            setCityPopoverOpen(false);
+                                          }}
+                                        >
+                                          {city}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <FieldDisplay value={org.city} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Contact section */}
                   <div>

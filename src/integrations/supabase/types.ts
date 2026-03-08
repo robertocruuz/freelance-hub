@@ -332,13 +332,16 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: string | null
           business_email: string | null
           business_phone: string | null
+          city: string | null
           cnpj: string | null
           company_name: string | null
           created_at: string
           id: string
           municipal_registration: string | null
+          state: string | null
           state_registration: string | null
           trade_name: string | null
           updated_at: string
@@ -346,13 +349,16 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          address?: string | null
           business_email?: string | null
           business_phone?: string | null
+          city?: string | null
           cnpj?: string | null
           company_name?: string | null
           created_at?: string
           id?: string
           municipal_registration?: string | null
+          state?: string | null
           state_registration?: string | null
           trade_name?: string | null
           updated_at?: string
@@ -360,13 +366,16 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          address?: string | null
           business_email?: string | null
           business_phone?: string | null
+          city?: string | null
           cnpj?: string | null
           company_name?: string | null
           created_at?: string
           id?: string
           municipal_registration?: string | null
+          state?: string | null
           state_registration?: string | null
           trade_name?: string | null
           updated_at?: string
