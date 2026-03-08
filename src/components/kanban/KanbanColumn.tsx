@@ -273,10 +273,22 @@ export const KanbanColumnComponent = ({
               projectItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleSelectProjectItem(item)}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-secondary transition border border-border"
+                  onClick={() => !item.imported && handleSelectProjectItem(item)}
+                  disabled={item.imported}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs transition border ${
+                    item.imported
+                      ? 'border-border/50 opacity-50 cursor-not-allowed'
+                      : 'border-border hover:bg-secondary'
+                  }`}
                 >
-                  <p className="font-medium text-foreground truncate">{item.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className={`font-medium truncate ${item.imported ? 'text-muted-foreground' : 'text-foreground'}`}>{item.name}</p>
+                    {item.imported && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-primary shrink-0 ml-2">
+                        <Check className="w-3 h-3" /> Importado
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-muted-foreground">R$ {item.value.toFixed(2)}</p>
                 </button>
               ))
