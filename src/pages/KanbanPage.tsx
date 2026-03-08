@@ -234,7 +234,7 @@ const KanbanPage = () => {
   }
 
   return (
-    <div className="relative z-10 h-full flex flex-col overflow-hidden">
+    <div className="relative z-10 h-full flex flex-col overflow-hidden [&>*]:flex-shrink-0 [&>:last-child]:flex-shrink [&>:last-child]:flex-1 [&>:last-child]:min-h-0">
       {/* Header */}
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
