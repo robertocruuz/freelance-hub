@@ -44,9 +44,10 @@ interface TaskCardProps {
   onToggleComplete?: (taskId: string, completed: boolean) => void;
   onDelete?: (taskId: string) => void;
   checklistProgress?: { done: number; total: number } | null;
+  clientColor?: string | null;
 }
 
-export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress }: TaskCardProps) => {
+export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const {
