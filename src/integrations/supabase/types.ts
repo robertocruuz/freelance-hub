@@ -517,6 +517,36 @@ export type Database = {
           },
         ]
       }
+      shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          resource_id: string
+          resource_type: string
+          share_type: string
+          shared_with_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          resource_id: string
+          resource_type: string
+          share_type: string
+          shared_with_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          resource_id?: string
+          resource_type?: string
+          share_type?: string
+          shared_with_user_id?: string | null
+        }
+        Relationships: []
+      }
       task_activity_logs: {
         Row: {
           action: string
@@ -870,8 +900,14 @@ export type Database = {
     Functions: {
       get_org_role: { Args: { _data_user_id: string }; Returns: string }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
+      is_board_shared_column: { Args: { _column_id: string }; Returns: boolean }
       is_org_admin: { Args: { _org_id: string }; Returns: boolean }
       is_org_colleague: { Args: { _data_user_id: string }; Returns: boolean }
+      is_shared_with_me: {
+        Args: { _resource_id: string; _resource_type: string }
+        Returns: boolean
+      }
+      is_task_shared: { Args: { _task_id: string }; Returns: boolean }
     }
     Enums: {
       org_role: "admin" | "editor" | "viewer"
