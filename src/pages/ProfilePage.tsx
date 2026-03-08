@@ -52,7 +52,7 @@ const ProfilePage = () => {
 
       const { data: orgData } = await supabase
         .from('organizations' as any)
-        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website')
+        .select('company_name, trade_name, cnpj, state_registration, municipal_registration, business_email, business_phone, website, address, state, city')
         .eq('user_id', user.id)
         .single();
       if (orgData) {
