@@ -174,11 +174,12 @@ const ProjectsPage = () => {
   const handleSave = async () => {
     if (!user || !name.trim()) return;
     const selectedBudget = allBudgets.find(b => b.id === selectedBudgetId);
+    const dueDateStr = dueDate ? format(dueDate, 'yyyy-MM-dd') : (selectedBudget?.delivery_date || null);
     const payload = {
       user_id: user.id,
       name: name.trim(),
       client_id: clientId || null,
-      due_date: selectedBudget?.delivery_date || null,
+      due_date: dueDateStr,
     };
 
     if (editingId) {
