@@ -1,11 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Receipt, Download } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, FolderKanban } from 'lucide-react';
 import { generateDocumentPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
@@ -30,6 +38,15 @@ interface Invoice {
   created_at: string;
 }
 
+interface ProjectWithItems {
+  id: string;
+  name: string;
+  client_id: string | null;
+  client_name?: string;
+  due_date: string | null;
+  items: { name: string; value: number }[];
+}
+
 const statusColors: Record<string, string> = {
   pending: 'bg-accent text-accent-foreground',
   paid: 'bg-primary/10 text-primary',
@@ -37,7 +54,7 @@ const statusColors: Record<string, string> = {
 };
 
 const InvoicesPage = () => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -48,9 +65,52 @@ const InvoicesPage = () => {
   const [discount, setDiscount] = useState(0);
   const [dueDate, setDueDate] = useState('');
   const { clients } = useClients();
+  const [projects, setProjects] = useState<ProjectWithItems[]>([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const total = subtotal + (subtotal * taxes) / 100 - discount;
+
+  const loadProjects = useCallback(async () => {
+    if (!user) return;
+    const { data: projData } = await supabase
+      .from('projects')
+      .select('id, name, client_id, due_date')
+      .order('name', { ascending: true });
+    if (!projData) return;
+
+    const projectIds = projData.map(p => p.id);
+    const { data: itemsData } = await supabase
+      .from('project_items')
+      .select('project_id, name, value')
+      .in('project_id', projectIds)
+      .order('position', { ascending: true });
+
+    const mapped: ProjectWithItems[] = projData.map(p => {
+      const cl = clients.find(c => c.id === p.client_id);
+      return {
+        ...p,
+        client_name: cl?.name,
+        items: (itemsData || []).filter(i => i.project_id === p.id).map(i => ({ name: i.name, value: Number(i.value) })),
+      };
+    });
+    setProjects(mapped);
+  }, [user, clients]);
+
+  const importProject = (project: ProjectWithItems) => {
+    setClientId(project.client_id || '');
+    setDueDate(project.due_date || '');
+    setItems(
+      project.items.length > 0
+        ? project.items.map(i => ({ description: i.name, quantity: 1, unitPrice: i.value }))
+        : [{ description: '', quantity: 1, unitPrice: 0 }]
+    );
+    setTaxes(0);
+    setDiscount(0);
+    setCreating(true);
+    setImportDialogOpen(false);
+    toast.success(lang === 'pt-BR' ? `Projeto "${project.name}" importado!` : `Project "${project.name}" imported!`);
+  };
 
   const loadInvoices = useCallback(async () => {
     if (!user) return;
@@ -144,9 +204,58 @@ const InvoicesPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t.invoices}</h1>
         {!creating && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> {t.newInvoice}
-          </button>
+          <div className="flex items-center gap-2">
+            <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <FolderKanban className="w-4 h-4" />
+                  {lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>{lang === 'pt-BR' ? 'Importar Projeto' : 'Import Project'}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {lang === 'pt-BR' ? 'Selecione um projeto para importar os dados na fatura.' : 'Select a project to import data into the invoice.'}
+                </p>
+                {projects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{lang === 'pt-BR' ? 'Nenhum projeto encontrado.' : 'No projects found.'}</p>
+                ) : (
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {projects.map((p) => {
+                      const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => importProject(p)}
+                          className="w-full text-left p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-sm text-foreground">{p.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {p.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')}
+                                {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-sm text-foreground">R$ {totalValue.toFixed(2)}</p>
+                              {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" /> {t.newInvoice}
+            </button>
+          </div>
         )}
       </div>
 
