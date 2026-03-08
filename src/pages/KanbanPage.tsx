@@ -223,7 +223,7 @@ const KanbanPage = () => {
                 <span className="text-sm font-semibold text-foreground">Filtros</span>
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={() => { setFilterClient('all'); setFilterProject('all'); setFilterPriority('all'); setFilterType('all'); }}
+                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); }}
                     className="text-xs text-primary hover:text-primary/80 font-medium transition"
                   >
                     Limpar tudo
@@ -237,6 +237,7 @@ const KanbanPage = () => {
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Flag className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-semibold uppercase tracking-wider">Prioridade</span>
+                    {filterPriorities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterPriorities.size}</span>}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {[
@@ -247,9 +248,9 @@ const KanbanPage = () => {
                     ].map((p) => (
                       <button
                         key={p.value}
-                        onClick={() => setFilterPriority(filterPriority === p.value ? 'all' : p.value)}
+                        onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p.value)}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                          filterPriority === p.value
+                          filterPriorities.has(p.value)
                             ? `${p.color} shadow-sm ring-1 ring-current/20`
                             : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
                         }`}
@@ -260,54 +261,71 @@ const KanbanPage = () => {
                   </div>
                 </div>
 
-                {/* Client */}
+                {/* Client - chip toggle */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <User className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-semibold uppercase tracking-wider">Cliente</span>
+                    {filterClients.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterClients.size}</span>}
                   </div>
-                  <Select value={filterClient} onValueChange={setFilterClient}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/30 border-border/50">
-                      <SelectValue placeholder="Todos os clientes" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os clientes</SelectItem>
-                      {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                    {clients.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => toggleFilter(filterClients, setFilterClients, c.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterClients.has(c.id)
+                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+                    {clients.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum cliente</span>}
+                  </div>
                 </div>
 
-                {/* Project */}
+                {/* Project - chip toggle */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <FolderOpen className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-semibold uppercase tracking-wider">Projeto</span>
+                    {filterProjects.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterProjects.size}</span>}
                   </div>
-                  <Select value={filterProject} onValueChange={setFilterProject}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/30 border-border/50">
-                      <SelectValue placeholder="Todos os projetos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os projetos</SelectItem>
-                      {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                    {projects.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => toggleFilter(filterProjects, setFilterProjects, p.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterProjects.has(p.id)
+                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {p.name}
+                      </button>
+                    ))}
+                    {projects.length === 0 && <span className="text-[11px] text-muted-foreground">Nenhum projeto</span>}
+                  </div>
                 </div>
 
-                {/* Type */}
+                {/* Type - chip toggle */}
                 {taskTypes.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <Tag className="w-3.5 h-3.5" />
                       <span className="text-[11px] font-semibold uppercase tracking-wider">Tipo</span>
+                      {filterTypes.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterTypes.size}</span>}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {taskTypes.map((type) => (
                         <button
                           key={type}
-                          onClick={() => setFilterType(filterType === type ? 'all' : type)}
+                          onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}
                           className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                            filterType === type
+                            filterTypes.has(type)
                               ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                               : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
                           }`}
@@ -332,30 +350,30 @@ const KanbanPage = () => {
           {/* Active filter pills inline */}
           {activeFilterCount > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              {filterPriority !== 'all' && (
-                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterPriority('all')}>
-                  {filterPriority === 'urgent' ? 'Urgente' : filterPriority === 'high' ? 'Alta' : filterPriority === 'medium' ? 'Média' : 'Baixa'}
+              {Array.from(filterPriorities).map(p => (
+                <Badge key={p} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p)}>
+                  {p === 'urgent' ? 'Urgente' : p === 'high' ? 'Alta' : p === 'medium' ? 'Média' : 'Baixa'}
                   <X className="w-3 h-3" />
                 </Badge>
-              )}
-              {filterClient !== 'all' && (
-                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterClient('all')}>
-                  {clients.find(c => c.id === filterClient)?.name || 'Cliente'}
+              ))}
+              {Array.from(filterClients).map(id => (
+                <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterClients, setFilterClients, id)}>
+                  {clients.find(c => c.id === id)?.name || 'Cliente'}
                   <X className="w-3 h-3" />
                 </Badge>
-              )}
-              {filterProject !== 'all' && (
-                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterProject('all')}>
-                  {projects.find(p => p.id === filterProject)?.name || 'Projeto'}
+              ))}
+              {Array.from(filterProjects).map(id => (
+                <Badge key={id} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterProjects, setFilterProjects, id)}>
+                  {projects.find(p => p.id === id)?.name || 'Projeto'}
                   <X className="w-3 h-3" />
                 </Badge>
-              )}
-              {filterType !== 'all' && (
-                <Badge variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterType('all')}>
-                  {filterType}
+              ))}
+              {Array.from(filterTypes).map(type => (
+                <Badge key={type} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}>
+                  {type}
                   <X className="w-3 h-3" />
                 </Badge>
-              )}
+              ))}
             </div>
           )}
 
