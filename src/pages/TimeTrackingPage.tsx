@@ -96,6 +96,7 @@ const TimeTrackingPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editDesc, setEditDesc] = useState('');
+  const [editClientId, setEditClientId] = useState('');
   const [editProjectId, setEditProjectId] = useState('');
   const [editTaskId, setEditTaskId] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
