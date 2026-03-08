@@ -1039,6 +1039,78 @@ const KanbanPage = () => {
           kanban={kanban}
         />
       )}
+
+      {/* Board create/edit dialog */}
+      <Dialog open={showBoardDialog} onOpenChange={setShowBoardDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingBoard ? 'Editar painel' : 'Novo painel Kanban'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-xs">Nome do painel</Label>
+              <Input
+                value={boardName}
+                onChange={(e) => setBoardName(e.target.value)}
+                placeholder="Ex: Marketing, Projeto X..."
+                autoFocus
+                className="glass-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Atrelar a cliente (opcional)</Label>
+              <Select value={boardClientId || 'none'} onValueChange={(v) => setBoardClientId(v === 'none' ? null : v)}>
+                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (livre)</SelectItem>
+                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Atrelar a projeto (opcional)</Label>
+              <Select value={boardProjectId || 'none'} onValueChange={(v) => {
+                setBoardProjectId(v === 'none' ? null : v);
+                // Auto-set client from project
+                if (v !== 'none') {
+                  const proj = projects.find(p => p.id === v);
+                  // projects here only have id/name, need to check if we have client info
+                }
+              }}>
+                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum (livre)</SelectItem>
+                  {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBoardDialog(false)}>Cancelar</Button>
+            <Button onClick={handleSaveBoard} disabled={!boardName.trim()} className="btn-glow">
+              {editingBoard ? 'Salvar' : 'Criar painel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete board confirmation */}
+      <AlertDialog open={!!deletingBoard} onOpenChange={(open) => !open && setDeletingBoard(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir painel</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o painel "{deletingBoard?.name}"? Todas as colunas e tarefas deste painel serão excluídas permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteBoard} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
