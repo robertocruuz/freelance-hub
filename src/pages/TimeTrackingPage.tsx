@@ -184,10 +184,12 @@ const TimeTrackingPage = () => {
   } | null>(null);
   const dragStateRef = useRef(dragState);
   dragStateRef.current = dragState;
+  const didDragRef = useRef(false);
 
   const handleDragStart = (e: React.MouseEvent, entryId: string, type: 'move' | 'resize', startMin: number, endMin: number, dayDate: Date) => {
     e.preventDefault();
     e.stopPropagation();
+    didDragRef.current = false;
     const state = {
       entryId,
       type,
@@ -240,6 +242,7 @@ const TimeTrackingPage = () => {
       if (!ds) return;
       const deltaY = e.clientY - ds.initialMouseY;
       const deltaMin = Math.round(deltaY / 5) * 5;
+      if (deltaMin !== 0) didDragRef.current = true;
 
       if (ds.type === 'move') {
         const newStart = Math.max(0, ds.initialStartMin + deltaMin);
@@ -889,7 +892,7 @@ const TimeTrackingPage = () => {
                           cursor: isDragging ? 'grabbing' : 'grab',
                         }}
                         onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, day)}
-                        onClick={(e) => { if (!dragState) openEdit(entry); }}
+                        onClick={() => { if (!didDragRef.current) openEdit(entry); }}
                       >
                         <div className="flex items-center gap-1 truncate px-1.5 py-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0" />
@@ -979,7 +982,7 @@ const TimeTrackingPage = () => {
                           cursor: isDragging ? 'grabbing' : 'grab',
                         }}
                         onMouseDown={(e) => handleDragStart(e, entry.id, 'move', startMin, endMin, selectedDate)}
-                        onClick={() => { if (!dragState) openEdit(entry); }}
+                        onClick={() => { if (!didDragRef.current) openEdit(entry); }}
                       >
                         <div className="flex items-center gap-1.5 truncate px-2 py-1">
                           <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
