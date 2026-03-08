@@ -53,6 +53,11 @@ const formatDuration = (seconds: number) => {
   return `${h}h ${m}m`;
 };
 
+const priorityMap: Record<string, string> = { low: 'Baixa', medium: 'Média', high: 'Alta', urgent: 'Urgente' };
+const statusMap: Record<string, string> = { todo: 'A fazer', in_progress: 'Em andamento', done: 'Concluído', review: 'Revisão', blocked: 'Bloqueado' };
+const translatePriority = (v: string) => priorityMap[v] || v;
+const translateStatus = (v: string) => statusMap[v] || v;
+
 const ClientsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
