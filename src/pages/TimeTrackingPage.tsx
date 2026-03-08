@@ -502,9 +502,10 @@ const TimeTrackingPage = () => {
             <select
               value={editTaskId}
               onChange={(e) => setEditTaskId(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              disabled={!editProjectId}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="">Tarefa</option>
+              <option value="">{editProjectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
               {editFilteredTasks.map((t) => (
                 <option key={t.id} value={t.id}>{t.title}</option>
               ))}
