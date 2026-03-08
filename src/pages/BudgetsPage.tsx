@@ -35,6 +35,8 @@ interface Budget {
   client_name?: string;
   items: BudgetItem[];
   total: number;
+  discount: number;
+  notes: string | null;
   status: string;
   created_at: string;
 }
@@ -58,17 +60,31 @@ const BudgetsPage = () => {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
-  const [items, setItems] = useState<BudgetItem[]>([{ description: '', quantity: 1, unitPrice: 0 }]);
+  const [items, setItems] = useState<BudgetItem[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [notes, setNotes] = useState('');
   const { clients } = useClients();
+
+  // New item input state
+  const [newDesc, setNewDesc] = useState('');
+  const [newQty, setNewQty] = useState(1);
+  const [newPrice, setNewPrice] = useState(0);
+
+  // Editing item inline
+  const [editingItemIdx, setEditingItemIdx] = useState<number | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editQty, setEditQty] = useState(1);
+  const [editPrice, setEditPrice] = useState(0);
 
   // Project import state
   interface ProjectOption { id: string; name: string; client_id: string | null; }
   const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem; budget: Budget } | null>(null);
   const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
-  // Track which items are already imported (key: "description|value")
   const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
 
-  const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+  const discountValue = subtotal * (discount / 100);
+  const total = subtotal - discountValue;
 
   const makeItemKey = (name: string, value: number) => `${name}|${value.toFixed(2)}`;
 
@@ -84,6 +100,8 @@ const BudgetsPage = () => {
         return {
           ...b,
           client_name: cl?.name,
+          discount: (b as any).discount ?? 0,
+          notes: (b as any).notes ?? null,
           items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
         };
       }));
@@ -116,41 +134,56 @@ const BudgetsPage = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const addItem = () => setItems((prev) => [...prev, { description: '', quantity: 1, unitPrice: 0 }]);
-  const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
-  const updateItem = (idx: number, field: keyof BudgetItem, value: string | number) => {
-    setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
+  const addItem = () => {
+    if (!newDesc.trim()) return toast.error('Informe a descrição do item.');
+    setItems(prev => [...prev, { description: newDesc.trim(), quantity: newQty, unitPrice: newPrice }]);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
   };
+
+  const removeItem = (idx: number) => setItems(prev => prev.filter((_, i) => i !== idx));
+
+  const startEditItem = (idx: number) => {
+    const item = items[idx];
+    setEditingItemIdx(idx);
+    setEditDesc(item.description);
+    setEditQty(item.quantity);
+    setEditPrice(item.unitPrice);
+  };
+
+  const saveEditItem = () => {
+    if (editingItemIdx === null) return;
+    setItems(prev => prev.map((item, i) => i === editingItemIdx ? { description: editDesc, quantity: editQty, unitPrice: editPrice } : item));
+    setEditingItemIdx(null);
+  };
+
+  const cancelEditItem = () => setEditingItemIdx(null);
 
   const saveBudget = async () => {
     if (!user) return;
+    if (items.length === 0) return toast.error('Adicione pelo menos um item.');
+
+    const payload = {
+      client_id: clientId || null,
+      items: items as unknown as Json,
+      total,
+      discount,
+      notes: notes || null,
+    };
 
     if (editingId) {
-      const { error } = await supabase.from('budgets').update({
-        client_id: clientId || null,
-        items: items as unknown as Json,
-        total,
-      }).eq('id', editingId);
+      const { error } = await supabase.from('budgets').update(payload).eq('id', editingId);
       if (error) toast.error(error.message);
-      else {
-        toast.success(t.save + '!');
-        resetForm();
-        loadBudgets();
-      }
+      else { toast.success(t.save + '!'); resetForm(); loadBudgets(); }
     } else {
       const { error } = await supabase.from('budgets').insert({
+        ...payload,
         user_id: user.id,
-        client_id: clientId || null,
-        items: items as unknown as Json,
-        total,
         status: 'draft',
       });
       if (error) toast.error(error.message);
-      else {
-        toast.success(t.save + '!');
-        resetForm();
-        loadBudgets();
-      }
+      else { toast.success(t.save + '!'); resetForm(); loadBudgets(); }
     }
   };
 
@@ -158,23 +191,25 @@ const BudgetsPage = () => {
     setCreating(false);
     setEditingId(null);
     setClientId('');
-    setItems([{ description: '', quantity: 1, unitPrice: 0 }]);
+    setItems([]);
+    setDiscount(0);
+    setNotes('');
+    setEditingItemIdx(null);
   };
 
   const startEditing = (b: Budget) => {
     setEditingId(b.id);
     setClientId(b.client_id || '');
-    setItems(b.items.length > 0 ? b.items : [{ description: '', quantity: 1, unitPrice: 0 }]);
+    setItems(b.items.length > 0 ? b.items : []);
+    setDiscount(b.discount || 0);
+    setNotes(b.notes || '');
     setCreating(true);
   };
 
   const changeStatus = async (id: string, status: string) => {
     const { error } = await supabase.from('budgets').update({ status }).eq('id', id);
     if (error) toast.error(error.message);
-    else {
-      toast.success(statusLabel(status));
-      loadBudgets();
-    }
+    else { toast.success(statusLabel(status)); loadBudgets(); }
   };
 
   const deleteBudget = async (id: string) => {
@@ -230,6 +265,8 @@ const BudgetsPage = () => {
 
   const isFormOpen = creating || editingId;
 
+  const inputClass = "px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -242,22 +279,150 @@ const BudgetsPage = () => {
       </div>
 
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Client select */}
           <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
-          <div className="space-y-2">
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-                <input placeholder={t.description} value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.quantity} value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input type="number" placeholder={t.unitPrice} value={item.unitPrice} onChange={(e) => updateItem(idx, 'unitPrice', +e.target.value)} className="px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring" />
-                <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            ))}
+
+          {/* Add items section */}
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-foreground">Adicionar Itens</h3>
+            <div className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-center">
+              <input
+                placeholder={t.description}
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={inputClass}
+              />
+              <input
+                type="number"
+                placeholder="Qtd"
+                min={1}
+                value={newQty}
+                onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
+                className={`${inputClass} text-center`}
+              />
+              <input
+                type="number"
+                placeholder="Valor"
+                min={0}
+                step={0.01}
+                value={newPrice || ''}
+                onChange={(e) => setNewPrice(+e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={`${inputClass} text-right`}
+              />
+              <button
+                onClick={addItem}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                Adicionar
+              </button>
+            </div>
           </div>
-          <button onClick={addItem} className="text-sm text-primary font-medium hover:underline">{t.addItem}</button>
-          <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="font-semibold">R$ {total.toFixed(2)}</span>
-            <div className="flex gap-2">
+
+          {/* Items table */}
+          {items.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-3 font-semibold text-foreground">{t.description}</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-20">Qtd</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">Valor Unit.</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">Total</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-32">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      {editingItemIdx === idx ? (
+                        <>
+                          <td className="py-2 px-3">
+                            <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={`${inputClass} w-full`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className={`${inputClass} w-full text-center`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
+                          </td>
+                          <td className="py-2 px-3 text-right font-medium text-foreground">
+                            R$ {(editQty * editPrice).toFixed(2)}
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <button onClick={saveEditItem} className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">Salvar</button>
+                              <button onClick={cancelEditItem} className="px-3 py-1 rounded-md bg-secondary text-secondary-foreground text-xs font-semibold hover:opacity-90">Cancelar</button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-3 px-3 text-foreground">{item.description}</td>
+                          <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">Editar</button>
+                              <button onClick={() => removeItem(idx)} className="px-3 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90">Excluir</button>
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Discount & Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Desconto (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={discount}
+                onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
+                className={`${inputClass} w-full max-w-[200px]`}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Observação</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Observações sobre o orçamento..."
+              className={`${inputClass} w-full resize-y`}
+            />
+          </div>
+
+          {/* Summary & actions */}
+          <div className="border-t border-border pt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Desconto ({discount}%)</span>
+                <span className="text-destructive">- R$ {discountValue.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-lg font-bold">
+              <span className="text-foreground">Total</span>
+              <span className="text-foreground">R$ {total.toFixed(2)}</span>
+            </div>
+            <div className="flex gap-2 pt-2 justify-end">
               <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
               <button onClick={saveBudget} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
             </div>
@@ -350,6 +515,17 @@ const BudgetsPage = () => {
                     </div>
                     );
                   })}
+                  {/* Show discount & notes in expanded view */}
+                  {(b.discount > 0 || b.notes) && (
+                    <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
+                      {b.discount > 0 && (
+                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- R$ {(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100).toFixed(2)})</p>
+                      )}
+                      {b.notes && (
+                        <p className="text-xs text-muted-foreground">Obs: {b.notes}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
