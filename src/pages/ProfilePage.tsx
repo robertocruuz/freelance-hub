@@ -181,7 +181,7 @@ const ProfilePage = () => {
     }
     setUploadingLogo(true);
     const fileExt = file.name.split('.').pop();
-    const filePath = `${orgId}/logo.${fileExt}`;
+    const filePath = `${user.id}/logo.${fileExt}`;
     const { error: uploadError } = await supabase.storage.from('org-logos').upload(filePath, file, { upsert: true });
     if (uploadError) {
       toast({ title: lang === 'pt-BR' ? 'Erro ao enviar logo' : 'Error uploading logo', variant: 'destructive' });
