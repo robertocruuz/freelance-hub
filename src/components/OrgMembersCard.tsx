@@ -45,14 +45,12 @@ import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown,
 
 const roleIcons = {
   admin: Crown,
-  editor: Pencil,
-  viewer: Eye,
+  collaborator: Pencil,
 };
 
 const roleColors = {
   admin: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  editor: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  viewer: 'bg-muted text-muted-foreground border-border',
+  collaborator: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
 };
 
 const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization>; onLeave?: () => void }) => {
@@ -65,7 +63,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'collaborator'>('collaborator');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -75,8 +73,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const roleLabel = (role: string) => {
     const labels: Record<string, Record<string, string>> = {
       admin: { 'pt-BR': 'Admin', en: 'Admin' },
-      editor: { 'pt-BR': 'Editor', en: 'Editor' },
-      viewer: { 'pt-BR': 'Visualizador', en: 'Viewer' },
+      collaborator: { 'pt-BR': 'Colaborador', en: 'Collaborator' },
     };
     return labels[role]?.[lang] || role;
   };
@@ -114,7 +111,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
     }
   };
 
-  const handleRoleChange = async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
+  const handleRoleChange = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await updateMemberRole(memberId, role);
     if (error) {
       toast({ title: isPt ? 'Erro ao atualizar' : 'Error updating', variant: 'destructive' });
@@ -197,8 +194,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                  <SelectItem value="collaborator">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
                 </SelectContent>
               </Select>
               <Input
@@ -286,8 +282,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="editor">Editor</SelectItem>
-                        <SelectItem value="viewer">{isPt ? 'Visualizador' : 'Viewer'}</SelectItem>
+                        <SelectItem value="collaborator">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (

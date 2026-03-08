@@ -14,7 +14,7 @@ interface ReceivedInvite {
   organization_id: string;
   email: string | null;
   invite_token: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
   expires_at: string;
@@ -22,11 +22,10 @@ interface ReceivedInvite {
   invited_by_name?: string;
 }
 
-const roleIcons = { admin: Crown, editor: Pencil, viewer: Eye };
+const roleIcons = { admin: Crown, collaborator: Pencil };
 const roleLabels: Record<string, Record<string, string>> = {
   admin: { 'pt-BR': 'Admin', en: 'Admin' },
-  editor: { 'pt-BR': 'Editor', en: 'Editor' },
-  viewer: { 'pt-BR': 'Visualizador', en: 'Viewer' },
+  collaborator: { 'pt-BR': 'Colaborador', en: 'Collaborator' },
 };
 
 const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {

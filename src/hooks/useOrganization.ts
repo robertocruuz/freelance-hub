@@ -6,7 +6,7 @@ export interface OrgMember {
   id: string;
   organization_id: string;
   user_id: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
   profile?: { name: string | null; email: string | null };
@@ -17,7 +17,7 @@ export interface OrgInvite {
   organization_id: string;
   email: string | null;
   invite_token: string;
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
   expires_at: string;
@@ -119,7 +119,7 @@ export const useOrganization = () => {
     fetchOrgData();
   }, [fetchOrgData]);
 
-  const inviteByEmail = async (email: string, role: 'admin' | 'editor' | 'viewer') => {
+  const inviteByEmail = async (email: string, role: 'admin' | 'collaborator') => {
     if (!orgId || !user) return { error: 'No organization' };
 
     const { error } = await (supabase.from('organization_invites' as any) as any).insert({
@@ -152,7 +152,7 @@ export const useOrganization = () => {
     return { error };
   };
 
-  const generateInviteLink = async (role: 'admin' | 'editor' | 'viewer') => {
+  const generateInviteLink = async (role: 'admin' | 'collaborator') => {
     if (!orgId || !user) return { error: 'No organization', token: null };
 
     const { data, error } = await (supabase.from('organization_invites' as any) as any)
@@ -219,7 +219,7 @@ export const useOrganization = () => {
     return { error: null };
   };
 
-  const updateMemberRole = async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
+  const updateMemberRole = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await (supabase.from('organization_members' as any) as any)
       .update({ role })
       .eq('id', memberId);
