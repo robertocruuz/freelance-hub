@@ -331,14 +331,6 @@ const BudgetsPage = () => {
                       <span className="text-right text-muted-foreground">R$ {item.unitPrice.toFixed(2)}</span>
                       <span className="text-right font-medium text-foreground">R$ {(item.quantity * item.unitPrice).toFixed(2)}</span>
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => createTaskFromItem(item, b)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline whitespace-nowrap"
-                          title="Criar tarefa no Kanban"
-                        >
-                          <ListPlus className="w-3.5 h-3.5" />
-                          Tarefa
-                        </button>
                         {isImported ? (
                           <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                             <FolderKanban className="w-3.5 h-3.5" />
