@@ -28,6 +28,13 @@ interface OrganizationInfo {
   business_phone?: string | null;
   business_email?: string | null;
   website?: string | null;
+  logo_url?: string | null;
+  address?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  complement?: string | null;
 }
 
 interface ClientInfo {
