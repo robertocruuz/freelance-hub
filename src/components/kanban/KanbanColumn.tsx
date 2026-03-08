@@ -187,42 +187,35 @@ export const KanbanColumnComponent = ({
       <div className="px-2 pb-3">
         {addMode === 'choice' && (
           <div className="space-y-1.5">
-            <button
-              onClick={() => setAddMode('blank')}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-secondary transition border border-border"
-            >
-              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Em branco
-            </button>
+            <div className="space-y-2">
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                placeholder="Título da tarefa..."
+                autoFocus
+                className="text-sm glass-input"
+              />
+              {newTitle.trim() && (
+                <Button size="sm" onClick={handleAdd} className="btn-glow text-xs h-7 w-full">
+                  Criar tarefa
+                </Button>
+              )}
+            </div>
+            <div className="relative flex items-center gap-2 py-1">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] text-muted-foreground">ou</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
             <button
               onClick={openProjectPicker}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-foreground hover:bg-secondary transition border border-border"
             >
               <FolderKanban className="w-3.5 h-3.5 text-primary" /> A partir de um projeto
             </button>
-            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+            <Button size="sm" variant="ghost" onClick={() => { setAddMode(null); setNewTitle(''); }} className="w-full text-xs h-7">
               Cancelar
             </Button>
-          </div>
-        )}
-
-        {addMode === 'blank' && (
-          <div className="space-y-2">
-            <Input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              placeholder="Título da tarefa..."
-              autoFocus
-              className="text-sm glass-input"
-            />
-            <div className="flex gap-1.5">
-              <Button size="sm" onClick={handleAdd} className="btn-glow text-xs h-7 flex-1">
-                Adicionar
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="text-xs h-7">
-                Cancelar
-              </Button>
-            </div>
           </div>
         )}
 
