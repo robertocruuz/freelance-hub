@@ -59,7 +59,40 @@ interface BudgetPdfOptions {
   client?: ClientInfo | null;
 }
 
-export const generateBudgetPdf = (options: BudgetPdfOptions) => {
+const loadImageAsBase64 = (url: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } else {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
+const buildOrgAddress = (org: OrganizationInfo): string => {
+  const parts: string[] = [];
+  if (org.address) parts.push(org.address);
+  if (org.complement) parts.push(org.complement);
+  if (org.neighborhood) parts.push(org.neighborhood);
+  if (org.city && org.state) parts.push(`${org.city} - ${org.state}`);
+  else if (org.city) parts.push(org.city);
+  else if (org.state) parts.push(org.state);
+  if (org.zip_code) parts.push(`CEP: ${org.zip_code}`);
+  return parts.join(', ');
+};
+
+export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -67,14 +100,34 @@ export const generateBudgetPdf = (options: BudgetPdfOptions) => {
   const contentW = pw - margin * 2;
   let y = 20;
 
-  // ── Organization Header ──
+  // ── Organization Header with Logo ──
   if (options.organization) {
     const org = options.organization;
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(25, 25, 25);
-    doc.text(org.trade_name || 'Empresa', margin, y);
-    y += 8;
+    let logoX = margin;
+
+    // Try to load logo
+    if (org.logo_url) {
+      const logoBase64 = await loadImageAsBase64(org.logo_url);
+      if (logoBase64) {
+        const logoH = 14;
+        const img = new Image();
+        img.src = logoBase64;
+        const ratio = img.naturalWidth / img.naturalHeight;
+        const logoW = logoH * ratio;
+        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        logoX = margin + logoW + 6;
+        // Adjust y if logo is taller
+        y = Math.max(y, y - 4 + logoH + 2);
+      }
+    }
+
+    if (!org.logo_url) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(25, 25, 25);
+      doc.text(org.trade_name || 'Empresa', margin, y);
+      y += 8;
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
