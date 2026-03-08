@@ -12,7 +12,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer } from 'lucide-react';
 import { useKanban, Task } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -49,6 +49,8 @@ const KanbanPage = () => {
   const [filterDeadlines, setFilterDeadlines] = useState<Set<string>>(new Set());
   const [filterDeadlineDate, setFilterDeadlineDate] = useState<Date | undefined>(undefined);
   const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
+  const [filterComplexities, setFilterComplexities] = useState<Set<number>>(new Set());
+  const [filterEstimatedTime, setFilterEstimatedTime] = useState<Set<string>>(new Set());
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -102,7 +104,7 @@ const KanbanPage = () => {
     });
   };
 
-  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0);
+  const activeFilterCount = filterPriorities.size + filterClients.size + filterProjects.size + filterTypes.size + filterDeadlines.size + (filterDeadlineDate ? 1 : 0) + filterComplexities.size + filterEstimatedTime.size;
 
   // Unique task types
   const taskTypes = useMemo(() => {
@@ -139,9 +141,19 @@ const KanbanPage = () => {
       if (filterProjects.size > 0 && (!t.project_id || !filterProjects.has(t.project_id))) return false;
       if (filterTypes.size > 0 && (!t.task_type || !filterTypes.has(t.task_type))) return false;
       if (!matchesDeadline(t)) return false;
+      if (filterComplexities.size > 0 && !filterComplexities.has(t.complexity)) return false;
+      if (filterEstimatedTime.size > 0) {
+        const hours = t.estimated_time ? t.estimated_time / 60 : 0;
+        let matched = false;
+        if (filterEstimatedTime.has('none') && !t.estimated_time) matched = true;
+        if (filterEstimatedTime.has('short') && hours > 0 && hours <= 2) matched = true;
+        if (filterEstimatedTime.has('medium') && hours > 2 && hours <= 8) matched = true;
+        if (filterEstimatedTime.has('long') && hours > 8) matched = true;
+        if (!matched) return false;
+      }
       return true;
     });
-  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate]);
+  }, [tasks, search, filterPriorities, filterClients, filterProjects, filterTypes, filterDeadlines, filterDeadlineDate, filterComplexities, filterEstimatedTime]);
 
   const getColumnTasks = (columnId: string) =>
     filteredTasks
@@ -250,7 +262,7 @@ const KanbanPage = () => {
                 <span className="text-sm font-semibold text-foreground">Filtros</span>
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); }}
+                    onClick={() => { setFilterClients(new Set()); setFilterProjects(new Set()); setFilterPriorities(new Set()); setFilterTypes(new Set()); setFilterDeadlines(new Set()); setFilterDeadlineDate(undefined); setShowDeadlineCalendar(false); setFilterComplexities(new Set()); setFilterEstimatedTime(new Set()); }}
                     className="text-xs text-primary hover:text-primary/80 font-medium transition"
                   >
                     Limpar tudo
@@ -425,6 +437,65 @@ const KanbanPage = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Complexity - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Gauge className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Complexidade</span>
+                    {filterComplexities.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterComplexities.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[1, 2, 3, 4, 5].map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          setFilterComplexities(prev => {
+                            const next = new Set(prev);
+                            if (next.has(c)) next.delete(c); else next.add(c);
+                            return next;
+                          });
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterComplexities.has(c)
+                            ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Estimated Time - chip toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Timer className="w-3.5 h-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Tempo estimado</span>
+                    {filterEstimatedTime.size > 0 && <span className="text-[10px] text-primary ml-auto">{filterEstimatedTime.size}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { value: 'none', label: 'Sem estimativa', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 border-gray-200 dark:border-gray-700' },
+                      { value: 'short', label: '≤ 2h', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 border-green-200 dark:border-green-800' },
+                      { value: 'medium', label: '2h–8h', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
+                      { value: 'long', label: '> 8h', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+                    ].map((t) => (
+                      <button
+                        key={t.value}
+                        onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t.value)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          filterEstimatedTime.has(t.value)
+                            ? `${t.color} shadow-sm ring-1 ring-current/20`
+                            : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Result count */}
@@ -478,6 +549,21 @@ const KanbanPage = () => {
                   <X className="w-3 h-3" />
                 </Badge>
               )}
+              {Array.from(filterComplexities).map(c => (
+                <Badge key={`c-${c}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => setFilterComplexities(prev => { const n = new Set(prev); n.delete(c); return n; })}>
+                  Complexidade {c}
+                  <X className="w-3 h-3" />
+                </Badge>
+              ))}
+              {Array.from(filterEstimatedTime).map(t => {
+                const labels: Record<string, string> = { none: 'Sem estimativa', short: '≤ 2h', medium: '2h–8h', long: '> 8h' };
+                return (
+                  <Badge key={`et-${t}`} variant="secondary" className="gap-1 text-[10px] pl-2 pr-1 py-0.5 cursor-pointer hover:bg-secondary/80" onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t)}>
+                    {labels[t] || t}
+                    <X className="w-3 h-3" />
+                  </Badge>
+                );
+              })}
             </div>
           )}
 
