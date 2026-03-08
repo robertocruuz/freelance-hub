@@ -39,6 +39,7 @@ interface KanbanTask {
 
 interface TimeEntry {
   id: string;
+  client_id: string | null;
   project_id: string | null;
   task_id: string | null;
   description: string | null;
