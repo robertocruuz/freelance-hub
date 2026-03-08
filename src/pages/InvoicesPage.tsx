@@ -579,7 +579,7 @@ const InvoicesPage = () => {
           <div className="border-t border-border pt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+              <span className="text-foreground">{formatCurrency(subtotal)}</span>
             </div>
             {taxes > 0 && (
               <div className="flex items-center justify-between text-sm">
