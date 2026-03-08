@@ -234,6 +234,7 @@ export const useOrganization = () => {
 
   return {
     orgId,
+    ownerId,
     members,
     invites,
     loading,
