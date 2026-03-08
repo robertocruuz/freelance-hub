@@ -8,6 +8,7 @@ export interface Client {
   email: string | null;
   phone: string | null;
   document: string | null;
+  responsible: string | null;
   created_at: string;
 }
 
