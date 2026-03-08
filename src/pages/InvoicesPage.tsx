@@ -49,6 +49,7 @@ interface InvoiceItem {
 
 interface Invoice {
   id: string;
+  name: string | null;
   client_id: string | null;
   client_name?: string;
   items: InvoiceItem[];
@@ -85,6 +86,7 @@ const InvoicesPage = () => {
   const [creating, setCreating] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
+  const [invoiceName, setInvoiceName] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
   const [discount, setDiscount] = useState(0);
@@ -137,6 +139,7 @@ const InvoicesPage = () => {
   }, [user, clients]);
 
   const importProject = (project: ProjectWithItems) => {
+    setInvoiceName(project.name);
     setClientId(project.client_id || '');
     if (project.due_date) setDueDate(new Date(project.due_date + 'T12:00:00'));
     setItems(
@@ -215,6 +218,7 @@ const InvoicesPage = () => {
   const resetForm = () => {
     setCreating(false);
     setEditingInvoiceId(null);
+    setInvoiceName('');
     setClientId('');
     setItems([]);
     setTaxes(0);
@@ -231,6 +235,7 @@ const InvoicesPage = () => {
 
   const editInvoice = (inv: Invoice) => {
     setEditingInvoiceId(inv.id);
+    setInvoiceName(inv.name || '');
     setClientId(inv.client_id || '');
     setItems(inv.items);
     setTaxes(inv.taxes);
@@ -244,6 +249,7 @@ const InvoicesPage = () => {
     if (!user) return;
     if (items.length === 0) return toast.error('Adicione pelo menos um item.');
     const invoiceData = {
+      name: invoiceName.trim() || null,
       client_id: clientId || null,
       items: items as unknown as Json,
       total,
@@ -361,6 +367,16 @@ const InvoicesPage = () => {
 
       {creating && (
         <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Nome da Fatura' : 'Invoice Name'}</label>
+            <input
+              placeholder={lang === 'pt-BR' ? 'Ex: Projeto Website' : 'Ex: Website Project'}
+              value={invoiceName}
+              onChange={(e) => setInvoiceName(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
+          </div>
           {/* Client & Due Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -591,7 +607,7 @@ const InvoicesPage = () => {
           {invoices.map((inv) => (
             <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
               <div>
-                <p className="font-semibold text-foreground">{inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
+                <p className="font-semibold text-foreground">{inv.name || inv.client_name || (lang === 'pt-BR' ? 'Sem cliente' : 'No client')} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
                 <p className="text-xs text-muted-foreground">
                   {lang === 'pt-BR' ? 'Venc' : 'Due'}: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}
                 </p>

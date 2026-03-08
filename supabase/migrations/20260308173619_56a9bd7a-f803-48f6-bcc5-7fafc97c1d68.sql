@@ -1,0 +1,1 @@
+ALTER TABLE public.invoices ADD COLUMN name text DEFAULT NULL;
