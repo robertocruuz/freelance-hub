@@ -931,6 +931,13 @@ const TimeTrackingPage = () => {
           const handleExportPDF = async () => {
             const { default: jsPDF } = await import('jspdf');
 
+            // Fetch user profile
+            let userName = '';
+            if (user) {
+              const { data: profile } = await supabase.from('profiles').select('name, email').eq('user_id', user.id).maybeSingle();
+              userName = profile?.name || profile?.email || user.email || '';
+            }
+
             // Use all entries when custom dates are set, otherwise use filtered by period
             let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
             if (exportFilter === 'client' && exportClientId) {
@@ -969,6 +976,7 @@ const TimeTrackingPage = () => {
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(120, 120, 120);
+            if (userName) { doc.text(`Responsável: ${userName}`, 14, y); y += 5; }
             const periodLabel = exportStartDate && exportEndDate
               ? `Período: ${new Date(exportStartDate).toLocaleDateString('pt-BR')} a ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
               : `Período: ${dateLabel()}`;
