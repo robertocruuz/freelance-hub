@@ -396,7 +396,7 @@ const ProjectsPage = () => {
                   const imported = isBudgetFullyImported(b);
                   return (
                     <option key={b.id} value={b.id} disabled={imported}>
-                      {b.name || clientName(b.client_id)} · R$ {b.total.toFixed(2)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
+                      {b.name || clientName(b.client_id)} · {formatCurrency(b.total)} · {statusLabel(b.status)}{imported ? ' ✓ Importado' : ''}
                     </option>
                   );
                 })}
