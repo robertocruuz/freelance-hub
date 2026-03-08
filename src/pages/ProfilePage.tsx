@@ -127,20 +127,47 @@ const ProfilePage = () => {
   };
 
   const handleSaveOrg = async () => {
-    if (!user || !orgId) return;
+    if (!user) return;
     setLoading(true);
-    const { error } = await (supabase.from('organizations' as any) as any)
-      .update({ ...orgForm })
-      .eq('id', orgId);
-    setLoading(false);
-    if (error) {
-      toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+
+    if (orgId) {
+      // Update existing org
+      const { error } = await (supabase.from('organizations' as any) as any)
+        .update({ ...orgForm })
+        .eq('id', orgId);
+      setLoading(false);
+      if (error) {
+        toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
+      } else {
+        setOrg({ ...orgForm });
+        setEditingOrg(false);
+        refreshOrg();
+        toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+      }
     } else {
-      setOrg({ ...orgForm });
-      setEditingOrg(false);
-      refreshOrg();
-      toast({ title: lang === 'pt-BR' ? 'Organização atualizada!' : 'Organization updated!' });
+      // Create new org
+      const { error } = await (supabase.from('organizations' as any) as any)
+        .insert({ ...orgForm, user_id: user.id });
+      setLoading(false);
+      if (error) {
+        toast({ title: lang === 'pt-BR' ? 'Erro ao criar organização' : 'Error creating organization', variant: 'destructive' });
+      } else {
+        setOrg({ ...orgForm });
+        setEditingOrg(false);
+        refreshOrg();
+        toast({ title: lang === 'pt-BR' ? 'Organização criada!' : 'Organization created!' });
+      }
     }
+  };
+
+  const emptyOrg = { company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', complement: '', neighborhood: '', state: '', city: '' };
+
+  const handleLeaveTeam = () => {
+    setOrg(emptyOrg);
+    setOrgForm(emptyOrg);
+    setLogoUrl(null);
+    setEditingOrg(false);
+    refreshOrg();
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -400,7 +427,7 @@ const ProfilePage = () => {
                     <Building2 className="w-3.5 h-3.5" />
                     {lang === 'pt-BR' ? 'Informações da empresa' : 'Company information'}
                   </p>
-                  {!editingOrg && isAdmin && (
+                  {!editingOrg && (isAdmin || !orgId) && (
                     <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setEditingOrg(true); }} className="gap-1.5 shrink-0">
                       <Pencil className="w-3.5 h-3.5" />
                       {lang === 'pt-BR' ? 'Editar' : 'Edit'}
@@ -722,7 +749,7 @@ const ProfilePage = () => {
                     {lang === 'pt-BR' ? 'Equipe' : 'Team'}
                   </p>
                 </div>
-                <OrgMembersCard embedded orgHook={orgHook} />
+                <OrgMembersCard embedded orgHook={orgHook} onLeave={handleLeaveTeam} />
               </div>
             </CardContent>
           </CollapsibleContent>

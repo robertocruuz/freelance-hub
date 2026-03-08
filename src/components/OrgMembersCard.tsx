@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization, OrgMember, OrgInvite } from '@/hooks/useOrganization';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,11 +55,11 @@ const roleColors = {
   viewer: 'bg-muted text-muted-foreground border-border',
 };
 
-const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization> }) => {
+const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization>; onLeave?: () => void }) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
   const internalOrgHook = useOrganization();
   const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
 
@@ -145,7 +144,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook }: { embedd
       toast({ title: isPt ? 'Erro ao sair da equipe' : 'Error leaving team', variant: 'destructive' });
     } else {
       toast({ title: isPt ? 'Você saiu da equipe' : 'You left the team' });
-      navigate('/dashboard');
+      onLeave?.();
     }
     setLeaveDialogOpen(false);
   };
