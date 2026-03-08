@@ -59,7 +59,7 @@ interface BudgetPdfOptions {
   client?: ClientInfo | null;
 }
 
-const loadImageAsBase64 = (url: string): Promise<string | null> => {
+const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number } | null> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -70,7 +70,7 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
+        resolve({ data: canvas.toDataURL('image/png'), width: img.naturalWidth, height: img.naturalHeight });
       } else {
         resolve(null);
       }
@@ -107,16 +107,13 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
 
     // Try to load logo
     if (org.logo_url) {
-      const logoBase64 = await loadImageAsBase64(org.logo_url);
-      if (logoBase64) {
+      const logoResult = await loadImageAsBase64(org.logo_url);
+      if (logoResult) {
         const logoH = 14;
-        const img = new Image();
-        img.src = logoBase64;
-        const ratio = img.naturalWidth / img.naturalHeight;
+        const ratio = logoResult.width / logoResult.height;
         const logoW = logoH * ratio;
-        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        doc.addImage(logoResult.data, 'PNG', margin, y - 4, logoW, logoH);
         logoX = margin + logoW + 6;
-        // Adjust y if logo is taller
         y = Math.max(y, y - 4 + logoH + 2);
       }
     }
@@ -403,14 +400,12 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
     const org = options.organization;
 
     if (org.logo_url) {
-      const logoBase64 = await loadImageAsBase64(org.logo_url);
-      if (logoBase64) {
+      const logoResult = await loadImageAsBase64(org.logo_url);
+      if (logoResult) {
         const logoH = 14;
-        const img = new Image();
-        img.src = logoBase64;
-        const ratio = img.naturalWidth / img.naturalHeight;
+        const ratio = logoResult.width / logoResult.height;
         const logoW = logoH * ratio;
-        doc.addImage(logoBase64, 'PNG', margin, y - 4, logoW, logoH);
+        doc.addImage(logoResult.data, 'PNG', margin, y - 4, logoW, logoH);
         y = Math.max(y, y - 4 + logoH + 2);
       }
     }
