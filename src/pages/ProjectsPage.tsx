@@ -108,6 +108,14 @@ const ProjectsPage = () => {
   const [pendingBudgetItems, setPendingBudgetItems] = useState<BudgetItem[]>([]);
   const [projectDiscount, setProjectDiscount] = useState(0);
 
+  // Board picker for task creation
+  const [showBoardPicker, setShowBoardPicker] = useState(false);
+  const [availableBoards, setAvailableBoards] = useState<{ id: string; name: string }[]>([]);
+  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
+  const [pendingTaskItem, setPendingTaskItem] = useState<{ name: string; value: number; projectId: string; clientId: string | null; dueDate: string | null } | null>(null);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [creatingBoard, setCreatingBoard] = useState(false);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
