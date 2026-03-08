@@ -156,7 +156,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const progress = totalChecklistProgress();
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 top-14 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-2xl h-full bg-card border-l border-border overflow-y-auto animate-fade-in"
