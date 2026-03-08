@@ -59,7 +59,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
   const internalOrgHook = useOrganization();
   const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
 
