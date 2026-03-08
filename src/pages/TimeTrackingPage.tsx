@@ -422,8 +422,14 @@ const TimeTrackingPage = () => {
     return selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
-  // Get color for entry — uses client color if available, falls back to project-based color
-  const getProjectColor = (pid: string | null) => {
+  // Get color for entry — uses direct client color first, then project's client, then fallback
+  const getProjectColor = (pid: string | null, directClientId?: string | null) => {
+    // Priority 1: direct client_id on the entry
+    if (directClientId) {
+      const directClient = clients.find(c => c.id === directClientId);
+      if ((directClient as any)?.color) return (directClient as any).color;
+    }
+    // Priority 2: client from project
     if (pid) {
       const project = projects.find(p => p.id === pid);
       if (project?.client_id) {
