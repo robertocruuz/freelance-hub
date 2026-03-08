@@ -585,22 +585,30 @@ const ProjectsPage = () => {
                     </button>
                   </div>
                   <div className="divide-y divide-border">
-                    {b.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between px-3 py-2">
-                        <div>
-                          <p className="text-sm text-foreground">{item.description || '—'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
-                          </p>
+                    {b.items.map((item, idx) => {
+                      const imported = isItemImported(item);
+                      return (
+                        <div key={idx} className={`flex items-center justify-between px-3 py-2 ${imported ? 'opacity-50' : ''}`}>
+                          <div>
+                            <p className="text-sm text-foreground flex items-center gap-1.5">
+                              {item.description || '—'}
+                              {imported && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-medium">Importado</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.quantity}x R$ {item.unitPrice.toFixed(2)} = R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                            </p>
+                          </div>
+                          {!imported && (
+                            <button
+                              onClick={() => importBudgetItem(item)}
+                              className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
+                            >
+                              Importar
+                            </button>
+                          )}
                         </div>
-                        <button
-                          onClick={() => importBudgetItem(item)}
-                          className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
-                        >
-                          Importar
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
