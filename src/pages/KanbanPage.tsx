@@ -368,55 +368,72 @@ const KanbanPage = () => {
         </div>
       </div>
 
-      {/* Board tabs */}
-      <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-thin pb-1">
-        {boards.map((board) => (
-          <div
-            key={board.id}
-            className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all border shrink-0 ${
-              activeBoardId === board.id
-                ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
-                : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground'
-            }`}
-            onClick={() => setActiveBoardId(board.id)}
-          >
-            <Kanban className="w-3.5 h-3.5" />
-            <span>{board.name}</span>
-            {getBoardSubtitle(board) && (
-              <span className="text-[10px] opacity-70">{getBoardSubtitle(board)}</span>
-            )}
+      {/* Board selector */}
+      <div className="flex items-center gap-2 mb-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+              <Kanban className="w-3.5 h-3.5" />
+              {boards.find(b => b.id === activeBoardId)?.name || 'Selecionar painel'}
+              {activeBoardId && getBoardSubtitle(boards.find(b => b.id === activeBoardId)!) && (
+                <span className="text-[10px] opacity-70">{getBoardSubtitle(boards.find(b => b.id === activeBoardId)!)}</span>
+              )}
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[200px]">
+            {boards.map((board) => (
+              <DropdownMenuItem
+                key={board.id}
+                onClick={() => setActiveBoardId(board.id)}
+                className={`gap-2 ${activeBoardId === board.id ? 'bg-primary/10 text-primary' : ''}`}
+              >
+                <Kanban className="w-3.5 h-3.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-medium">{board.name}</span>
+                  {getBoardSubtitle(board) && (
+                    <span className="text-[10px] opacity-70 ml-1">{getBoardSubtitle(board)}</span>
+                  )}
+                </div>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingBoard(null);
+                setBoardName('');
+                setBoardClientId(null);
+                setBoardProjectId(null);
+                setShowBoardDialog(true);
+              }}
+              className="gap-2 text-muted-foreground"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="text-xs">Novo painel</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {activeBoardId && (
+          <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  onClick={(e) => e.stopPropagation()}
-                  className="ml-1 p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-secondary transition"
-                >
-                  <MoreHorizontal className="w-3 h-3" />
-                </button>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditBoard(board); }}>
+                <DropdownMenuItem onClick={() => openEditBoard(boards.find(b => b.id === activeBoardId)!)}>
                   <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeletingBoard(board); }} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={() => setDeletingBoard(boards.find(b => b.id === activeBoardId)!)} className="text-destructive focus:text-destructive">
                   <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        ))}
-        <button
-          onClick={() => {
-            setEditingBoard(null);
-            setBoardName('');
-            setBoardClientId(null);
-            setBoardProjectId(null);
-            setShowBoardDialog(true);
-          }}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition border border-dashed border-border shrink-0"
-        >
-          <Plus className="w-3.5 h-3.5" /> Novo painel
-        </button>
+
+            <ShareButton resourceType="board" resourceId={activeBoardId} />
+          </>
+        )}
       </div>
 
       {/* No board selected */}
