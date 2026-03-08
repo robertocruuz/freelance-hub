@@ -49,6 +49,8 @@ export const KanbanColumnComponent = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(column.name);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loadingItems, setLoadingItems] = useState(false);
 
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
