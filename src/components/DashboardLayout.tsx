@@ -161,8 +161,12 @@ const DashboardLayout = () => {
 
       {/* Bottom section */}
       <div className="shrink-0 border-t border-sidebar-border">
+        {/* Notifications */}
+        <div className={cn('px-3 pt-2 pb-0.5', collapsed && !isMobile && 'px-2')}>
+          <SidebarNotificationItem collapsed={collapsed && !isMobile} />
+        </div>
         {/* Settings row */}
-        <div className={cn('px-3 pt-2 space-y-0.5', collapsed && !isMobile && 'px-2')}>
+        <div className={cn('px-3 pt-0.5 space-y-0.5', collapsed && !isMobile && 'px-2')}>
           {/* Preferences / Settings */}
           {(() => {
             const settingsActive = location.pathname === '/dashboard/settings';
