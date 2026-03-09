@@ -105,7 +105,7 @@ const KanbanPage = () => {
   // Load projects for filter
   useEffect(() => {
     if (!user) return;
-    supabase.from('projects').select('id, name, client_id').eq('user_id', user.id).then(({ data }) => {
+    supabase.from('projects').select('id, name, client_id').order('name').then(({ data }) => {
       if (data) setProjects(data);
     });
   }, [user]);
