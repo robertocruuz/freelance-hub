@@ -427,6 +427,18 @@ const ProjectsPage = () => {
 
     if (!boardId) return toast.error('Selecione ou crie um painel');
 
+    // Check for duplicate task
+    const { data: existingDup } = await supabase
+      .from('tasks')
+      .select('id')
+      .eq('title', pendingTaskItem.name)
+      .eq('project_id', pendingTaskItem.projectId)
+      .limit(1);
+
+    if (existingDup && existingDup.length > 0) {
+      return toast.error('Já existe uma tarefa com esse nome neste projeto.');
+    }
+
     // Get first column of the board
     const { data: cols } = await supabase
       .from('kanban_columns')
