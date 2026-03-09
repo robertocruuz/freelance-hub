@@ -1,10 +1,8 @@
 import { useI18n } from '@/hooks/useI18n';
 import { useTheme } from '@/hooks/useTheme';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -13,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sun, Moon, Monitor, Globe, Bell, BellOff, Database, Download, Trash2 } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,226 +70,265 @@ const SettingsPage = () => {
   };
 
   const themeOptions = [
-    { value: 'light', label: isPt ? 'Claro' : 'Light', icon: Sun },
-    { value: 'dark', label: isPt ? 'Escuro' : 'Dark', icon: Moon },
-    { value: 'system', label: isPt ? 'Sistema' : 'System', icon: Monitor },
+    { value: 'light', label: isPt ? 'Claro' : 'Light', icon: Sun, preview: 'bg-background border-border' },
+    { value: 'dark', label: isPt ? 'Escuro' : 'Dark', icon: Moon, preview: 'bg-foreground border-foreground' },
+    { value: 'system', label: isPt ? 'Sistema' : 'System', icon: Monitor, preview: 'bg-gradient-to-br from-background to-foreground border-border' },
   ];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-8">
+    <div className="max-w-2xl mx-auto pb-12">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t.settings}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isPt ? 'Personalize sua experiência e gerencie seus dados' : 'Customize your experience and manage your data'}
-        </p>
-      </div>
-
-      {/* Theme Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            {isDark ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-lg">{isPt ? 'Aparência' : 'Appearance'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Escolha o tema visual da aplicação' : 'Choose the visual theme of the application'}
-            </CardDescription>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.settings}</h1>
+            <p className="text-sm text-muted-foreground">
+              {isPt ? 'Personalize sua experiência' : 'Customize your experience'}
+            </p>
           </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-5 pb-6">
-          <div className="grid grid-cols-3 gap-3">
+        </div>
+      </div>
+
+      <div className="space-y-8">
+
+        {/* ═══════════════════════════════════════ */}
+        {/* APPEARANCE SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <section>
+          <SectionHeader
+            icon={Palette}
+            title={isPt ? 'Aparência' : 'Appearance'}
+            description={isPt ? 'Escolha como o Freelaz se parece' : 'Choose how Freelaz looks'}
+          />
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
             {themeOptions.map((opt) => {
               const isSelected = theme === opt.value;
               return (
                 <button
                   key={opt.value}
                   onClick={() => setTheme(opt.value as any)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 shadow-sm'
-                      : 'border-border hover:border-primary/30 hover:bg-muted/50'
-                  }`}
+                  className={`group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 overflow-hidden
+                    ${isSelected
+                      ? 'border-primary bg-primary/[0.04] shadow-[0_0_0_1px_hsl(var(--primary)/0.1),0_4px_16px_hsl(var(--primary)/0.08)]'
+                      : 'border-border/60 hover:border-primary/30 hover:bg-muted/40'
+                    }`}
                 >
-                  <opt.icon className={`w-6 h-6 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span className={`text-sm font-medium ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {opt.label}
-                  </span>
+                  {/* Theme preview circle */}
+                  <div className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 ${opt.preview}`}>
+                    <opt.icon className={`w-5 h-5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </div>
+                  <div className="text-center">
+                    <span className={`text-sm font-semibold block ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {opt.label}
+                    </span>
+                  </div>
                   {isSelected && (
-                    <Badge variant="secondary" className="text-[10px] h-5">
-                      {isPt ? 'Ativo' : 'Active'}
-                    </Badge>
+                    <div className="absolute top-2.5 right-2.5">
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
                   )}
                 </button>
               );
             })}
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Language Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Globe className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">{isPt ? 'Idioma' : 'Language'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Defina o idioma da interface' : 'Set the interface language'}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-5 pb-6">
-          <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">
-              {isPt ? 'Idioma da interface' : 'Interface language'}
-            </Label>
-            <Select value={lang} onValueChange={(v) => setLang(v as any)}>
-              <SelectTrigger className="w-full sm:w-[240px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pt-BR">
-                  <span className="flex items-center gap-2">🇧🇷 Português (Brasil)</span>
-                </SelectItem>
-                <SelectItem value="en">
-                  <span className="flex items-center gap-2">🇺🇸 English</span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="border-t border-border/40" />
 
-      {/* Notifications Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Bell className="w-5 h-5 text-primary" />
+        {/* ═══════════════════════════════════════ */}
+        {/* LANGUAGE SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <section>
+          <SectionHeader
+            icon={Languages}
+            title={isPt ? 'Idioma' : 'Language'}
+            description={isPt ? 'Defina o idioma da interface' : 'Set the interface language'}
+          />
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {[
+              { value: 'pt-BR', flag: '🇧🇷', label: 'Português', sub: 'Brasil' },
+              { value: 'en', flag: '🇺🇸', label: 'English', sub: 'United States' },
+            ].map((opt) => {
+              const isSelected = lang === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setLang(opt.value as any)}
+                  className={`group relative flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-200
+                    ${isSelected
+                      ? 'border-primary bg-primary/[0.04] shadow-[0_0_0_1px_hsl(var(--primary)/0.1),0_4px_16px_hsl(var(--primary)/0.08)]'
+                      : 'border-border/60 hover:border-primary/30 hover:bg-muted/40'
+                    }`}
+                >
+                  <span className="text-2xl">{opt.flag}</span>
+                  <div className="text-left">
+                    <span className={`text-sm font-semibold block ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {opt.label}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">{opt.sub}</span>
+                  </div>
+                  {isSelected && (
+                    <div className="absolute top-3 right-3">
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <div>
-            <CardTitle className="text-lg">{isPt ? 'Notificações' : 'Notifications'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-5 pb-6 space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-3">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isPt ? 'Notificações por e-mail' : 'Email notifications'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isPt ? 'Receba atualizações importantes por e-mail' : 'Receive important updates by email'}
-                </p>
-              </div>
-            </div>
-            <Switch
+        </section>
+
+        <div className="border-t border-border/40" />
+
+        {/* ═══════════════════════════════════════ */}
+        {/* NOTIFICATIONS SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <section>
+          <SectionHeader
+            icon={Bell}
+            title={isPt ? 'Notificações' : 'Notifications'}
+            description={isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
+          />
+
+          <div className="mt-4 space-y-2">
+            <NotificationRow
+              icon={BellRing}
+              title={isPt ? 'Notificações por e-mail' : 'Email notifications'}
+              description={isPt ? 'Receba atualizações importantes por e-mail' : 'Receive important updates by email'}
               checked={notifications.email}
-              onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, email: checked }))}
+              onChange={(v) => setNotifications(prev => ({ ...prev, email: v }))}
             />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-3">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isPt ? 'Tarefas e prazos' : 'Tasks and deadlines'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isPt ? 'Lembretes de tarefas e vencimentos' : 'Task and due date reminders'}
-                </p>
-              </div>
-            </div>
-            <Switch
+            <NotificationRow
+              icon={CalendarClock}
+              title={isPt ? 'Tarefas e prazos' : 'Tasks and deadlines'}
+              description={isPt ? 'Lembretes de tarefas e vencimentos' : 'Task and due date reminders'}
               checked={notifications.tasks}
-              onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, tasks: checked }))}
+              onChange={(v) => setNotifications(prev => ({ ...prev, tasks: v }))}
             />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-3">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isPt ? 'Convites de organização' : 'Organization invites'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isPt ? 'Notificações sobre novos convites' : 'Notifications about new invites'}
-                </p>
-              </div>
-            </div>
-            <Switch
+            <NotificationRow
+              icon={UserPlus}
+              title={isPt ? 'Convites de organização' : 'Organization invites'}
+              description={isPt ? 'Notificações sobre novos convites' : 'Notifications about new invites'}
               checked={notifications.invites}
-              onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, invites: checked }))}
+              onChange={(v) => setNotifications(prev => ({ ...prev, invites: v }))}
             />
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Data & Export Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Database className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">{isPt ? 'Dados e Exportação' : 'Data & Export'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Exporte seus dados ou limpe o cache local' : 'Export your data or clear local cache'}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-5 pb-6 space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-3">
-              <Download className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isPt ? 'Exportar dados' : 'Export data'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isPt ? 'Baixe todos os seus dados em formato JSON' : 'Download all your data in JSON format'}
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleExportData} disabled={exportLoading} className="gap-1.5">
-              <Download className="w-3.5 h-3.5" />
-              {isPt ? 'Exportar' : 'Export'}
-            </Button>
-          </div>
+        <div className="border-t border-border/40" />
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-3">
-              <Trash2 className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {isPt ? 'Limpar cache local' : 'Clear local cache'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isPt ? 'Remove dados temporários armazenados no navegador' : 'Remove temporary data stored in the browser'}
-                </p>
+        {/* ═══════════════════════════════════════ */}
+        {/* DATA SECTION */}
+        {/* ═══════════════════════════════════════ */}
+        <section>
+          <SectionHeader
+            icon={Database}
+            title={isPt ? 'Dados e Exportação' : 'Data & Export'}
+            description={isPt ? 'Exporte seus dados ou limpe o cache local' : 'Export your data or clear local cache'}
+          />
+
+          <div className="mt-4 space-y-3">
+            {/* Export */}
+            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <HardDriveDownload className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {isPt ? 'Exportar dados' : 'Export data'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isPt ? 'Baixe todos os seus dados em JSON' : 'Download all your data in JSON format'}
+                  </p>
+                </div>
               </div>
+              <Button variant="outline" size="sm" onClick={handleExportData} disabled={exportLoading} className="gap-1.5 rounded-xl h-9 px-4 font-semibold">
+                <Download className="w-3.5 h-3.5" />
+                {exportLoading ? (isPt ? 'Exportando...' : 'Exporting...') : (isPt ? 'Exportar' : 'Export')}
+              </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={handleClearCache} className="gap-1.5 text-destructive hover:text-destructive">
-              <Trash2 className="w-3.5 h-3.5" />
-              {isPt ? 'Limpar' : 'Clear'}
-            </Button>
+
+            {/* Clear cache */}
+            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {isPt ? 'Limpar cache local' : 'Clear local cache'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isPt ? 'Remove dados temporários do navegador' : 'Remove temporary data from the browser'}
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleClearCache} className="gap-1.5 rounded-xl h-9 px-4 font-semibold text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive/40">
+                <Trash2 className="w-3.5 h-3.5" />
+                {isPt ? 'Limpar' : 'Clear'}
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </section>
+
+      </div>
     </div>
   );
 };
+
+/* ─── Section Header ─── */
+const SectionHeader = ({ icon: Icon, title, description }: { icon: any; title: string; description: string }) => (
+  <div className="flex items-center gap-3">
+    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+      <Icon className="w-4.5 h-4.5 text-primary" />
+    </div>
+    <div>
+      <h2 className="text-base font-bold text-foreground">{title}</h2>
+      <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+    </div>
+  </div>
+);
+
+/* ─── Notification Row ─── */
+const NotificationRow = ({
+  icon: Icon,
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  icon: any;
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) => (
+  <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+    <div className="flex items-center gap-3">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? 'bg-primary/10' : 'bg-muted'}`}>
+        <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+      </div>
+    </div>
+    <Switch checked={checked} onCheckedChange={onChange} />
+  </div>
+);
 
 export default SettingsPage;
