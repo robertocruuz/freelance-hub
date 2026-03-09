@@ -40,6 +40,7 @@ interface KanbanTask {
 
 interface TimeEntry {
   id: string;
+  user_id: string;
   client_id: string | null;
   project_id: string | null;
   task_id: string | null;
@@ -47,6 +48,12 @@ interface TimeEntry {
   start_time: string;
   end_time: string | null;
   duration: number | null;
+}
+
+interface ProfileInfo {
+  user_id: string;
+  name: string | null;
+  email: string | null;
 }
 
 type ViewMode = 'calendar' | 'list' | 'timesheet' | 'report';
@@ -142,6 +149,7 @@ const TimeTrackingPage = () => {
   const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer } = timer;
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [profiles, setProfiles] = useState<ProfileInfo[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -322,6 +330,11 @@ const TimeTrackingPage = () => {
     }
   };
 
+  const loadProfiles = useCallback(async () => {
+    const { data } = await supabase.from('profiles').select('user_id, name, email');
+    if (data) setProfiles(data as ProfileInfo[]);
+  }, []);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
@@ -350,6 +363,16 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
+  useEffect(() => { loadProfiles(); }, [loadProfiles]);
+
+  const getProfileName = useCallback((userId: string) => {
+    if (userId === user?.id) {
+      const myProfile = profiles.find(p => p.user_id === userId);
+      return myProfile?.name || 'Eu';
+    }
+    const profile = profiles.find(p => p.user_id === userId);
+    return profile?.name || profile?.email || 'Desconhecido';
+  }, [profiles, user]);
 
   // Drag effect — must be after loadEntries is declared
   useEffect(() => {
@@ -1970,6 +1993,7 @@ const TimeTrackingPage = () => {
                           </th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Projeto</th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Cliente</th>
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium">Usuário</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Registros</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Horas</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">%</th>
@@ -2008,6 +2032,7 @@ const TimeTrackingPage = () => {
                                   </div>
                                 </td>
                                 <td className="py-2.5 px-3 text-muted-foreground">{client?.name || '—'}</td>
+                                <td className="py-2.5 px-3 text-muted-foreground">—</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{projEntries.length}</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{p.hours}h</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{pct}%</td>
@@ -2022,13 +2047,15 @@ const TimeTrackingPage = () => {
                                 return (
                                   <tr key={entry.id} className="border-b border-border/10 bg-muted/10 hover:bg-muted/30 transition-colors">
                                     <td className="py-2 px-3"></td>
-                                    <td className="py-2 px-3" colSpan={2}>
+                                    <td className="py-2 px-3">
                                       <div className="flex items-center gap-2 pl-4">
                                         <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
                                         <span className="text-foreground text-xs">{desc}</span>
                                         <span className="text-muted-foreground text-[10px]">· {dateStr}</span>
                                       </div>
                                     </td>
+                                    <td className="py-2 px-3"></td>
+                                    <td className="py-2 px-3 text-xs text-muted-foreground">{getProfileName((entry as any).user_id)}</td>
                                     <td className="py-2 px-3 text-right text-xs tabular-nums text-muted-foreground">{startStr} – {endStr}</td>
                                     <td className="py-2 px-3 text-right text-xs tabular-nums font-medium text-foreground">{dur}</td>
                                     <td className="py-2 px-3"></td>
@@ -2042,7 +2069,7 @@ const TimeTrackingPage = () => {
                       <tfoot>
                         <tr className="border-t-2 border-border">
                           <td className="py-2.5 px-3"></td>
-                          <td colSpan={2} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
+                          <td colSpan={3} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{filteredEntries.length}</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-bold text-foreground">{totalHours}h</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">100%</td>
