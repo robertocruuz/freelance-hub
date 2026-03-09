@@ -377,7 +377,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
           </div>
         </div>
         {isAdmin && (
-          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteLink(null); setInviteEmail(''); } }}>
+          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5 shrink-0">
                 <UserPlus className="w-3.5 h-3.5" />
