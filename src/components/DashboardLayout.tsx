@@ -71,10 +71,15 @@ const DashboardLayout = () => {
     fetchProfile();
 
     const fetchOrg = async () => {
-      const { data: member } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('status', 'accepted').single();
+      const { data: member } = await supabase.from('organization_members').select('organization_id, role').eq('user_id', user.id).eq('status', 'accepted').single();
       if (member) {
+        setUserOrgRole((member as any).role);
         const { data: org } = await supabase.from('organizations').select('trade_name, company_name').eq('id', member.organization_id).single();
         if (org) setOrgName(org.trade_name || org.company_name || '');
+      } else {
+        // User owns an org → they are admin
+        const { data: ownOrg } = await supabase.from('organizations').select('id').eq('user_id', user.id).single();
+        if (ownOrg) setUserOrgRole('admin');
       }
     };
     fetchOrg();
