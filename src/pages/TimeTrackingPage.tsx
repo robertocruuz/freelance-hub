@@ -173,6 +173,7 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [reportUserFilter, setReportUserFilter] = useState<string>('all');
   const [showCalendarSettings, setShowCalendarSettings] = useState(false);
   const [workHourStart, setWorkHourStart] = useState(() => {
     const saved = localStorage.getItem('tt_work_hour_start');
@@ -1418,16 +1419,24 @@ const TimeTrackingPage = () => {
         {viewMode === 'report' && (() => {
           const CHART_COLORS = ['hsl(280, 70%, 60%)', 'hsl(200, 80%, 55%)', 'hsl(150, 60%, 45%)', 'hsl(35, 90%, 55%)', 'hsl(340, 75%, 55%)', 'hsl(180, 60%, 45%)', 'hsl(60, 70%, 50%)', 'hsl(310, 60%, 55%)'];
 
-          const byProject = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const reportUsers = Array.from(new Set(filteredEntries.map(e => e.user_id))).map(uid => ({
+            id: uid,
+            name: getProfileName(uid),
+          }));
+          const reportEntries = reportUserFilter === 'all'
+            ? filteredEntries
+            : filteredEntries.filter(e => e.user_id === reportUserFilter);
+
+          const byProject = reportEntries.reduce<Record<string, number>>((acc, e) => {
             const name = getProjectName(e.project_id) || 'Sem projeto';
             acc[name] = (acc[name] || 0) + (e.duration || 0);
             return acc;
           }, {});
           const projectData = Object.entries(byProject).map(([name, seconds]) => ({
-            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null, filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.client_id),
+            name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(reportEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null, reportEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.client_id),
           }));
 
-          const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const byClient = reportEntries.reduce<Record<string, number>>((acc, e) => {
             // Use direct client_id first, fallback to project's client
             const directClient = e.client_id ? clients.find(c => c.id === e.client_id) : null;
             const proj = !directClient ? projects.find(p => p.id === e.project_id) : null;
@@ -1444,7 +1453,7 @@ const TimeTrackingPage = () => {
             })(),
           }));
 
-          const byDay = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const byDay = reportEntries.reduce<Record<string, number>>((acc, e) => {
             const d = new Date(e.start_time);
             const key = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
             acc[key] = (acc[key] || 0) + (e.duration || 0);
@@ -1454,7 +1463,8 @@ const TimeTrackingPage = () => {
             .map(([day, seconds]) => ({ day, hours: +(seconds / 3600).toFixed(2) }))
             .sort((a, b) => a.day.localeCompare(b.day));
 
-          const totalHours = (totalFiltered / 3600).toFixed(1);
+          const reportTotal = reportEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+          const totalHours = (reportTotal / 3600).toFixed(1);
 
 
           const handleExportPDF = async () => {
@@ -1468,7 +1478,7 @@ const TimeTrackingPage = () => {
             }
 
             // Use all entries when custom dates are set, otherwise use filtered by period
-            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...reportEntries];
             if (exportFilter === 'client' && exportClientId) {
               const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
               exportEntries = exportEntries.filter(e => e.project_id && clientProjectIds.includes(e.project_id));
@@ -1723,19 +1733,33 @@ const TimeTrackingPage = () => {
 
           return (
             <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Relatório de Tempo</h2>
-                  <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {filteredEntries.length} registros</p>
+                  <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {reportEntries.length} registros</p>
                 </div>
-                <button
-                  onClick={() => setShowExportPanel(!showExportPanel)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Exportar PDF
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExportPanel ? 'rotate-180' : ''}`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {reportUsers.length > 1 && (
+                    <select
+                      value={reportUserFilter}
+                      onChange={e => setReportUserFilter(e.target.value)}
+                      className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="all">Todos os membros</option>
+                      {reportUsers.map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    onClick={() => setShowExportPanel(!showExportPanel)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar PDF
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExportPanel ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
               </div>
 
               {showExportPanel && (() => {
@@ -1744,7 +1768,7 @@ const TimeTrackingPage = () => {
                   : projects;
 
                 // Live preview of what will be exported
-                let previewEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+                let previewEntries = (exportStartDate || exportEndDate) ? [...entries] : [...reportEntries];
                 if (exportFilter === 'client' && exportClientId) {
                   const ids = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
                   previewEntries = previewEntries.filter(e => e.project_id && ids.includes(e.project_id));
@@ -1910,7 +1934,7 @@ const TimeTrackingPage = () => {
                 );
               })()}
 
-              {filteredEntries.length === 0 ? (
+              {reportEntries.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p className="text-sm font-medium">Sem dados para o período selecionado</p>
@@ -2003,7 +2027,7 @@ const TimeTrackingPage = () => {
                       </thead>
                       <tbody>
                         {projectData.sort((a, b) => b.hours - a.hours).map((p, i) => {
-                          const projEntries = filteredEntries
+                          const projEntries = reportEntries
                             .filter(e => (getProjectName(e.project_id) || 'Sem projeto') === p.name)
                             .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
                           const proj = projects.find(pr => pr.name === p.name);
@@ -2072,7 +2096,7 @@ const TimeTrackingPage = () => {
                         <tr className="border-t-2 border-border">
                           <td className="py-2.5 px-3"></td>
                           <td colSpan={3} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
-                          <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{filteredEntries.length}</td>
+                          <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{reportEntries.length}</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-bold text-foreground">{totalHours}h</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">100%</td>
                         </tr>
