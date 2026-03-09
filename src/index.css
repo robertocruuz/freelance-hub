@@ -97,14 +97,14 @@
     --input: 225 15% 18%;
     --ring: 225 100% 55%;
 
-    --sidebar-background: 225 40% 12%;
-    --sidebar-foreground: 220 15% 75%;
-    --sidebar-primary: 80 70% 45%;
-    --sidebar-primary-foreground: 225 100% 10%;
-    --sidebar-accent: 225 30% 18%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 225 20% 16%;
-    --sidebar-ring: 80 70% 45%;
+    --sidebar-background: 225 25% 10%;
+    --sidebar-foreground: 220 15% 80%;
+    --sidebar-primary: 225 100% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 25% 15%;
+    --sidebar-accent-foreground: 220 15% 92%;
+    --sidebar-border: 225 20% 14%;
+    --sidebar-ring: 225 100% 55%;
 
     /* Landing page tokens */
     --landing-hero: 225 100% 35%;
