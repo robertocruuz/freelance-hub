@@ -845,7 +845,7 @@ const ProjectsPage = () => {
                               <Tabs defaultValue="items">
                                 <TabsList className="mb-3 h-9">
                                   <TabsTrigger value="items" className="text-xs gap-1.5 rounded-lg">
-                                    <Package className="w-3.5 h-3.5" /> Itens
+                                    <ListChecks className="w-3.5 h-3.5" /> Itens
                                   </TabsTrigger>
                                   <TabsTrigger value="files" className="text-xs gap-1.5 rounded-lg">
                                     <Link2 className="w-3.5 h-3.5" /> Arquivos
