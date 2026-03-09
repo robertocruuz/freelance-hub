@@ -168,21 +168,20 @@ export default function AvatarUploadModal({ open, onOpenChange, userId, currentU
           {isCropping ? (
             /* ── Crop view ── */
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border overflow-hidden bg-muted/30">
+              <div className="rounded-2xl border border-border overflow-hidden bg-muted/30 flex items-center justify-center">
                 <ReactCrop
                   crop={crop}
                   onChange={(c) => setCrop(c)}
                   aspect={1}
                   circularCrop
-                  className="max-w-full [&_.ReactCrop__crop-selection]:!border-2 [&_.ReactCrop__crop-selection]:!border-primary"
+                  className="block [&_.ReactCrop__crop-selection]:!border-2 [&_.ReactCrop__crop-selection]:!border-primary"
                 >
                   <img
                     ref={imgRef}
                     src={imgSrc}
                     alt="Crop"
                     onLoad={onImageLoad}
-                    className="max-w-full"
-                    style={{ maxHeight: 320 }}
+                    className="block max-w-full max-h-80"
                   />
                 </ReactCrop>
               </div>
