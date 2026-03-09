@@ -1463,7 +1463,8 @@ const TimeTrackingPage = () => {
             .map(([day, seconds]) => ({ day, hours: +(seconds / 3600).toFixed(2) }))
             .sort((a, b) => a.day.localeCompare(b.day));
 
-          const totalHours = (totalFiltered / 3600).toFixed(1);
+          const reportTotal = reportEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+          const totalHours = (reportTotal / 3600).toFixed(1);
 
 
           const handleExportPDF = async () => {
