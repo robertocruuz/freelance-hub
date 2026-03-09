@@ -149,6 +149,7 @@ const TimeTrackingPage = () => {
   const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer } = timer;
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [profiles, setProfiles] = useState<ProfileInfo[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
