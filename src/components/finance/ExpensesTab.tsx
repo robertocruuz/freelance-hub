@@ -153,7 +153,7 @@ export default function ExpensesTab() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm text-foreground truncate">{e.description}</p>
                     <Badge variant="outline" className="text-[10px]">{EXPENSE_CATEGORIES.find(c => c.value === e.category)?.label || e.category}</Badge>
-                    <Badge className={cn('text-[10px]', statusColors[e.status])}>{statusLabels[e.status] || e.status}</Badge>
+                    <StatusBadge status={e.status} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {e.due_date && <span>Vence: {format(new Date(e.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>}
