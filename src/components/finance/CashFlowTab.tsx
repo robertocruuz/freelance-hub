@@ -1,12 +1,21 @@
 import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react';
 
-const PIE_COLORS = ['hsl(225,100%,50%)', 'hsl(80,85%,55%)', 'hsl(0,72%,51%)', 'hsl(220,15%,60%)', 'hsl(45,93%,47%)', 'hsl(280,60%,55%)', 'hsl(170,60%,45%)'];
+const PIE_COLORS = [
+  'hsl(225, 100%, 50%)',
+  'hsl(80, 85%, 45%)',
+  'hsl(0, 72%, 51%)',
+  'hsl(45, 93%, 47%)',
+  'hsl(280, 60%, 55%)',
+  'hsl(170, 60%, 45%)',
+  'hsl(220, 15%, 60%)',
+];
 
 interface Props {
   invoices: FinanceInvoice[];
@@ -22,6 +31,8 @@ export default function CashFlowTab({ invoices }: Props) {
   const totalPayable = expenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
   const totalReceived = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
   const totalPaid = expenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+  const projectedBalance = totalReceivable - totalPayable;
+  const currentBalance = totalReceived - totalPaid;
 
   const barData = months.map(month => {
     const key = format(month, 'yyyy-MM');
@@ -31,7 +42,7 @@ export default function CashFlowTab({ invoices }: Props) {
     const saidas = expenses
       .filter(e => e.status === 'paid' && e.paid_date && e.paid_date.startsWith(key))
       .reduce((s, e) => s + e.amount, 0);
-    return { name: format(month, 'MMM', { locale: ptBR }), Entradas: entradas, Saídas: saidas };
+    return { name: format(month, 'MMM', { locale: ptBR }), Entradas: entradas, Saídas: saidas, Saldo: entradas - saidas };
   });
 
   const categoryData = EXPENSE_CATEGORIES.map(cat => {
@@ -39,61 +50,138 @@ export default function CashFlowTab({ invoices }: Props) {
     return { name: cat.label, value: total };
   }).filter(d => d.value > 0);
 
+  const summaryItems = [
+    { label: 'A receber', value: totalReceivable, icon: TrendingUp, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { label: 'A pagar', value: totalPayable, icon: TrendingDown, color: 'text-destructive', bgColor: 'bg-destructive/10' },
+    { label: 'Saldo previsto', value: projectedBalance, icon: Wallet, color: projectedBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: projectedBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
+    { label: 'Saldo atual', value: currentBalance, icon: PiggyBank, color: currentBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: currentBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
+  ];
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload) return null;
+    return (
+      <div className="rounded-lg border bg-card p-3 shadow-lg">
+        <p className="text-xs font-semibold text-foreground mb-1.5 capitalize">{label}</p>
+        {payload.map((p: any, i: number) => (
+          <div key={i} className="flex items-center gap-2 text-xs">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+            <span className="text-muted-foreground">{p.name}:</span>
+            <span className="font-semibold text-foreground">{formatCurrency(p.value)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard label="Total a receber" value={formatCurrency(totalReceivable)} className="text-primary" />
-        <SummaryCard label="Total a pagar" value={formatCurrency(totalPayable)} className="text-destructive" />
-        <SummaryCard label="Saldo previsto" value={formatCurrency(totalReceivable - totalPayable)} className="text-foreground" />
-        <SummaryCard label="Saldo atual" value={formatCurrency(totalReceived - totalPaid)} className="text-foreground" />
+    <div className="space-y-5">
+      {/* Balance summary strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {summaryItems.map(item => (
+          <div key={item.label} className="flex items-center gap-3 rounded-xl border bg-card p-3.5 transition-all hover:shadow-sm">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.bgColor}`}>
+              <item.icon className={`w-4 h-4 ${item.color}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
+              <p className={`text-sm font-bold truncate ${item.color}`}>{formatCurrency(item.value)}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Entradas vs Saídas</CardTitle></CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" fontSize={12} />
-                <YAxis fontSize={12} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v: number) => formatCurrency(v)} />
-                <Bar dataKey="Entradas" fill="hsl(225,100%,50%)" radius={[4,4,0,0]} />
-                <Bar dataKey="Saídas" fill="hsl(0,72%,51%)" radius={[4,4,0,0]} />
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Main bar chart - takes 2 cols */}
+        <Card className="lg:col-span-2 overflow-hidden">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
+            <CardDescription className="text-xs">Últimos 6 meses</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={barData} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} className="capitalize" />
+                <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={40} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="Entradas" fill="hsl(225, 100%, 50%)" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="Saídas" fill="hsl(0, 72%, 51%)" radius={[6, 6, 0, 0]} maxBarSize={32} opacity={0.75} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Despesas por Categoria</CardTitle></CardHeader>
-          <CardContent>
+        {/* Pie chart */}
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-sm font-bold">Despesas por Categoria</CardTitle>
+            <CardDescription className="text-xs">Distribuição geral</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
             {categoryData.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-12">Nenhuma despesa registrada.</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <PiggyBank className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Nenhuma despesa</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">Registre despesas para ver o gráfico</p>
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
-                  <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
+                  <Pie
+                    data={categoryData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="45%"
+                    outerRadius={75}
+                    innerRadius={45}
+                    strokeWidth={2}
+                    stroke="hsl(var(--card))"
+                    paddingAngle={3}
+                  >
                     {categoryData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value: string) => <span className="text-[11px] text-muted-foreground">{value}</span>}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
 
-function SummaryCard({ label, value, className }: { label: string; value: string; className?: string }) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={`text-lg font-bold ${className}`}>{value}</p>
-      </CardContent>
-    </Card>
+      {/* Trend line */}
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-sm font-bold">Evolução do Saldo</CardTitle>
+          <CardDescription className="text-xs">Saldo mensal (entradas - saídas)</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={barData}>
+              <defs>
+                <linearGradient id="saldoGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(225, 100%, 50%)" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="hsl(225, 100%, 50%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={40} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="Saldo" stroke="hsl(225, 100%, 50%)" fill="url(#saldoGrad)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(225, 100%, 50%)', strokeWidth: 2, stroke: 'hsl(var(--card))' }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
