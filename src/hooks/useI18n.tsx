@@ -12,7 +12,7 @@ const translations = {
     passwordGenerator: 'Gerador de Senhas',
     budgets: 'Orçamentos',
     tasks: 'Tarefas',
-    timeTracking: 'Time Tracking',
+    timeTracking: 'Cronômetro',
     invoices: 'Faturas',
     profile: 'Perfil',
     settings: 'Configurações',
