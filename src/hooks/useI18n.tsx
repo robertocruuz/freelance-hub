@@ -110,6 +110,7 @@ const translations = {
     register: 'Sign up',
     passwordGenerator: 'Password Generator',
     budgets: 'Budgets',
+    tasks: 'Tasks',
     timeTracking: 'Time Tracking',
     invoices: 'Invoices',
     profile: 'Profile',
