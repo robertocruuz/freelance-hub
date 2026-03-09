@@ -353,13 +353,65 @@ const TimeTrackingPage = () => {
 
   const loadEntries = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('time_entries')
-      .select('*')
-      .order('start_time', { ascending: false })
-      .limit(200);
-    if (data) setEntries(data as TimeEntry[]);
-  }, [user]);
+
+    // Fetch entries for the currently selected period.
+    // This avoids missing records when the period contains more than the previously fetched fixed limit.
+    const computeRange = () => {
+      if (timeRange === 'daily') {
+        const start = new Date(selectedDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        return { start, end };
+      }
+
+      if (timeRange === 'weekly') {
+        const start = new Date(selectedDate);
+        const day = start.getDay();
+        const diff = day === 0 ? -6 : 1 - day; // Monday start
+        start.setDate(start.getDate() + diff);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 7);
+        return { start, end };
+      }
+
+      // monthly
+      const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
+      return { start, end };
+    };
+
+    const { start, end } = computeRange();
+    const startIso = start.toISOString();
+    const endIso = end.toISOString();
+
+    const PAGE_SIZE = 1000;
+    const HARD_CAP = 10000; // safety cap
+    const all: TimeEntry[] = [];
+
+    for (let from = 0; from < HARD_CAP; from += PAGE_SIZE) {
+      const to = from + PAGE_SIZE - 1;
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .gte('start_time', startIso)
+        .lt('start_time', endIso)
+        .order('start_time', { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        toast.error(error.message);
+        break;
+      }
+
+      const batch = (data || []) as TimeEntry[];
+      all.push(...batch);
+      if (batch.length < PAGE_SIZE) break;
+    }
+
+    setEntries(all);
+  }, [user, timeRange, selectedDate]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
