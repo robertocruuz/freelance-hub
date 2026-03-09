@@ -110,6 +110,12 @@ const DashboardLayout = () => {
   const isActive = (path: string) =>
     path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === path;
 
+  const isAdminUser = userOrgRole === 'admin' || userOrgRole === null; // null = no org, show all
+  const filteredNavItems = navItems.filter(item => {
+    if (item.key === 'finance' && !isAdminUser) return false;
+    return true;
+  });
+
   const SidebarNav = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
