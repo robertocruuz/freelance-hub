@@ -46,8 +46,10 @@ const DashboardLayout = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userExpanded, setUserExpanded] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
+  const [orgName, setOrgName] = useState('');
 
   useEffect(() => {
     if (!user) return;
