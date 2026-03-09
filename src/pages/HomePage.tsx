@@ -203,8 +203,8 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ═══ Calendário de Tarefas — compact ═══ */}
-        <div className={`${cardBase} md:col-span-6 xl:col-span-4 p-4 cursor-default`} onClick={undefined}>
+        {/* ═══ Calendário de Tarefas — compacto ═══ */}
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-3 cursor-default`} onClick={undefined}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </div>
 
@@ -462,44 +462,44 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
   const selectedTasks = selectedDay ? tasksByDate[selectedDay] || [] : [];
 
   return (
-    <div>
+    <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <CalendarDays className="w-4 h-4 text-primary" />
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <CalendarDays className="w-3.5 h-3.5 text-primary" />
           </div>
           <div>
-            <span className="font-bold text-foreground text-sm">{isPt ? 'Calendário' : 'Calendar'}</span>
-            <p className="text-[10px] text-muted-foreground capitalize leading-none mt-0.5">
+            <span className="font-bold text-foreground text-xs">{isPt ? 'Calendário' : 'Calendar'}</span>
+            <p className="text-[9px] text-muted-foreground capitalize leading-none mt-0.5">
               {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
-          <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="w-3.5 h-3.5" />
+          <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-5 h-5 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="w-3 h-3" />
           </button>
-          <button onClick={() => setCurrentMonth(new Date())} className="text-[10px] font-semibold px-1.5 py-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => setCurrentMonth(new Date())} className="text-[9px] font-semibold px-1 py-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             {isPt ? 'Hoje' : 'Today'}
           </button>
-          <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronRight className="w-3.5 h-3.5" />
+          <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-5 h-5 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronRight className="w-3 h-3" />
           </button>
         </div>
       </div>
 
       {/* Week day headers */}
-      <div className="grid grid-cols-7 gap-px mb-0.5">
+      <div className="grid grid-cols-7 gap-0.5 mb-0.5">
         {weekDays.map(d => (
-          <div key={d} className="text-center text-[9px] font-semibold text-muted-foreground/50 py-0.5">{d.charAt(0)}</div>
+          <div key={d} className="text-center text-[8px] font-semibold text-muted-foreground/50 py-0.5">{d.charAt(0)}</div>
         ))}
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-px">
+      <div className="grid grid-cols-7 gap-0.5">
         {Array.from({ length: leadingBlanks }).map((_, i) => (
-          <div key={`blank-${i}`} className="aspect-square" />
+          <div key={`blank-${i}`} className="h-7" />
         ))}
         {days.map(day => {
           const dateStr = format(day, 'yyyy-MM-dd');
@@ -511,15 +511,15 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
             <button
               key={dateStr}
               onClick={() => setSelectedDay(isSelected ? null : dateStr)}
-              className={`aspect-square rounded flex flex-col items-center justify-center relative transition-all
+              className={`h-7 rounded flex flex-col items-center justify-center relative transition-all
                 ${today ? 'bg-primary text-primary-foreground font-bold' : 'hover:bg-muted text-foreground'}
                 ${isSelected && !today ? 'bg-primary/10 ring-1 ring-primary' : ''}
               `}
             >
-              <span className={`text-[11px] leading-none ${today ? 'font-bold' : 'font-medium'}`}>{format(day, 'd')}</span>
+              <span className={`text-[10px] leading-none ${today ? 'font-bold' : 'font-medium'}`}>{format(day, 'd')}</span>
               {dayTasks.length > 0 && (
-                <div className="flex gap-[2px] mt-[2px]">
-                  {dayTasks.slice(0, 3).map((task, i) => (
+                <div className="flex gap-[2px] mt-[1px]">
+                  {dayTasks.slice(0, 2).map((task, i) => (
                     <span key={i} className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/70' : (priorityColor[task.priority] || 'bg-primary')}`} />
                   ))}
                 </div>
@@ -531,23 +531,23 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
 
       {/* Selected day tasks */}
       {selectedDay && (
-        <div className="mt-2 pt-2 border-t border-border">
-          <span className="text-[10px] font-semibold text-muted-foreground mb-1.5 block">
+        <div className="mt-1.5 pt-1.5 border-t border-border">
+          <span className="text-[10px] font-semibold text-muted-foreground mb-1 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
             {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
           </span>
           {selectedTasks.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground/60">{isPt ? 'Nenhuma tarefa neste dia' : 'No tasks on this day'}</p>
+            <p className="text-[10px] text-muted-foreground/60">{isPt ? 'Nenhuma tarefa neste dia' : 'No tasks on this day'}</p>
           ) : (
-            <div className="space-y-1 max-h-24 overflow-y-auto">
+            <div className="space-y-1 max-h-20 overflow-y-auto">
               {selectedTasks.map(task => (
                 <button
                   key={task.id}
                   onClick={() => navigate('/dashboard/kanban')}
-                  className="w-full flex items-center gap-2 rounded bg-muted/50 hover:bg-muted px-2 py-1.5 transition-colors text-left"
+                  className="w-full flex items-center gap-2 rounded bg-muted/50 hover:bg-muted px-2 py-1 transition-colors text-left"
                 >
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityColor[task.priority] || 'bg-primary'}`} />
-                  <span className="text-[11px] font-medium text-foreground truncate">{task.title}</span>
+                  <span className="text-[10px] font-medium text-foreground truncate">{task.title}</span>
                   {task.status === 'done' && (
                     <span className="ml-auto text-[9px] font-semibold text-green-600 dark:text-green-400 shrink-0">✓</span>
                   )}
