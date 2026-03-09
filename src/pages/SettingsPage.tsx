@@ -1,4 +1,5 @@
 import { useI18n } from '@/hooks/useI18n';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTheme } from '@/hooks/useTheme';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -11,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -197,59 +198,47 @@ const SettingsPage = () => {
 
         <div className="border-t border-border/40" />
 
-        {/* ═══════════════════════════════════════ */}
-        {/* DATA SECTION */}
-        {/* ═══════════════════════════════════════ */}
         <section>
-          <SectionHeader
-            icon={Database}
-            title={isPt ? 'Dados e Exportação' : 'Data & Export'}
-            description={isPt ? 'Exporte seus dados ou limpe o cache local' : 'Export your data or clear local cache'}
-          />
-
-          <div className="mt-4 space-y-3">
-            {/* Export */}
-            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <HardDriveDownload className="w-4 h-4 text-primary" />
+          <Collapsible>
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center justify-between group">
+                <SectionHeader
+                  icon={Database}
+                  title={isPt ? 'Dados e Exportação' : 'Data & Export'}
+                  description={isPt ? 'Exporte seus dados ou limpe o cache local' : 'Export your data or clear local cache'}
+                />
+                <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-4 rounded-2xl border border-border/60 bg-card divide-y divide-border/40">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <HardDriveDownload className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-medium text-foreground">
+                      {isPt ? 'Exportar dados' : 'Export data'}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleExportData} disabled={exportLoading} className="gap-1.5 rounded-xl h-8 px-3 text-xs font-semibold">
+                    <Download className="w-3.5 h-3.5" />
+                    {exportLoading ? (isPt ? 'Exportando...' : 'Exporting...') : (isPt ? 'Exportar' : 'Export')}
+                  </Button>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {isPt ? 'Exportar dados' : 'Export data'}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {isPt ? 'Baixe todos os seus dados em JSON' : 'Download all your data in JSON format'}
-                  </p>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                    <p className="text-sm font-medium text-foreground">
+                      {isPt ? 'Limpar cache local' : 'Clear local cache'}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleClearCache} className="gap-1.5 rounded-xl h-8 px-3 text-xs font-semibold text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive/40">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {isPt ? 'Limpar' : 'Clear'}
+                  </Button>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={handleExportData} disabled={exportLoading} className="gap-1.5 rounded-xl h-9 px-4 font-semibold">
-                <Download className="w-3.5 h-3.5" />
-                {exportLoading ? (isPt ? 'Exportando...' : 'Exporting...') : (isPt ? 'Exportar' : 'Export')}
-              </Button>
-            </div>
-
-            {/* Clear cache */}
-            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {isPt ? 'Limpar cache local' : 'Clear local cache'}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {isPt ? 'Remove dados temporários do navegador' : 'Remove temporary data from the browser'}
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleClearCache} className="gap-1.5 rounded-xl h-9 px-4 font-semibold text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive/40">
-                <Trash2 className="w-3.5 h-3.5" />
-                {isPt ? 'Limpar' : 'Clear'}
-              </Button>
-            </div>
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
         </section>
 
       </div>
