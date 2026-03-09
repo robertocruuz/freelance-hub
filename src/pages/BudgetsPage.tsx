@@ -727,14 +727,9 @@ const BudgetsPage = () => {
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-semibold text-foreground truncate">
-                                    {b.name || b.client_name || 'Sem nome'}
-                                  </p>
-                                  <Badge className={cn(statusColors[b.status], "text-[10px] px-1.5 py-0 h-5 shrink-0")}>
-                                    {statusLabel(b.status)}
-                                  </Badge>
-                                </div>
+                                <p className="font-semibold text-foreground truncate">
+                                  {b.name || b.client_name || 'Sem nome'}
+                                </p>
                                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                   {b.client_name && b.name && (
                                     <span className="text-xs text-muted-foreground">{b.client_name}</span>
