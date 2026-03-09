@@ -169,7 +169,7 @@ export default function CashFlowTab({ invoices }: Props) {
                   <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
                       mode="range"
-                      selected={{ from: startDate, to: endDate }}
+                      selected={barRange}
                       onSelect={(range: DateRange | undefined) => {
                         if (range) setBarRange(range);
                       }}
