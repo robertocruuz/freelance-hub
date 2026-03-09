@@ -63,6 +63,7 @@ const ProfilePage = () => {
         const d = data as any;
         setProfile({ name: d.name || '', email: d.email || user.email || '', document: d.document || '', phone: d.phone || '' });
         setEditForm({ name: d.name || '', document: d.document || '', phone: d.phone || '' });
+        setAvatarUrl(d.avatar_url || null);
       } else {
         setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '', phone: '' });
         setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
