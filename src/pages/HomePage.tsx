@@ -368,6 +368,11 @@ const HomePage = () => {
           )}
         </div>
 
+        {/* ═══ Calendário de Tarefas ═══ */}
+        <div className={`${cardBase} md:col-span-6 xl:col-span-6 p-5 cursor-default`} onClick={undefined}>
+          <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
+        </div>
+
       </div>
     </div>
   );
