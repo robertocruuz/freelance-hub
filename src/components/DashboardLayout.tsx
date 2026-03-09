@@ -103,7 +103,7 @@ const DashboardLayout = () => {
   const SidebarNav = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className={cn('flex items-center shrink-0 border-b border-sidebar-border', collapsed && !isMobile ? 'justify-center h-16' : 'gap-3 px-5 h-16')}>
+      <div className={cn('flex items-center shrink-0', collapsed && !isMobile ? 'justify-center h-16' : 'gap-3 px-5 h-16')}>
         <button onClick={() => { navigate('/dashboard'); if (isMobile) setMobileOpen(false); }} className="flex items-center gap-3 group">
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
             <span className="text-primary-foreground font-black text-sm">F</span>
