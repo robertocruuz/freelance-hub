@@ -44,12 +44,12 @@ const HomePage = () => {
       if (!user) return;
       setLoading(true);
       const [clients, budgets, projects, tasks, timeEntries, invoices] = await Promise.all([
-        supabase.from('clients').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('budgets').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('projects').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('tasks').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('time_entries').select('*').eq('user_id', user.id).order('start_time', { ascending: false }),
-        supabase.from('invoices').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('clients').select('*').order('created_at', { ascending: false }),
+        supabase.from('budgets').select('*').order('created_at', { ascending: false }),
+        supabase.from('projects').select('*').order('created_at', { ascending: false }),
+        supabase.from('tasks').select('*').order('created_at', { ascending: false }),
+        supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
+        supabase.from('invoices').select('*').order('created_at', { ascending: false }),
       ]);
       setData({
         clients: clients.data || [],
