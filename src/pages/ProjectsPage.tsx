@@ -120,6 +120,89 @@ const ProjectsPage = () => {
   // Track which project items already have tasks created
   const [existingTaskKeys, setExistingTaskKeys] = useState<Set<string>>(new Set());
 
+  // Project files state
+  interface ProjectFile {
+    id: string;
+    project_id: string;
+    name: string;
+    url: string;
+    file_type: string;
+    description: string | null;
+    created_at: string;
+  }
+  const [projectFiles, setProjectFiles] = useState<Record<string, ProjectFile[]>>({});
+  const [showFileForm, setShowFileForm] = useState<string | null>(null);
+  const [fileName, setFileName] = useState('');
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileType, setFileType] = useState<'file' | 'folder'>('file');
+  const [fileDescription, setFileDescription] = useState('');
+  const [editingFileId, setEditingFileId] = useState<string | null>(null);
+
+  const loadFiles = useCallback(async (projectId: string) => {
+    const { data } = await supabase
+      .from('project_files')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+    if (data) {
+      setProjectFiles(prev => ({ ...prev, [projectId]: data as ProjectFile[] }));
+    }
+  }, []);
+
+  const resetFileForm = () => {
+    setFileName('');
+    setFileUrl('');
+    setFileType('file');
+    setFileDescription('');
+    setEditingFileId(null);
+    setShowFileForm(null);
+  };
+
+  const handleSaveFile = async (projectId: string) => {
+    if (!user || !fileName.trim() || !fileUrl.trim()) return;
+    if (editingFileId) {
+      const { error } = await supabase.from('project_files').update({
+        name: fileName.trim(),
+        url: fileUrl.trim(),
+        file_type: fileType,
+        description: fileDescription.trim() || null,
+      }).eq('id', editingFileId);
+      if (error) return toast.error(error.message);
+      toast.success('Arquivo atualizado!');
+    } else {
+      const { error } = await supabase.from('project_files').insert({
+        project_id: projectId,
+        user_id: user.id,
+        name: fileName.trim(),
+        url: fileUrl.trim(),
+        file_type: fileType,
+        description: fileDescription.trim() || null,
+      });
+      if (error) return toast.error(error.message);
+      toast.success('Arquivo adicionado!');
+    }
+    resetFileForm();
+    loadFiles(projectId);
+  };
+
+  const handleDeleteFile = async (file: ProjectFile) => {
+    const { error } = await supabase.from('project_files').delete().eq('id', file.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Arquivo removido!');
+      loadFiles(file.project_id);
+    }
+  };
+
+  const handleEditFile = (file: ProjectFile) => {
+    setEditingFileId(file.id);
+    setFileName(file.name);
+    setFileUrl(file.url);
+    setFileType(file.file_type as 'file' | 'folder');
+    setFileDescription(file.description || '');
+    setShowFileForm(file.project_id);
+  };
+
   const loadExistingTasks = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('tasks').select('title, project_id').not('project_id', 'is', null);
