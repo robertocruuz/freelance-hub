@@ -1739,14 +1739,6 @@ const TimeTrackingPage = () => {
                   <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {reportEntries.length} registros</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <select
-                    value={reportUserFilter}
-                    onChange={e => setReportUserFilter(e.target.value)}
-                    className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="me">Somente eu</option>
-                    <option value="all">Todos</option>
-                  </select>
                   <button
                     onClick={() => setShowExportPanel(!showExportPanel)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
