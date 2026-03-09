@@ -274,25 +274,18 @@ const SectionHeader = ({ icon: Icon, title, description }: { icon: any; title: s
 const NotificationRow = ({
   icon: Icon,
   title,
-  description,
   checked,
   onChange,
 }: {
   icon: any;
   title: string;
-  description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
 }) => (
-  <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+  <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
     <div className="flex items-center gap-3">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? 'bg-primary/10' : 'bg-muted'}`}>
-        <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-      </div>
+      <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
+      <p className="text-sm font-medium text-foreground">{title}</p>
     </div>
     <Switch checked={checked} onCheckedChange={onChange} />
   </div>
