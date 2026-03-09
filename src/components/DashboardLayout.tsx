@@ -62,7 +62,15 @@ const DashboardLayout = () => {
         setUserName(user.user_metadata?.name || '');
       }
     };
+    const fetchOrg = async () => {
+      const { data: member } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('status', 'accepted').single();
+      if (member) {
+        const { data: org } = await supabase.from('organizations').select('trade_name, company_name').eq('id', member.organization_id).single();
+        if (org) setOrgName(org.trade_name || org.company_name || '');
+      }
+    };
     fetchProfile();
+    fetchOrg();
   }, [user]);
 
   const handleLogout = async () => {
