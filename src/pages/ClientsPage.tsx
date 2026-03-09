@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { formatCurrency } from '@/lib/utils';
-import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink, X } from 'lucide-react';
+import { formatCurrency, cn } from '@/lib/utils';
+import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink, X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 interface Client {
@@ -36,13 +38,11 @@ const maskPhone = (v: string) => {
 const maskDocument = (v: string) => {
   const d = v.replace(/\D/g, '').slice(0, 14);
   if (d.length <= 11) {
-    // CPF: 000.000.000-00
     if (d.length <= 3) return d;
     if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
     if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
     return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
   }
-  // CNPJ: 00.000.000/0000-00
   if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
   return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
 };
@@ -66,6 +66,80 @@ const statusMap: Record<string, string> = { todo: 'A fazer', in_progress: 'Em an
 const translatePriority = (v: string) => priorityMap[v] || v;
 const translateStatus = (v: string) => statusMap[v] || v;
 
+// Shared dialog form component
+const ClientFormDialog = ({
+  open, onOpenChange, editing, t,
+  name, setName, email, setEmail, phone, setPhone,
+  document, setDocument, responsible, setResponsible,
+  color, setColor, onSave
+}: {
+  open: boolean; onOpenChange: (v: boolean) => void; editing: Client | null; t: any;
+  name: string; setName: (v: string) => void;
+  email: string; setEmail: (v: string) => void;
+  phone: string; setPhone: (v: string) => void;
+  document: string; setDocument: (v: string) => void;
+  responsible: string; setResponsible: (v: string) => void;
+  color: string | null; setColor: (v: string | null) => void;
+  onSave: () => void;
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{editing ? t.editClient : t.newClient}</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 mt-2">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Nome</label>
+          <Input placeholder={t.clientName} value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Responsável</label>
+          <Input placeholder="Nome do responsável" value={responsible} onChange={(e) => setResponsible(e.target.value)} className="rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Email</label>
+            <Input placeholder="email@exemplo.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Telefone</label>
+            <Input placeholder="(00) 00000-0000" value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} className="rounded-xl" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Documento (CPF/CNPJ)</label>
+          <Input placeholder="000.000.000-00" value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="rounded-xl" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Cor do cliente</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            {CLIENT_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(color === c ? null : c)}
+                className={cn(
+                  "w-7 h-7 rounded-full border-2 transition-all",
+                  color === c ? 'border-foreground scale-110 shadow-sm' : 'border-transparent hover:scale-105'
+                )}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-2 pt-2">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="flex-1 rounded-xl font-semibold">
+            {t.cancel}
+          </Button>
+          <Button onClick={onSave} className="flex-1 rounded-xl font-semibold">
+            {t.save}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+);
+
 const ClientsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -80,11 +154,11 @@ const ClientsPage = () => {
   const [document, setDocument] = useState('');
   const [responsible, setResponsible] = useState('');
   const [color, setColor] = useState<string | null>(null);
-  // 360° view
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+
   const loadClients = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -149,7 +223,6 @@ const ClientsPage = () => {
     else loadClients();
   };
 
-  // Load 360° details
   const loadClientDetails = useCallback(async (clientId: string) => {
     setLoadingDetails(true);
     const [projectsRes, tasksRes, invoicesRes, budgetsRes] = await Promise.all([
@@ -200,22 +273,47 @@ const ClientsPage = () => {
 
     return (
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-        <button onClick={() => { setSelectedClient(null); setDetails(null); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="w-4 h-4" /> Voltar aos clientes
+        <button
+          onClick={() => { setSelectedClient(null); setDetails(null); }}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+        >
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar aos clientes
         </button>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{selectedClient.name}</h1>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-              {selectedClient.email && <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1 hover:text-foreground transition-colors"><Mail className="w-3 h-3" />{selectedClient.email}</a>}
-              {selectedClient.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}</span>}
-              {selectedClient.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}</span>}
+        {/* Client header */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            {selectedClient.color && (
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-sm"
+                style={{ backgroundColor: selectedClient.color }}
+              >
+                {selectedClient.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{selectedClient.name}</h1>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                {selectedClient.responsible && (
+                  <span className="flex items-center gap-1"><User className="w-3 h-3" />{selectedClient.responsible}</span>
+                )}
+                {selectedClient.email && (
+                  <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1 hover:text-primary transition-colors">
+                    <Mail className="w-3 h-3" />{selectedClient.email}
+                  </a>
+                )}
+                {selectedClient.phone && (
+                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}</span>
+                )}
+                {selectedClient.document && (
+                  <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}</span>
+                )}
+              </div>
             </div>
           </div>
-          <button onClick={() => openEdit(selectedClient)} className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">
-            <Pencil className="w-3.5 h-3.5 inline mr-1" /> Editar
-          </button>
+          <Button variant="secondary" size="sm" className="rounded-xl gap-1.5 font-semibold" onClick={() => openEdit(selectedClient)}>
+            <Pencil className="w-3.5 h-3.5" /> Editar
+          </Button>
         </div>
 
         {loadingDetails ? (
@@ -224,42 +322,47 @@ const ClientsPage = () => {
           <>
             {/* Summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div onClick={() => navigate('/dashboard/projects')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
-                <FolderKanban className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-xl font-bold text-foreground">{details.projects.length}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Projetos</p>
-              </div>
-              <div onClick={() => navigate('/dashboard/kanban')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
-                <SquareKanban className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-xl font-bold text-foreground">{details.tasks.length}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tarefas</p>
-              </div>
-              <div onClick={() => navigate('/dashboard/time')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
-                <Clock className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-xl font-bold text-foreground">{formatDuration(totalHours)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Horas</p>
-              </div>
-              <div onClick={() => navigate('/dashboard/invoices')} className="p-4 rounded-2xl glass text-center cursor-pointer hover:border-primary/40 transition-colors border border-transparent">
-                <Receipt className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-xl font-bold text-foreground">R$ {totalInvoiced.toFixed(0)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Faturado</p>
-              </div>
+              {[
+                { icon: FolderKanban, value: details.projects.length, label: 'Projetos', route: '/dashboard/projects' },
+                { icon: SquareKanban, value: details.tasks.length, label: 'Tarefas', route: '/dashboard/kanban' },
+                { icon: Clock, value: formatDuration(totalHours), label: 'Horas', route: '/dashboard/time' },
+                { icon: Receipt, value: formatCurrency(totalInvoiced), label: 'Faturado', route: '/dashboard/finance' },
+              ].map(({ icon: Icon, value, label, route }) => (
+                <div
+                  key={label}
+                  onClick={() => navigate(route)}
+                  className="p-4 rounded-xl border border-border bg-card text-center cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all"
+                >
+                  <Icon className="w-5 h-5 mx-auto mb-1.5 text-primary" />
+                  <p className="text-lg font-bold text-foreground">{value}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{label}</p>
+                </div>
+              ))}
             </div>
 
             {/* Projects with expandable tasks */}
             {details.projects.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                  <FolderKanban className="w-4 h-4" /> Projetos
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                  <FolderKanban className="w-3.5 h-3.5" /> Projetos
+                  <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                    {details.projects.length}
+                  </span>
                 </h2>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {details.projects.map(p => {
                     const isExpanded = expandedProjects.has(p.id);
                     const projectTasks = details.tasks.filter(t => t.project_id === p.id);
                     return (
-                      <div key={p.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                      <div
+                        key={p.id}
+                        className={cn(
+                          "rounded-xl border border-border overflow-hidden transition-all duration-200",
+                          isExpanded ? "shadow-md bg-card" : "bg-card hover:shadow-sm"
+                        )}
+                      >
                         <div
-                          className="flex items-center justify-between p-3 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="flex items-center justify-between p-3 text-sm cursor-pointer group"
                           onClick={() => {
                             setExpandedProjects(prev => {
                               const next = new Set(prev);
@@ -268,29 +371,40 @@ const ClientsPage = () => {
                             });
                           }}
                         >
-                          <div className="flex items-center gap-2">
-                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
-                            <span className="font-medium">{p.name}</span>
+                          <div className="flex items-center gap-2.5">
+                            <div className={cn(
+                              "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                              isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
+                            )}>
+                              {isExpanded ? (
+                                <ChevronDown className="w-3.5 h-3.5 text-primary" />
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              )}
+                            </div>
+                            <span className="font-semibold text-foreground">{p.name}</span>
                             {projectTasks.length > 0 && (
-                              <Badge variant="secondary" className="text-[10px]">{projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}</Badge>
+                              <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                                {projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}
+                              </span>
                             )}
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); navigate('/dashboard/projects'); }}
-                            className="flex items-center gap-1 text-xs text-primary hover:underline"
+                            className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <ExternalLink className="w-3 h-3" /> Ver projeto
+                            <ExternalLink className="w-3 h-3" /> Ver
                           </button>
                         </div>
                         {isExpanded && projectTasks.length > 0 && (
-                          <div className="border-t border-border bg-muted/30">
+                          <div className="border-t border-border/50 animate-fade-in">
                             {projectTasks.map(task => (
-                              <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/50 last:border-b-0">
+                              <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/30 last:border-b-0 hover:bg-muted/30 transition-colors">
                                 <div className="flex items-center gap-2">
                                   <SquareKanban className="w-3 h-3 text-muted-foreground" />
-                                  <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors">{task.title}</button>
+                                  <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors font-medium">{task.title}</button>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                   <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
                                   <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
                                 </div>
@@ -299,7 +413,7 @@ const ClientsPage = () => {
                           </div>
                         )}
                         {isExpanded && projectTasks.length === 0 && (
-                          <div className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+                          <div className="border-t border-border/50 px-4 py-3 text-xs text-muted-foreground animate-fade-in">
                             Nenhuma tarefa neste projeto.
                           </div>
                         )}
@@ -315,15 +429,18 @@ const ClientsPage = () => {
               const orphanTasks = details.tasks.filter(t => !t.project_id);
               if (orphanTasks.length === 0) return null;
               return (
-                <div>
-                  <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                    <SquareKanban className="w-4 h-4" /> Tarefas sem projeto
+                <div className="space-y-2">
+                  <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                    <SquareKanban className="w-3.5 h-3.5" /> Tarefas sem projeto
+                    <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                      {orphanTasks.length}
+                    </span>
                   </h2>
                   <div className="space-y-1.5">
                     {orphanTasks.slice(0, 10).map(task => (
-                      <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                      <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
                         <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="font-medium hover:text-primary hover:underline transition-colors">{task.title}</button>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
                           <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
                         </div>
@@ -339,22 +456,25 @@ const ClientsPage = () => {
 
             {/* Time entries */}
             {details.timeEntries.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" /> Registros de Tempo
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" /> Registros de Tempo
+                  <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                    {details.timeEntries.length}
+                  </span>
                 </h2>
                 <div className="space-y-1.5">
                   {details.timeEntries.slice(0, 10).map(e => {
                     const proj = details.projects.find(p => p.id === e.project_id);
                     return (
-                      <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                      <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
                         <div>
-                          <span className="font-medium">{e.description || '—'}</span>
+                          <span className="font-medium text-foreground">{e.description || '—'}</span>
                           {proj && <span className="text-xs text-muted-foreground ml-2">({proj.name})</span>}
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-muted-foreground">{new Date(e.start_time).toLocaleDateString()}</span>
-                          <span className="font-mono font-semibold">{formatDuration(e.duration || 0)}</span>
+                          <span className="font-mono font-semibold text-foreground tabular-nums">{formatDuration(e.duration || 0)}</span>
                         </div>
                       </div>
                     );
@@ -365,18 +485,21 @@ const ClientsPage = () => {
 
             {/* Invoices & Budgets */}
             {(details.invoices.length > 0 || details.budgets.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {details.invoices.length > 0 && (
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                      <Receipt className="w-4 h-4" /> Faturas
+                  <div className="space-y-2">
+                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                      <Receipt className="w-3.5 h-3.5" /> Faturas
+                      <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                        {details.invoices.length}
+                      </span>
                     </h2>
                     <div className="space-y-1.5">
                       {details.invoices.map(inv => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                        <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
                           <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">{formatCurrency(inv.total)}</span>
+                            <span className="font-semibold text-foreground tabular-nums">{formatCurrency(inv.total)}</span>
                             <Badge variant="secondary" className="text-[10px] capitalize">{inv.status}</Badge>
                           </div>
                         </div>
@@ -385,16 +508,19 @@ const ClientsPage = () => {
                   </div>
                 )}
                 {details.budgets.length > 0 && (
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                      <FileText className="w-4 h-4" /> Orçamentos
+                  <div className="space-y-2">
+                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5" /> Orçamentos
+                      <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                        {details.budgets.length}
+                      </span>
                     </h2>
                     <div className="space-y-1.5">
                       {details.budgets.map(b => (
-                        <div key={b.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm">
+                        <div key={b.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
                           <span className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">{formatCurrency(b.total)}</span>
+                            <span className="font-semibold text-foreground tabular-nums">{formatCurrency(b.total)}</span>
                             <Badge variant="secondary" className="text-[10px] capitalize">{b.status}</Badge>
                           </div>
                         </div>
@@ -407,41 +533,30 @@ const ClientsPage = () => {
 
             {/* Empty state */}
             {details.projects.length === 0 && details.tasks.length === 0 && details.invoices.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">Nenhum dado vinculado a este cliente ainda.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+                  <Users className="w-8 h-8 opacity-50" />
+                </div>
+                <p className="text-sm font-medium">Nenhum dado vinculado a este cliente.</p>
+                <p className="text-xs mt-1 text-muted-foreground/70">Crie projetos, tarefas ou faturas para este cliente.</p>
               </div>
             )}
           </>
         )}
 
-        {/* Edit dialog (reused) */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editing ? t.editClient : t.newClient}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 mt-2">
-              <input placeholder={t.clientName} value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-              <input placeholder="Responsável" value={responsible} onChange={(e) => setResponsible(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-              <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-              <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-              <input placeholder={t.document} value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-              <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Cor do cliente</label>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {CLIENT_COLORS.map((c) => (
-                    <button key={c} type="button" onClick={() => setColor(color === c ? null : c)} className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: c }} />
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => setDialogOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-                <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ClientFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          editing={editing}
+          t={t}
+          name={name} setName={setName}
+          email={email} setEmail={setEmail}
+          phone={phone} setPhone={setPhone}
+          document={document} setDocument={setDocument}
+          responsible={responsible} setResponsible={setResponsible}
+          color={color} setColor={setColor}
+          onSave={handleSave}
+        />
       </div>
     );
   }
@@ -449,82 +564,118 @@ const ClientsPage = () => {
   // Client list view
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t.clients}</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.clients}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {clients.length} {clients.length === 1 ? 'cliente' : 'clientes'}
+          </p>
+        </div>
+        <Button onClick={openCreate} className="gap-2 rounded-xl font-semibold shadow-sm">
           <Plus className="w-4 h-4" /> {t.newClient}
-        </button>
+        </Button>
       </div>
 
-      <div className="relative">
-        <input
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder={t.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={t.search}
-          className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring pr-8"
+          className="pl-9 pr-8 rounded-xl"
         />
         {search && (
           <button
             onClick={() => setSearch('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
+      {/* Client list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Users className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">{t.noClients}</p>
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">{t.noClients}</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">Adicione um cliente para começar.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {filtered.map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-4 rounded-xl border border-border overflow-hidden transition-all cursor-pointer hover:shadow-md" style={(c as any).color ? { backgroundColor: `${(c as any).color}15`, borderLeftWidth: '4px', borderLeftColor: (c as any).color, ['--hover-border' as any]: `${(c as any).color}50` } : { backgroundColor: 'hsl(var(--card))' }} onMouseEnter={(e) => { const col = (c as any).color; if (col) e.currentTarget.style.borderColor = `${col}60`; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }} onClick={() => openClient360(c)}>
-              <div className="min-w-0">
-                <p className="font-semibold text-foreground">{c.name}</p>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                  {c.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>}
-                  {c.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>}
-                  {c.document && <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(c.document)}</span>}
+            <div
+              key={c.id}
+              className={cn(
+                "rounded-xl border overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-sm group"
+              )}
+              style={c.color
+                ? { backgroundColor: `${c.color}08`, borderColor: `${c.color}30`, borderLeftWidth: '3px', borderLeftColor: c.color }
+                : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
+              }
+              onClick={() => openClient360(c)}
+            >
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {c.color && (
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-sm"
+                      style={{ backgroundColor: c.color }}
+                    >
+                      {c.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {!c.color && (
+                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-foreground truncate">{c.name}</p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                      {c.responsible && (
+                        <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsible}</span>
+                      )}
+                      {c.email && (
+                        <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>
+                      )}
+                      {c.phone && (
+                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); openEdit(c); }} className="text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
-                <button onClick={(e) => { e.stopPropagation(); deleteClient(c.id); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => openEdit(c)}>
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg hover:bg-destructive/10" onClick={() => deleteClient(c.id)}>
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? t.editClient : t.newClient}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 mt-2">
-            <input placeholder={t.clientName} value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder="Responsável" value={responsible} onChange={(e) => setResponsible(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder={t.phone} value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input placeholder={t.document} value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Cor do cliente</label>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {CLIENT_COLORS.map((c) => (
-                  <button key={c} type="button" onClick={() => setColor(color === c ? null : c)} className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'}`} style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setDialogOpen(false)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-              <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ClientFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editing}
+        t={t}
+        name={name} setName={setName}
+        email={email} setEmail={setEmail}
+        phone={phone} setPhone={setPhone}
+        document={document} setDocument={setDocument}
+        responsible={responsible} setResponsible={setResponsible}
+        color={color} setColor={setColor}
+        onSave={handleSave}
+      />
     </div>
   );
 };
