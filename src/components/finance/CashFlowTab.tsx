@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
@@ -38,6 +38,9 @@ export default function CashFlowTab({ invoices }: Props) {
     from: subMonths(startOfMonth(now), 5),
     to: endOfMonth(now),
   });
+
+  const ignoreNextBarSelect = useRef(false);
+  const ignoreNextSaldoSelect = useRef(false);
 
   const startDate = barRange.from ?? subMonths(startOfMonth(now), 5);
   const endDate = barRange.to ?? endOfMonth(now);
@@ -170,9 +173,16 @@ export default function CashFlowTab({ invoices }: Props) {
                     <Calendar
                       mode="range"
                       selected={barRange}
-                      onSelect={(range: DateRange | undefined) => setBarRange(range ?? { from: undefined, to: undefined })}
+                      onSelect={(range: DateRange | undefined) => {
+                        if (ignoreNextBarSelect.current) {
+                          ignoreNextBarSelect.current = false;
+                          return;
+                        }
+                        setBarRange(range ?? { from: undefined, to: undefined });
+                      }}
                       onDayClick={(day) => {
                         if (barRange.from && barRange.to) {
+                          ignoreNextBarSelect.current = true;
                           setBarRange({ from: day, to: undefined });
                         }
                       }}
@@ -269,9 +279,16 @@ export default function CashFlowTab({ invoices }: Props) {
                   <Calendar
                     mode="range"
                     selected={saldoRange}
-                    onSelect={(range: DateRange | undefined) => setSaldoRange(range ?? { from: undefined, to: undefined })}
+                    onSelect={(range: DateRange | undefined) => {
+                      if (ignoreNextSaldoSelect.current) {
+                        ignoreNextSaldoSelect.current = false;
+                        return;
+                      }
+                      setSaldoRange(range ?? { from: undefined, to: undefined });
+                    }}
                     onDayClick={(day) => {
                       if (saldoRange.from && saldoRange.to) {
+                        ignoreNextSaldoSelect.current = true;
                         setSaldoRange({ from: day, to: undefined });
                       }
                     }}
