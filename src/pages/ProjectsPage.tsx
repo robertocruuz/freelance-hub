@@ -875,7 +875,7 @@ const ProjectsPage = () => {
                                               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                                             )}
                                           </div>
-                                          <Package className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                                          <ListChecks className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                                           <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
                                           <span className="text-xs font-semibold text-muted-foreground tabular-nums mr-1">
                                             {formatCurrency(item.value)}
