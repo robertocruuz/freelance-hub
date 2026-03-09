@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
