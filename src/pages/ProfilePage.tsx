@@ -56,7 +56,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('name, email, document, phone')
+        .select('name, email, document, phone, avatar_url')
         .eq('user_id', user.id)
         .single();
       if (data) {
