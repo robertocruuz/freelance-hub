@@ -53,6 +53,7 @@ const DashboardLayout = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [orgName, setOrgName] = useState('');
+  const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     if (!user) return;
