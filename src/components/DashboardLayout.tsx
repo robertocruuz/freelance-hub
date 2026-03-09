@@ -252,41 +252,73 @@ const DashboardLayout = () => {
 
         {/* User profile */}
         <div className={cn('px-3 pb-3', collapsed && !isMobile && 'px-2')}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className={cn(
-                'w-full flex items-center gap-3 rounded-lg p-2 transition-all',
-                'text-sidebar-foreground hover:bg-sidebar-accent/50',
-                collapsed && !isMobile && 'justify-center'
-              )}>
-                <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 ring-2 ring-sidebar-border">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold text-muted-foreground">{initials}</span>
-                  )}
+          {/* User button */}
+          <button
+            onClick={() => {
+              if (collapsed && !isMobile) {
+                navigate('/dashboard/profile');
+              } else {
+                setUserExpanded(!userExpanded);
+              }
+            }}
+            className={cn(
+              'w-full flex items-center gap-3 rounded-lg p-2 transition-all',
+              'text-sidebar-foreground hover:bg-sidebar-accent/50',
+              collapsed && !isMobile && 'justify-center',
+              userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/30'
+            )}
+          >
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 ring-2 ring-sidebar-border">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-muted-foreground">{initials}</span>
+              )}
+            </div>
+            {(!collapsed || isMobile) && (
+              <>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-[13px] font-semibold truncate">{userName || user?.email}</p>
                 </div>
-                {(!collapsed || isMobile) && (
-                  <>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="text-[13px] font-semibold truncate">{userName || user?.email}</p>
-                      <p className="text-[11px] text-sidebar-foreground/40 truncate">{user?.email}</p>
-                    </div>
-                    <ChevronsUpDown className="w-4 h-4 text-sidebar-foreground/30 shrink-0" />
-                  </>
+                <ChevronsUpDown className={cn('w-4 h-4 text-sidebar-foreground/30 shrink-0 transition-transform', userExpanded && 'rotate-180')} />
+              </>
+            )}
+          </button>
+
+          {/* Expanded info panel */}
+          {userExpanded && (!collapsed || isMobile) && (
+            <div className="mt-1 mx-1 rounded-lg bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
+              <div className="px-3 py-3 space-y-2">
+                {/* Email */}
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/40">Email</p>
+                  <p className="text-[12px] text-sidebar-foreground/80 truncate">{user?.email}</p>
+                </div>
+                {/* Company */}
+                {orgName && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/40">Empresa</p>
+                    <p className="text-[12px] text-sidebar-foreground/80 truncate">{orgName}</p>
+                  </div>
                 )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side={collapsed && !isMobile ? 'right' : 'top'} align="start" className="w-52">
-              <DropdownMenuItem onClick={() => { navigate('/dashboard/profile'); if (isMobile) setMobileOpen(false); }}>
-                <User className="w-4 h-4 mr-2" /> {t.profile}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-                <LogOut className="w-4 h-4 mr-2" /> {t.logout}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </div>
+              <Separator className="bg-sidebar-border" />
+              <div className="p-1.5 space-y-0.5">
+                <button
+                  onClick={() => { navigate('/dashboard/profile'); if (isMobile) setMobileOpen(false); setUserExpanded(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                >
+                  <User className="w-4 h-4" /> {t.profile}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" /> {t.logout}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
