@@ -585,8 +585,10 @@ const TimeTrackingPage = () => {
       return d;
     }), [weekStart]);
 
-  // Filtered entries
+  // Filtered entries — calendar/list/timesheet show only current user; report shows all (including shared)
   const filteredEntries = entries.filter((e) => {
+    // For non-report views, show only the current user's entries
+    if (viewMode !== 'report' && e.user_id !== user?.id) return false;
     const ed = new Date(e.start_time);
     if (timeRange === 'daily') return isSameDay(ed, selectedDate);
     if (timeRange === 'weekly') {
