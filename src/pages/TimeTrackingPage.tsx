@@ -1993,6 +1993,7 @@ const TimeTrackingPage = () => {
                           </th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Projeto</th>
                           <th className="text-left py-2 px-3 text-muted-foreground font-medium">Cliente</th>
+                          <th className="text-left py-2 px-3 text-muted-foreground font-medium">Usuário</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Registros</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">Horas</th>
                           <th className="text-right py-2 px-3 text-muted-foreground font-medium">%</th>
