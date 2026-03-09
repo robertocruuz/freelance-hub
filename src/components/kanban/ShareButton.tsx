@@ -282,7 +282,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                       className="flex items-center gap-2 w-full p-1.5 rounded-lg hover:bg-muted/50 transition text-left"
                     >
                       <Avatar className="w-6 h-6">
-                        {(member as any).avatar_url && <AvatarImage src={(member as any).avatar_url} className="object-cover" />}
+                        {member.avatar_url && <AvatarImage src={member.avatar_url} className="object-cover" />}
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                           {getInitials(member.name, member.email)}
                         </AvatarFallback>
