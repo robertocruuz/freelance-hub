@@ -125,7 +125,7 @@ const DashboardLayout = () => {
       {/* Menu label */}
 
       {/* Nav items */}
-      <nav className={cn('flex-1 px-3 py-1 space-y-0.5 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
+      <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-0.5 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
         {navItems.map((item) => {
           const active = isActive(item.path);
           const label = labelMap[item.key](t);
