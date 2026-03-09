@@ -1733,19 +1733,33 @@ const TimeTrackingPage = () => {
 
           return (
             <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Relatório de Tempo</h2>
-                  <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {filteredEntries.length} registros</p>
+                  <p className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{totalHours}h</span> · {reportEntries.length} registros</p>
                 </div>
-                <button
-                  onClick={() => setShowExportPanel(!showExportPanel)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Exportar PDF
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExportPanel ? 'rotate-180' : ''}`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {reportUsers.length > 1 && (
+                    <select
+                      value={reportUserFilter}
+                      onChange={e => setReportUserFilter(e.target.value)}
+                      className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="all">Todos os membros</option>
+                      {reportUsers.map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    onClick={() => setShowExportPanel(!showExportPanel)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar PDF
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExportPanel ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
               </div>
 
               {showExportPanel && (() => {
