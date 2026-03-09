@@ -339,6 +339,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                   {userShares.map((share) => (
                     <div key={share.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-muted/20">
                       <Avatar className="w-6 h-6">
+                        {share.profile?.avatar_url && <AvatarImage src={share.profile.avatar_url} className="object-cover" />}
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                           {getInitials(share.profile?.name, share.profile?.email)}
                         </AvatarFallback>
