@@ -1,8 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useClients } from '@/hooks/useClients';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,16 +8,9 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-
-interface Invoice {
-  id: string;
-  name: string | null;
-  client_id: string | null;
-  total: number;
-  status: string;
-  due_date: string | null;
-  payment_method: string | null;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import type { FinanceInvoice } from '@/pages/FinancePage';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-accent text-accent-foreground',
@@ -35,26 +24,15 @@ const statusLabels: Record<string, string> = {
   overdue: 'Atrasado',
 };
 
-export default function ReceivablesTab() {
-  const { user } = useAuth();
+interface Props {
+  invoices: FinanceInvoice[];
+  onRefresh: () => void;
+}
+
+export default function ReceivablesTab({ invoices, onRefresh }: Props) {
   const { clients } = useClients();
   const navigate = useNavigate();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
-
-  const fetchInvoices = async () => {
-    if (!user) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from('invoices')
-      .select('id, name, client_id, total, status, due_date, payment_method')
-      .order('due_date', { ascending: true, nullsFirst: false });
-    setInvoices((data as Invoice[]) || []);
-    setLoading(false);
-  };
-
-  useEffect(() => { fetchInvoices(); }, [user]);
 
   const clientName = (id: string | null) => {
     if (!id) return '';
@@ -83,7 +61,7 @@ export default function ReceivablesTab() {
     const { error } = await supabase.from('invoices').update({ status: 'paid' }).eq('id', id);
     if (error) { toast.error('Erro ao atualizar'); return; }
     toast.success('Fatura marcada como paga');
-    fetchInvoices();
+    onRefresh();
   };
 
   return (
@@ -111,9 +89,7 @@ export default function ReceivablesTab() {
         </Button>
       </div>
 
-      {loading ? (
-        <p className="text-muted-foreground text-sm text-center py-8">Carregando...</p>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">Nenhuma fatura encontrada.</CardContent></Card>
       ) : (
         <div className="space-y-2">

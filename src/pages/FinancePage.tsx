@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { startOfMonth, endOfMonth, addDays, isPast, isToday, isBefore, format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,28 +10,34 @@ import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 
-interface Invoice {
+export interface FinanceInvoice {
   id: string;
+  name: string | null;
+  client_id: string | null;
   total: number;
   status: string;
   due_date: string | null;
+  payment_method: string | null;
+  created_at: string;
 }
 
 export default function FinancePage() {
   const { user } = useAuth();
   const { expenses } = useExpenses();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
 
-  useEffect(() => {
+  const fetchInvoices = useCallback(async () => {
     if (!user) return;
-    supabase.from('invoices').select('id, total, status, due_date').then(({ data }) => {
-      setInvoices((data as Invoice[]) || []);
-    });
+    const { data } = await supabase
+      .from('invoices')
+      .select('id, name, client_id, total, status, due_date, payment_method, created_at')
+      .order('due_date', { ascending: true, nullsFirst: false });
+    setInvoices((data as FinanceInvoice[]) || []);
   }, [user]);
 
+  useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+
   const now = new Date();
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
   const monthStr = format(now, 'yyyy-MM');
 
   const receivedThisMonth = invoices
@@ -76,10 +82,10 @@ export default function FinancePage() {
           <TabsTrigger value="payables">A Pagar</TabsTrigger>
           <TabsTrigger value="calendar">Calendário</TabsTrigger>
         </TabsList>
-        <TabsContent value="cashflow"><CashFlowTab /></TabsContent>
-        <TabsContent value="receivables"><ReceivablesTab /></TabsContent>
+        <TabsContent value="cashflow"><CashFlowTab invoices={invoices} /></TabsContent>
+        <TabsContent value="receivables"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} /></TabsContent>
         <TabsContent value="payables"><ExpensesTab /></TabsContent>
-        <TabsContent value="calendar"><FinanceCalendarTab /></TabsContent>
+        <TabsContent value="calendar"><FinanceCalendarTab invoices={invoices} /></TabsContent>
       </Tabs>
     </div>
   );
