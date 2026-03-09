@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import heroDashboard from '@/assets/hero-dashboard.jpg';
+
 import featureClients from '@/assets/feature-clients.jpg';
 import featureKanban from '@/assets/feature-kanban.jpg';
 import featureTimetracking from '@/assets/feature-timetracking.jpg';
@@ -254,7 +254,7 @@ const LandingPage = () => {
             <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-border/50">
               <AspectRatio ratio={16 / 9}>
                 <img 
-                  src={heroDashboard} 
+                  src="/home.png" 
                   alt="Dashboard Preview" 
                   className="w-full h-full object-cover"
                 />
