@@ -122,8 +122,6 @@ const DashboardLayout = () => {
       </div>
 
 
-      <Separator className="mx-3 my-2 bg-sidebar-border" />
-
       {/* Menu label */}
       {(!collapsed || isMobile) && (
         <div className="px-5 pt-1 pb-1">
