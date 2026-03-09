@@ -10,7 +10,8 @@ import ReceivablesTab from '@/components/finance/ReceivablesTab';
 import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays, ShieldAlert } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
   id: string;
