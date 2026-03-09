@@ -14,7 +14,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
-import InvoicesPage from "./pages/InvoicesPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import HomePage from "./pages/HomePage";
