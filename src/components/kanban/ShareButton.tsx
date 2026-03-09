@@ -55,7 +55,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
 
       let profiles: any[] = [];
       if (userIds.length > 0) {
-        const { data: p } = await supabase.from('profiles').select('user_id, name, email').in('user_id', userIds);
+        const { data: p } = await supabase.from('profiles').select('user_id, name, email, avatar_url').in('user_id', userIds);
         profiles = p || [];
       }
 
