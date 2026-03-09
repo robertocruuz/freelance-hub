@@ -123,8 +123,12 @@ const DashboardLayout = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] backdrop-blur-sm border border-white/[0.08] transition-all flex items-center justify-center text-white/70 hover:text-white">
-                  <User className="w-[18px] h-[18px]" />
+                <button className="w-10 h-10 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] backdrop-blur-sm border border-white/[0.08] transition-all flex items-center justify-center text-white/70 hover:text-white p-0 overflow-hidden">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-[18px] h-[18px]" />
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
