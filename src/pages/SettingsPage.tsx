@@ -104,37 +104,21 @@ const SettingsPage = () => {
             description={isPt ? 'Escolha como o Freelaz se parece' : 'Choose how Freelaz looks'}
           />
 
-          <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className="mt-4 inline-flex items-center gap-1 p-1 rounded-xl bg-muted/60 border border-border/60">
             {themeOptions.map((opt) => {
               const isSelected = theme === opt.value;
               return (
                 <button
                   key={opt.value}
                   onClick={() => setTheme(opt.value as any)}
-                  className={`group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 overflow-hidden
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
                     ${isSelected
-                      ? 'border-primary bg-primary/[0.04] shadow-[0_0_0_1px_hsl(var(--primary)/0.1),0_4px_16px_hsl(var(--primary)/0.08)]'
-                      : 'border-border/60 hover:border-primary/30 hover:bg-muted/40'
+                      ? 'bg-card text-foreground shadow-sm ring-1 ring-border'
+                      : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
-                  {/* Theme preview circle */}
-                  <div className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 ${opt.preview}`}>
-                    <opt.icon className={`w-5 h-5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                  <div className="text-center">
-                    <span className={`text-sm font-semibold block ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {opt.label}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <div className="absolute top-2.5 right-2.5">
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+                  <opt.icon className={`w-4 h-4 ${isSelected ? 'text-primary' : ''}`} />
+                  {opt.label}
                 </button>
               );
             })}
