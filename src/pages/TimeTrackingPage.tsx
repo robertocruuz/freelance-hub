@@ -1419,7 +1419,15 @@ const TimeTrackingPage = () => {
         {viewMode === 'report' && (() => {
           const CHART_COLORS = ['hsl(280, 70%, 60%)', 'hsl(200, 80%, 55%)', 'hsl(150, 60%, 45%)', 'hsl(35, 90%, 55%)', 'hsl(340, 75%, 55%)', 'hsl(180, 60%, 45%)', 'hsl(60, 70%, 50%)', 'hsl(310, 60%, 55%)'];
 
-          const byProject = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const reportUsers = Array.from(new Set(filteredEntries.map(e => e.user_id))).map(uid => ({
+            id: uid,
+            name: getProfileName(uid),
+          }));
+          const reportEntries = reportUserFilter === 'all'
+            ? filteredEntries
+            : filteredEntries.filter(e => e.user_id === reportUserFilter);
+
+          const byProject = reportEntries.reduce<Record<string, number>>((acc, e) => {
             const name = getProjectName(e.project_id) || 'Sem projeto';
             acc[name] = (acc[name] || 0) + (e.duration || 0);
             return acc;
