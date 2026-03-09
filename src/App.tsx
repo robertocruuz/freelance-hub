@@ -23,6 +23,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import InvitePage from "./pages/InvitePage";
 import SettingsPage from "./pages/SettingsPage";
+import TeamPage from "./pages/TeamPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
