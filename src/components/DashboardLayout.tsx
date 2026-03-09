@@ -365,26 +365,25 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const content = (
-    <div className="relative">
-      <NotificationBell />
-      {/* Badge is handled inside NotificationBell */}
-    </div>
-  );
+  const label = isPt ? 'Notificações' : 'Notifications';
 
-  // In collapsed mode, just show the bell
   if (collapsed) {
     return (
-      <div className="flex justify-center">
-        <NotificationBell />
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex justify-center p-2.5">
+            <NotificationBell />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+      </Tooltip>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground/60">
+    <div className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-150 cursor-pointer">
       <NotificationBell />
-      <span className="text-sm">Notificações</span>
+      <span className="text-[13px]">{label}</span>
     </div>
   );
 };
