@@ -1436,7 +1436,7 @@ const TimeTrackingPage = () => {
             name, hours: +(seconds / 3600).toFixed(2), color: getProjectColor(filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.project_id || null, filteredEntries.find(e => (getProjectName(e.project_id) || 'Sem projeto') === name)?.client_id),
           }));
 
-          const byClient = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const byClient = reportEntries.reduce<Record<string, number>>((acc, e) => {
             // Use direct client_id first, fallback to project's client
             const directClient = e.client_id ? clients.find(c => c.id === e.client_id) : null;
             const proj = !directClient ? projects.find(p => p.id === e.project_id) : null;
