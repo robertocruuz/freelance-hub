@@ -34,7 +34,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [shares, setShares] = useState<ShareRecord[]>([]);
-  const [orgMembers, setOrgMembers] = useState<{ user_id: string; name: string | null; email: string | null }[]>([]);
+  const [orgMembers, setOrgMembers] = useState<{ user_id: string; name: string | null; email: string | null; avatar_url: string | null }[]>([]);
   const [hasOrg, setHasOrg] = useState(false);
   const [sharedWithOrg, setSharedWithOrg] = useState(false);
   const [loading, setLoading] = useState(false);
