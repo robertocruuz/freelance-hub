@@ -117,9 +117,14 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
             <SelectItem value="overdue">Atrasado ({invoices.filter(i => i.status === 'overdue').length})</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices')}>
-          <ExternalLink className="w-3.5 h-3.5" /> Faturas
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?new_invoice=1')}>
+            <Plus className="w-3.5 h-3.5" /> Nova Fatura
+          </Button>
+          <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices')}>
+            <ExternalLink className="w-3.5 h-3.5" /> Faturas
+          </Button>
+        </div>
       </div>
 
       {grouped.length === 0 ? (

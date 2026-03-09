@@ -183,6 +183,18 @@ const InvoicesPage = () => {
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
 
+  // Open create form from finance receivables tab
+  useEffect(() => {
+    const newInvoice = searchParams.get('new_invoice');
+    if (newInvoice === '1') {
+      resetForm();
+      setCreating(true);
+      const params = new URLSearchParams(searchParams);
+      params.delete('new_invoice');
+      setSearchParams(params, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   // Pre-fill from Kanban integration
   useEffect(() => {
     const fromTask = searchParams.get('from_task');
