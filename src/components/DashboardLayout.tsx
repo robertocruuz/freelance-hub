@@ -4,13 +4,15 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { useTimer } from '@/hooks/useTimer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -36,16 +38,39 @@ const labelMap: Record<string, (t: any) => string> = {
 
 const DashboardLayout = () => {
   const { t, lang, setLang } = useI18n();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single();
+      if (data) {
+        setUserName(data.name || '');
+        setAvatarUrl(data.avatar_url || null);
+      } else {
+        setUserName(user.user_metadata?.name || '');
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
   };
+
+  const initials = (userName || user?.email || '?')
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -98,8 +123,12 @@ const DashboardLayout = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] backdrop-blur-sm border border-white/[0.08] transition-all flex items-center justify-center text-white/70 hover:text-white">
-                  <User className="w-[18px] h-[18px]" />
+                <button className="w-10 h-10 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] backdrop-blur-sm border border-white/[0.08] transition-all flex items-center justify-center text-white/70 hover:text-white p-0 overflow-hidden">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-[18px] h-[18px]" />
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

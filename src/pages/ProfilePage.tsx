@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon, Trash2 } from 'lucide-react';
+import { User, Mail, Calendar, Save, Pencil, X, Lock, FileText, Building2, Phone, Globe, Shield, Users, ChevronDown, MapPin, Upload, ImageIcon, Trash2, Camera } from 'lucide-react';
+import AvatarUploadModal from '@/components/AvatarUploadModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -38,6 +39,8 @@ const ProfilePage = () => {
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [statePopoverOpen, setStatePopoverOpen] = useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoModalOpen, setLogoModalOpen] = useState(false);
@@ -53,13 +56,14 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('name, email, document, phone')
+        .select('name, email, document, phone, avatar_url')
         .eq('user_id', user.id)
         .single();
       if (data) {
         const d = data as any;
         setProfile({ name: d.name || '', email: d.email || user.email || '', document: d.document || '', phone: d.phone || '' });
         setEditForm({ name: d.name || '', document: d.document || '', phone: d.phone || '' });
+        setAvatarUrl(d.avatar_url || null);
       } else {
         setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '', phone: '' });
         setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
@@ -267,13 +271,30 @@ const ProfilePage = () => {
       {/* Profile Card */}
       <Card>
         <CardHeader className="flex flex-row items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold">
+          <div
+            className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer group relative overflow-hidden"
+            onClick={() => setAvatarModalOpen(true)}
+          >
+            <Avatar className="w-14 h-14 rounded-2xl">
+              {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
+              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold rounded-2xl">
                 {initials}
               </AvatarFallback>
             </Avatar>
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+              <Camera className="w-4 h-4 text-white" />
+            </div>
           </div>
+          {user && (
+            <AvatarUploadModal
+              open={avatarModalOpen}
+              onOpenChange={setAvatarModalOpen}
+              userId={user.id}
+              currentUrl={avatarUrl}
+              initials={initials}
+              onUploaded={setAvatarUrl}
+            />
+          )}
           <div className="flex-1 min-w-0">
             <CardTitle className="text-xl truncate">{profile.name || profile.email}</CardTitle>
             <CardDescription className="mt-0.5">
