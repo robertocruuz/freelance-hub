@@ -135,8 +135,8 @@ export const KanbanColumnComponent = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-72 flex flex-col rounded-2xl transition-colors snap-start ${
-        isOver ? 'bg-primary/5' : 'bg-card/50'
+      className={`flex-shrink-0 w-72 flex flex-col rounded-2xl transition-all duration-200 snap-start ${
+        isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-card/50'
       }`}
     >
       {/* Column Header */}
