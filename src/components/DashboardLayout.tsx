@@ -38,16 +38,39 @@ const labelMap: Record<string, (t: any) => string> = {
 
 const DashboardLayout = () => {
   const { t, lang, setLang } = useI18n();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single();
+      if (data) {
+        setUserName(data.name || '');
+        setAvatarUrl(data.avatar_url || null);
+      } else {
+        setUserName(user.user_metadata?.name || '');
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
   };
+
+  const initials = (userName || user?.email || '?')
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
