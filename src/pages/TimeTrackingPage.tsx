@@ -2027,7 +2027,7 @@ const TimeTrackingPage = () => {
                       </thead>
                       <tbody>
                         {projectData.sort((a, b) => b.hours - a.hours).map((p, i) => {
-                          const projEntries = filteredEntries
+                          const projEntries = reportEntries
                             .filter(e => (getProjectName(e.project_id) || 'Sem projeto') === p.name)
                             .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
                           const proj = projects.find(pr => pr.name === p.name);
