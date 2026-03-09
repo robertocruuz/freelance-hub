@@ -48,10 +48,6 @@ export default function FinancePage() {
     checkRole();
   }, [user]);
 
-  if (roleChecked && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -62,6 +58,10 @@ export default function FinancePage() {
   }, [user]);
 
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+
+  if (roleChecked && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const now = new Date();
   const monthStr = format(now, 'yyyy-MM');
