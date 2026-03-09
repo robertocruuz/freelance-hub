@@ -557,6 +557,50 @@ export type Database = {
         }
         Relationships: []
       }
+      project_files: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_type: string
+          id: string
+          name: string
+          project_id: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          id?: string
+          name: string
+          project_id: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          id?: string
+          name?: string
+          project_id?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_items: {
         Row: {
           created_at: string
@@ -595,6 +639,7 @@ export type Database = {
       projects: {
         Row: {
           client_id: string | null
+          contract_url: string | null
           created_at: string
           discount: number
           due_date: string | null
@@ -605,6 +650,7 @@ export type Database = {
         }
         Insert: {
           client_id?: string | null
+          contract_url?: string | null
           created_at?: string
           discount?: number
           due_date?: string | null
@@ -615,6 +661,7 @@ export type Database = {
         }
         Update: {
           client_id?: string | null
+          contract_url?: string | null
           created_at?: string
           discount?: number
           due_date?: string | null
