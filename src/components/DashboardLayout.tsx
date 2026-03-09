@@ -25,6 +25,7 @@ const navItems = [
   { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
+  { key: 'team', icon: UsersRound, path: '/dashboard/team' },
 ] as const;
 
 const labelMap: Record<string, (t: any) => string> = {
@@ -35,6 +36,7 @@ const labelMap: Record<string, (t: any) => string> = {
   kanban: (t) => t.tasks || 'Tarefas',
   time: (t) => t.timeTracking,
   invoices: (t) => t.invoices,
+  team: (t) => t.team || 'Equipe',
 };
 
 const DashboardLayout = () => {
