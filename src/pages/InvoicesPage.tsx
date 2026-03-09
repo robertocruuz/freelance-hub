@@ -195,6 +195,18 @@ const InvoicesPage = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  // Open import dialog from finance receivables tab
+  useEffect(() => {
+    const importInvoice = searchParams.get('import_invoice');
+    if (importInvoice === '1') {
+      loadProjects();
+      setImportDialogOpen(true);
+      const params = new URLSearchParams(searchParams);
+      params.delete('import_invoice');
+      setSearchParams(params, { replace: true });
+    }
+  }, [searchParams, setSearchParams, loadProjects]);
+
   // Pre-fill from Kanban integration
   useEffect(() => {
     const fromTask = searchParams.get('from_task');
