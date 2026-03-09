@@ -26,7 +26,7 @@ interface ShareRecord {
   id: string;
   share_type: string;
   shared_with_user_id: string | null;
-  profile?: { name: string | null; email: string | null };
+  profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
 export const ShareButton = ({ resourceType, resourceId, compact = false }: ShareButtonProps) => {
