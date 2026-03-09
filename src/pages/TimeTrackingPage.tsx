@@ -2069,7 +2069,7 @@ const TimeTrackingPage = () => {
                       <tfoot>
                         <tr className="border-t-2 border-border">
                           <td className="py-2.5 px-3"></td>
-                          <td colSpan={2} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
+                          <td colSpan={3} className="py-2.5 px-3 font-semibold text-foreground">Total</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{filteredEntries.length}</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-bold text-foreground">{totalHours}h</td>
                           <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">100%</td>
