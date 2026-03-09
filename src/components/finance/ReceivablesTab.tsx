@@ -125,11 +125,6 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(inv.total)}</span>
-                  {inv.status !== 'paid' && (
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleMarkPaid(inv.id)}>
-                      <Check className="w-3 h-3 mr-1" /> Recebido
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
