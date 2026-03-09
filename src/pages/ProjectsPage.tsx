@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -845,7 +845,7 @@ const ProjectsPage = () => {
                               <Tabs defaultValue="items">
                                 <TabsList className="mb-3 h-9">
                                   <TabsTrigger value="items" className="text-xs gap-1.5 rounded-lg">
-                                    <Package className="w-3.5 h-3.5" /> Itens
+                                    <ListChecks className="w-3.5 h-3.5" /> Itens
                                   </TabsTrigger>
                                   <TabsTrigger value="files" className="text-xs gap-1.5 rounded-lg">
                                     <Link2 className="w-3.5 h-3.5" /> Arquivos
@@ -856,7 +856,7 @@ const ProjectsPage = () => {
                                 <TabsContent value="items" className="space-y-2 mt-0">
                                   {items.length === 0 && !showItemForm && (
                                     <div className="text-center py-6">
-                                      <Package className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
+                                      <ListChecks className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
                                       <p className="text-xs text-muted-foreground">Nenhum item neste projeto.</p>
                                     </div>
                                   )}
@@ -875,7 +875,7 @@ const ProjectsPage = () => {
                                               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                                             )}
                                           </div>
-                                          <Package className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                                          <ListChecks className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                                           <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
                                           <span className="text-xs font-semibold text-muted-foreground tabular-nums mr-1">
                                             {formatCurrency(item.value)}
