@@ -67,6 +67,7 @@ export default function CashFlowTab({ invoices }: Props) {
     return { name: format(month, 'MMM/yy', { locale: ptBR }), Saldo: entradas - saidas };
   });
 
+  const categoryData = EXPENSE_CATEGORIES.map(cat => {
     const total = expenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
     return { name: cat.label, value: total };
   }).filter(d => d.value > 0);
