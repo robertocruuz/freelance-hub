@@ -30,10 +30,19 @@ export default function CashFlowTab({ invoices }: Props) {
   const { expenses } = useExpenses();
   const now = new Date();
 
-  const [startDate, setStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
-  const [endDate, setEndDate] = useState<Date>(endOfMonth(now));
-  const [saldoStartDate, setSaldoStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
-  const [saldoEndDate, setSaldoEndDate] = useState<Date>(endOfMonth(now));
+  const [barRange, setBarRange] = useState<DateRange>({
+    from: subMonths(startOfMonth(now), 5),
+    to: endOfMonth(now),
+  });
+  const [saldoRange, setSaldoRange] = useState<DateRange>({
+    from: subMonths(startOfMonth(now), 5),
+    to: endOfMonth(now),
+  });
+
+  const startDate = barRange.from ?? subMonths(startOfMonth(now), 5);
+  const endDate = barRange.to ?? endOfMonth(now);
+  const saldoStartDate = saldoRange.from ?? subMonths(startOfMonth(now), 5);
+  const saldoEndDate = saldoRange.to ?? endOfMonth(now);
 
   const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
   const saldoMonths = eachMonthOfInterval({ start: startOfMonth(saldoStartDate), end: endOfMonth(saldoEndDate) });
