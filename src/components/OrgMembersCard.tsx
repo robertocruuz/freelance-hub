@@ -64,7 +64,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'collaborator'>('collaborator');
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
@@ -92,36 +91,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
     }
   };
 
-  // Auto-generate invite link on mount
-  useEffect(() => {
-    if (isAdmin && orgId && !inviteLink) {
-      (async () => {
-        const { token } = await generateInviteLink('collaborator');
-        if (token) {
-          setInviteLink(`${window.location.origin}/invite/${token}`);
-        }
-      })();
-    }
-  }, [isAdmin, orgId]);
-
-  const handleGenerateLink = async () => {
-    setInviteLoading(true);
-    const { token, error } = await generateInviteLink(inviteRole);
-    setInviteLoading(false);
-    if (error || !token) {
-      toast({ title: isPt ? 'Erro ao gerar link' : 'Error generating link', variant: 'destructive' });
-    } else {
-      const link = `${window.location.origin}/invite/${token}`;
-      setInviteLink(link);
-    }
-  };
-
-  const handleCopyLink = () => {
-    if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
-      toast({ title: isPt ? 'Link copiado!' : 'Link copied!' });
-    }
-  };
 
   const handleRoleChange = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await updateMemberRole(memberId, role);
@@ -224,20 +193,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             </div>
           </div>
 
-          {/* Invite link */}
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" />
-              {isPt ? 'Link de convite' : 'Invite link'}
-            </Label>
-            <div className="flex gap-2">
-              <Input value={inviteLink || (isPt ? 'Gerando...' : 'Generating...')} readOnly className="text-xs bg-muted/30" />
-              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={handleCopyLink} disabled={!inviteLink}>
-                <Copy className="w-3.5 h-3.5" />
-                {isPt ? 'Copiar' : 'Copy'}
-              </Button>
-            </div>
-          </div>
           <Separator className="opacity-50" />
         </div>
       )}
@@ -422,7 +377,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
           </div>
         </div>
         {isAdmin && (
-          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteLink(null); setInviteEmail(''); } }}>
+          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5 shrink-0">
                 <UserPlus className="w-3.5 h-3.5" />
