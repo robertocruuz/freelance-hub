@@ -912,9 +912,12 @@ const KanbanPage = () => {
             </div>
           </div>
 
-          <DragOverlay>
+          <DragOverlay dropAnimation={{
+            duration: 200,
+            easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+          }}>
             {activeTask && (
-              <div className="w-72 opacity-90 rotate-3">
+              <div className="w-72 rotate-[3deg] scale-105 shadow-2xl shadow-primary/20 ring-2 ring-primary/40 rounded-xl">
                 <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} />
               </div>
             )}
