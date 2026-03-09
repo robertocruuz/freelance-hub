@@ -1768,7 +1768,7 @@ const TimeTrackingPage = () => {
                   : projects;
 
                 // Live preview of what will be exported
-                let previewEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+                let previewEntries = (exportStartDate || exportEndDate) ? [...entries] : [...reportEntries];
                 if (exportFilter === 'client' && exportClientId) {
                   const ids = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
                   previewEntries = previewEntries.filter(e => e.project_id && ids.includes(e.project_id));
