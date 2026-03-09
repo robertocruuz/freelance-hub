@@ -856,7 +856,7 @@ const ProjectsPage = () => {
                                 <TabsContent value="items" className="space-y-2 mt-0">
                                   {items.length === 0 && !showItemForm && (
                                     <div className="text-center py-6">
-                                      <Package className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
+                                      <ListChecks className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
                                       <p className="text-xs text-muted-foreground">Nenhum item neste projeto.</p>
                                     </div>
                                   )}
