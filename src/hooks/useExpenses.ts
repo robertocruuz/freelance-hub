@@ -132,5 +132,5 @@ export function useExpenses() {
     });
   };
 
-  return { expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
+  return { expenses: expensesWithRecurring, rawExpenses: expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
 }
