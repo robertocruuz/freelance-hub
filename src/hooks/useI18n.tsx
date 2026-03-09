@@ -113,6 +113,7 @@ const translations = {
     budgets: 'Budgets',
     tasks: 'Tasks',
     timeTracking: 'Time Tracking',
+    team: 'Team',
     invoices: 'Invoices',
     profile: 'Profile',
     settings: 'Settings',
