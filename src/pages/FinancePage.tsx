@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { startOfMonth, endOfMonth, addDays, isPast, isToday, isBefore, format } from 'date-fns';
+import { startOfMonth, endOfMonth, addMonths, subMonths, addDays, isPast, isBefore, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -10,7 +11,7 @@ import ReceivablesTab from '@/components/finance/ReceivablesTab';
 import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
@@ -30,6 +31,7 @@ export default function FinancePage() {
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   useEffect(() => {
     if (!user) return;
@@ -63,9 +65,9 @@ export default function FinancePage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const now = new Date();
-  const monthStr = format(now, 'yyyy-MM');
-  const monthLabel = format(now, "MMMM 'de' yyyy", { locale: ptBR });
+  const monthStr = format(selectedMonth, 'yyyy-MM');
+  const monthLabel = format(selectedMonth, "MMMM 'de' yyyy", { locale: ptBR });
+  const isCurrentMonth = format(new Date(), 'yyyy-MM') === monthStr;
 
   const receivedThisMonth = invoices
     .filter(i => i.status === 'paid' && i.due_date && i.due_date.startsWith(monthStr))
@@ -76,13 +78,14 @@ export default function FinancePage() {
     .reduce((s, e) => s + e.amount, 0);
 
   const totalReceivable = invoices
-    .filter(i => i.status !== 'paid')
+    .filter(i => i.status !== 'paid' && i.due_date && i.due_date.startsWith(monthStr))
     .reduce((s, i) => s + i.total, 0);
 
   const allDueItems = [
-    ...invoices.filter(i => i.status !== 'paid' && i.due_date).map(i => i.due_date!),
-    ...expenses.filter(e => e.status !== 'paid' && e.due_date).map(e => e.due_date!),
+    ...invoices.filter(i => i.status !== 'paid' && i.due_date && i.due_date.startsWith(monthStr)).map(i => i.due_date!),
+    ...expenses.filter(e => e.status !== 'paid' && e.due_date && e.due_date.startsWith(monthStr)).map(e => e.due_date!),
   ];
+  const now = new Date();
   const nextDueCount = allDueItems.filter(d =>
     isBefore(new Date(d + 'T12:00:00'), addDays(now, 7)) &&
     !isPast(new Date(d + 'T23:59:59'))
@@ -103,7 +106,37 @@ export default function FinancePage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
-          <p className="text-sm text-muted-foreground capitalize mt-0.5">{monthLabel}</p>
+          <div className="flex items-center gap-1 mt-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg"
+              onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
+              aria-label="Mês anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <button
+              onClick={() => setSelectedMonth(new Date())}
+              className={`text-sm font-medium capitalize px-2 py-0.5 rounded-md transition-colors ${
+                isCurrentMonth
+                  ? 'text-foreground'
+                  : 'text-primary hover:bg-primary/10 cursor-pointer'
+              }`}
+              title={isCurrentMonth ? monthLabel : 'Voltar ao mês atual'}
+            >
+              {monthLabel}
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg"
+              onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+              aria-label="Próximo mês"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm" role="status" aria-label="Balanço do mês">
           <span className="text-xs font-medium text-muted-foreground">Balanço do mês</span>
