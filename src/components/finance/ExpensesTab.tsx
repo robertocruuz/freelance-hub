@@ -17,17 +17,21 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES, PAYMENT_METHODS, type Expense } from '@/hooks/useExpenses';
 import { CalendarIcon } from 'lucide-react';
 
-const statusColors: Record<string, string> = {
-  pending: 'bg-accent text-accent-foreground',
-  paid: 'bg-primary/10 text-primary',
-  overdue: 'bg-destructive/10 text-destructive',
+const statusConfig: Record<string, { bg: string; dot: string; label: string }> = {
+  pending: { bg: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-500', label: 'Pendente' },
+  paid: { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800', dot: 'bg-emerald-500', label: 'Pago' },
+  overdue: { bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800', dot: 'bg-red-500', label: 'Atrasado' },
 };
 
-const statusLabels: Record<string, string> = {
-  pending: 'Pendente',
-  paid: 'Pago',
-  overdue: 'Atrasado',
-};
+function StatusBadge({ status }: { status: string }) {
+  const config = statusConfig[status] || statusConfig.pending;
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border', config.bg)}>
+      <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
+      {config.label}
+    </span>
+  );
+}
 
 export default function ExpensesTab() {
   const { expenses, loading, addExpense, updateExpense, deleteExpense, markAsPaid } = useExpenses();
@@ -149,7 +153,7 @@ export default function ExpensesTab() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm text-foreground truncate">{e.description}</p>
                     <Badge variant="outline" className="text-[10px]">{EXPENSE_CATEGORIES.find(c => c.value === e.category)?.label || e.category}</Badge>
-                    <Badge className={cn('text-[10px]', statusColors[e.status])}>{statusLabels[e.status] || e.status}</Badge>
+                    <StatusBadge status={e.status} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {e.due_date && <span>Vence: {format(new Date(e.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>}
