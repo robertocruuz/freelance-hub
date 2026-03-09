@@ -173,6 +173,7 @@ const TimeTrackingPage = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const [reportUserFilter, setReportUserFilter] = useState<string>('all');
   const [showCalendarSettings, setShowCalendarSettings] = useState(false);
   const [workHourStart, setWorkHourStart] = useState(() => {
     const saved = localStorage.getItem('tt_work_hour_start');
