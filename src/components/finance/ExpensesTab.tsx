@@ -179,11 +179,6 @@ export default function ExpensesTab() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(e.amount)}</span>
-                  {e.status !== 'paid' && (
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => markAsPaid(e.id)}>
-                      <Check className="w-3 h-3 mr-1" /> Pagar
-                    </Button>
-                  )}
                   <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(e)}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
