@@ -10,7 +10,7 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon, X } from 'lucide-react';
 
 const PIE_COLORS = [
   'hsl(225, 100%, 50%)',
@@ -192,6 +192,17 @@ export default function CashFlowTab({ invoices }: Props) {
                     />
                   </PopoverContent>
                 </Popover>
+                {(barRange.from || barRange.to) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                    onClick={() => setBarRange({ from: subMonths(startOfMonth(now), 5), to: endOfMonth(now) })}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Limpar
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -298,6 +309,17 @@ export default function CashFlowTab({ invoices }: Props) {
                   />
                 </PopoverContent>
               </Popover>
+              {(saldoRange.from || saldoRange.to) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                  onClick={() => setSaldoRange({ from: subMonths(startOfMonth(now), 5), to: endOfMonth(now) })}
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Limpar
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
