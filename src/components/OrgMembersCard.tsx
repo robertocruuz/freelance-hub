@@ -194,20 +194,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             </div>
           </div>
 
-          {/* Invite link */}
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5" />
-              {isPt ? 'Link de convite' : 'Invite link'}
-            </Label>
-            <div className="flex gap-2">
-              <Input value={inviteLink || (isPt ? 'Gerando...' : 'Generating...')} readOnly className="text-xs bg-muted/30" />
-              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={handleCopyLink} disabled={!inviteLink}>
-                <Copy className="w-3.5 h-3.5" />
-                {isPt ? 'Copiar' : 'Copy'}
-              </Button>
-            </div>
-          </div>
           <Separator className="opacity-50" />
         </div>
       )}
