@@ -269,8 +269,11 @@ export default function CashFlowTab({ invoices }: Props) {
                   <Calendar
                     mode="range"
                     selected={saldoRange}
-                    onSelect={(range: DateRange | undefined) => {
-                      if (range) setSaldoRange(range);
+                    onSelect={(range: DateRange | undefined) => setSaldoRange(range ?? { from: undefined, to: undefined })}
+                    onDayClick={(day) => {
+                      if (saldoRange.from && saldoRange.to) {
+                        setSaldoRange({ from: day, to: undefined });
+                      }
                     }}
                     numberOfMonths={2}
                     initialFocus
