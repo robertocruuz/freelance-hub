@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Receipt } from 'lucide-react';
+import { Plus, Pencil, Trash2, Receipt, Repeat } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -70,9 +70,10 @@ export default function ExpensesTab() {
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const resetForm = () => {
-    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes('');
+    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false);
     setEditing(null);
   };
 
@@ -85,6 +86,7 @@ export default function ExpensesTab() {
     setDueDate(e.due_date ? new Date(e.due_date + 'T12:00:00') : undefined);
     setPaymentMethod(e.payment_method || '');
     setNotes(e.notes || '');
+    setIsRecurring(e.is_recurring);
     setDialogOpen(true);
   };
 
@@ -100,6 +102,7 @@ export default function ExpensesTab() {
       status: 'pending' as string,
       client_id: null,
       paid_date: null,
+      is_recurring: isRecurring,
     };
     let ok: boolean | undefined;
     if (editing) {
@@ -225,6 +228,11 @@ export default function ExpensesTab() {
                           if (s === 'paid') markAsPaid(e.id);
                           else updateExpense(e.id, { status: s, paid_date: null });
                         }} />
+                        {e.is_recurring && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-primary/30 bg-primary/10 text-primary">
+                            <Repeat className="w-3 h-3" /> Recorrente
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-[10px] font-medium rounded-md">
@@ -325,6 +333,24 @@ export default function ExpensesTab() {
                     {PAYMENT_METHODS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 py-1">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={isRecurring}
+                onClick={() => setIsRecurring(!isRecurring)}
+                className={cn(
+                  'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
+                  isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'
+                )}
+              >
+                {isRecurring && <Repeat className="w-3 h-3" />}
+              </button>
+              <div>
+                <Label className="text-sm font-medium cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>Despesa recorrente</Label>
+                <p className="text-xs text-muted-foreground">Repetir automaticamente nos próximos meses</p>
               </div>
             </div>
             <div>

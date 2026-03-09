@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { addMonths, format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ export interface Expense {
   status: string;
   payment_method: string | null;
   notes: string | null;
+  is_recurring: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -60,6 +62,44 @@ export function useExpenses() {
 
   useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
 
+  // Generate virtual recurring entries for future months (up to 12 months ahead)
+  const expensesWithRecurring = useMemo(() => {
+    const now = new Date();
+    const currentMonth = format(now, 'yyyy-MM');
+    const virtualEntries: Expense[] = [];
+
+    for (const expense of expenses) {
+      if (!expense.is_recurring || !expense.due_date) continue;
+      const baseDate = new Date(expense.due_date + 'T12:00:00');
+      
+      for (let i = 1; i <= 12; i++) {
+        const futureDate = addMonths(baseDate, i);
+        const futureMonth = format(futureDate, 'yyyy-MM');
+        // Only generate if future month is after the original month
+        if (futureMonth <= format(baseDate, 'yyyy-MM')) continue;
+        
+        // Check if a real expense already exists for this month (same description, category, amount)
+        const alreadyExists = expenses.some(e => 
+          e.description === expense.description && 
+          e.category === expense.category && 
+          e.amount === expense.amount &&
+          e.due_date && e.due_date.startsWith(futureMonth)
+        );
+        if (alreadyExists) continue;
+
+        virtualEntries.push({
+          ...expense,
+          id: `${expense.id}_recurring_${i}`,
+          due_date: format(futureDate, 'yyyy-MM-dd'),
+          paid_date: null,
+          status: 'pending',
+        });
+      }
+    }
+
+    return [...expenses, ...virtualEntries];
+  }, [expenses]);
+
   const addExpense = async (expense: Omit<Expense, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
     const { error } = await supabase.from('expenses').insert({ ...expense, user_id: user.id });
@@ -92,5 +132,5 @@ export function useExpenses() {
     });
   };
 
-  return { expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
+  return { expenses: expensesWithRecurring, rawExpenses: expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
 }
