@@ -765,19 +765,22 @@ const BudgetsPage = () => {
                               </span>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
-                                    <Badge className={cn(statusColors[b.status], "cursor-pointer flex items-center gap-1 text-[10px]")}>
-                                      <ChevronDown className="w-3 h-3" />
-                                    </Badge>
-                                  </Button>
+                                  <button className={cn(
+                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                                    statusColors[b.status]
+                                  )}>
+                                    {statusLabel(b.status)}
+                                    <ChevronDown className="w-3 h-3" />
+                                  </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   {statuses.map((s) => (
                                     <DropdownMenuItem
                                       key={s}
                                       onClick={() => changeStatus(b.id, s)}
-                                      className={b.status === s ? 'font-bold' : ''}
+                                      className={cn("gap-2", b.status === s && 'font-bold')}
                                     >
+                                      <span className={cn("w-2 h-2 rounded-full shrink-0", statusColors[s])} />
                                       {statusLabel(s)}
                                     </DropdownMenuItem>
                                   ))}
