@@ -132,8 +132,8 @@ export default function FinancePage() {
               aria-label={tab.label}
             >
               <tab.icon className="w-3.5 h-3.5" aria-hidden="true" />
-              <span className="hidden xs:inline sm:hidden md:inline">{tab.shortLabel}</span>
-              <span className="hidden sm:inline md:hidden lg:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
