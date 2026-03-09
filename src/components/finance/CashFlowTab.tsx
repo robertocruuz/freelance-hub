@@ -173,7 +173,19 @@ export default function CashFlowTab({ invoices }: Props) {
                     <Calendar
                       mode="range"
                       selected={barRange}
-                      onSelect={(range: DateRange | undefined) => setBarRange(range ?? { from: undefined, to: undefined })}
+                      onSelect={(range: DateRange | undefined) => {
+                        if (ignoreNextBarSelect.current) {
+                          ignoreNextBarSelect.current = false;
+                          return;
+                        }
+                        setBarRange(range ?? { from: undefined, to: undefined });
+                      }}
+                      onDayClick={(day) => {
+                        if (barRange.from && barRange.to) {
+                          ignoreNextBarSelect.current = true;
+                          setBarRange({ from: day, to: undefined });
+                        }
+                      }}
                       numberOfMonths={2}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
