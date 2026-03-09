@@ -228,6 +228,11 @@ export default function ExpensesTab() {
                           if (s === 'paid') markAsPaid(e.id);
                           else updateExpense(e.id, { status: s, paid_date: null });
                         }} />
+                        {e.is_recurring && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-primary/30 bg-primary/10 text-primary">
+                            <Repeat className="w-3 h-3" /> Recorrente
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-[10px] font-medium rounded-md">
