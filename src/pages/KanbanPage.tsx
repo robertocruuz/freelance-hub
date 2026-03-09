@@ -59,7 +59,14 @@ import { useAuth } from '@/hooks/useAuth';
 type ViewMode = 'kanban' | 'list';
 
 const KanbanPage = () => {
-  const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
+  const [activeBoardId, setActiveBoardIdState] = useState<string | null>(() => {
+    return localStorage.getItem('kanban_last_board') || null;
+  });
+  const setActiveBoardId = (id: string | null) => {
+    setActiveBoardIdState(id);
+    if (id) localStorage.setItem('kanban_last_board', id);
+    else localStorage.removeItem('kanban_last_board');
+  };
   const kanban = useKanban(activeBoardId);
   const { clients } = useClients();
   const { user } = useAuth();
