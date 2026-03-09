@@ -116,7 +116,7 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
-                    <StatusBadge status={inv.status} />
+                    <StatusBadge status={inv.status} onChangeStatus={(s) => handleChangeStatus(inv.id, s)} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {clientName(inv.client_id) && <span>{clientName(inv.client_id)}</span>}
