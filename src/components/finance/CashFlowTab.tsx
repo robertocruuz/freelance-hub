@@ -31,8 +31,11 @@ export default function CashFlowTab({ invoices }: Props) {
 
   const [startDate, setStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
   const [endDate, setEndDate] = useState<Date>(endOfMonth(now));
+  const [saldoStartDate, setSaldoStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
+  const [saldoEndDate, setSaldoEndDate] = useState<Date>(endOfMonth(now));
 
   const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
+  const saldoMonths = eachMonthOfInterval({ start: startOfMonth(saldoStartDate), end: endOfMonth(saldoEndDate) });
 
   const totalReceivable = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
   const totalPayable = expenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
