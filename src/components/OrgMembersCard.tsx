@@ -237,9 +237,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                 {isPt ? 'Copiar' : 'Copy'}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
-            </p>
           </div>
           <Separator className="opacity-50" />
         </div>
