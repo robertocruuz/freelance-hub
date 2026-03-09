@@ -232,12 +232,71 @@ export default function CashFlowTab({ invoices }: Props) {
       {/* Trend line */}
       <Card className="overflow-hidden">
         <CardHeader className="pb-0">
-          <CardTitle className="text-sm font-bold">Evolução do Saldo</CardTitle>
-          <CardDescription className="text-xs">Saldo mensal (entradas - saídas)</CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <CardTitle className="text-sm font-bold">Evolução do Saldo</CardTitle>
+              <CardDescription className="text-xs capitalize">
+                {format(saldoStartDate, "MMM/yyyy", { locale: ptBR })} — {format(saldoEndDate, "MMM/yyyy", { locale: ptBR })}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {quickRanges.map(r => {
+                const isActive = saldoMonths.length === r.monthsBack + 1;
+                return (
+                  <Button
+                    key={r.label}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 px-2.5 text-[11px] font-medium"
+                    onClick={() => {
+                      setSaldoStartDate(subMonths(startOfMonth(now), r.monthsBack));
+                      setSaldoEndDate(endOfMonth(now));
+                    }}
+                  >
+                    {r.label}
+                  </Button>
+                );
+              })}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
+                    <CalendarIcon className="w-3 h-3" />
+                    De
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={saldoStartDate}
+                    onSelect={(d) => d && setSaldoStartDate(startOfMonth(d))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
+                    <CalendarIcon className="w-3 h-3" />
+                    Até
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={saldoEndDate}
+                    onSelect={(d) => d && setSaldoEndDate(endOfMonth(d))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-4">
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={barData}>
+            <AreaChart data={saldoData}>
               <defs>
                 <linearGradient id="saldoGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(225, 100%, 50%)" stopOpacity={0.2} />
