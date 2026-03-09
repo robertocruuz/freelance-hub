@@ -470,12 +470,21 @@ const TimeTrackingPage = () => {
   };
 
   const deleteEntry = async () => {
-    if (!deletingEntryId) return;
-    const { error } = await supabase.from('time_entries').delete().eq('id', deletingEntryId);
-    if (error) toast.error(error.message);
-    else toast.success('Registro excluído com sucesso');
+    const idToDelete = deletingEntryId;
+    console.log('[DELETE] deleteEntry called, deletingEntryId:', idToDelete);
+    if (!idToDelete) {
+      console.log('[DELETE] No deletingEntryId, returning early');
+      return;
+    }
     setDeletingEntryId(null);
-    loadEntries();
+    const { error, count } = await supabase.from('time_entries').delete().eq('id', idToDelete);
+    console.log('[DELETE] Supabase response - error:', error, 'count:', count);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Registro excluído com sucesso');
+      loadEntries();
+    }
   };
 
   const openEdit = (entry: TimeEntry) => {
