@@ -203,8 +203,8 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ═══ Calendário de Tarefas — compact ═══ */}
-        <div className={`${cardBase} md:col-span-6 xl:col-span-4 p-4 cursor-default`} onClick={undefined}>
+        {/* ═══ Calendário de Tarefas — compacto ═══ */}
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-3 cursor-default`} onClick={undefined}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </div>
 
