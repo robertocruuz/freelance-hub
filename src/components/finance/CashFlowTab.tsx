@@ -1,34 +1,19 @@
-import { useMemo, useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
+import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { useExpenses, EXPENSE_CATEGORIES, type Expense } from '@/hooks/useExpenses';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-
-interface Invoice {
-  id: string;
-  total: number;
-  status: string;
-  due_date: string | null;
-  created_at: string;
-}
+import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import type { FinanceInvoice } from '@/pages/FinancePage';
 
 const PIE_COLORS = ['hsl(225,100%,50%)', 'hsl(80,85%,55%)', 'hsl(0,72%,51%)', 'hsl(220,15%,60%)', 'hsl(45,93%,47%)', 'hsl(280,60%,55%)', 'hsl(170,60%,45%)'];
 
-export default function CashFlowTab() {
-  const { user } = useAuth();
-  const { expenses } = useExpenses();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+interface Props {
+  invoices: FinanceInvoice[];
+}
 
-  useEffect(() => {
-    if (!user) return;
-    supabase.from('invoices').select('id, total, status, due_date, created_at').then(({ data }) => {
-      setInvoices((data as Invoice[]) || []);
-    });
-  }, [user]);
+export default function CashFlowTab({ invoices }: Props) {
+  const { expenses } = useExpenses();
 
   const now = new Date();
   const months = eachMonthOfInterval({ start: subMonths(startOfMonth(now), 5), end: endOfMonth(now) });

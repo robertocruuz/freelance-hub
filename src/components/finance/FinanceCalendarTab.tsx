@@ -1,34 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
-import { format, isSameDay } from 'date-fns';
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useExpenses, type Expense } from '@/hooks/useExpenses';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import type { FinanceInvoice } from '@/pages/FinancePage';
 
-interface Invoice {
-  id: string;
-  name: string | null;
-  total: number;
-  status: string;
-  due_date: string | null;
+interface Props {
+  invoices: FinanceInvoice[];
 }
 
-export default function FinanceCalendarTab() {
-  const { user } = useAuth();
+export default function FinanceCalendarTab({ invoices }: Props) {
   const { expenses } = useExpenses();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-
-  useEffect(() => {
-    if (!user) return;
-    supabase.from('invoices').select('id, name, total, status, due_date').then(({ data }) => {
-      setInvoices((data as Invoice[]) || []);
-    });
-  }, [user]);
 
   const eventDates = useMemo(() => {
     const dates = new Set<string>();
@@ -38,7 +24,7 @@ export default function FinanceCalendarTab() {
   }, [expenses, invoices]);
 
   const selectedEvents = useMemo(() => {
-    if (!selectedDate) return { expenses: [] as Expense[], invoices: [] as Invoice[] };
+    if (!selectedDate) return { expenses: [] as Expense[], invoices: [] as FinanceInvoice[] };
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return {
       expenses: expenses.filter(e => e.due_date === dateStr),
