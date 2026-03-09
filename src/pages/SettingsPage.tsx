@@ -1,4 +1,5 @@
 import { useI18n } from '@/hooks/useI18n';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTheme } from '@/hooks/useTheme';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
