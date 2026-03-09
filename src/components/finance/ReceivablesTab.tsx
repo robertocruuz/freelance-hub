@@ -9,7 +9,7 @@ import { ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FinanceInvoice } from '@/pages/FinancePage';
 
 const statusConfig: Record<string, { bg: string; dot: string; label: string }> = {
