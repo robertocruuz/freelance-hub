@@ -995,36 +995,46 @@ const ProjectsPage = () => {
                               ))}
 
                               {showFileForm === p.id ? (
-                                <div className="space-y-2 pt-1">
-                                  <div className="flex gap-2">
+                                <div className="space-y-3 pt-1">
+                                  <div>
+                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
                                     <input
-                                      placeholder="Nome do arquivo ou pasta"
+                                      placeholder="Ex: Briefing do projeto"
                                       value={fileName}
                                       onChange={e => setFileName(e.target.value)}
-                                      className={inputClass + " flex-1"}
+                                      className={inputClass}
                                       autoFocus
                                     />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Tipo</label>
                                     <select
                                       value={fileType}
                                       onChange={e => setFileType(e.target.value as 'file' | 'folder')}
-                                      className={inputClass + " w-32"}
+                                      className={inputClass}
                                     >
                                       <option value="file">Arquivo</option>
                                       <option value="folder">Pasta</option>
                                     </select>
                                   </div>
-                                  <input
-                                    placeholder="URL do link (Google Drive, etc.)"
-                                    value={fileUrl}
-                                    onChange={e => setFileUrl(e.target.value)}
-                                    className={inputClass}
-                                  />
-                                  <input
-                                    placeholder="Descrição (opcional)"
-                                    value={fileDescription}
-                                    onChange={e => setFileDescription(e.target.value)}
-                                    className={inputClass}
-                                  />
+                                  <div>
+                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">URL</label>
+                                    <input
+                                      placeholder="https://drive.google.com/..."
+                                      value={fileUrl}
+                                      onChange={e => setFileUrl(e.target.value)}
+                                      className={inputClass}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Descrição (opcional)</label>
+                                    <input
+                                      placeholder="Breve descrição do arquivo"
+                                      value={fileDescription}
+                                      onChange={e => setFileDescription(e.target.value)}
+                                      className={inputClass}
+                                    />
+                                  </div>
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => handleSaveFile(p.id)}
