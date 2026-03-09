@@ -1478,7 +1478,7 @@ const TimeTrackingPage = () => {
             }
 
             // Use all entries when custom dates are set, otherwise use filtered by period
-            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...filteredEntries];
+            let exportEntries = (exportStartDate || exportEndDate) ? [...entries] : [...reportEntries];
             if (exportFilter === 'client' && exportClientId) {
               const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
               exportEntries = exportEntries.filter(e => e.project_id && clientProjectIds.includes(e.project_id));
