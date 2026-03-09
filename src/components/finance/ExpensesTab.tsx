@@ -70,9 +70,10 @@ export default function ExpensesTab() {
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const resetForm = () => {
-    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes('');
+    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false);
     setEditing(null);
   };
 
