@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays } from 'lucide-react';
+import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes, subDays, startOfDay, endOfDay, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, getDay, isSameMonth } from 'date-fns';
+import { ptBR, enUS } from 'date-fns/locale';
 
 interface DashboardData {
   clients: any[];
@@ -368,6 +368,11 @@ const HomePage = () => {
           )}
         </div>
 
+        {/* ═══ Calendário de Tarefas ═══ */}
+        <div className={`${cardBase} md:col-span-6 xl:col-span-6 p-5 cursor-default`} onClick={undefined}>
+          <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
+        </div>
+
       </div>
     </div>
   );
@@ -417,6 +422,152 @@ const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours:
           </span>
         </div>
       ))}
+    </div>
+  );
+};
+
+
+const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boolean; navigate: (path: string) => void }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Tasks mapped by date string
+  const tasksByDate = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    tasks.forEach(task => {
+      const dateStr = task.due_date;
+      if (!dateStr) return;
+      if (!map[dateStr]) map[dateStr] = [];
+      map[dateStr].push(task);
+    });
+    return map;
+  }, [tasks]);
+
+  // Day of week the month starts on (0=Sun, adjust for Mon start)
+  const startDay = getDay(monthStart);
+  const leadingBlanks = startDay === 0 ? 6 : startDay - 1; // Monday start
+
+  const weekDays = isPt
+    ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+    : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  const priorityColor: Record<string, string> = {
+    high: 'bg-destructive',
+    medium: 'bg-primary',
+    low: 'bg-muted-foreground/40',
+  };
+
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const selectedTasks = selectedDay ? tasksByDate[selectedDay] || [] : [];
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <CalendarDays className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <span className="font-bold text-foreground text-base">{isPt ? 'Calendário' : 'Calendar'}</span>
+            <p className="text-[11px] text-muted-foreground capitalize">
+              {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCurrentMonth(new Date())}
+            className="text-[11px] font-semibold px-2 py-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {isPt ? 'Hoje' : 'Today'}
+          </button>
+          <button
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Week day headers */}
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
+        {weekDays.map(d => (
+          <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground/60 py-1">{d}</div>
+        ))}
+      </div>
+
+      {/* Day grid */}
+      <div className="grid grid-cols-7 gap-0.5">
+        {Array.from({ length: leadingBlanks }).map((_, i) => (
+          <div key={`blank-${i}`} className="aspect-square" />
+        ))}
+        {days.map(day => {
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const dayTasks = tasksByDate[dateStr] || [];
+          const today = isToday(day);
+          const isSelected = selectedDay === dateStr;
+
+          return (
+            <button
+              key={dateStr}
+              onClick={() => setSelectedDay(isSelected ? null : dateStr)}
+              className={`aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all text-xs
+                ${today ? 'bg-primary text-primary-foreground font-bold' : 'hover:bg-muted text-foreground'}
+                ${isSelected && !today ? 'bg-primary/10 ring-1 ring-primary' : ''}
+              `}
+            >
+              <span className={`text-[12px] ${today ? 'font-bold' : 'font-medium'}`}>{format(day, 'd')}</span>
+              {dayTasks.length > 0 && (
+                <div className="flex gap-[2px] mt-0.5">
+                  {dayTasks.slice(0, 3).map((task, i) => (
+                    <span key={i} className={`w-[5px] h-[5px] rounded-full ${today ? 'bg-primary-foreground/70' : (priorityColor[task.priority] || 'bg-primary')}`} />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected day tasks */}
+      {selectedDay && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <span className="text-[11px] font-semibold text-muted-foreground mb-2 block">
+            {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
+            {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
+          </span>
+          {selectedTasks.length === 0 ? (
+            <p className="text-xs text-muted-foreground/60">{isPt ? 'Nenhuma tarefa neste dia' : 'No tasks on this day'}</p>
+          ) : (
+            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+              {selectedTasks.map(task => (
+                <button
+                  key={task.id}
+                  onClick={() => navigate('/dashboard/kanban')}
+                  className="w-full flex items-center gap-2 rounded-lg bg-muted/50 hover:bg-muted px-3 py-2 transition-colors text-left"
+                >
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${priorityColor[task.priority] || 'bg-primary'}`} />
+                  <span className="text-xs font-medium text-foreground truncate">{task.title}</span>
+                  {task.status === 'done' && (
+                    <span className="ml-auto text-[10px] font-semibold text-green-600 dark:text-green-400 shrink-0">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
