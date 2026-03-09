@@ -384,6 +384,7 @@ const ProjectsPage = () => {
       else {
         next.add(id);
         if (!projectItems[id]) loadItems(id);
+        if (!projectFiles[id]) loadFiles(id);
       }
       return next;
     });
