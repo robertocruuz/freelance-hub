@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Check, Filter } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
