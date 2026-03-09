@@ -92,36 +92,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
     }
   };
 
-  // Auto-generate invite link on mount
-  useEffect(() => {
-    if (isAdmin && orgId && !inviteLink) {
-      (async () => {
-        const { token } = await generateInviteLink('collaborator');
-        if (token) {
-          setInviteLink(`${window.location.origin}/invite/${token}`);
-        }
-      })();
-    }
-  }, [isAdmin, orgId]);
-
-  const handleGenerateLink = async () => {
-    setInviteLoading(true);
-    const { token, error } = await generateInviteLink(inviteRole);
-    setInviteLoading(false);
-    if (error || !token) {
-      toast({ title: isPt ? 'Erro ao gerar link' : 'Error generating link', variant: 'destructive' });
-    } else {
-      const link = `${window.location.origin}/invite/${token}`;
-      setInviteLink(link);
-    }
-  };
-
-  const handleCopyLink = () => {
-    if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
-      toast({ title: isPt ? 'Link copiado!' : 'Link copied!' });
-    }
-  };
 
   const handleRoleChange = async (memberId: string, role: 'admin' | 'collaborator') => {
     const { error } = await updateMemberRole(memberId, role);
