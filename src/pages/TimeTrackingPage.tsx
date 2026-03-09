@@ -2047,13 +2047,15 @@ const TimeTrackingPage = () => {
                                 return (
                                   <tr key={entry.id} className="border-b border-border/10 bg-muted/10 hover:bg-muted/30 transition-colors">
                                     <td className="py-2 px-3"></td>
-                                    <td className="py-2 px-3" colSpan={2}>
+                                    <td className="py-2 px-3">
                                       <div className="flex items-center gap-2 pl-4">
                                         <div className="w-1 h-1 rounded-full bg-muted-foreground/40" />
                                         <span className="text-foreground text-xs">{desc}</span>
                                         <span className="text-muted-foreground text-[10px]">· {dateStr}</span>
                                       </div>
                                     </td>
+                                    <td className="py-2 px-3"></td>
+                                    <td className="py-2 px-3 text-xs text-muted-foreground">{getProfileName((entry as any).user_id)}</td>
                                     <td className="py-2 px-3 text-right text-xs tabular-nums text-muted-foreground">{startStr} – {endStr}</td>
                                     <td className="py-2 px-3 text-right text-xs tabular-nums font-medium text-foreground">{dur}</td>
                                     <td className="py-2 px-3"></td>
