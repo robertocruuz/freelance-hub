@@ -28,6 +28,29 @@ export default function FinancePage() {
   const { user } = useAuth();
   const { expenses } = useExpenses();
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
+  const [roleChecked, setRoleChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const checkRole = async () => {
+      const { data: member } = await supabase
+        .from('organization_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('status', 'accepted')
+        .single();
+      if (member && (member as any).role === 'collaborator') {
+        setIsAdmin(false);
+      }
+      setRoleChecked(true);
+    };
+    checkRole();
+  }, [user]);
+
+  if (roleChecked && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
