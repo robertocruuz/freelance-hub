@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, Clock, Receipt, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet } from 'lucide-react';
+import { Home, FileText, Clock, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -24,7 +24,6 @@ const navItems = [
   { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
   { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
-  { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
   { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
   { key: 'team', icon: UsersRound, path: '/dashboard/team' },
 ] as const;
@@ -36,7 +35,6 @@ const labelMap: Record<string, (t: any) => string> = {
   projects: (t) => t.projects,
   kanban: (t) => t.tasks || 'Tarefas',
   time: (t) => t.timeTracking,
-  invoices: (t) => t.invoices,
   finance: () => 'Financeiro',
   team: (t) => t.team || 'Equipe',
 };

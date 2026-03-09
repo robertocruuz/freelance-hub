@@ -1,101 +1,339 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
-import { useClients } from '@/hooks/useClients';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ptBR } from 'date-fns/locale';
 import { cn, formatCurrency } from '@/lib/utils';
-import { ExternalLink, AlertTriangle, Inbox, Plus, FolderKanban } from 'lucide-react';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { generateInvoicePdf } from '@/lib/pdfGenerator';
+import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
+import ClientSelect from '@/components/ClientSelect';
+import { useClients } from '@/hooks/useClients';
 import type { FinanceInvoice } from '@/pages/FinancePage';
 
-const statusConfig: Record<string, { bg: string; dot: string; label: string }> = {
-  pending: { bg: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-500', label: 'Pendente' },
-  paid: { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800', dot: 'bg-emerald-500', label: 'Recebido' },
-  overdue: { bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800', dot: 'bg-red-500', label: 'Atrasado' },
-};
-
-function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatus: (s: string) => void }) {
-  const config = statusConfig[status] || statusConfig.pending;
-  const options = Object.entries(statusConfig);
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer hover:opacity-80 transition-opacity', config.bg)}>
-          <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', config.dot)} />
-          {config.label}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[140px]">
-        {options.map(([key, cfg]) => (
-          <DropdownMenuItem key={key} onClick={() => onChangeStatus(key)} className="gap-2 text-xs">
-            <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
-            {cfg.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
 }
+
+interface Invoice {
+  id: string;
+  name: string | null;
+  client_id: string | null;
+  client_name?: string;
+  items: InvoiceItem[];
+  total: number;
+  taxes: number;
+  discount: number;
+  status: string;
+  due_date: string | null;
+  payment_method: string | null;
+  created_at: string;
+}
+
+interface ProjectWithItems {
+  id: string;
+  name: string;
+  client_id: string | null;
+  client_name?: string;
+  due_date: string | null;
+  discount: number;
+  items: { name: string; value: number }[];
+}
+
+const statusColors: Record<string, string> = {
+  pending: 'bg-accent text-accent-foreground',
+  paid: 'bg-primary/10 text-primary',
+  overdue: 'bg-destructive/10 text-destructive',
+};
 
 interface Props {
   invoices: FinanceInvoice[];
   onRefresh: () => void;
 }
 
-export default function ReceivablesTab({ invoices, onRefresh }: Props) {
+export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: Props) {
+  const { t, lang } = useI18n();
+  const { user } = useAuth();
   const { clients } = useClients();
-  const navigate = useNavigate();
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState('');
+  const [invoiceName, setInvoiceName] = useState('');
+  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [taxes, setTaxes] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
+  const [notes, setNotes] = useState('');
+  const [organization, setOrganization] = useState<any>(null);
+  const [projects, setProjects] = useState<ProjectWithItems[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
-  const clientName = (id: string | null) => {
-    if (!id) return '';
-    return clients.find(c => c.id === id)?.name || '';
+  // New item input
+  const [newDesc, setNewDesc] = useState('');
+  const [newQty, setNewQty] = useState(1);
+  const [newPrice, setNewPrice] = useState(0);
+
+  // Editing item inline
+  const [editingItemIdx, setEditingItemIdx] = useState<number | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editQty, setEditQty] = useState(1);
+  const [editPrice, setEditPrice] = useState(0);
+
+  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+  const taxesValue = subtotal * (taxes / 100);
+  const discountValue = subtotal * (discount / 100);
+  const total = subtotal + taxesValue - discountValue;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('organizations').select('*').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      if (data) setOrganization(data);
+    });
+  }, [user]);
+
+  const loadProjects = useCallback(async () => {
+    if (!user) return;
+    const { data: projData } = await supabase
+      .from('projects')
+      .select('id, name, client_id, due_date, discount')
+      .order('name', { ascending: true });
+    if (!projData) return;
+    const projectIds = projData.map(p => p.id);
+    const { data: itemsData } = await supabase
+      .from('project_items')
+      .select('project_id, name, value')
+      .in('project_id', projectIds)
+      .order('position', { ascending: true });
+    const mapped: ProjectWithItems[] = projData.map(p => {
+      const cl = clients.find(c => c.id === p.client_id);
+      return {
+        ...p,
+        client_name: cl?.name,
+        items: (itemsData || []).filter(i => i.project_id === p.id).map(i => ({ name: i.name, value: Number(i.value) })),
+      };
+    });
+    setProjects(mapped);
+  }, [user, clients]);
+
+  const importProject = (project: ProjectWithItems) => {
+    setInvoiceName(project.name);
+    setClientId(project.client_id || '');
+    if (project.due_date) setDueDate(new Date(project.due_date + 'T12:00:00'));
+    setItems(
+      project.items.length > 0
+        ? project.items.map(i => ({ description: i.name, quantity: 1, unitPrice: i.value }))
+        : []
+    );
+    setTaxes(0);
+    setDiscount(project.discount || 0);
+    setCreating(true);
+    setImportDialogOpen(false);
+    toast.success(`Projeto "${project.name}" importado!`);
   };
 
-  // Auto-update overdue invoices in the database
+  const loadInvoices = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (data) {
+      setInvoices(data.map(inv => {
+        const cl = clients.find(c => c.id === inv.client_id);
+        return {
+          ...inv,
+          client_name: cl?.name,
+          items: (Array.isArray(inv.items) ? inv.items : []) as unknown as InvoiceItem[],
+        };
+      }));
+    }
+  }, [user, clients]);
+
+  useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
+  // Auto-update overdue invoices
   useEffect(() => {
     const overdueIds = invoices
       .filter(inv => inv.status === 'pending' && inv.due_date && isPast(new Date(inv.due_date + 'T23:59:59')) && !isToday(new Date(inv.due_date + 'T12:00:00')))
       .map(inv => inv.id);
     if (overdueIds.length > 0) {
       Promise.all(overdueIds.map(id => supabase.from('invoices').update({ status: 'overdue' }).eq('id', id)))
-        .then(() => onRefresh());
+        .then(() => { loadInvoices(); onRefresh(); });
     }
-  }, [invoices]);
+  }, [invoices, loadInvoices, onRefresh]);
 
-  const displayInvoices = invoices;
+  const addItem = () => {
+    if (!newDesc.trim()) return toast.error('Informe a descrição do item.');
+    setItems(prev => [...prev, { description: newDesc.trim(), quantity: newQty, unitPrice: newPrice }]);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
+  };
 
-  const filtered = displayInvoices.filter(inv => {
-    if (filterStatus !== 'all' && inv.status !== filterStatus) return false;
-    return true;
-  });
+  const removeItem = (idx: number) => setItems(prev => prev.filter((_, i) => i !== idx));
 
-  const nearDue = displayInvoices.filter(inv =>
+  const startEditItem = (idx: number) => {
+    const item = items[idx];
+    setEditingItemIdx(idx);
+    setEditDesc(item.description);
+    setEditQty(item.quantity);
+    setEditPrice(item.unitPrice);
+  };
+
+  const saveEditItem = () => {
+    if (editingItemIdx === null) return;
+    setItems(prev => prev.map((item, i) => i === editingItemIdx ? { description: editDesc, quantity: editQty, unitPrice: editPrice } : item));
+    setEditingItemIdx(null);
+  };
+
+  const cancelEditItem = () => setEditingItemIdx(null);
+
+  const resetForm = () => {
+    setCreating(false);
+    setEditingInvoiceId(null);
+    setInvoiceName('');
+    setClientId('');
+    setItems([]);
+    setTaxes(0);
+    setDiscount(0);
+    setDueDate(undefined);
+    setPaymentMethods([]);
+    setOtherPaymentMethod('');
+    setNotes('');
+    setEditingItemIdx(null);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
+  };
+
+  const editInvoice = (inv: Invoice) => {
+    setEditingInvoiceId(inv.id);
+    setInvoiceName(inv.name || '');
+    setClientId(inv.client_id || '');
+    setItems(inv.items);
+    setTaxes(inv.taxes);
+    setDiscount(inv.discount);
+    setDueDate(inv.due_date ? new Date(inv.due_date + 'T12:00:00') : undefined);
+    setPaymentMethods(inv.payment_method ? inv.payment_method.split(', ') : []);
+    setCreating(true);
+  };
+
+  const saveInvoice = async () => {
+    if (!user) return;
+    if (items.length === 0) return toast.error('Adicione pelo menos um item.');
+    const invoiceData = {
+      name: invoiceName.trim() || null,
+      client_id: clientId || null,
+      items: items as unknown as Json,
+      total,
+      taxes,
+      discount,
+      due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
+      payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
+    };
+
+    let error;
+    if (editingInvoiceId) {
+      ({ error } = await supabase.from('invoices').update(invoiceData).eq('id', editingInvoiceId));
+    } else {
+      ({ error } = await supabase.from('invoices').insert({ ...invoiceData, user_id: user.id, status: 'pending' }));
+    }
+    if (error) toast.error(error.message);
+    else {
+      toast.success(editingInvoiceId ? 'Fatura atualizada!' : 'Fatura salva!');
+      resetForm();
+      loadInvoices();
+      onRefresh();
+    }
+  };
+
+  const deleteInvoice = async (id: string) => {
+    await supabase.from('invoices').delete().eq('id', id);
+    loadInvoices();
+    onRefresh();
+  };
+
+  const updateInvoiceStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('invoices').update({ status }).eq('id', id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Status atualizado!');
+      loadInvoices();
+      onRefresh();
+    }
+  };
+
+  const statusLabel = (s: string) => {
+    const labels: Record<string, string> = { pending: 'Pendente', paid: 'Recebido', overdue: 'Atrasado' };
+    return labels[s] || s;
+  };
+
+  const exportInvoicePdf = async (inv: Invoice) => {
+    const client = clients.find(c => c.id === inv.client_id) || null;
+    await generateInvoicePdf({
+      invoiceName: inv.name,
+      items: inv.items,
+      total: inv.total,
+      taxes: inv.taxes,
+      discount: inv.discount,
+      status: statusLabel(inv.status),
+      dueDate: inv.due_date,
+      paymentMethod: inv.payment_method,
+      createdAt: inv.created_at,
+      organization: organization,
+      client: client,
+    });
+  };
+
+  const inputClass = "px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+  // Near due warning
+  const nearDue = invoices.filter(inv =>
     inv.status === 'pending' && inv.due_date &&
     isBefore(new Date(inv.due_date + 'T12:00:00'), addDays(new Date(), 3)) &&
     !isPast(new Date(inv.due_date + 'T23:59:59'))
   );
 
-  const handleChangeStatus = async (id: string, newStatus: string) => {
-    const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', id);
-    if (error) { toast.error('Erro ao atualizar'); return; }
-    toast.success('Status atualizado');
-    onRefresh();
-  };
-
-  // Group by status for visual priority
-  const overdueItems = filtered.filter(i => i.status === 'overdue');
-  const pendingItems = filtered.filter(i => i.status === 'pending');
-  const paidItems = filtered.filter(i => i.status === 'paid');
-  const grouped = [...overdueItems, ...pendingItems, ...paidItems];
-
   return (
     <div className="space-y-4">
-      {nearDue.length > 0 && (
+      {/* Near due warning */}
+      {nearDue.length > 0 && !creating && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4">
           <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
             <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -107,79 +345,430 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 justify-between">
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos ({invoices.length})</SelectItem>
-            <SelectItem value="pending">Pendente ({invoices.filter(i => i.status === 'pending').length})</SelectItem>
-            <SelectItem value="paid">Recebido ({invoices.filter(i => i.status === 'paid').length})</SelectItem>
-            <SelectItem value="overdue">Atrasado ({invoices.filter(i => i.status === 'overdue').length})</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?import_invoice=1')}>
-            <FolderKanban className="w-3.5 h-3.5" /> Importar
-          </Button>
-          <Button size="sm" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?new_invoice=1')}>
-            <Plus className="w-3.5 h-3.5" /> Nova Fatura
-          </Button>
-          <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices')}>
-            <ExternalLink className="w-3.5 h-3.5" /> Faturas
-          </Button>
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">
+          {creating ? (editingInvoiceId ? 'Editar Fatura' : 'Nova Fatura') : 'Faturas'}
+        </h2>
+        {!creating && (
+          <div className="flex items-center gap-2">
+            <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <FolderKanban className="w-4 h-4" />
+                  Importar
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Importar Fatura</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Selecione um projeto para importar os dados na fatura.
+                </p>
+                {projects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum projeto encontrado.</p>
+                ) : (
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {projects.map((p) => {
+                      const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
+                      const alreadyImported = invoices.some(inv => inv.name === p.name);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => alreadyImported ? toast.error('Este projeto já foi importado como fatura.') : importProject(p)}
+                          disabled={alreadyImported}
+                          className={cn(
+                            "w-full text-left p-3 rounded-xl border border-border transition-colors",
+                            alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-muted/30 hover:bg-muted/60"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-sm text-foreground flex items-center gap-2">
+                                {p.name}
+                                {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Já importado</Badge>}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {p.client_name || 'Sem cliente'}
+                                {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-sm text-foreground">{formatCurrency(totalValue)}</p>
+                              {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5">
+              <Plus className="w-4 h-4" /> Nova Fatura
+            </Button>
+          </div>
+        )}
       </div>
 
-      {grouped.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <Inbox className="w-6 h-6 text-muted-foreground" />
+      {/* Create/Edit Form */}
+      {creating && (
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Nome da Fatura</label>
+            <input
+              placeholder="Ex: Projeto Website"
+              value={invoiceName}
+              onChange={(e) => setInvoiceName(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
           </div>
-          <p className="text-sm font-medium text-foreground">Nenhuma fatura encontrada</p>
-          <p className="text-xs text-muted-foreground mt-1">Crie faturas no módulo de Faturas para visualizá-las aqui.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {grouped.map(inv => {
-            const isOverdue = inv.status === 'overdue';
-            return (
-              <div
-                key={inv.id}
-                className={cn(
-                  'group rounded-xl border bg-card p-4 transition-all hover:shadow-sm',
-                  isOverdue && 'border-red-200/60 dark:border-red-800/40 bg-red-50/30 dark:bg-red-950/10'
-                )}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <p className="font-semibold text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
-                      <StatusBadge status={inv.status} onChangeStatus={(s) => handleChangeStatus(inv.id, s)} />
-                    </div>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      {clientName(inv.client_id) && (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
-                          {clientName(inv.client_id)}
-                        </span>
+          {/* Client & Due Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Cliente</label>
+              <ClientSelect value={clientId} onChange={setClientId} placeholder="Cliente" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Vencimento</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : 'Selecionar'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {/* Payment method */}
+          <div className="space-y-2.5">
+            <label className="text-sm font-medium text-foreground">Forma de Pagamento</label>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {['Pix', 'Boleto', 'Cartão', 'Transferência bancária', 'Dinheiro', 'Outro'].map((method) => (
+                <label key={method} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={paymentMethods.includes(method)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setPaymentMethods(prev => [...prev, method]);
+                      } else {
+                        setPaymentMethods(prev => prev.filter(m => m !== method));
+                        if (method === 'Outro') setOtherPaymentMethod('');
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-border text-primary accent-primary"
+                  />
+                  {method}
+                </label>
+              ))}
+            </div>
+            {paymentMethods.includes('Outro') && (
+              <input
+                placeholder="Especifique a forma de pagamento..."
+                value={otherPaymentMethod}
+                onChange={(e) => setOtherPaymentMethod(e.target.value)}
+                className={`${inputClass} w-full mt-1`}
+              />
+            )}
+          </div>
+
+          {/* Add items section */}
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-foreground">Adicionar Itens</h3>
+            <div className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
+              <input
+                placeholder="Descrição"
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={inputClass}
+              />
+              <input
+                type="number"
+                placeholder="Qtd"
+                min={1}
+                value={newQty}
+                onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
+                className={`${inputClass} text-center`}
+              />
+              <input
+                type="number"
+                placeholder="Valor"
+                min={0}
+                step={0.01}
+                value={newPrice || ''}
+                onChange={(e) => setNewPrice(+e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                className={`${inputClass} text-right`}
+              />
+              <Button onClick={addItem} size="sm">Adicionar</Button>
+            </div>
+          </div>
+
+          {/* Items table */}
+          {items.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-3 font-semibold text-foreground">Descrição</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-16">Qtd</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-28">Valor Unit.</th>
+                    <th className="text-right py-3 px-3 font-semibold text-foreground w-28">Total</th>
+                    <th className="text-center py-3 px-3 font-semibold text-foreground w-28">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      {editingItemIdx === idx ? (
+                        <>
+                          <td className="py-2 px-3">
+                            <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={`${inputClass} w-full`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className={`${inputClass} w-full text-center`} />
+                          </td>
+                          <td className="py-2 px-3">
+                            <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
+                          </td>
+                          <td className="py-2 px-3 text-right font-medium text-foreground">
+                            {formatCurrency(editQty * editPrice)}
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <Button onClick={saveEditItem} size="sm" variant="default">Salvar</Button>
+                              <Button onClick={cancelEditItem} size="sm" variant="secondary">Cancelar</Button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-3 px-3 text-foreground">{item.description}</td>
+                          <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
+                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <Button onClick={() => startEditItem(idx)} size="sm" variant="outline">Editar</Button>
+                              <Button onClick={() => removeItem(idx)} size="sm" variant="destructive">Excluir</Button>
+                            </div>
+                          </td>
+                        </>
                       )}
-                      {inv.due_date && (
-                        <span className={cn('text-xs', isOverdue ? 'text-red-500 font-medium' : 'text-muted-foreground')}>
-                          {isOverdue ? 'Venceu' : 'Vence'}: {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <span className={cn('text-lg font-extrabold tabular-nums tracking-tight', isOverdue ? 'text-red-600 dark:text-red-400' : 'text-foreground')}>
-                      {formatCurrency(inv.total)}
-                    </span>
-                  </div>
-                </div>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Taxes, Discount & Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Impostos (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={taxes}
+                onChange={(e) => setTaxes(Math.min(100, Math.max(0, +e.target.value)))}
+                className={`${inputClass} w-full max-w-[200px]`}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Desconto (%)</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={discount}
+                onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
+                className={`${inputClass} w-full max-w-[200px]`}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Observação</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Observações sobre a fatura..."
+              className={`${inputClass} w-full resize-y`}
+            />
+          </div>
+
+          {/* Summary & actions */}
+          <div className="border-t border-border pt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">{formatCurrency(subtotal)}</span>
+            </div>
+            {taxes > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Impostos ({taxes}%)</span>
+                <span className="text-foreground">+ {formatCurrency(taxesValue)}</span>
               </div>
-            );
-          })}
+            )}
+            {discount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Desconto ({discount}%)</span>
+                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-lg font-bold">
+              <span className="text-foreground">Total</span>
+              <span className="text-foreground">{formatCurrency(total)}</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button onClick={resetForm} variant="secondary">Cancelar</Button>
+              <Button onClick={saveInvoice}>Salvar</Button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Invoices List */}
+      {invoices.length === 0 && !creating ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
+          <p className="text-sm">Nenhuma fatura criada ainda.</p>
+        </div>
+      ) : !creating ? (
+        <>
+          {/* Status filter */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['all', 'pending', 'paid', 'overdue'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+                  statusFilter === s
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                )}
+              >
+                {s === 'all' ? 'Todos' : statusLabel(s)}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-6">
+            {(() => {
+              const filtered = statusFilter === 'all' ? invoices : invoices.filter(inv => inv.status === statusFilter);
+              const grouped: Record<string, Invoice[]> = {};
+              filtered.forEach(inv => {
+                const key = inv.client_id || '__no_client__';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(inv);
+              });
+              const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+              const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
+              const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                if (a === '__no_client__') return 1;
+                if (b === '__no_client__') return -1;
+                return clientNameFn(a).localeCompare(clientNameFn(b));
+              });
+
+              return sortedKeys.map(key => (
+                <div key={key} className="space-y-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                    {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
+                  </h3>
+                  <div className="space-y-2">
+                    {grouped[key].map((inv) => (
+                      <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border overflow-hidden" style={clientColorFn(inv.client_id) ? { backgroundColor: `${clientColorFn(inv.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColorFn(inv.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
+                        <div>
+                          <p className="font-semibold text-foreground">{inv.name || inv.client_name || 'Sem cliente'} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold text-foreground">{formatCurrency(inv.total)}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="focus:outline-none">
+                                <Badge className={cn(statusColors[inv.status], "cursor-pointer gap-1")}>
+                                  {statusLabel(inv.status)}
+                                  <ChevronDown className="w-3 h-3" />
+                                </Badge>
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {['pending', 'paid', 'overdue'].map((s) => (
+                                <DropdownMenuItem
+                                  key={s}
+                                  onClick={() => updateInvoiceStatus(inv.id, s)}
+                                  className={cn("text-sm", inv.status === s && "font-bold")}
+                                >
+                                  <span className={cn("inline-block w-2 h-2 rounded-full mr-2", s === 'pending' ? 'bg-accent-foreground' : s === 'paid' ? 'bg-primary' : 'bg-destructive')} />
+                                  {statusLabel(s)}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="text-muted-foreground hover:text-foreground focus:outline-none">
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
+                                <Pencil className="w-4 h-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
+                                    <Trash2 className="w-4 h-4" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir fatura?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta ação não pode ser desfeita. A fatura será permanentemente excluída.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deleteInvoice(inv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -14,7 +14,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
-import InvoicesPage from "./pages/InvoicesPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import HomePage from "./pages/HomePage";
@@ -50,7 +49,7 @@ const App = () => (
                   <Route path="projects" element={<ProjectsPage />} />
                   <Route path="budgets" element={<BudgetsPage />} />
                   <Route path="time" element={<TimeTrackingPage />} />
-                  <Route path="invoices" element={<InvoicesPage />} />
+                  <Route path="invoices" element={<Navigate to="/dashboard/finance" replace />} />
                   <Route path="kanban" element={<KanbanPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="settings" element={<SettingsPage />} />
