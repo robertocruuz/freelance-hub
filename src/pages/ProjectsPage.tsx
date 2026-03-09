@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon, X, Kanban } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
