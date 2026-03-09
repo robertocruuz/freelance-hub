@@ -108,10 +108,6 @@ const DashboardLayout = () => {
         </button>
       </div>
 
-      {/* Notifications row */}
-      <div className={cn('px-3 pt-3 pb-1', collapsed && !isMobile && 'px-2')}>
-        <SidebarNotificationItem collapsed={collapsed && !isMobile} />
-      </div>
 
       <Separator className="mx-3 my-2 bg-sidebar-border" />
 
