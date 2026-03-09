@@ -39,6 +39,9 @@ export default function CashFlowTab({ invoices }: Props) {
     to: endOfMonth(now),
   });
 
+  const ignoreNextBarSelect = useRef(false);
+  const ignoreNextSaldoSelect = useRef(false);
+
   const startDate = barRange.from ?? subMonths(startOfMonth(now), 5);
   const endDate = barRange.to ?? endOfMonth(now);
   const saldoStartDate = saldoRange.from ?? subMonths(startOfMonth(now), 5);
