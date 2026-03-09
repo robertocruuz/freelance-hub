@@ -92,6 +92,18 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
     }
   };
 
+  // Auto-generate invite link on mount
+  useEffect(() => {
+    if (isAdmin && orgId && !inviteLink) {
+      (async () => {
+        const { token } = await generateInviteLink(inviteRole);
+        if (token) {
+          setInviteLink(`${window.location.origin}/invite/${token}`);
+        }
+      })();
+    }
+  }, [isAdmin, orgId]);
+
   const handleGenerateLink = async () => {
     setInviteLoading(true);
     const { token, error } = await generateInviteLink(inviteRole);
