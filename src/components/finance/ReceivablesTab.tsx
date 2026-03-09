@@ -6,6 +6,9 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { generateInvoicePdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -76,6 +79,12 @@ const statusColors: Record<string, string> = {
   pending: 'bg-accent text-accent-foreground',
   paid: 'bg-primary/10 text-primary',
   overdue: 'bg-destructive/10 text-destructive',
+};
+
+const statusDots: Record<string, string> = {
+  pending: 'bg-amber-500',
+  paid: 'bg-primary',
+  overdue: 'bg-destructive',
 };
 
 interface Props {
@@ -321,8 +330,6 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
     });
   };
 
-  const inputClass = "px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
-
   // Near due warning
   const nearDue = invoices.filter(inv =>
     inv.status === 'pending' && inv.due_date &&
@@ -330,16 +337,21 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
     !isPast(new Date(inv.due_date + 'T23:59:59'))
   );
 
+  const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+  const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Near due warning */}
       {nearDue.length > 0 && !creating && (
-        <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4">
+        <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4" role="alert">
           <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">{nearDue.length} fatura(s) vencem em breve</p>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              {nearDue.length} fatura{nearDue.length > 1 ? 's' : ''} vence{nearDue.length > 1 ? 'm' : ''} em breve
+            </p>
             <p className="text-xs text-amber-600/80 dark:text-amber-400/60">Nos próximos 3 dias</p>
           </div>
         </div>
@@ -354,20 +366,25 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
           <div className="flex items-center gap-2">
             <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5 rounded-xl">
                   <FolderKanban className="w-4 h-4" />
-                  Importar
+                  <span className="hidden sm:inline">Importar</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>Importar Fatura</DialogTitle>
+                  <DialogTitle>Importar de Projeto</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground mb-3">
                   Selecione um projeto para importar os dados na fatura.
                 </p>
                 {projects.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">Nenhum projeto encontrado.</p>
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                      <FolderKanban className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">Nenhum projeto encontrado</p>
+                  </div>
                 ) : (
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {projects.map((p) => {
@@ -379,24 +396,29 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
                           onClick={() => alreadyImported ? toast.error('Este projeto já foi importado como fatura.') : importProject(p)}
                           disabled={alreadyImported}
                           className={cn(
-                            "w-full text-left p-3 rounded-xl border border-border transition-colors",
-                            alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-muted/30 hover:bg-muted/60"
+                            "w-full text-left p-3.5 rounded-xl border border-border transition-all",
+                            alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-card hover:bg-muted/50 hover:shadow-sm"
                           )}
                         >
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-sm text-foreground flex items-center gap-2">
-                                {p.name}
-                                {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Já importado</Badge>}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {p.client_name || 'Sem cliente'}
-                                {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
-                              </p>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <FolderKanban className="w-4 h-4 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-sm text-foreground flex items-center gap-2">
+                                  {p.name}
+                                  {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Já importado</Badge>}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {p.client_name || 'Sem cliente'}
+                                  {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
+                                </p>
+                              </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-sm text-foreground">{formatCurrency(totalValue)}</p>
-                              {p.due_date && <p className="text-[11px] text-muted-foreground">{p.due_date}</p>}
+                              <p className="font-semibold text-sm text-foreground tabular-nums">{formatCurrency(totalValue)}</p>
+                              {p.due_date && <p className="text-[11px] text-muted-foreground">{format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</p>}
                             </div>
                           </div>
                         </button>
@@ -407,7 +429,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
               </DialogContent>
             </Dialog>
 
-            <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5">
+            <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5 rounded-xl font-semibold shadow-sm">
               <Plus className="w-4 h-4" /> Nova Fatura
             </Button>
           </div>
@@ -416,152 +438,171 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
 
       {/* Create/Edit Form */}
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-5 animate-fade-in shadow-sm">
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Nome da Fatura</label>
-            <input
+            <label className="text-xs font-medium text-muted-foreground">Nome da Fatura</label>
+            <Input
               placeholder="Ex: Projeto Website"
               value={invoiceName}
               onChange={(e) => setInvoiceName(e.target.value)}
-              className={`${inputClass} w-full`}
+              className="rounded-xl"
             />
           </div>
+
           {/* Client & Due Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Cliente</label>
-              <ClientSelect value={clientId} onChange={setClientId} placeholder="Cliente" />
+              <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+              <ClientSelect value={clientId} onChange={setClientId} placeholder="Selecionar cliente" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Vencimento</label>
+              <label className="text-xs font-medium text-muted-foreground">Vencimento</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : 'Selecionar'}
-                  </Button>
+                  <button
+                    className={cn(
+                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      !dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="w-4 h-4 shrink-0" />
+                    {dueDate ? format(dueDate, "dd/MM/yyyy", { locale: ptBR }) : 'Selecionar data'}
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
 
           {/* Payment method */}
-          <div className="space-y-2.5">
-            <label className="text-sm font-medium text-foreground">Forma de Pagamento</label>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Forma de Pagamento</label>
+            <div className="flex flex-wrap gap-x-5 gap-y-2.5">
               {['Pix', 'Boleto', 'Cartão', 'Transferência bancária', 'Dinheiro', 'Outro'].map((method) => (
-                <label key={method} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                  <input
-                    type="checkbox"
+                <label key={method} className="flex items-center gap-2 text-sm text-foreground cursor-pointer select-none">
+                  <Checkbox
                     checked={paymentMethods.includes(method)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
+                    onCheckedChange={(checked) => {
+                      if (checked) {
                         setPaymentMethods(prev => [...prev, method]);
                       } else {
                         setPaymentMethods(prev => prev.filter(m => m !== method));
                         if (method === 'Outro') setOtherPaymentMethod('');
                       }
                     }}
-                    className="h-4 w-4 rounded border-border text-primary accent-primary"
                   />
                   {method}
                 </label>
               ))}
             </div>
             {paymentMethods.includes('Outro') && (
-              <input
+              <Input
                 placeholder="Especifique a forma de pagamento..."
                 value={otherPaymentMethod}
                 onChange={(e) => setOtherPaymentMethod(e.target.value)}
-                className={`${inputClass} w-full mt-1`}
+                className="rounded-xl mt-1"
               />
             )}
           </div>
 
           {/* Add items section */}
-          <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">Adicionar Itens</h3>
-            <div className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-center">
-              <input
-                placeholder="Descrição"
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                className={inputClass}
-              />
-              <input
-                type="number"
-                placeholder="Qtd"
-                min={1}
-                value={newQty}
-                onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
-                className={`${inputClass} text-center`}
-              />
-              <input
-                type="number"
-                placeholder="Valor"
-                min={0}
-                step={0.01}
-                value={newPrice || ''}
-                onChange={(e) => setNewPrice(+e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                className={`${inputClass} text-right`}
-              />
-              <Button onClick={addItem} size="sm">Adicionar</Button>
+          <div className="space-y-3">
+            <label className="text-xs font-medium text-muted-foreground">Itens da Fatura</label>
+            <div className="grid grid-cols-[1fr_70px_100px_auto] gap-2 items-end">
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">Descrição</span>
+                <Input
+                  placeholder="Descrição do item"
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">Qtd</span>
+                <Input
+                  type="number"
+                  placeholder="1"
+                  min={1}
+                  value={newQty}
+                  onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
+                  className="rounded-xl text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">Valor</span>
+                <Input
+                  type="number"
+                  placeholder="0,00"
+                  min={0}
+                  step={0.01}
+                  value={newPrice || ''}
+                  onChange={(e) => setNewPrice(+e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                  className="rounded-xl text-right"
+                />
+              </div>
+              <Button onClick={addItem} size="sm" className="rounded-xl h-10">
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 
           {/* Items table */}
           {items.length > 0 && (
-            <div className="overflow-x-auto">
+            <div className="rounded-xl border border-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-3 font-semibold text-foreground">Descrição</th>
-                    <th className="text-center py-3 px-3 font-semibold text-foreground w-16">Qtd</th>
-                    <th className="text-right py-3 px-3 font-semibold text-foreground w-28">Valor Unit.</th>
-                    <th className="text-right py-3 px-3 font-semibold text-foreground w-28">Total</th>
-                    <th className="text-center py-3 px-3 font-semibold text-foreground w-28">Ações</th>
+                  <tr className="bg-muted/40">
+                    <th className="text-left py-2.5 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Descrição</th>
+                    <th className="text-center py-2.5 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16">Qtd</th>
+                    <th className="text-right py-2.5 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-28">Unit.</th>
+                    <th className="text-right py-2.5 px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-28">Total</th>
+                    <th className="w-20" />
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <tr key={idx} className="border-t border-border/50 hover:bg-muted/20 transition-colors">
                       {editingItemIdx === idx ? (
                         <>
                           <td className="py-2 px-3">
-                            <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={`${inputClass} w-full`} />
+                            <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="rounded-lg h-8 text-sm" />
                           </td>
                           <td className="py-2 px-3">
-                            <input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className={`${inputClass} w-full text-center`} />
+                            <Input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className="rounded-lg h-8 text-sm text-center" />
                           </td>
                           <td className="py-2 px-3">
-                            <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
+                            <Input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className="rounded-lg h-8 text-sm text-right" />
                           </td>
-                          <td className="py-2 px-3 text-right font-medium text-foreground">
+                          <td className="py-2 px-3 text-right font-medium text-foreground tabular-nums">
                             {formatCurrency(editQty * editPrice)}
                           </td>
                           <td className="py-2 px-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <Button onClick={saveEditItem} size="sm" variant="default">Salvar</Button>
-                              <Button onClick={cancelEditItem} size="sm" variant="secondary">Cancelar</Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button onClick={saveEditItem} size="sm" variant="default" className="h-7 px-2 text-[11px] rounded-lg">OK</Button>
+                              <Button onClick={cancelEditItem} size="sm" variant="ghost" className="h-7 px-2 text-[11px] rounded-lg">✕</Button>
                             </div>
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="py-3 px-3 text-foreground">{item.description}</td>
-                          <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
-                          <td className="py-3 px-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <Button onClick={() => startEditItem(idx)} size="sm" variant="outline">Editar</Button>
-                              <Button onClick={() => removeItem(idx)} size="sm" variant="destructive">Excluir</Button>
+                          <td className="py-2.5 px-3 text-foreground font-medium">{item.description}</td>
+                          <td className="py-2.5 px-3 text-center text-muted-foreground tabular-nums">{item.quantity}</td>
+                          <td className="py-2.5 px-3 text-right text-muted-foreground tabular-nums">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-2.5 px-3 text-right font-semibold text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center justify-end gap-0.5">
+                              <Button onClick={() => startEditItem(idx)} size="icon" variant="ghost" className="w-7 h-7 rounded-lg">
+                                <Pencil className="w-3 h-3 text-muted-foreground" />
+                              </Button>
+                              <Button onClick={() => removeItem(idx)} size="icon" variant="ghost" className="w-7 h-7 rounded-lg hover:bg-destructive/10">
+                                <Trash2 className="w-3 h-3 text-destructive" />
+                              </Button>
                             </div>
                           </td>
                         </>
@@ -574,101 +615,111 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
           )}
 
           {/* Taxes, Discount & Notes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Impostos (%)</label>
-              <input
+              <label className="text-xs font-medium text-muted-foreground">Impostos (%)</label>
+              <Input
                 type="number"
                 min={0}
                 max={100}
                 step={0.1}
-                value={taxes}
+                value={taxes || ''}
                 onChange={(e) => setTaxes(Math.min(100, Math.max(0, +e.target.value)))}
-                className={`${inputClass} w-full max-w-[200px]`}
+                placeholder="0"
+                className="w-40 rounded-xl"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Desconto (%)</label>
-              <input
+              <label className="text-xs font-medium text-muted-foreground">Desconto (%)</label>
+              <Input
                 type="number"
                 min={0}
                 max={100}
                 step={0.1}
-                value={discount}
+                value={discount || ''}
                 onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
-                className={`${inputClass} w-full max-w-[200px]`}
+                placeholder="0"
+                className="w-40 rounded-xl"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Observação</label>
-            <textarea
+            <label className="text-xs font-medium text-muted-foreground">Observação</label>
+            <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Observações sobre a fatura..."
-              className={`${inputClass} w-full resize-y`}
+              className="rounded-xl"
             />
           </div>
 
           {/* Summary & actions */}
-          <div className="border-t border-border pt-4 space-y-2">
+          <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">{formatCurrency(subtotal)}</span>
+              <span className="text-foreground tabular-nums">{formatCurrency(subtotal)}</span>
             </div>
             {taxes > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Impostos ({taxes}%)</span>
-                <span className="text-foreground">+ {formatCurrency(taxesValue)}</span>
+                <span className="text-foreground tabular-nums">+ {formatCurrency(taxesValue)}</span>
               </div>
             )}
             {discount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Desconto ({discount}%)</span>
-                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
+                <span className="text-destructive tabular-nums">- {formatCurrency(discountValue)}</span>
               </div>
             )}
-            <div className="flex items-center justify-between text-lg font-bold">
-              <span className="text-foreground">Total</span>
-              <span className="text-foreground">{formatCurrency(total)}</span>
+            <div className="border-t border-border pt-2 flex items-center justify-between">
+              <span className="text-base font-bold text-foreground">Total</span>
+              <span className="text-xl font-extrabold text-primary tabular-nums">{formatCurrency(total)}</span>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button onClick={resetForm} variant="secondary">Cancelar</Button>
-              <Button onClick={saveInvoice}>Salvar</Button>
-            </div>
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <Button variant="ghost" onClick={resetForm} className="flex-1 rounded-xl font-semibold">
+              Cancelar
+            </Button>
+            <Button onClick={saveInvoice} className="flex-1 rounded-xl font-semibold">
+              {editingInvoiceId ? 'Salvar alterações' : 'Salvar fatura'}
+            </Button>
           </div>
         </div>
       )}
 
       {/* Invoices List */}
       {invoices.length === 0 && !creating ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhuma fatura criada ainda.</p>
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+            <Receipt className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">Nenhuma fatura criada ainda</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">Clique em "Nova Fatura" para começar.</p>
         </div>
       ) : !creating ? (
         <>
           {/* Status filter */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {(['all', 'pending', 'paid', 'overdue'] as const).map(s => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                   statusFilter === s
-                    ? 'bg-primary text-primary-foreground border-primary'
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
                 )}
               >
-                {s === 'all' ? 'Todos' : statusLabel(s)}
+                {s === 'all' ? `Todos (${invoices.length})` : statusLabel(s)}
               </button>
             ))}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {(() => {
               const filtered = statusFilter === 'all' ? invoices : invoices.filter(inv => inv.status === statusFilter);
               const grouped: Record<string, Invoice[]> = {};
@@ -677,94 +728,158 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
                 if (!grouped[key]) grouped[key] = [];
                 grouped[key].push(inv);
               });
-              const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
-              const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
               const sortedKeys = Object.keys(grouped).sort((a, b) => {
                 if (a === '__no_client__') return 1;
                 if (b === '__no_client__') return -1;
                 return clientNameFn(a).localeCompare(clientNameFn(b));
               });
 
-              return sortedKeys.map(key => (
-                <div key={key} className="space-y-2">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                    {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
-                  </h3>
-                  <div className="space-y-2">
-                    {grouped[key].map((inv) => (
-                      <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl border border-border overflow-hidden" style={clientColorFn(inv.client_id) ? { backgroundColor: `${clientColorFn(inv.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColorFn(inv.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
-                        <div>
-                          <p className="font-semibold text-foreground">{inv.name || inv.client_name || 'Sem cliente'} · {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Venc: {inv.due_date || '-'} · {new Date(inv.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-foreground">{formatCurrency(inv.total)}</span>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="focus:outline-none">
-                                <Badge className={cn(statusColors[inv.status], "cursor-pointer gap-1")}>
-                                  {statusLabel(inv.status)}
-                                  <ChevronDown className="w-3 h-3" />
-                                </Badge>
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {['pending', 'paid', 'overdue'].map((s) => (
-                                <DropdownMenuItem
-                                  key={s}
-                                  onClick={() => updateInvoiceStatus(inv.id, s)}
-                                  className={cn("text-sm", inv.status === s && "font-bold")}
-                                >
-                                  <span className={cn("inline-block w-2 h-2 rounded-full mr-2", s === 'pending' ? 'bg-accent-foreground' : s === 'paid' ? 'bg-primary' : 'bg-destructive')} />
-                                  {statusLabel(s)}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <button onClick={() => exportInvoicePdf(inv)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="text-muted-foreground hover:text-foreground focus:outline-none">
-                                <MoreVertical className="w-4 h-4" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
-                                <Pencil className="w-4 h-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
-                                    <Trash2 className="w-4 h-4" />
-                                    Excluir
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Excluir fatura?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Esta ação não pode ser desfeita. A fatura será permanentemente excluída.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteInvoice(inv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                      Excluir
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    ))}
+              if (filtered.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Receipt className="w-8 h-8 opacity-30 mb-2" />
+                    <p className="text-sm">Nenhuma fatura neste filtro.</p>
                   </div>
-                </div>
-              ));
+                );
+              }
+
+              return sortedKeys.map(key => {
+                const color = key !== '__no_client__' ? clientColorFn(key) : null;
+                return (
+                  <div key={key} className="space-y-2.5">
+                    {/* Client group header */}
+                    <div className="flex items-center gap-2 px-1">
+                      {color && (
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      )}
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                        {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
+                      </h3>
+                      <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                        {grouped[key].length}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {grouped[key].map((inv) => {
+                        const isOverdue = inv.status === 'overdue';
+                        return (
+                          <div
+                            key={inv.id}
+                            className={cn(
+                              "rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-sm group",
+                              isOverdue && "border-destructive/20"
+                            )}
+                            style={color
+                              ? { backgroundColor: `${color}08`, borderColor: isOverdue ? undefined : `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
+                              : { backgroundColor: 'hsl(var(--card))', borderColor: isOverdue ? undefined : 'hsl(var(--border))' }
+                            }
+                          >
+                            <div className="flex items-center justify-between p-4">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-foreground truncate">
+                                  {inv.name || inv.client_name || 'Sem nome'}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                  {inv.client_name && inv.name && (
+                                    <span className="text-xs text-muted-foreground">{inv.client_name}</span>
+                                  )}
+                                  {inv.due_date && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className={cn(
+                                        "text-xs flex items-center gap-1",
+                                        isOverdue ? "text-destructive font-medium" : "text-muted-foreground"
+                                      )}>
+                                        <CalendarIcon className="w-3 h-3" />
+                                        {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                                      </span>
+                                    </>
+                                  )}
+                                  <span className="text-xs text-muted-foreground">·</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 ml-3 shrink-0" onClick={e => e.stopPropagation()}>
+                                <span className="font-semibold text-primary tabular-nums text-sm">
+                                  {formatCurrency(inv.total)}
+                                </span>
+                                {/* Status dropdown */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button className={cn(
+                                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                                      statusColors[inv.status]
+                                    )}>
+                                      {statusLabel(inv.status)}
+                                      <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {['pending', 'paid', 'overdue'].map((s) => (
+                                      <DropdownMenuItem
+                                        key={s}
+                                        onClick={() => updateInvoiceStatus(inv.id, s)}
+                                        className={cn("gap-2", inv.status === s && "font-bold")}
+                                      >
+                                        <span className={cn("w-2 h-2 rounded-full shrink-0", statusDots[s])} />
+                                        {statusLabel(s)}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => editInvoice(inv)} title="Editar">
+                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => exportInvoicePdf(inv)} title="Exportar PDF">
+                                  <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
+                                      <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
+                                      <Pencil className="w-4 h-4" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
+                                          <Trash2 className="w-4 h-4" />
+                                          Excluir
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Excluir fatura?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Esta ação não pode ser desfeita. A fatura será permanentemente excluída.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deleteInvoice(inv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                            Excluir
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              });
             })()}
           </div>
         </>
