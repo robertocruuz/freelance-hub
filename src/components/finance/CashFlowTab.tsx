@@ -192,6 +192,17 @@ export default function CashFlowTab({ invoices }: Props) {
                     />
                   </PopoverContent>
                 </Popover>
+                {(barRange.from || barRange.to) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                    onClick={() => setBarRange({ from: subMonths(startOfMonth(now), 5), to: endOfMonth(now) })}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Limpar
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
