@@ -11,6 +11,7 @@ const translations = {
     register: 'Criar conta',
     passwordGenerator: 'Gerador de Senhas',
     budgets: 'Orçamentos',
+    tasks: 'Tarefas',
     timeTracking: 'Time Tracking',
     invoices: 'Faturas',
     profile: 'Perfil',
