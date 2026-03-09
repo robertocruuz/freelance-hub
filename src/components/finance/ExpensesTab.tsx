@@ -102,6 +102,7 @@ export default function ExpensesTab() {
       status: 'pending' as string,
       client_id: null,
       paid_date: null,
+      is_recurring: isRecurring,
     };
     let ok: boolean | undefined;
     if (editing) {
