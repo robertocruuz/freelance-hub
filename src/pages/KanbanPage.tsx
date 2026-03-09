@@ -102,12 +102,13 @@ const KanbanPage = () => {
   const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
   const [deletingBoard, setDeletingBoard] = useState<KanbanBoard | null>(null);
 
-  // Auto-select first board
   useEffect(() => {
-    if (!loading && boards.length > 0 && !activeBoardId) {
-      setActiveBoardId(boards[0].id);
+    if (!loading && boards.length > 0) {
+      if (!activeBoardId || !boards.find(b => b.id === activeBoardId)) {
+        setActiveBoardId(boards[0].id);
+      }
     }
-  }, [loading, boards, activeBoardId]);
+  }, [loading, boards]);
 
   // Load projects for filter
   useEffect(() => {
