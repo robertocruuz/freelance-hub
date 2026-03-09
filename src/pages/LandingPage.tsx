@@ -5,6 +5,13 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import heroDashboard from '@/assets/hero-dashboard.jpg';
+import featureClients from '@/assets/feature-clients.jpg';
+import featureKanban from '@/assets/feature-kanban.jpg';
+import featureTimetracking from '@/assets/feature-timetracking.jpg';
+import featureBudgets from '@/assets/feature-budgets.jpg';
+import featureInvoices from '@/assets/feature-invoices.jpg';
+import featureVault from '@/assets/feature-vault.jpg';
 
 const LandingPage = () => {
   const navigate = useNavigate();
