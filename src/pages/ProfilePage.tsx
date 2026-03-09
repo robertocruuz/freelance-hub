@@ -39,6 +39,8 @@ const ProfilePage = () => {
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [statePopoverOpen, setStatePopoverOpen] = useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoModalOpen, setLogoModalOpen] = useState(false);
