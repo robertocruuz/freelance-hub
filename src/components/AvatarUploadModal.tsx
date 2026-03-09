@@ -1,10 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, DragEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Trash2, Camera, Crop } from 'lucide-react';
+import { Upload, Trash2, Camera, Crop, ImagePlus, Check, Loader2 } from 'lucide-react';
 import ReactCrop, { type Crop as CropType, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -54,17 +54,17 @@ export default function AvatarUploadModal({ open, onOpenChange, userId, currentU
   const [imgSrc, setImgSrc] = useState('');
   const [crop, setCrop] = useState<CropType>();
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
     setImgSrc('');
     setCrop(undefined);
+    setDragOver(false);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const loadFile = (f: File) => {
     if (!f.type.startsWith('image/')) {
       toast({ title: 'Selecione uma imagem válida', variant: 'destructive' });
       return;
@@ -72,8 +72,28 @@ export default function AvatarUploadModal({ open, onOpenChange, userId, currentU
     const reader = new FileReader();
     reader.onload = () => setImgSrc(reader.result as string);
     reader.readAsDataURL(f);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    loadFile(f);
     if (inputRef.current) inputRef.current.value = '';
   };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) loadFile(f);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = () => setDragOver(false);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -122,82 +142,143 @@ export default function AvatarUploadModal({ open, onOpenChange, userId, currentU
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isCropping && <Crop className="w-4 h-4" />}
-            {isCropping ? 'Recortar foto' : 'Foto de perfil'}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col items-center gap-4 py-2">
-          {isCropping ? (
-            <div className="w-full max-h-[350px] overflow-auto rounded-lg border border-border">
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                aspect={1}
-                circularCrop
-                className="max-w-full"
-              >
-                <img
-                  ref={imgRef}
-                  src={imgSrc}
-                  alt="Crop"
-                  onLoad={onImageLoad}
-                  className="max-w-full"
-                  style={{ maxHeight: 340 }}
-                />
-              </ReactCrop>
-            </div>
-          ) : (
-            <div
-              className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-border cursor-pointer group"
-              onClick={() => inputRef.current?.click()}
-            >
-              {currentUrl ? (
-                <img src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <Avatar className="w-full h-full rounded-none">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold rounded-none w-full h-full">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          )}
-
-          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-
-          <div className="flex gap-2 w-full">
+      <DialogContent className="max-w-md p-0 overflow-hidden gap-0">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="flex items-center gap-2.5 text-lg font-bold">
             {isCropping ? (
               <>
-                <Button className="flex-1 gap-1.5" onClick={handleUpload} disabled={uploading}>
-                  <Upload className="w-4 h-4" />
-                  {uploading ? 'Enviando...' : 'Salvar'}
-                </Button>
-                <Button variant="ghost" onClick={reset}>
-                  Cancelar
-                </Button>
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Crop className="w-4 h-4 text-primary" />
+                </div>
+                Ajustar foto
               </>
             ) : (
               <>
-                <Button variant="outline" className="flex-1 gap-1.5" onClick={() => inputRef.current?.click()}>
-                  <Upload className="w-4 h-4" />
-                  Escolher foto
-                </Button>
-                {currentUrl && (
-                  <Button variant="destructive" size="icon" onClick={handleRemove} disabled={uploading}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Camera className="w-4 h-4 text-primary" />
+                </div>
+                Foto de perfil
               </>
             )}
-          </div>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="px-6 pb-6">
+          {isCropping ? (
+            /* ── Crop view ── */
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-border overflow-hidden bg-muted/30">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  aspect={1}
+                  circularCrop
+                  className="max-w-full [&_.ReactCrop__crop-selection]:!border-2 [&_.ReactCrop__crop-selection]:!border-primary"
+                >
+                  <img
+                    ref={imgRef}
+                    src={imgSrc}
+                    alt="Crop"
+                    onLoad={onImageLoad}
+                    className="max-w-full"
+                    style={{ maxHeight: 320 }}
+                  />
+                </ReactCrop>
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Arraste para ajustar a área de recorte
+              </p>
+
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 gap-2 h-11 rounded-xl font-semibold"
+                  onClick={handleUpload}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  {uploading ? 'Salvando...' : 'Salvar foto'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-xl px-5"
+                  onClick={reset}
+                  disabled={uploading}
+                >
+                  Voltar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            /* ── Initial view ── */
+            <div className="space-y-5">
+              {/* Current avatar preview */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-primary/10 ring-offset-2 ring-offset-card">
+                    {currentUrl ? (
+                      <img src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <Avatar className="w-full h-full rounded-none">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-extrabold rounded-none w-full h-full">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                  {currentUrl && (
+                    <button
+                      onClick={handleRemove}
+                      disabled={uploading}
+                      className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-lg hover:scale-110 transition-transform disabled:opacity-50"
+                      title="Remover foto"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Drop zone */}
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() => inputRef.current?.click()}
+                className={`
+                  relative cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200
+                  flex flex-col items-center justify-center gap-3 py-8 px-4
+                  ${dragOver
+                    ? 'border-primary bg-primary/5 scale-[1.01]'
+                    : 'border-border hover:border-primary/50 hover:bg-muted/40'
+                  }
+                `}
+              >
+                <div className={`
+                  w-12 h-12 rounded-2xl flex items-center justify-center transition-colors
+                  ${dragOver ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}
+                `}>
+                  <ImagePlus className="w-6 h-6" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    Clique ou arraste uma imagem
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG ou WebP • Máx. 5MB
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
       </DialogContent>
     </Dialog>
   );
