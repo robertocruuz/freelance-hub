@@ -186,7 +186,7 @@ export default function CashFlowTab({ invoices }: Props) {
                           setBarRange({ from: day, to: undefined });
                         }
                       }}
-                      numberOfMonths={2}
+                      numberOfMonths={1}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
                     />
