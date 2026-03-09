@@ -3,9 +3,9 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { useExpenses, type Expense } from '@/hooks/useExpenses';
+import { CalendarDays } from 'lucide-react';
 import type { FinanceInvoice } from '@/pages/FinancePage';
 
 interface Props {
@@ -17,10 +17,20 @@ export default function FinanceCalendarTab({ invoices }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const eventDates = useMemo(() => {
-    const dates = new Set<string>();
-    expenses.forEach(e => { if (e.due_date) dates.add(e.due_date); });
-    invoices.forEach(i => { if (i.due_date) dates.add(i.due_date); });
-    return dates;
+    const map = new Map<string, { receivables: number; payables: number }>();
+    invoices.forEach(i => {
+      if (!i.due_date) return;
+      const existing = map.get(i.due_date) || { receivables: 0, payables: 0 };
+      existing.receivables += 1;
+      map.set(i.due_date, existing);
+    });
+    expenses.forEach(e => {
+      if (!e.due_date) return;
+      const existing = map.get(e.due_date) || { receivables: 0, payables: 0 };
+      existing.payables += 1;
+      map.set(e.due_date, existing);
+    });
+    return map;
   }, [expenses, invoices]);
 
   const selectedEvents = useMemo(() => {
@@ -32,9 +42,13 @@ export default function FinanceCalendarTab({ invoices }: Props) {
     };
   }, [selectedDate, expenses, invoices]);
 
+  const totalReceivables = selectedEvents.invoices.reduce((s, i) => s + i.total, 0);
+  const totalPayables = selectedEvents.expenses.reduce((s, e) => s + e.amount, 0);
+  const hasEvents = selectedEvents.invoices.length > 0 || selectedEvents.expenses.length > 0;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6">
-      <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
+      <Card className="overflow-hidden">
         <CardContent className="p-4">
           <Calendar
             mode="single"
@@ -43,38 +57,62 @@ export default function FinanceCalendarTab({ invoices }: Props) {
             locale={ptBR}
             className="p-3 pointer-events-auto"
             modifiers={{ hasEvent: (date) => eventDates.has(format(date, 'yyyy-MM-dd')) }}
-            modifiersClassNames={{ hasEvent: 'bg-primary/20 font-bold' }}
+            modifiersClassNames={{ hasEvent: 'bg-primary/15 font-bold text-primary ring-1 ring-primary/20' }}
           />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">
-            {selectedDate ? format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione uma data'}
-          </CardTitle>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-bold">
+              {selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}
+            </CardTitle>
+            {hasEvents && (
+              <div className="flex items-center gap-3 text-xs">
+                {totalReceivables > 0 && (
+                  <span className="text-primary font-semibold">+{formatCurrency(totalReceivables)}</span>
+                )}
+                {totalPayables > 0 && (
+                  <span className="text-destructive font-semibold">-{formatCurrency(totalPayables)}</span>
+                )}
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          {selectedEvents.invoices.length === 0 && selectedEvents.expenses.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">Nenhum evento nesta data.</p>
+          {!hasEvents ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                <CalendarDays className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">Nenhum evento nesta data</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">Datas com eventos ficam destacadas no calendário</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {selectedEvents.invoices.map(inv => (
-                <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
-                  <div>
-                    <p className="text-sm font-medium">📥 {inv.name || 'Fatura'}</p>
-                    <Badge variant="outline" className="text-[10px] mt-1">A receber</Badge>
+                <div key={inv.id} className="flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">📥</div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{inv.name || 'Fatura'}</p>
+                      <p className="text-[11px] text-primary font-medium">A receber</p>
+                    </div>
                   </div>
-                  <span className="font-bold text-sm text-primary">{formatCurrency(inv.total)}</span>
+                  <span className="font-extrabold text-sm text-primary tabular-nums">{formatCurrency(inv.total)}</span>
                 </div>
               ))}
               {selectedEvents.expenses.map(exp => (
-                <div key={exp.id} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/10">
-                  <div>
-                    <p className="text-sm font-medium">📤 {exp.description}</p>
-                    <Badge variant="outline" className="text-[10px] mt-1">A pagar</Badge>
+                <div key={exp.id} className="flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center text-sm">📤</div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{exp.description}</p>
+                      <p className="text-[11px] text-destructive font-medium">A pagar</p>
+                    </div>
                   </div>
-                  <span className="font-bold text-sm text-destructive">{formatCurrency(exp.amount)}</span>
+                  <span className="font-extrabold text-sm text-destructive tabular-nums">{formatCurrency(exp.amount)}</span>
                 </div>
               ))}
             </div>

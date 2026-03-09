@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn, formatCurrency } from '@/lib/utils';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, AlertTriangle, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +25,7 @@ function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatu
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer hover:opacity-80 transition-opacity', config.bg)}>
-          <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
+          <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', config.dot)} />
           {config.label}
         </button>
       </DropdownMenuTrigger>
@@ -87,54 +87,89 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
     onRefresh();
   };
 
+  // Group by status for visual priority
+  const overdueItems = filtered.filter(i => i.status === 'overdue');
+  const pendingItems = filtered.filter(i => i.status === 'pending');
+  const paidItems = filtered.filter(i => i.status === 'paid');
+  const grouped = [...overdueItems, ...pendingItems, ...paidItems];
+
   return (
     <div className="space-y-4">
       {nearDue.length > 0 && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="p-4">
-            <p className="text-sm font-medium text-primary">💰 {nearDue.length} fatura(s) vencem nos próximos 3 dias</p>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4">
+          <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">{nearDue.length} fatura(s) vencem em breve</p>
+            <p className="text-xs text-amber-600/80 dark:text-amber-400/60">Nos próximos 3 dias</p>
+          </div>
+        </div>
       )}
 
       <div className="flex items-center gap-3 justify-between">
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[140px] h-9 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos status</SelectItem>
-            <SelectItem value="pending">Pendente</SelectItem>
-            <SelectItem value="paid">Pago</SelectItem>
-            <SelectItem value="overdue">Atrasado</SelectItem>
+            <SelectItem value="all">Todos ({invoices.length})</SelectItem>
+            <SelectItem value="pending">Pendente ({invoices.filter(i => i.status === 'pending').length})</SelectItem>
+            <SelectItem value="paid">Recebido ({invoices.filter(i => i.status === 'paid').length})</SelectItem>
+            <SelectItem value="overdue">Atrasado ({invoices.filter(i => i.status === 'overdue').length})</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/invoices')}>
-          <ExternalLink className="w-4 h-4 mr-1" /> Ir para Faturas
+        <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices')}>
+          <ExternalLink className="w-3.5 h-3.5" /> Faturas
         </Button>
       </div>
 
-      {filtered.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">Nenhuma fatura encontrada.</CardContent></Card>
+      {grouped.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <Inbox className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Nenhuma fatura encontrada</p>
+          <p className="text-xs text-muted-foreground mt-1">Crie faturas no módulo de Faturas para visualizá-las aqui.</p>
+        </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(inv => (
-            <Card key={inv.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
-                    <StatusBadge status={inv.status} onChangeStatus={(s) => handleChangeStatus(inv.id, s)} />
+          {grouped.map(inv => {
+            const isOverdue = inv.status === 'overdue';
+            return (
+              <div
+                key={inv.id}
+                className={cn(
+                  'group rounded-xl border bg-card p-4 transition-all hover:shadow-sm',
+                  isOverdue && 'border-red-200/60 dark:border-red-800/40 bg-red-50/30 dark:bg-red-950/10'
+                )}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <p className="font-semibold text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
+                      <StatusBadge status={inv.status} onChangeStatus={(s) => handleChangeStatus(inv.id, s)} />
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      {clientName(inv.client_id) && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+                          {clientName(inv.client_id)}
+                        </span>
+                      )}
+                      {inv.due_date && (
+                        <span className={cn('text-xs', isOverdue ? 'text-red-500 font-medium' : 'text-muted-foreground')}>
+                          {isOverdue ? 'Venceu' : 'Vence'}: {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    {clientName(inv.client_id) && <span>{clientName(inv.client_id)}</span>}
-                    {inv.due_date && <span>• Vence: {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>}
+                  <div className="flex items-center">
+                    <span className={cn('text-lg font-extrabold tabular-nums tracking-tight', isOverdue ? 'text-red-600 dark:text-red-400' : 'text-foreground')}>
+                      {formatCurrency(inv.total)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(inv.total)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
