@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn, formatCurrency } from '@/lib/utils';
-import { ExternalLink, AlertTriangle, Inbox, Plus } from 'lucide-react';
+import { ExternalLink, AlertTriangle, Inbox, Plus, FolderKanban } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,6 +118,9 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
           </SelectContent>
         </Select>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?import_invoice=1')}>
+            <FolderKanban className="w-3.5 h-3.5" /> Importar
+          </Button>
           <Button size="sm" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?new_invoice=1')}>
             <Plus className="w-3.5 h-3.5" /> Nova Fatura
           </Button>
