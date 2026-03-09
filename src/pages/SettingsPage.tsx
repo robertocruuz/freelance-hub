@@ -173,25 +173,22 @@ const SettingsPage = () => {
             description={isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
           />
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 rounded-2xl border border-border/60 bg-card divide-y divide-border/40">
             <NotificationRow
               icon={BellRing}
               title={isPt ? 'Notificações por e-mail' : 'Email notifications'}
-              description={isPt ? 'Receba atualizações importantes por e-mail' : 'Receive important updates by email'}
               checked={notifications.email}
               onChange={(v) => setNotifications(prev => ({ ...prev, email: v }))}
             />
             <NotificationRow
               icon={CalendarClock}
               title={isPt ? 'Tarefas e prazos' : 'Tasks and deadlines'}
-              description={isPt ? 'Lembretes de tarefas e vencimentos' : 'Task and due date reminders'}
               checked={notifications.tasks}
               onChange={(v) => setNotifications(prev => ({ ...prev, tasks: v }))}
             />
             <NotificationRow
               icon={UserPlus}
               title={isPt ? 'Convites de organização' : 'Organization invites'}
-              description={isPt ? 'Notificações sobre novos convites' : 'Notifications about new invites'}
               checked={notifications.invites}
               onChange={(v) => setNotifications(prev => ({ ...prev, invites: v }))}
             />
@@ -277,25 +274,18 @@ const SectionHeader = ({ icon: Icon, title, description }: { icon: any; title: s
 const NotificationRow = ({
   icon: Icon,
   title,
-  description,
   checked,
   onChange,
 }: {
   icon: any;
   title: string;
-  description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
 }) => (
-  <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+  <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
     <div className="flex items-center gap-3">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${checked ? 'bg-primary/10' : 'bg-muted'}`}>
-        <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-      </div>
+      <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
+      <p className="text-sm font-medium text-foreground">{title}</p>
     </div>
     <Switch checked={checked} onCheckedChange={onChange} />
   </div>
