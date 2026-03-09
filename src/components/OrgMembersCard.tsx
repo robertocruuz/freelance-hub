@@ -66,7 +66,6 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const [inviteRole, setInviteRole] = useState<'admin' | 'collaborator'>('collaborator');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   const isPt = lang === 'pt-BR';
 
