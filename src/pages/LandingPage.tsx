@@ -254,7 +254,7 @@ const LandingPage = () => {
             <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-border/50">
               <AspectRatio ratio={16 / 9}>
                 <img 
-                  src={heroDashboard} 
+                  src="/home.png" 
                   alt="Dashboard Preview" 
                   className="w-full h-full object-cover"
                 />
