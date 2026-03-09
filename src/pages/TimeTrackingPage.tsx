@@ -330,6 +330,11 @@ const TimeTrackingPage = () => {
     }
   };
 
+  const loadProfiles = useCallback(async () => {
+    const { data } = await supabase.from('profiles').select('user_id, name, email');
+    if (data) setProfiles(data as ProfileInfo[]);
+  }, []);
+
   const loadProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('projects').select('*').order('name');
