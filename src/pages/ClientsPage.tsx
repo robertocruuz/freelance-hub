@@ -280,40 +280,52 @@ const ClientsPage = () => {
           <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar aos clientes
         </button>
 
-        {/* Client header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {selectedClient.color && (
+        {/* Client header card */}
+        <div
+          className="p-5 rounded-2xl border overflow-hidden"
+          style={selectedClient.color
+            ? { backgroundColor: `${selectedClient.color}08`, borderColor: `${selectedClient.color}30`, borderLeftWidth: '4px', borderLeftColor: selectedClient.color }
+            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
+          }
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-sm"
-                style={{ backgroundColor: selectedClient.color }}
+                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-lg"
+                style={{ backgroundColor: selectedClient.color || 'hsl(var(--muted-foreground))' }}
               >
                 {selectedClient.name.charAt(0).toUpperCase()}
               </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{selectedClient.name}</h1>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                {selectedClient.responsible && (
-                  <span className="flex items-center gap-1"><User className="w-3 h-3" />{selectedClient.responsible}</span>
-                )}
-                {selectedClient.email && (
-                  <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1 hover:text-primary transition-colors">
-                    <Mail className="w-3 h-3" />{selectedClient.email}
-                  </a>
-                )}
-                {selectedClient.phone && (
-                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}</span>
-                )}
-                {selectedClient.document && (
-                  <span className="flex items-center gap-1"><DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}</span>
-                )}
+              <div>
+                <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{selectedClient.name}</h1>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                  {selectedClient.responsible && (
+                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
+                      <User className="w-3 h-3" />{selectedClient.responsible}
+                    </span>
+                  )}
+                  {selectedClient.email && (
+                    <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
+                      <Mail className="w-3 h-3" />{selectedClient.email}
+                    </a>
+                  )}
+                  {selectedClient.phone && (
+                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
+                      <Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}
+                    </span>
+                  )}
+                  {selectedClient.document && (
+                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
+                      <DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+            <Button variant="outline" size="sm" className="rounded-xl gap-1.5 font-semibold border-border" onClick={() => openEdit(selectedClient)}>
+              <Pencil className="w-3.5 h-3.5" /> Editar
+            </Button>
           </div>
-          <Button variant="secondary" size="sm" className="rounded-xl gap-1.5 font-semibold" onClick={() => openEdit(selectedClient)}>
-            <Pencil className="w-3.5 h-3.5" /> Editar
-          </Button>
         </div>
 
         {loadingDetails ? (
@@ -331,9 +343,11 @@ const ClientsPage = () => {
                 <div
                   key={label}
                   onClick={() => navigate(route)}
-                  className="p-4 rounded-xl border border-border bg-card text-center cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all"
+                  className="p-4 rounded-xl border border-border bg-card text-center cursor-pointer hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 group"
                 >
-                  <Icon className="w-5 h-5 mx-auto mb-1.5 text-primary" />
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-primary/15 transition-colors">
+                    <Icon className="w-4.5 h-4.5 text-primary" />
+                  </div>
                   <p className="text-lg font-bold text-foreground">{value}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{label}</p>
                 </div>
@@ -342,7 +356,7 @@ const ClientsPage = () => {
 
             {/* Projects with expandable tasks */}
             {details.projects.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                   <FolderKanban className="w-3.5 h-3.5" /> Projetos
                   <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
@@ -353,6 +367,8 @@ const ClientsPage = () => {
                   {details.projects.map(p => {
                     const isExpanded = expandedProjects.has(p.id);
                     const projectTasks = details.tasks.filter(t => t.project_id === p.id);
+                    const projectTime = details.timeEntries.filter(e => e.project_id === p.id);
+                    const totalProjectTime = projectTime.reduce((s, e) => s + (e.duration || 0), 0);
                     return (
                       <div
                         key={p.id}
@@ -362,7 +378,7 @@ const ClientsPage = () => {
                         )}
                       >
                         <div
-                          className="flex items-center justify-between p-3 text-sm cursor-pointer group"
+                          className="flex items-center justify-between p-3.5 text-sm cursor-pointer group"
                           onClick={() => {
                             setExpandedProjects(prev => {
                               const next = new Set(prev);
@@ -371,23 +387,32 @@ const ClientsPage = () => {
                             });
                           }}
                         >
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
                             <div className={cn(
-                              "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                               isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
                             )}>
                               {isExpanded ? (
-                                <ChevronDown className="w-3.5 h-3.5 text-primary" />
+                                <ChevronDown className="w-4 h-4 text-primary" />
                               ) : (
-                                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                               )}
                             </div>
-                            <span className="font-semibold text-foreground">{p.name}</span>
-                            {projectTasks.length > 0 && (
-                              <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
-                                {projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}
-                              </span>
-                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="font-semibold text-foreground">{p.name}</span>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                {projectTasks.length > 0 && (
+                                  <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                                    {projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}
+                                  </span>
+                                )}
+                                {totalProjectTime > 0 && (
+                                  <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                                    {formatDuration(totalProjectTime)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); navigate('/dashboard/projects'); }}
@@ -400,8 +425,10 @@ const ClientsPage = () => {
                           <div className="border-t border-border/50 animate-fade-in">
                             {projectTasks.map(task => (
                               <div key={task.id} className="flex items-center justify-between px-4 py-2.5 text-sm border-b border-border/30 last:border-b-0 hover:bg-muted/30 transition-colors">
-                                <div className="flex items-center gap-2">
-                                  <SquareKanban className="w-3 h-3 text-muted-foreground" />
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-5 h-5 rounded flex items-center justify-center shrink-0">
+                                    <SquareKanban className="w-3.5 h-3.5 text-muted-foreground" />
+                                  </div>
                                   <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors font-medium">{task.title}</button>
                                 </div>
                                 <div className="flex items-center gap-1.5">
@@ -413,7 +440,7 @@ const ClientsPage = () => {
                           </div>
                         )}
                         {isExpanded && projectTasks.length === 0 && (
-                          <div className="border-t border-border/50 px-4 py-3 text-xs text-muted-foreground animate-fade-in">
+                          <div className="border-t border-border/50 px-4 py-4 text-xs text-muted-foreground text-center animate-fade-in">
                             Nenhuma tarefa neste projeto.
                           </div>
                         )}
@@ -429,7 +456,7 @@ const ClientsPage = () => {
               const orphanTasks = details.tasks.filter(t => !t.project_id);
               if (orphanTasks.length === 0) return null;
               return (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                     <SquareKanban className="w-3.5 h-3.5" /> Tarefas sem projeto
                     <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
@@ -438,8 +465,13 @@ const ClientsPage = () => {
                   </h2>
                   <div className="space-y-1.5">
                     {orphanTasks.slice(0, 10).map(task => (
-                      <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
-                        <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="font-medium hover:text-primary hover:underline transition-colors">{task.title}</button>
+                      <div key={task.id} className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-5 h-5 rounded flex items-center justify-center shrink-0">
+                            <SquareKanban className="w-3.5 h-3.5 text-muted-foreground" />
+                          </div>
+                          <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="font-medium hover:text-primary hover:underline transition-colors">{task.title}</button>
+                        </div>
                         <div className="flex items-center gap-1.5">
                           <Badge variant="outline" className="text-[10px] capitalize">{translatePriority(task.priority)}</Badge>
                           <Badge variant="secondary" className="text-[10px]">{translateStatus(task.status)}</Badge>
@@ -447,7 +479,7 @@ const ClientsPage = () => {
                       </div>
                     ))}
                     {orphanTasks.length > 10 && (
-                      <p className="text-xs text-muted-foreground text-center">+{orphanTasks.length - 10} mais</p>
+                      <p className="text-xs text-muted-foreground text-center pt-1">+{orphanTasks.length - 10} mais</p>
                     )}
                   </div>
                 </div>
@@ -456,25 +488,35 @@ const ClientsPage = () => {
 
             {/* Time entries */}
             {details.timeEntries.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" /> Registros de Tempo
                   <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
                     {details.timeEntries.length}
                   </span>
                 </h2>
-                <div className="space-y-1.5">
-                  {details.timeEntries.slice(0, 10).map(e => {
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  {details.timeEntries.slice(0, 10).map((e, idx) => {
                     const proj = details.projects.find(p => p.id === e.project_id);
                     return (
-                      <div key={e.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
-                        <div>
-                          <span className="font-medium text-foreground">{e.description || '—'}</span>
-                          {proj && <span className="text-xs text-muted-foreground ml-2">({proj.name})</span>}
+                      <div key={e.id} className={cn(
+                        "flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/30 transition-colors",
+                        idx < Math.min(details.timeEntries.length, 10) - 1 && "border-b border-border/30"
+                      )}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-5 h-5 rounded flex items-center justify-center shrink-0">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                          </div>
+                          <span className="font-medium text-foreground truncate">{e.description || '—'}</span>
+                          {proj && (
+                            <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md shrink-0">
+                              {proj.name}
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 shrink-0 ml-3">
                           <span className="text-xs text-muted-foreground">{new Date(e.start_time).toLocaleDateString()}</span>
-                          <span className="font-mono font-semibold text-foreground tabular-nums">{formatDuration(e.duration || 0)}</span>
+                          <span className="font-mono font-semibold text-foreground tabular-nums text-xs bg-muted/60 px-2 py-0.5 rounded-lg">{formatDuration(e.duration || 0)}</span>
                         </div>
                       </div>
                     );
@@ -487,16 +529,19 @@ const ClientsPage = () => {
             {(details.invoices.length > 0 || details.budgets.length > 0) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {details.invoices.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <Receipt className="w-3.5 h-3.5" /> Faturas
                       <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
                         {details.invoices.length}
                       </span>
                     </h2>
-                    <div className="space-y-1.5">
-                      {details.invoices.map(inv => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
+                    <div className="rounded-xl border border-border bg-card overflow-hidden">
+                      {details.invoices.map((inv, idx) => (
+                        <div key={inv.id} className={cn(
+                          "flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/30 transition-colors",
+                          idx < details.invoices.length - 1 && "border-b border-border/30"
+                        )}>
                           <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground tabular-nums">{formatCurrency(inv.total)}</span>
@@ -508,16 +553,19 @@ const ClientsPage = () => {
                   </div>
                 )}
                 {details.budgets.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5" /> Orçamentos
                       <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
                         {details.budgets.length}
                       </span>
                     </h2>
-                    <div className="space-y-1.5">
-                      {details.budgets.map(b => (
-                        <div key={b.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-sm hover:shadow-sm transition-all">
+                    <div className="rounded-xl border border-border bg-card overflow-hidden">
+                      {details.budgets.map((b, idx) => (
+                        <div key={b.id} className={cn(
+                          "flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/30 transition-colors",
+                          idx < details.budgets.length - 1 && "border-b border-border/30"
+                        )}>
                           <span className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground tabular-nums">{formatCurrency(b.total)}</span>
