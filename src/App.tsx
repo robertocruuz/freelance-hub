@@ -25,6 +25,7 @@ import InvitePage from "./pages/InvitePage";
 import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import FinancePage from "./pages/FinancePage";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="team" element={<TeamPage />} />
+                  <Route path="finance" element={<FinancePage />} />
                 </Route>
                 <Route path="/invite/:token" element={<InvitePage />} />
                 <Route path="*" element={<NotFound />} />

@@ -1,0 +1,148 @@
+import { useState, useEffect, useMemo } from 'react';
+import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useClients } from '@/hooks/useClients';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn, formatCurrency } from '@/lib/utils';
+import { Check, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+
+interface Invoice {
+  id: string;
+  name: string | null;
+  client_id: string | null;
+  total: number;
+  status: string;
+  due_date: string | null;
+  payment_method: string | null;
+}
+
+const statusColors: Record<string, string> = {
+  pending: 'bg-accent text-accent-foreground',
+  paid: 'bg-primary/10 text-primary',
+  overdue: 'bg-destructive/10 text-destructive',
+};
+
+const statusLabels: Record<string, string> = {
+  pending: 'Pendente',
+  paid: 'Pago',
+  overdue: 'Atrasado',
+};
+
+export default function ReceivablesTab() {
+  const { user } = useAuth();
+  const { clients } = useClients();
+  const navigate = useNavigate();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const fetchInvoices = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from('invoices')
+      .select('id, name, client_id, total, status, due_date, payment_method')
+      .order('due_date', { ascending: true, nullsFirst: false });
+    setInvoices((data as Invoice[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchInvoices(); }, [user]);
+
+  const clientName = (id: string | null) => {
+    if (!id) return '';
+    return clients.find(c => c.id === id)?.name || '';
+  };
+
+  const displayInvoices = invoices.map(inv => {
+    if (inv.status === 'pending' && inv.due_date && isPast(new Date(inv.due_date + 'T23:59:59')) && !isToday(new Date(inv.due_date + 'T12:00:00'))) {
+      return { ...inv, status: 'overdue' };
+    }
+    return inv;
+  });
+
+  const filtered = displayInvoices.filter(inv => {
+    if (filterStatus !== 'all' && inv.status !== filterStatus) return false;
+    return true;
+  });
+
+  const nearDue = displayInvoices.filter(inv =>
+    inv.status === 'pending' && inv.due_date &&
+    isBefore(new Date(inv.due_date + 'T12:00:00'), addDays(new Date(), 3)) &&
+    !isPast(new Date(inv.due_date + 'T23:59:59'))
+  );
+
+  const handleMarkPaid = async (id: string) => {
+    const { error } = await supabase.from('invoices').update({ status: 'paid' }).eq('id', id);
+    if (error) { toast.error('Erro ao atualizar'); return; }
+    toast.success('Fatura marcada como paga');
+    fetchInvoices();
+  };
+
+  return (
+    <div className="space-y-4">
+      {nearDue.length > 0 && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-primary">💰 {nearDue.length} fatura(s) vencem nos próximos 3 dias</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex items-center gap-3 justify-between">
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[140px] h-9 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos status</SelectItem>
+            <SelectItem value="pending">Pendente</SelectItem>
+            <SelectItem value="paid">Pago</SelectItem>
+            <SelectItem value="overdue">Atrasado</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/invoices')}>
+          <ExternalLink className="w-4 h-4 mr-1" /> Ir para Faturas
+        </Button>
+      </div>
+
+      {loading ? (
+        <p className="text-muted-foreground text-sm text-center py-8">Carregando...</p>
+      ) : filtered.length === 0 ? (
+        <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">Nenhuma fatura encontrada.</CardContent></Card>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(inv => (
+            <Card key={inv.id} className="hover:shadow-sm transition-shadow">
+              <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
+                    <Badge className={cn('text-[10px]', statusColors[inv.status])}>{statusLabels[inv.status] || inv.status}</Badge>
+                  </div>
+                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                    {clientName(inv.client_id) && <span>{clientName(inv.client_id)}</span>}
+                    {inv.due_date && <span>• Vence: {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(inv.total)}</span>
+                  {inv.status !== 'paid' && (
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleMarkPaid(inv.id)}>
+                      <Check className="w-3 h-3 mr-1" /> Recebido
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
