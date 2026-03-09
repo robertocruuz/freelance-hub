@@ -173,25 +173,22 @@ const SettingsPage = () => {
             description={isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
           />
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 rounded-2xl border border-border/60 bg-card divide-y divide-border/40">
             <NotificationRow
               icon={BellRing}
               title={isPt ? 'Notificações por e-mail' : 'Email notifications'}
-              description={isPt ? 'Receba atualizações importantes por e-mail' : 'Receive important updates by email'}
               checked={notifications.email}
               onChange={(v) => setNotifications(prev => ({ ...prev, email: v }))}
             />
             <NotificationRow
               icon={CalendarClock}
               title={isPt ? 'Tarefas e prazos' : 'Tasks and deadlines'}
-              description={isPt ? 'Lembretes de tarefas e vencimentos' : 'Task and due date reminders'}
               checked={notifications.tasks}
               onChange={(v) => setNotifications(prev => ({ ...prev, tasks: v }))}
             />
             <NotificationRow
               icon={UserPlus}
               title={isPt ? 'Convites de organização' : 'Organization invites'}
-              description={isPt ? 'Notificações sobre novos convites' : 'Notifications about new invites'}
               checked={notifications.invites}
               onChange={(v) => setNotifications(prev => ({ ...prev, invites: v }))}
             />
