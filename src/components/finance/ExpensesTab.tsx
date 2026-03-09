@@ -24,13 +24,26 @@ const statusConfig: Record<string, { bg: string; dot: string; label: string }> =
   overdue: { bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800', dot: 'bg-red-500', label: 'Atrasado' },
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatus: (s: string) => void }) {
   const config = statusConfig[status] || statusConfig.pending;
+  const options = Object.entries(statusConfig);
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border', config.bg)}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
-      {config.label}
-    </span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer hover:opacity-80 transition-opacity', config.bg)}>
+          <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
+          {config.label}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[140px]">
+        {options.map(([key, cfg]) => (
+          <DropdownMenuItem key={key} onClick={() => onChangeStatus(key)} className="gap-2 text-xs">
+            <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
+            {cfg.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
