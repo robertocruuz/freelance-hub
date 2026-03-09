@@ -123,11 +123,6 @@ const DashboardLayout = () => {
 
 
       {/* Menu label */}
-      {(!collapsed || isMobile) && (
-        <div className="px-5 pt-1 pb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">Menu</span>
-        </div>
-      )}
 
       {/* Nav items */}
       <nav className={cn('flex-1 px-3 py-1 space-y-0.5 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
