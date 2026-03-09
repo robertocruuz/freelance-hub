@@ -251,31 +251,20 @@ export default function CashFlowTab({ invoices }: Props) {
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
                     <CalendarIcon className="w-3 h-3" />
-                    De
+                    <span className="capitalize">
+                      {format(saldoStartDate, "dd MMM", { locale: ptBR })} – {format(saldoEndDate, "dd MMM yy", { locale: ptBR })}
+                    </span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
-                    mode="single"
-                    selected={saldoStartDate}
-                    onSelect={(d) => d && setSaldoStartDate(startOfMonth(d))}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
-                    <CalendarIcon className="w-3 h-3" />
-                    Até
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={saldoEndDate}
-                    onSelect={(d) => d && setSaldoEndDate(endOfMonth(d))}
+                    mode="range"
+                    selected={{ from: saldoStartDate, to: saldoEndDate }}
+                    onSelect={(range: DateRange | undefined) => {
+                      if (range?.from) setSaldoStartDate(startOfMonth(range.from));
+                      if (range?.to) setSaldoEndDate(endOfMonth(range.to));
+                    }}
+                    numberOfMonths={2}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
