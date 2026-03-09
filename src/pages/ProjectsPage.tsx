@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, ListPlus, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, Package, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -20,7 +20,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input as UIInput } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -305,7 +305,6 @@ const ProjectsPage = () => {
     } else {
       const { data, error } = await supabase.from('projects').insert(payload).select('id').single();
       if (error) return toast.error(error.message);
-      // Import budget items if a budget was selected
       if (data && pendingBudgetItems.length > 0) {
         const inserts = pendingBudgetItems.map((item, idx) => ({
           project_id: data.id,
@@ -332,7 +331,6 @@ const ProjectsPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    // Delete related time entries and tasks first
     await supabase.from('time_entries').delete().eq('project_id', id);
     await supabase.from('tasks').delete().eq('project_id', id);
     await supabase.from('project_items').delete().eq('project_id', id);
@@ -393,7 +391,6 @@ const ProjectsPage = () => {
   // Budget import
   const openImportModal = async (project: Project) => {
     setImportProjectId(project.id);
-    // Ensure items are loaded for this project
     if (!projectItems[project.id]) await loadItems(project.id);
     setLoadingBudgets(true);
     const query = supabase.from('budgets').select('*').order('created_at', { ascending: false });
@@ -470,11 +467,9 @@ const ProjectsPage = () => {
       clientId: project?.client_id || null,
       dueDate: project?.due_date || null,
     });
-    // Load boards with project_id and client_id info
     const { data } = await supabase.from('kanban_boards').select('id, name, project_id, client_id').order('position');
     const boards = data || [];
     setAvailableBoards(boards);
-    // Pre-select: prefer board linked to project, then client, then first
     const projectBoard = boards.find(b => b.project_id === item.project_id);
     const clientBoard = project?.client_id ? boards.find(b => b.client_id === project.client_id) : null;
     setSelectedBoardId(projectBoard?.id || clientBoard?.id || (boards.length > 0 ? boards[0].id : null));
@@ -487,7 +482,6 @@ const ProjectsPage = () => {
     if (!user || !pendingTaskItem) return;
     let boardId = selectedBoardId;
 
-    // Create board if needed
     if (creatingBoard && newBoardName.trim()) {
       const { data: newBoard } = await supabase
         .from('kanban_boards')
@@ -497,7 +491,6 @@ const ProjectsPage = () => {
       if (!newBoard) return toast.error('Erro ao criar painel');
       boardId = newBoard.id;
 
-      // Create default columns for new board
       const defaultCols = [
         { name: 'Para Fazer', position: 0 },
         { name: 'Em Andamento', position: 1 },
@@ -512,7 +505,6 @@ const ProjectsPage = () => {
 
     if (!boardId) return toast.error('Selecione ou crie um painel');
 
-    // Check for duplicate task
     const { data: existingDup } = await supabase
       .from('tasks')
       .select('id')
@@ -524,7 +516,6 @@ const ProjectsPage = () => {
       return toast.error('Já existe uma tarefa com esse nome neste projeto.');
     }
 
-    // Get first column of the board
     const { data: cols } = await supabase
       .from('kanban_columns')
       .select('id')
@@ -534,7 +525,7 @@ const ProjectsPage = () => {
 
     if (!cols || cols.length === 0) return toast.error('Painel sem colunas');
 
-    const { data: newTask, error } = await supabase
+    const { error } = await supabase
       .from('tasks')
       .insert({
         title: pendingTaskItem.name,
@@ -557,50 +548,56 @@ const ProjectsPage = () => {
     loadExistingTasks();
   };
 
-
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
   );
 
-  const inputClass = "w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring";
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">{t.projects}</h1>
-        <button
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.projects}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
+          </p>
+        </div>
+        <Button
           onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
+          className="gap-2 rounded-xl font-semibold shadow-sm"
         >
           <Plus className="w-4 h-4" /> {t.newProject}
-        </button>
+        </Button>
       </div>
 
+      {/* Search */}
       <div className="relative max-w-sm">
-        <input
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Input
           placeholder={t.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={inputClass + " w-full pr-8"}
+          className="pl-9 pr-8 rounded-xl"
         />
         {search && (
           <button
             onClick={() => setSearch('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
+      {/* Create/Edit Form */}
       {showForm && (
-        <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
+        <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-fade-in">
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? t.editProject : t.newProject}
           </h2>
 
-          {/* Budget import suggestion - only for new projects */}
+          {/* Budget import suggestion */}
           {!editingId && allBudgets.length > 0 && (
             <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
               <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
@@ -609,7 +606,7 @@ const ProjectsPage = () => {
               <select
                 value={selectedBudgetId || ''}
                 onChange={(e) => e.target.value ? handleSelectBudget(e.target.value) : null}
-                className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 px-3 rounded-xl bg-muted border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Selecione um orçamento...</option>
                 {allBudgets.map(b => {
@@ -622,35 +619,41 @@ const ProjectsPage = () => {
                 })}
               </select>
               {selectedBudgetId && pendingBudgetItems.length > 0 && (
-                <div className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {pendingBudgetItems.length} {pendingBudgetItems.length === 1 ? 'item será importado' : 'itens serão importados'} ao salvar.
-                </div>
+                </p>
               )}
             </div>
           )}
 
-          <input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-          {editingId ? (
-            <div className="px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground">
-              Cliente: <span className="font-medium text-foreground">{clientName(clientId || null)}</span>
-            </div>
-          ) : (
-            <ClientSelect value={clientId} onChange={setClientId} />
-          )}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Nome do projeto</label>
+            <Input placeholder={t.projectName} value={name} onChange={e => setName(e.target.value)} className="rounded-xl" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+            {editingId ? (
+              <div className="h-10 px-3 rounded-xl bg-muted/50 border border-border text-sm text-muted-foreground flex items-center">
+                Cliente: <span className="font-medium text-foreground ml-1">{clientName(clientId || null)}</span>
+              </div>
+            ) : (
+              <ClientSelect value={clientId} onChange={setClientId} />
+            )}
+          </div>
 
           {/* Due date picker */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Prazo de entrega</label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    inputClass,
-                    "flex items-center gap-2 text-left",
+                    "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
                     !dueDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="w-4 h-4" />
+                  <CalendarIcon className="w-4 h-4 shrink-0" />
                   {dueDate ? format(dueDate, 'dd/MM/yyyy') : 'Selecione o prazo...'}
                 </button>
               </PopoverTrigger>
@@ -660,7 +663,7 @@ const ProjectsPage = () => {
                   selected={dueDate}
                   onSelect={setDueDate}
                   initialFocus
-                  className={cn("p-3 pointer-events-auto")}
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -668,21 +671,23 @@ const ProjectsPage = () => {
 
           {/* Preview of items to import */}
           {pendingBudgetItems.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground">Itens do orçamento:</p>
-              {pendingBudgetItems.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-sm">
-                  <span className="text-foreground">{item.description}</span>
-                  <span className="text-muted-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
-                </div>
-              ))}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Itens do orçamento</label>
+              <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+                {pendingBudgetItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between px-3 py-2 bg-muted/30 text-sm">
+                    <span className="text-foreground">{item.description}</span>
+                    <span className="text-muted-foreground font-medium">{formatCurrency(item.quantity * item.unitPrice)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {/* Discount field */}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Desconto (%)</label>
-            <input
+            <Input
               type="number"
               min="0"
               max="100"
@@ -690,28 +695,32 @@ const ProjectsPage = () => {
               value={projectDiscount || ''}
               onChange={e => setProjectDiscount(+e.target.value)}
               placeholder="0"
-              className={inputClass + " w-40"}
+              className="w-40 rounded-xl"
             />
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
+          <div className="flex gap-2 pt-1">
+            <Button onClick={handleSave} className="rounded-xl font-semibold">
               {t.save}
-            </button>
-            <button onClick={resetForm} className="px-5 py-2 rounded-xl bg-muted text-muted-foreground font-semibold text-sm">
+            </Button>
+            <Button variant="ghost" onClick={resetForm} className="rounded-xl font-semibold">
               {t.cancel}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
+      {/* Empty state */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <FolderKanban className="w-12 h-12 mb-3 opacity-40" />
-          <p className="text-sm">{t.noProjects}</p>
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+            <FolderKanban className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">{t.noProjects}</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {(() => {
             const grouped: Record<string, Project[]> = {};
             filtered.forEach(p => {
@@ -719,358 +728,410 @@ const ProjectsPage = () => {
               if (!grouped[key]) grouped[key] = [];
               grouped[key].push(p);
             });
-            // Sort: clients with name first, "sem cliente" last
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
               if (a === '__no_client__') return 1;
               if (b === '__no_client__') return -1;
               return clientName(a).localeCompare(clientName(b));
             });
 
-            return sortedKeys.map(key => (
-              <div key={key} className="space-y-2">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                  {key === '__no_client__' ? 'Sem cliente' : clientName(key)}
-                </h2>
-                <div className="space-y-2">
-                  {grouped[key].map(p => {
-            const isExpanded = expandedIds.has(p.id);
-            const items = projectItems[p.id] || [];
-            const total = getProjectTotal(p.id);
-
-            return (
-              <div key={p.id} className="rounded-xl border border-border overflow-hidden" style={clientColor(p.client_id) ? { backgroundColor: `${clientColor(p.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColor(p.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
-                {/* Project header */}
-                <div className="flex items-center justify-between p-4">
-                  <button
-                    onClick={() => toggleExpand(p.id)}
-                    className="flex items-center gap-2 flex-1 text-left"
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            return sortedKeys.map(key => {
+              const color = key !== '__no_client__' ? clientColor(key) : null;
+              return (
+                <div key={key} className="space-y-2.5">
+                  {/* Client group header */}
+                  <div className="flex items-center gap-2 px-1">
+                    {color && (
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                     )}
-                    <FolderKanban className="w-4 h-4 text-primary" />
-                    <div>
-                      <p className="font-semibold text-foreground">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {p.due_date && (
-                          <>Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</>
-                        )}
-                        {isExpanded && items.length > 0 && (
-                          <> · {items.length} {items.length === 1 ? 'item' : 'itens'} · {formatCurrency(total)}
-                            {p.discount > 0 && <> · Desconto: {p.discount}%</>}
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </button>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleEdit(p)} className="p-2 rounded-lg hover:bg-accent transition-colors">
-                      <Pencil className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
-                          <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      {key === '__no_client__' ? 'Sem cliente' : clientName(key)}
+                    </h2>
+                    <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                      {grouped[key].length}
+                    </span>
                   </div>
-                </div>
 
-                {/* Expanded content with tabs */}
-                {isExpanded && (
-                  <div className="border-t border-border px-4 pb-4 pt-3">
-                    <Tabs defaultValue="items">
-                      <TabsList className="mb-3">
-                        <TabsTrigger value="items" className="text-xs gap-1.5">
-                          <Package className="w-3.5 h-3.5" /> Itens
-                        </TabsTrigger>
-                        <TabsTrigger value="files" className="text-xs gap-1.5">
-                          <Link2 className="w-3.5 h-3.5" /> Arquivos
-                        </TabsTrigger>
-                      </TabsList>
+                  <div className="space-y-2">
+                    {grouped[key].map(p => {
+                      const isExpanded = expandedIds.has(p.id);
+                      const items = projectItems[p.id] || [];
+                      const total = getProjectTotal(p.id);
+                      const color = clientColor(p.client_id);
 
-                      <TabsContent value="items" className="space-y-2">
-                    {items.length === 0 && (
-                      <p className="text-xs text-muted-foreground py-2">Nenhum item neste projeto.</p>
-                    )}
-                    {items.map(item => {
-                      const isItemExpanded = expandedItemId === item.id;
                       return (
-                        <div key={item.id} className="rounded-lg border border-border bg-muted/50 overflow-hidden">
-                          <button
-                            onClick={() => setExpandedItemId(isItemExpanded ? null : item.id)}
-                            className="w-full flex items-center gap-2 p-3 text-left hover:bg-muted/80 transition-colors"
+                        <div
+                          key={p.id}
+                          className={cn(
+                            "rounded-xl border overflow-hidden transition-all duration-200",
+                            isExpanded ? "shadow-md" : "hover:shadow-sm"
+                          )}
+                          style={color
+                            ? { backgroundColor: `${color}08`, borderColor: `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
+                            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
+                          }
+                        >
+                          {/* Project header */}
+                          <div
+                            className="flex items-center justify-between p-4 cursor-pointer group"
+                            onClick={() => toggleExpand(p.id)}
                           >
-                            {isItemExpanded ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            ) : (
-                              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            )}
-                            <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isTaskCreated(item)) openBoardPicker(item);
-                              }}
-                              className={`flex items-center gap-1 px-2 py-1 rounded-lg border shrink-0 ${
-                                isTaskCreated(item)
-                                  ? 'bg-muted/50 border-border opacity-50 cursor-default'
-                                  : 'bg-primary/10 border-primary/20 hover:bg-primary/20 transition-colors group cursor-pointer'
-                              }`}
-                            >
-                              {isTaskCreated(item) ? (
-                                <>
-                                  <Sparkles className="w-3 h-3 text-muted-foreground" />
-                                  <span className="text-xs font-medium text-muted-foreground">Criada</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="w-3 h-3 text-primary group-hover:animate-pulse" />
-                                  <span className="text-xs font-medium text-primary">Tarefa</span>
-                                </>
-                              )}
-                            </span>
-                          </button>
-
-                          {isItemExpanded && (
-                            <div className="px-3 pb-3 pt-1 border-t border-border space-y-3">
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground">Nome</label>
-                                {inlineEditItemId === item.id ? (
-                                  <div className="flex gap-2">
-                                    <input
-                                      value={inlineEditName}
-                                      onChange={e => setInlineEditName(e.target.value)}
-                                      className={inputClass + " flex-1 !py-1.5 text-sm"}
-                                      autoFocus
-                                    />
-                                    <button
-                                      onClick={async () => {
-                                        if (!inlineEditName.trim()) return;
-                                        await supabase.from('project_items').update({ name: inlineEditName.trim() }).eq('id', item.id);
-                                        setInlineEditItemId(null);
-                                        loadItems(item.project_id);
-                                      }}
-                                      className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
-                                    >
-                                      {t.save}
-                                    </button>
-                                    <button
-                                      onClick={() => setInlineEditItemId(null)}
-                                      className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-semibold"
-                                    >
-                                      {t.cancel}
-                                    </button>
-                                  </div>
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
+                              )}>
+                                {isExpanded ? (
+                                  <ChevronDown className="w-4 h-4 text-primary" />
                                 ) : (
-                                  <button
-                                    onClick={() => { setInlineEditItemId(item.id); setInlineEditName(item.name); }}
-                                    className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors"
-                                  >
-                                    {item.name}
-                                    <Pencil className="w-3 h-3 text-muted-foreground" />
-                                  </button>
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                 )}
                               </div>
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground">Valor</label>
-                                <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-foreground truncate">{p.name}</p>
+                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                  {p.due_date && (
+                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <CalendarIcon className="w-3 h-3" />
+                                      {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                                    </span>
+                                  )}
+                                  {isExpanded && items.length > 0 && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className="text-xs font-medium text-foreground/80">
+                                        {items.length} {items.length === 1 ? 'item' : 'itens'}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className="text-xs font-semibold text-primary">
+                                        {formatCurrency(total)}
+                                      </span>
+                                      {p.discount > 0 && (
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent/20 text-accent-foreground font-medium">
+                                          -{p.discount}%
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 pt-1">
-                                <button
-                                  onClick={() => handleDeleteItem(item)}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                  <span className="text-xs font-medium text-destructive">Excluir</span>
-                                </button>
-                              </div>
+                            </div>
+                            <div className="flex gap-1 ml-2" onClick={e => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-8 h-8 rounded-lg"
+                                onClick={() => handleEdit(p)}
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
+                                    <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+
+                          {/* Expanded content with tabs */}
+                          {isExpanded && (
+                            <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
+                              <Tabs defaultValue="items">
+                                <TabsList className="mb-3 h-9">
+                                  <TabsTrigger value="items" className="text-xs gap-1.5 rounded-lg">
+                                    <Package className="w-3.5 h-3.5" /> Itens
+                                  </TabsTrigger>
+                                  <TabsTrigger value="files" className="text-xs gap-1.5 rounded-lg">
+                                    <Link2 className="w-3.5 h-3.5" /> Arquivos
+                                  </TabsTrigger>
+                                </TabsList>
+
+                                {/* ITEMS TAB */}
+                                <TabsContent value="items" className="space-y-2 mt-0">
+                                  {items.length === 0 && !showItemForm && (
+                                    <div className="text-center py-6">
+                                      <Package className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
+                                      <p className="text-xs text-muted-foreground">Nenhum item neste projeto.</p>
+                                    </div>
+                                  )}
+                                  {items.map(item => {
+                                    const isItemExpanded = expandedItemId === item.id;
+                                    return (
+                                      <div key={item.id} className="rounded-lg border border-border bg-background/50 overflow-hidden transition-all">
+                                        <button
+                                          onClick={() => setExpandedItemId(isItemExpanded ? null : item.id)}
+                                          className="w-full flex items-center gap-2.5 p-3 text-left hover:bg-muted/50 transition-colors"
+                                        >
+                                          <div className="w-5 h-5 rounded flex items-center justify-center shrink-0">
+                                            {isItemExpanded ? (
+                                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                                            ) : (
+                                              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                            )}
+                                          </div>
+                                          <Package className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                                          <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
+                                          <span className="text-xs font-semibold text-muted-foreground tabular-nums mr-1">
+                                            {formatCurrency(item.value)}
+                                          </span>
+                                          <span
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (!isTaskCreated(item)) openBoardPicker(item);
+                                            }}
+                                            className={cn(
+                                              "flex items-center gap-1 px-2 py-1 rounded-md border shrink-0 text-[11px] font-medium transition-colors",
+                                              isTaskCreated(item)
+                                                ? 'bg-muted/50 border-border text-muted-foreground opacity-60 cursor-default'
+                                                : 'bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary cursor-pointer'
+                                            )}
+                                          >
+                                            <Sparkles className="w-3 h-3" />
+                                            {isTaskCreated(item) ? 'Criada' : 'Tarefa'}
+                                          </span>
+                                        </button>
+
+                                        {isItemExpanded && (
+                                          <div className="px-3 pb-3 pt-2 border-t border-border/50 space-y-3 animate-fade-in">
+                                            <div className="space-y-1">
+                                              <label className="text-xs font-medium text-muted-foreground">Nome</label>
+                                              {inlineEditItemId === item.id ? (
+                                                <div className="flex gap-2">
+                                                  <Input
+                                                    value={inlineEditName}
+                                                    onChange={e => setInlineEditName(e.target.value)}
+                                                    className="flex-1 h-8 text-sm rounded-lg"
+                                                    autoFocus
+                                                  />
+                                                  <Button
+                                                    size="sm"
+                                                    className="h-8 rounded-lg text-xs"
+                                                    onClick={async () => {
+                                                      if (!inlineEditName.trim()) return;
+                                                      await supabase.from('project_items').update({ name: inlineEditName.trim() }).eq('id', item.id);
+                                                      setInlineEditItemId(null);
+                                                      loadItems(item.project_id);
+                                                    }}
+                                                  >
+                                                    {t.save}
+                                                  </Button>
+                                                  <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-8 rounded-lg text-xs"
+                                                    onClick={() => setInlineEditItemId(null)}
+                                                  >
+                                                    {t.cancel}
+                                                  </Button>
+                                                </div>
+                                              ) : (
+                                                <button
+                                                  onClick={() => { setInlineEditItemId(item.id); setInlineEditName(item.name); }}
+                                                  className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors group"
+                                                >
+                                                  {item.name}
+                                                  <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </button>
+                                              )}
+                                            </div>
+                                            <div className="space-y-1">
+                                              <label className="text-xs font-medium text-muted-foreground">Valor</label>
+                                              <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
+                                            </div>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-7 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg text-xs"
+                                              onClick={() => handleDeleteItem(item)}
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" /> Excluir
+                                            </Button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+
+                                  {showItemForm === p.id ? (
+                                    <div className="flex gap-2 items-end pt-1">
+                                      <Input
+                                        placeholder="Nome do item"
+                                        value={itemName}
+                                        onChange={e => setItemName(e.target.value)}
+                                        className="flex-1 h-9 rounded-lg text-sm"
+                                      />
+                                      <Input
+                                        placeholder="Valor (R$)"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={itemValue}
+                                        onChange={e => setItemValue(e.target.value)}
+                                        className="w-28 h-9 rounded-lg text-sm"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        className="h-9 rounded-lg text-xs"
+                                        onClick={() => handleSaveItem(p.id)}
+                                      >
+                                        {t.save}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-9 rounded-lg text-xs"
+                                        onClick={resetItemForm}
+                                      >
+                                        {t.cancel}
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-3 pt-1">
+                                      <button
+                                        onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
+                                        className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                                      >
+                                        <Plus className="w-3.5 h-3.5" /> {t.addItem}
+                                      </button>
+                                      <button
+                                        onClick={() => openImportModal(p)}
+                                        className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                                      >
+                                        <FileText className="w-3.5 h-3.5" /> Importar do orçamento
+                                      </button>
+                                    </div>
+                                  )}
+                                </TabsContent>
+
+                                {/* FILES TAB */}
+                                <TabsContent value="files" className="space-y-2 mt-0">
+                                  {(() => {
+                                    const files = projectFiles[p.id] || [];
+                                    return (
+                                      <>
+                                        {files.length === 0 && showFileForm !== p.id && (
+                                          <div className="text-center py-6">
+                                            <Link2 className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
+                                            <p className="text-xs text-muted-foreground">Nenhum arquivo cadastrado.</p>
+                                          </div>
+                                        )}
+                                        {files.map(file => (
+                                          <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background/50 group hover:bg-muted/30 transition-colors">
+                                            <div className={cn(
+                                              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                                              file.file_type === 'folder' ? "bg-amber-500/10" : "bg-primary/10"
+                                            )}>
+                                              {file.file_type === 'folder' ? (
+                                                <FolderOpen className="w-4 h-4 text-amber-500" />
+                                              ) : (
+                                                <FileText className="w-4 h-4 text-primary" />
+                                              )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <a
+                                                href={file.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                                              >
+                                                {file.name}
+                                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                              </a>
+                                              {file.description && (
+                                                <p className="text-xs text-muted-foreground truncate">{file.description}</p>
+                                              )}
+                                            </div>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg" onClick={() => handleEditFile(file)}>
+                                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                              </Button>
+                                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg hover:bg-destructive/10" onClick={() => handleDeleteFile(file)}>
+                                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        ))}
+
+                                        {showFileForm === p.id ? (
+                                          <div className="p-3 rounded-xl border border-border bg-muted/30 space-y-3 animate-fade-in">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                              <div className="space-y-1.5">
+                                                <label className="text-xs font-medium text-muted-foreground">Nome</label>
+                                                <Input
+                                                  placeholder="Ex: Briefing do projeto"
+                                                  value={fileName}
+                                                  onChange={e => setFileName(e.target.value)}
+                                                  className="rounded-lg h-9 text-sm"
+                                                  autoFocus
+                                                />
+                                              </div>
+                                              <div className="space-y-1.5">
+                                                <label className="text-xs font-medium text-muted-foreground">Tipo</label>
+                                                <select
+                                                  value={fileType}
+                                                  onChange={e => setFileType(e.target.value as 'file' | 'folder')}
+                                                  className="w-full h-9 px-3 rounded-lg bg-background border border-input text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                                >
+                                                  <option value="file">Arquivo</option>
+                                                  <option value="folder">Pasta</option>
+                                                </select>
+                                              </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-xs font-medium text-muted-foreground">URL</label>
+                                              <Input
+                                                placeholder="https://drive.google.com/..."
+                                                value={fileUrl}
+                                                onChange={e => setFileUrl(e.target.value)}
+                                                className="rounded-lg h-9 text-sm"
+                                              />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                              <label className="text-xs font-medium text-muted-foreground">Descrição (opcional)</label>
+                                              <Input
+                                                placeholder="Breve descrição do arquivo"
+                                                value={fileDescription}
+                                                onChange={e => setFileDescription(e.target.value)}
+                                                className="rounded-lg h-9 text-sm"
+                                              />
+                                            </div>
+                                            <div className="flex gap-2 pt-0.5">
+                                              <Button size="sm" className="rounded-lg text-xs" onClick={() => handleSaveFile(p.id)}>
+                                                {t.save}
+                                              </Button>
+                                              <Button size="sm" variant="ghost" className="rounded-lg text-xs" onClick={resetFileForm}>
+                                                {t.cancel}
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <button
+                                            onClick={() => { resetFileForm(); setShowFileForm(p.id); }}
+                                            className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline pt-1"
+                                          >
+                                            <Plus className="w-3.5 h-3.5" /> Adicionar link
+                                          </button>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </TabsContent>
+                              </Tabs>
                             </div>
                           )}
                         </div>
                       );
                     })}
-
-                    {showItemForm === p.id ? (
-                      <div className="flex gap-2 items-end pt-1">
-                        <input
-                          placeholder="Nome do item"
-                          value={itemName}
-                          onChange={e => setItemName(e.target.value)}
-                          className={inputClass + " flex-1"}
-                        />
-                        <input
-                          placeholder="Valor (R$)"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={itemValue}
-                          onChange={e => setItemValue(e.target.value)}
-                          className={inputClass + " w-32"}
-                        />
-                        <button
-                          onClick={() => handleSaveItem(p.id)}
-                          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm whitespace-nowrap"
-                        >
-                          {t.save}
-                        </button>
-                        <button
-                          onClick={resetItemForm}
-                          className="px-4 py-2 rounded-lg bg-muted text-muted-foreground font-semibold text-sm"
-                        >
-                          {t.cancel}
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3 pt-1">
-                        <button
-                          onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
-                          className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> {t.addItem}
-                        </button>
-                        <button
-                          onClick={() => openImportModal(p)}
-                          className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
-                        >
-                          <FileText className="w-3.5 h-3.5" /> Importar do orçamento
-                        </button>
-                      </div>
-                    )}
-                      </TabsContent>
-
-                      <TabsContent value="files" className="space-y-2">
-                        {(() => {
-                          const files = projectFiles[p.id] || [];
-                          return (
-                            <>
-                              {files.length === 0 && !showFileForm && (
-                                <p className="text-xs text-muted-foreground py-2">Nenhum arquivo cadastrado.</p>
-                              )}
-                              {files.map(file => (
-                                <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/50 group">
-                                  {file.file_type === 'folder' ? (
-                                    <FolderOpen className="w-4 h-4 text-amber-500 shrink-0" />
-                                  ) : (
-                                    <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <a
-                                      href={file.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-1"
-                                    >
-                                      {file.name}
-                                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </a>
-                                    {file.description && (
-                                      <p className="text-xs text-muted-foreground truncate">{file.description}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                      onClick={() => handleEditFile(file)}
-                                      className="p-1.5 rounded-lg hover:bg-accent transition-colors"
-                                    >
-                                      <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteFile(file)}
-                                      className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-
-                              {showFileForm === p.id ? (
-                                <div className="space-y-3 pt-1">
-                                  <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
-                                    <input
-                                      placeholder="Ex: Briefing do projeto"
-                                      value={fileName}
-                                      onChange={e => setFileName(e.target.value)}
-                                      className={inputClass}
-                                      autoFocus
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Tipo</label>
-                                    <select
-                                      value={fileType}
-                                      onChange={e => setFileType(e.target.value as 'file' | 'folder')}
-                                      className={inputClass}
-                                    >
-                                      <option value="file">Arquivo</option>
-                                      <option value="folder">Pasta</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">URL</label>
-                                    <input
-                                      placeholder="https://drive.google.com/..."
-                                      value={fileUrl}
-                                      onChange={e => setFileUrl(e.target.value)}
-                                      className={inputClass}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Descrição (opcional)</label>
-                                    <input
-                                      placeholder="Breve descrição do arquivo"
-                                      value={fileDescription}
-                                      onChange={e => setFileDescription(e.target.value)}
-                                      className={inputClass}
-                                    />
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() => handleSaveFile(p.id)}
-                                      className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm"
-                                    >
-                                      {t.save}
-                                    </button>
-                                    <button
-                                      onClick={resetFileForm}
-                                      className="px-4 py-2 rounded-lg bg-muted text-muted-foreground font-semibold text-sm"
-                                    >
-                                      {t.cancel}
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => { resetFileForm(); setShowFileForm(p.id); }}
-                                  className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline pt-1"
-                                >
-                                  <Plus className="w-3.5 h-3.5" /> Adicionar link
-                                </button>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </TabsContent>
-                    </Tabs>
                   </div>
-                )}
-              </div>
-            );
-                  })}
                 </div>
-              </div>
-            ));
+              );
+            });
           })()}
         </div>
       )}
@@ -1103,19 +1164,16 @@ const ProjectsPage = () => {
                         Todos importados
                       </span>
                     ) : (
-                      <button
-                        onClick={() => importAllBudgetItems(b)}
-                        className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
-                      >
+                      <Button size="sm" className="rounded-lg text-xs" onClick={() => importAllBudgetItems(b)}>
                         Importar todos
-                      </button>
+                      </Button>
                     )}
                   </div>
                   <div className="divide-y divide-border">
                     {b.items.map((item, idx) => {
                       const imported = isItemImported(item);
                       return (
-                        <div key={idx} className={`flex items-center justify-between px-3 py-2 ${imported ? 'opacity-50' : ''}`}>
+                        <div key={idx} className={cn("flex items-center justify-between px-3 py-2", imported && "opacity-50")}>
                           <div>
                             <p className="text-sm text-foreground flex items-center gap-1.5">
                               {item.description || '—'}
@@ -1126,12 +1184,14 @@ const ProjectsPage = () => {
                             </p>
                           </div>
                           {!imported && (
-                            <button
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="rounded-lg text-xs h-7"
                               onClick={() => importBudgetItem(item)}
-                              className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:opacity-80"
                             >
                               Importar
-                            </button>
+                            </Button>
                           )}
                         </div>
                       );
@@ -1144,6 +1204,7 @@ const ProjectsPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete confirmation */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1161,7 +1222,7 @@ const ProjectsPage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Board picker dialog for task creation */}
+      {/* Board picker dialog */}
       <Dialog open={showBoardPicker} onOpenChange={setShowBoardPicker}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1188,11 +1249,12 @@ const ProjectsPage = () => {
                         <button
                           key={board.id}
                           onClick={() => setSelectedBoardId(board.id)}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition border ${
+                          className={cn(
+                            "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition border",
                             selectedBoardId === board.id
                               ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                               : 'bg-secondary/50 text-foreground border-transparent hover:bg-secondary'
-                          }`}
+                          )}
                         >
                           <Kanban className="w-3.5 h-3.5 inline mr-2" />
                           {board.name}
@@ -1213,10 +1275,11 @@ const ProjectsPage = () => {
             ) : (
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">Nome do novo painel</label>
-                <UIInput
+                <Input
                   value={newBoardName}
                   onChange={(e) => setNewBoardName(e.target.value)}
                   placeholder="Ex: Marketing, Sprint 1..."
+                  className="rounded-xl"
                   autoFocus
                 />
                 <button
