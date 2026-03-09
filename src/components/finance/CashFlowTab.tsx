@@ -171,8 +171,7 @@ export default function CashFlowTab({ invoices }: Props) {
                       mode="range"
                       selected={{ from: startDate, to: endDate }}
                       onSelect={(range: DateRange | undefined) => {
-                        if (range?.from) setStartDate(startOfMonth(range.from));
-                        if (range?.to) setEndDate(endOfMonth(range.to));
+                        if (range) setBarRange(range);
                       }}
                       numberOfMonths={2}
                       initialFocus
