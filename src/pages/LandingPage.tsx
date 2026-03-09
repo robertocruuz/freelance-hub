@@ -5,6 +5,13 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import heroDashboard from '@/assets/hero-dashboard.jpg';
+import featureClients from '@/assets/feature-clients.jpg';
+import featureKanban from '@/assets/feature-kanban.jpg';
+import featureTimetracking from '@/assets/feature-timetracking.jpg';
+import featureBudgets from '@/assets/feature-budgets.jpg';
+import featureInvoices from '@/assets/feature-invoices.jpg';
+import featureVault from '@/assets/feature-vault.jpg';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -18,7 +25,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Centralize todas as informações dos seus clientes em um só lugar. Histórico completo, contatos e documentos organizados.' 
         : 'Centralize all your client information in one place. Complete history, organized contacts and documents.',
-      image: '/placeholder.svg',
+      image: featureClients,
       color: 'from-blue-500 to-blue-600',
     },
     {
@@ -27,7 +34,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Organize seus projetos visualmente com quadros Kanban personalizáveis. Arraste, solte e acompanhe o progresso em tempo real.' 
         : 'Organize your projects visually with customizable Kanban boards. Drag, drop and track progress in real-time.',
-      image: '/placeholder.svg',
+      image: featureKanban,
       color: 'from-purple-500 to-purple-600',
     },
     {
@@ -36,7 +43,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Registre cada minuto do seu trabalho automaticamente. Relatórios detalhados para cobrar exatamente o que você trabalhou.' 
         : 'Track every minute of your work automatically. Detailed reports to bill exactly what you worked.',
-      image: '/placeholder.svg',
+      image: featureTimetracking,
       color: 'from-green-500 to-green-600',
     },
     {
@@ -45,7 +52,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Crie orçamentos impressionantes em minutos. Templates personalizáveis e envio direto para seus clientes.' 
         : 'Create stunning quotes in minutes. Customizable templates and direct sending to your clients.',
-      image: '/placeholder.svg',
+      image: featureBudgets,
       color: 'from-orange-500 to-orange-600',
     },
     {
@@ -54,7 +61,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Transforme orçamentos aprovados em faturas com um clique. Controle de pagamentos e lembretes automáticos.' 
         : 'Turn approved quotes into invoices with one click. Payment tracking and automatic reminders.',
-      image: '/placeholder.svg',
+      image: featureInvoices,
       color: 'from-pink-500 to-pink-600',
     },
     {
@@ -63,7 +70,7 @@ const LandingPage = () => {
       desc: lang === 'pt-BR' 
         ? 'Armazene credenciais de clientes com segurança total. Acesse de qualquer lugar com criptografia de ponta.' 
         : 'Store client credentials with total security. Access from anywhere with end-to-end encryption.',
-      image: '/placeholder.svg',
+      image: featureVault,
       color: 'from-cyan-500 to-cyan-600',
     },
   ];
@@ -247,7 +254,7 @@ const LandingPage = () => {
             <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-border/50">
               <AspectRatio ratio={16 / 9}>
                 <img 
-                  src="/home.png" 
+                  src={heroDashboard} 
                   alt="Dashboard Preview" 
                   className="w-full h-full object-cover"
                 />
