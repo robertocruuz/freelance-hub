@@ -52,7 +52,11 @@ const typeStyles: Record<string, { icon: string; accent: string; dot: string }> 
   },
 };
 
-const NotificationBell = () => {
+interface NotificationBellProps {
+  renderTrigger?: (triggerProps: React.ComponentPropsWithoutRef<'button'>) => React.ReactNode;
+}
+
+const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
