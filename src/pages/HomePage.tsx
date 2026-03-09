@@ -29,12 +29,17 @@ const HomePage = () => {
 
   useEffect(() => {
     const fetchName = async () => {
-      const metaName = user?.user_metadata?.name;
-      if (metaName) { setFirstName(metaName.split(' ')[0]); return; }
       if (user?.id) {
+        // Prioriza o nome do perfil (editável pelo usuário)
         const { data } = await supabase.from('profiles').select('name').eq('user_id', user.id).maybeSingle();
-        if (data?.name) setFirstName(data.name.split(' ')[0]);
+        if (data?.name) { 
+          setFirstName(data.name.split(' ')[0]); 
+          return; 
+        }
       }
+      // Fallback para user_metadata
+      const metaName = user?.user_metadata?.name;
+      if (metaName) setFirstName(metaName.split(' ')[0]);
     };
     if (user) fetchName();
   }, [user]);
