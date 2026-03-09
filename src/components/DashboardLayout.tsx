@@ -166,14 +166,11 @@ const DashboardLayout = () => {
       <TimerIndicator navigate={(path) => { navigate(path); if (isMobile) setMobileOpen(false); }} collapsed={collapsed && !isMobile} />
 
       {/* Bottom section */}
-      <div className="shrink-0 border-t border-sidebar-border">
-        {/* Notifications */}
-        <div className={cn('px-3 pt-2 pb-0.5', collapsed && !isMobile && 'px-2')}>
+      <div className="shrink-0">
+        {/* Notifications & Settings links */}
+        <div className={cn('px-3 space-y-0.5', collapsed && !isMobile && 'px-2')}>
           <SidebarNotificationItem collapsed={collapsed && !isMobile} />
-        </div>
-        {/* Settings row */}
-        <div className={cn('px-3 pt-0.5 space-y-0.5', collapsed && !isMobile && 'px-2')}>
-          {/* Preferences / Settings */}
+
           {(() => {
             const settingsActive = location.pathname === '/dashboard/settings';
             const settingsBtn = (
@@ -181,7 +178,7 @@ const DashboardLayout = () => {
                 onClick={() => { navigate('/dashboard/settings'); if (isMobile) setMobileOpen(false); }}
                 className={cn(
                   'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
-                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2',
+                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
                   settingsActive
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
                     : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
@@ -203,11 +200,8 @@ const DashboardLayout = () => {
           })()}
         </div>
 
-        <Separator className="mx-3 my-2 bg-sidebar-border" />
-
         {/* User profile */}
-        <div className={cn('px-3 pb-3', collapsed && !isMobile && 'px-2')}>
-          {/* User button */}
+        <div className={cn('px-3 py-3', collapsed && !isMobile && 'px-2 py-2')}>
           <button
             onClick={() => {
               if (collapsed && !isMobile) {
@@ -217,10 +211,10 @@ const DashboardLayout = () => {
               }
             }}
             className={cn(
-              'w-full flex items-center gap-3 rounded-lg p-2 transition-all',
-              'text-sidebar-foreground hover:bg-sidebar-accent/50',
+              'w-full flex items-center gap-3 rounded-xl p-2.5 transition-all',
+              'hover:bg-sidebar-accent/50',
               collapsed && !isMobile && 'justify-center',
-              userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/30'
+              userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/40'
             )}
           >
             <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 ring-2 ring-sidebar-border">
@@ -233,26 +227,24 @@ const DashboardLayout = () => {
             {(!collapsed || isMobile) && (
               <>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-[13px] font-semibold truncate">{userName || user?.email}</p>
+                  <p className="text-[13px] font-semibold text-sidebar-foreground truncate">{userName || user?.email}</p>
                 </div>
                 <ChevronsUpDown className={cn('w-4 h-4 text-sidebar-foreground/30 shrink-0 transition-transform', userExpanded && 'rotate-180')} />
               </>
             )}
           </button>
 
-          {/* Expanded info panel */}
+          {/* Expanded user info */}
           {userExpanded && (!collapsed || isMobile) && (
-            <div className="mt-1 mx-1 rounded-lg bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
-              <div className="px-3 py-3 space-y-2">
-                {/* Email */}
+            <div className="mt-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
+              <div className="px-4 py-3 space-y-2.5">
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/40">Email</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Email</p>
                   <p className="text-[12px] text-sidebar-foreground/80 truncate">{user?.email}</p>
                 </div>
-                {/* Company */}
                 {orgName && (
                   <div className="space-y-0.5">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/40">Empresa</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Empresa</p>
                     <p className="text-[12px] text-sidebar-foreground/80 truncate">{orgName}</p>
                   </div>
                 )}
@@ -261,13 +253,13 @@ const DashboardLayout = () => {
               <div className="p-1.5 space-y-0.5">
                 <button
                   onClick={() => { navigate('/dashboard/profile'); if (isMobile) setMobileOpen(false); setUserExpanded(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
                 >
                   <User className="w-4 h-4" /> {t.profile}
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   <LogOut className="w-4 h-4" /> {t.logout}
                 </button>
