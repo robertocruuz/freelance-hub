@@ -195,56 +195,6 @@ const DashboardLayout = () => {
             }
             return settingsBtn;
           })()}
-
-          {/* Dark mode toggle */}
-          {(() => {
-            const themeBtn = (
-              <button
-                onClick={toggle}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-lg transition-all duration-150 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50',
-                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2'
-                )}
-              >
-                {isDark ? <Sun className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} /> : <Moon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} />}
-                {(!collapsed || isMobile) && <span className="text-[13px]">{isDark ? 'Light mode' : 'Dark mode'}</span>}
-              </button>
-            );
-            if (collapsed && !isMobile) {
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>{themeBtn}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs font-medium">{isDark ? 'Light mode' : 'Dark mode'}</TooltipContent>
-                </Tooltip>
-              );
-            }
-            return themeBtn;
-          })()}
-
-          {/* Language toggle */}
-          {(() => {
-            const langBtn = (
-              <button
-                onClick={() => setLang(lang === 'pt-BR' ? 'en' : 'pt-BR')}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-lg transition-all duration-150 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50',
-                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2'
-                )}
-              >
-                <Globe className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} />
-                {(!collapsed || isMobile) && <span className="text-[13px]">{lang === 'pt-BR' ? 'Português' : 'English'}</span>}
-              </button>
-            );
-            if (collapsed && !isMobile) {
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>{langBtn}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs font-medium">{lang === 'pt-BR' ? 'Português' : 'English'}</TooltipContent>
-                </Tooltip>
-              );
-            }
-            return langBtn;
-          })()}
         </div>
 
         <Separator className="mx-3 my-2 bg-sidebar-border" />
