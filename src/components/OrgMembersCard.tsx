@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization, OrgMember, OrgInvite } from '@/hooks/useOrganization';
@@ -91,6 +91,18 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       setInviteOpen(false);
     }
   };
+
+  // Auto-generate invite link on mount
+  useEffect(() => {
+    if (isAdmin && orgId && !inviteLink) {
+      (async () => {
+        const { token } = await generateInviteLink(inviteRole);
+        if (token) {
+          setInviteLink(`${window.location.origin}/invite/${token}`);
+        }
+      })();
+    }
+  }, [isAdmin, orgId]);
 
   const handleGenerateLink = async () => {
     setInviteLoading(true);
@@ -218,19 +230,13 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
               <Link2 className="w-3.5 h-3.5" />
               {isPt ? 'Link de convite' : 'Invite link'}
             </Label>
-            {inviteLink ? (
-              <div className="flex gap-2">
-                <Input value={inviteLink} readOnly className="text-xs bg-muted/30" />
-                <Button variant="outline" size="icon" className="shrink-0" onClick={handleCopyLink}>
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" className="gap-1.5" onClick={handleGenerateLink} disabled={inviteLoading}>
-                <Link2 className="w-3.5 h-3.5" />
-                {isPt ? 'Gerar link de convite' : 'Generate invite link'}
+            <div className="flex gap-2">
+              <Input value={inviteLink || (isPt ? 'Gerando...' : 'Generating...')} readOnly className="text-xs bg-muted/30" />
+              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={handleCopyLink} disabled={!inviteLink}>
+                <Copy className="w-3.5 h-3.5" />
+                {isPt ? 'Copiar' : 'Copy'}
               </Button>
-            )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {isPt ? 'O link expira em 7 dias' : 'Link expires in 7 days'}
             </p>
