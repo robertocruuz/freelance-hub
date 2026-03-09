@@ -50,17 +50,21 @@ const DashboardLayout = () => {
   const [userName, setUserName] = useState('');
   const [orgName, setOrgName] = useState('');
 
+  const fetchProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single();
+    if (data) {
+      setUserName(data.name || '');
+      setAvatarUrl(data.avatar_url || null);
+    } else {
+      setUserName(user.user_metadata?.name || '');
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
-    const fetchProfile = async () => {
-      const { data } = await supabase.from('profiles').select('name, avatar_url').eq('user_id', user.id).single();
-      if (data) {
-        setUserName(data.name || '');
-        setAvatarUrl(data.avatar_url || null);
-      } else {
-        setUserName(user.user_metadata?.name || '');
-      }
-    };
+    fetchProfile();
+
     const fetchOrg = async () => {
       const { data: member } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('status', 'accepted').single();
       if (member) {
@@ -68,8 +72,17 @@ const DashboardLayout = () => {
         if (org) setOrgName(org.trade_name || org.company_name || '');
       }
     };
-    fetchProfile();
     fetchOrg();
+
+    // Listen for profile changes to update avatar in real-time
+    const channel = supabase
+      .channel('sidebar-profile')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, () => {
+        fetchProfile();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const handleLogout = async () => {
