@@ -56,12 +56,18 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
     return clients.find(c => c.id === id)?.name || '';
   };
 
-  const displayInvoices = invoices.map(inv => {
-    if (inv.status === 'pending' && inv.due_date && isPast(new Date(inv.due_date + 'T23:59:59')) && !isToday(new Date(inv.due_date + 'T12:00:00'))) {
-      return { ...inv, status: 'overdue' };
+  // Auto-update overdue invoices in the database
+  useEffect(() => {
+    const overdueIds = invoices
+      .filter(inv => inv.status === 'pending' && inv.due_date && isPast(new Date(inv.due_date + 'T23:59:59')) && !isToday(new Date(inv.due_date + 'T12:00:00')))
+      .map(inv => inv.id);
+    if (overdueIds.length > 0) {
+      Promise.all(overdueIds.map(id => supabase.from('invoices').update({ status: 'overdue' }).eq('id', id)))
+        .then(() => onRefresh());
     }
-    return inv;
-  });
+  }, [invoices]);
+
+  const displayInvoices = invoices;
 
   const filtered = displayInvoices.filter(inv => {
     if (filterStatus !== 'all' && inv.status !== filterStatus) return false;
