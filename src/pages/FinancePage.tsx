@@ -10,7 +10,7 @@ import ReceivablesTab from '@/components/finance/ReceivablesTab';
 import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays, ShieldAlert } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
@@ -91,23 +91,23 @@ export default function FinancePage() {
   const balance = receivedThisMonth - paidThisMonth;
 
   const tabItems = [
-    { value: 'cashflow', label: 'Fluxo de Caixa', icon: BarChart3 },
-    { value: 'receivables', label: 'A Receber', icon: ArrowDownToLine },
-    { value: 'payables', label: 'A Pagar', icon: ArrowUpFromLine },
-    { value: 'calendar', label: 'Calendário', icon: CalendarDays },
+    { value: 'cashflow', label: 'Fluxo de Caixa', shortLabel: 'Fluxo', icon: BarChart3 },
+    { value: 'receivables', label: 'A Receber', shortLabel: 'Receber', icon: ArrowDownToLine },
+    { value: 'payables', label: 'A Pagar', shortLabel: 'Pagar', icon: ArrowUpFromLine },
+    { value: 'calendar', label: 'Calendário', shortLabel: 'Agenda', icon: CalendarDays },
   ];
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative z-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
-          <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
+          <p className="text-sm text-muted-foreground capitalize mt-0.5">{monthLabel}</p>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Balanço do mês:</span>
-          <span className={`font-bold text-base ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm" role="status" aria-label="Balanço do mês">
+          <span className="text-xs font-medium text-muted-foreground">Balanço do mês</span>
+          <span className={`font-extrabold text-lg tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
             {balance >= 0 ? '+' : ''}{balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </span>
         </div>
@@ -123,15 +123,17 @@ export default function FinancePage() {
 
       {/* Tabs */}
       <Tabs defaultValue="cashflow" className="w-full">
-        <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1">
+        <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1" aria-label="Seções financeiras">
           {tabItems.map(tab => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="flex-1 gap-2 py-2.5 rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all"
+              className="flex-1 gap-1.5 py-2.5 rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all"
+              aria-label={tab.label}
             >
-              <tab.icon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <tab.icon className="w-3.5 h-3.5" aria-hidden="true" />
+              <span className="hidden xs:inline sm:hidden md:inline">{tab.shortLabel}</span>
+              <span className="hidden sm:inline md:hidden lg:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
