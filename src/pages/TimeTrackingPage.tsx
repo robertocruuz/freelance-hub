@@ -40,6 +40,7 @@ interface KanbanTask {
 
 interface TimeEntry {
   id: string;
+  user_id: string;
   client_id: string | null;
   project_id: string | null;
   task_id: string | null;
@@ -47,6 +48,12 @@ interface TimeEntry {
   start_time: string;
   end_time: string | null;
   duration: number | null;
+}
+
+interface ProfileInfo {
+  user_id: string;
+  name: string | null;
+  email: string | null;
 }
 
 type ViewMode = 'calendar' | 'list' | 'timesheet' | 'report';
