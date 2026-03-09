@@ -1453,7 +1453,7 @@ const TimeTrackingPage = () => {
             })(),
           }));
 
-          const byDay = filteredEntries.reduce<Record<string, number>>((acc, e) => {
+          const byDay = reportEntries.reduce<Record<string, number>>((acc, e) => {
             const d = new Date(e.start_time);
             const key = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
             acc[key] = (acc[key] || 0) + (e.duration || 0);
