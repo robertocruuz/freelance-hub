@@ -55,7 +55,18 @@ export default function CashFlowTab({ invoices }: Props) {
     return { name: format(month, 'MMM/yy', { locale: ptBR }), Entradas: entradas, Saídas: saidas, Saldo: entradas - saidas };
   });
 
-  const categoryData = EXPENSE_CATEGORIES.map(cat => {
+
+  const saldoData = saldoMonths.map(month => {
+    const key = format(month, 'yyyy-MM');
+    const entradas = invoices
+      .filter(i => i.status === 'paid' && i.due_date && i.due_date.startsWith(key))
+      .reduce((s, i) => s + i.total, 0);
+    const saidas = expenses
+      .filter(e => e.status === 'paid' && e.paid_date && e.paid_date.startsWith(key))
+      .reduce((s, e) => s + e.amount, 0);
+    return { name: format(month, 'MMM/yy', { locale: ptBR }), Saldo: entradas - saidas };
+  });
+
     const total = expenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
     return { name: cat.label, value: total };
   }).filter(d => d.value > 0);
