@@ -121,6 +121,7 @@ export type Database = {
           description: string
           due_date: string | null
           id: string
+          is_recurring: boolean
           notes: string | null
           paid_date: string | null
           payment_method: string | null
@@ -136,6 +137,7 @@ export type Database = {
           description: string
           due_date?: string | null
           id?: string
+          is_recurring?: boolean
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
@@ -151,6 +153,7 @@ export type Database = {
           description?: string
           due_date?: string | null
           id?: string
+          is_recurring?: boolean
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
