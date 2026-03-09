@@ -150,8 +150,7 @@ export default function CashFlowTab({ invoices }: Props) {
                       size="sm"
                       className="h-7 px-2.5 text-[11px] font-medium"
                       onClick={() => {
-                        setStartDate(subMonths(startOfMonth(now), r.monthsBack));
-                        setEndDate(endOfMonth(now));
+                        setBarRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
                       }}
                     >
                       {r.label}
