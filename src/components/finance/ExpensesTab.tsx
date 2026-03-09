@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Check, Filter } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -23,13 +24,26 @@ const statusConfig: Record<string, { bg: string; dot: string; label: string }> =
   overdue: { bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800', dot: 'bg-red-500', label: 'Atrasado' },
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatus: (s: string) => void }) {
   const config = statusConfig[status] || statusConfig.pending;
+  const options = Object.entries(statusConfig);
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border', config.bg)}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
-      {config.label}
-    </span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer hover:opacity-80 transition-opacity', config.bg)}>
+          <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
+          {config.label}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[140px]">
+        {options.map(([key, cfg]) => (
+          <DropdownMenuItem key={key} onClick={() => onChangeStatus(key)} className="gap-2 text-xs">
+            <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
+            {cfg.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -153,7 +167,10 @@ export default function ExpensesTab() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm text-foreground truncate">{e.description}</p>
                     <Badge variant="outline" className="text-[10px]">{EXPENSE_CATEGORIES.find(c => c.value === e.category)?.label || e.category}</Badge>
-                    <StatusBadge status={e.status} />
+                    <StatusBadge status={e.status} onChangeStatus={(s) => {
+                      if (s === 'paid') markAsPaid(e.id);
+                      else updateExpense(e.id, { status: s, paid_date: null });
+                    }} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {e.due_date && <span>Vence: {format(new Date(e.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>}
@@ -162,11 +179,6 @@ export default function ExpensesTab() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(e.amount)}</span>
-                  {e.status !== 'paid' && (
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => markAsPaid(e.id)}>
-                      <Check className="w-3 h-3 mr-1" /> Pagar
-                    </Button>
-                  )}
                   <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(e)}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>

@@ -1,11 +1,11 @@
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { useClients } from '@/hooks/useClients';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn, formatCurrency } from '@/lib/utils';
-import { Check, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,13 +18,26 @@ const statusConfig: Record<string, { bg: string; dot: string; label: string }> =
   overdue: { bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800', dot: 'bg-red-500', label: 'Atrasado' },
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatus: (s: string) => void }) {
   const config = statusConfig[status] || statusConfig.pending;
+  const options = Object.entries(statusConfig);
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border', config.bg)}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
-      {config.label}
-    </span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-pointer hover:opacity-80 transition-opacity', config.bg)}>
+          <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
+          {config.label}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[140px]">
+        {options.map(([key, cfg]) => (
+          <DropdownMenuItem key={key} onClick={() => onChangeStatus(key)} className="gap-2 text-xs">
+            <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
+            {cfg.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -61,10 +74,10 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
     !isPast(new Date(inv.due_date + 'T23:59:59'))
   );
 
-  const handleMarkPaid = async (id: string) => {
-    const { error } = await supabase.from('invoices').update({ status: 'paid' }).eq('id', id);
+  const handleChangeStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', id);
     if (error) { toast.error('Erro ao atualizar'); return; }
-    toast.success('Fatura marcada como paga');
+    toast.success('Status atualizado');
     onRefresh();
   };
 
@@ -103,7 +116,7 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-sm text-foreground truncate">{inv.name || 'Fatura sem nome'}</p>
-                    <StatusBadge status={inv.status} />
+                    <StatusBadge status={inv.status} onChangeStatus={(s) => handleChangeStatus(inv.id, s)} />
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     {clientName(inv.client_id) && <span>{clientName(inv.client_id)}</span>}
@@ -112,11 +125,6 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm whitespace-nowrap">{formatCurrency(inv.total)}</span>
-                  {inv.status !== 'paid' && (
-                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleMarkPaid(inv.id)}>
-                      <Check className="w-3 h-3 mr-1" /> Recebido
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
