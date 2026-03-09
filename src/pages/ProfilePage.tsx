@@ -271,13 +271,30 @@ const ProfilePage = () => {
       {/* Profile Card */}
       <Card>
         <CardHeader className="flex flex-row items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold">
+          <div
+            className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer group relative overflow-hidden"
+            onClick={() => setAvatarModalOpen(true)}
+          >
+            <Avatar className="w-14 h-14 rounded-2xl">
+              {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
+              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold rounded-2xl">
                 {initials}
               </AvatarFallback>
             </Avatar>
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+              <Camera className="w-4 h-4 text-white" />
+            </div>
           </div>
+          {user && (
+            <AvatarUploadModal
+              open={avatarModalOpen}
+              onOpenChange={setAvatarModalOpen}
+              userId={user.id}
+              currentUrl={avatarUrl}
+              initials={initials}
+              onUploaded={setAvatarUrl}
+            />
+          )}
           <div className="flex-1 min-w-0">
             <CardTitle className="text-xl truncate">{profile.name || profile.email}</CardTitle>
             <CardDescription className="mt-0.5">
