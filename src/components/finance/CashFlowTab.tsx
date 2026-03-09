@@ -24,9 +24,10 @@ const PIE_COLORS = [
 
 interface Props {
   invoices: FinanceInvoice[];
+  monthFilter?: string;
 }
 
-export default function CashFlowTab({ invoices }: Props) {
+export default function CashFlowTab({ invoices, monthFilter }: Props) {
   const { expenses } = useExpenses();
   const now = new Date();
 
@@ -50,10 +51,13 @@ export default function CashFlowTab({ invoices }: Props) {
   const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
   const saldoMonths = eachMonthOfInterval({ start: startOfMonth(saldoStartDate), end: endOfMonth(saldoEndDate) });
 
-  const totalReceivable = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
-  const totalPayable = expenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
-  const totalReceived = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
-  const totalPaid = expenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+  const filteredInvoices = monthFilter ? invoices.filter(i => i.due_date && i.due_date.startsWith(monthFilter)) : invoices;
+  const filteredExpenses = monthFilter ? expenses.filter(e => (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter))) : expenses;
+
+  const totalReceivable = filteredInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
+  const totalPayable = filteredExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
+  const totalReceived = filteredInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
+  const totalPaid = filteredExpenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
   const projectedBalance = totalReceivable - totalPayable;
   const currentBalance = totalReceived - totalPaid;
 
