@@ -10,7 +10,8 @@ import ReceivablesTab from '@/components/finance/ReceivablesTab';
 import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, CalendarDays, ShieldAlert } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
   id: string;
@@ -27,6 +28,25 @@ export default function FinancePage() {
   const { user } = useAuth();
   const { expenses } = useExpenses();
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
+  const [roleChecked, setRoleChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const checkRole = async () => {
+      const { data: member } = await supabase
+        .from('organization_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('status', 'accepted')
+        .single();
+      if (member && (member as any).role === 'collaborator') {
+        setIsAdmin(false);
+      }
+      setRoleChecked(true);
+    };
+    checkRole();
+  }, [user]);
 
   const fetchInvoices = useCallback(async () => {
     if (!user) return;
@@ -38,6 +58,10 @@ export default function FinancePage() {
   }, [user]);
 
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+
+  if (roleChecked && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const now = new Date();
   const monthStr = format(now, 'yyyy-MM');

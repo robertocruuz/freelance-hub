@@ -53,6 +53,7 @@ const DashboardLayout = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [orgName, setOrgName] = useState('');
+  const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -70,10 +71,15 @@ const DashboardLayout = () => {
     fetchProfile();
 
     const fetchOrg = async () => {
-      const { data: member } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('status', 'accepted').single();
+      const { data: member } = await supabase.from('organization_members').select('organization_id, role').eq('user_id', user.id).eq('status', 'accepted').single();
       if (member) {
+        setUserOrgRole((member as any).role);
         const { data: org } = await supabase.from('organizations').select('trade_name, company_name').eq('id', member.organization_id).single();
         if (org) setOrgName(org.trade_name || org.company_name || '');
+      } else {
+        // User owns an org → they are admin
+        const { data: ownOrg } = await supabase.from('organizations').select('id').eq('user_id', user.id).single();
+        if (ownOrg) setUserOrgRole('admin');
       }
     };
     fetchOrg();
@@ -104,6 +110,12 @@ const DashboardLayout = () => {
   const isActive = (path: string) =>
     path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === path;
 
+  const isAdminUser = userOrgRole === 'admin' || userOrgRole === null; // null = no org, show all
+  const filteredNavItems = navItems.filter(item => {
+    if (item.key === 'finance' && !isAdminUser) return false;
+    return true;
+  });
+
   const SidebarNav = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -130,7 +142,7 @@ const DashboardLayout = () => {
 
       {/* Nav items */}
       <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const active = isActive(item.path);
           const label = labelMap[item.key](t);
 
