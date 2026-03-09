@@ -96,7 +96,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   useEffect(() => {
     if (isAdmin && orgId && !inviteLink) {
       (async () => {
-        const { token } = await generateInviteLink(inviteRole);
+        const { token } = await generateInviteLink('collaborator');
         if (token) {
           setInviteLink(`${window.location.origin}/invite/${token}`);
         }
