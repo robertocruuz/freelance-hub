@@ -9,7 +9,7 @@ export interface OrgMember {
   role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
-  profile?: { name: string | null; email: string | null };
+  profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
 export interface OrgInvite {
@@ -88,7 +88,7 @@ export const useOrganization = () => {
       const userIds = (membersData as any[]).map((m: any) => m.user_id);
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, name, email')
+        .select('user_id, name, email, avatar_url')
         .in('user_id', userIds);
 
       const membersWithProfiles = (membersData as any[]).map((m: any) => ({

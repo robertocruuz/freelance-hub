@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -26,7 +26,7 @@ interface ShareRecord {
   id: string;
   share_type: string;
   shared_with_user_id: string | null;
-  profile?: { name: string | null; email: string | null };
+  profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
 export const ShareButton = ({ resourceType, resourceId, compact = false }: ShareButtonProps) => {
@@ -34,7 +34,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [shares, setShares] = useState<ShareRecord[]>([]);
-  const [orgMembers, setOrgMembers] = useState<{ user_id: string; name: string | null; email: string | null }[]>([]);
+  const [orgMembers, setOrgMembers] = useState<{ user_id: string; name: string | null; email: string | null; avatar_url: string | null }[]>([]);
   const [hasOrg, setHasOrg] = useState(false);
   const [sharedWithOrg, setSharedWithOrg] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
 
       let profiles: any[] = [];
       if (userIds.length > 0) {
-        const { data: p } = await supabase.from('profiles').select('user_id, name, email').in('user_id', userIds);
+        const { data: p } = await supabase.from('profiles').select('user_id, name, email, avatar_url').in('user_id', userIds);
         profiles = p || [];
       }
 
@@ -89,8 +89,8 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
       if (members) {
         const userIds = (members as any[]).map(m => m.user_id);
         if (userIds.length > 0) {
-          const { data: profiles } = await supabase.from('profiles').select('user_id, name, email').in('user_id', userIds);
-          setOrgMembers((profiles || []).map(p => ({ user_id: p.user_id, name: p.name, email: p.email })));
+          const { data: profiles } = await supabase.from('profiles').select('user_id, name, email, avatar_url').in('user_id', userIds);
+          setOrgMembers((profiles || []).map(p => ({ user_id: p.user_id, name: p.name, email: p.email, avatar_url: p.avatar_url })));
         }
       }
     }
@@ -282,6 +282,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                       className="flex items-center gap-2 w-full p-1.5 rounded-lg hover:bg-muted/50 transition text-left"
                     >
                       <Avatar className="w-6 h-6">
+                        {member.avatar_url && <AvatarImage src={member.avatar_url} className="object-cover" />}
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                           {getInitials(member.name, member.email)}
                         </AvatarFallback>
@@ -338,6 +339,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
                   {userShares.map((share) => (
                     <div key={share.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-muted/20">
                       <Avatar className="w-6 h-6">
+                        {share.profile?.avatar_url && <AvatarImage src={share.profile.avatar_url} className="object-cover" />}
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                           {getInitials(share.profile?.name, share.profile?.email)}
                         </AvatarFallback>

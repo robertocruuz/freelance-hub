@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -253,6 +253,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                 className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors"
               >
                 <Avatar className="w-9 h-9 shrink-0">
+                  {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover" />}
                   <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
                     {getInitials(member.profile?.name, member.profile?.email)}
                   </AvatarFallback>
