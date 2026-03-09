@@ -2032,6 +2032,7 @@ const TimeTrackingPage = () => {
                                   </div>
                                 </td>
                                 <td className="py-2.5 px-3 text-muted-foreground">{client?.name || '—'}</td>
+                                <td className="py-2.5 px-3 text-muted-foreground">—</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{projEntries.length}</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-foreground">{p.hours}h</td>
                                 <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">{pct}%</td>
