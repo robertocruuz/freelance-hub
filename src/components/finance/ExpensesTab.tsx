@@ -335,6 +335,24 @@ export default function ExpensesTab() {
                 </Select>
               </div>
             </div>
+            <div className="flex items-center gap-3 py-1">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={isRecurring}
+                onClick={() => setIsRecurring(!isRecurring)}
+                className={cn(
+                  'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
+                  isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'
+                )}
+              >
+                {isRecurring && <Repeat className="w-3 h-3" />}
+              </button>
+              <div>
+                <Label className="text-sm font-medium cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>Despesa recorrente</Label>
+                <p className="text-xs text-muted-foreground">Repetir automaticamente nos próximos meses</p>
+              </div>
+            </div>
             <div>
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Observações</Label>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="mt-1.5" />
