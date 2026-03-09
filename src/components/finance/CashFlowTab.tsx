@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon } from 'lucide-react';
 
 const PIE_COLORS = [
   'hsl(225, 100%, 50%)',
@@ -23,9 +27,12 @@ interface Props {
 
 export default function CashFlowTab({ invoices }: Props) {
   const { expenses } = useExpenses();
-
   const now = new Date();
-  const months = eachMonthOfInterval({ start: subMonths(startOfMonth(now), 5), end: endOfMonth(now) });
+
+  const [startDate, setStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
+  const [endDate, setEndDate] = useState<Date>(endOfMonth(now));
+
+  const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
 
   const totalReceivable = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
   const totalPayable = expenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
@@ -42,7 +49,7 @@ export default function CashFlowTab({ invoices }: Props) {
     const saidas = expenses
       .filter(e => e.status === 'paid' && e.paid_date && e.paid_date.startsWith(key))
       .reduce((s, e) => s + e.amount, 0);
-    return { name: format(month, 'MMM', { locale: ptBR }), Entradas: entradas, Saídas: saidas, Saldo: entradas - saidas };
+    return { name: format(month, 'MMM/yy', { locale: ptBR }), Entradas: entradas, Saídas: saidas, Saldo: entradas - saidas };
   });
 
   const categoryData = EXPENSE_CATEGORIES.map(cat => {
@@ -73,6 +80,12 @@ export default function CashFlowTab({ invoices }: Props) {
     );
   };
 
+  const quickRanges = [
+    { label: '3M', monthsBack: 2 },
+    { label: '6M', monthsBack: 5 },
+    { label: '12M', monthsBack: 11 },
+  ];
+
   return (
     <div className="space-y-5">
       {/* Balance summary strip */}
@@ -92,11 +105,70 @@ export default function CashFlowTab({ invoices }: Props) {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Main bar chart - takes 2 cols */}
+        {/* Main bar chart */}
         <Card className="lg:col-span-2 overflow-hidden">
           <CardHeader className="pb-0">
-            <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
-            <CardDescription className="text-xs">Últimos 6 meses</CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
+                <CardDescription className="text-xs capitalize">
+                  {format(startDate, "MMM/yyyy", { locale: ptBR })} — {format(endDate, "MMM/yyyy", { locale: ptBR })}
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {quickRanges.map(r => {
+                  const isActive = months.length === r.monthsBack + 1;
+                  return (
+                    <Button
+                      key={r.label}
+                      variant={isActive ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 px-2.5 text-[11px] font-medium"
+                      onClick={() => {
+                        setStartDate(subMonths(startOfMonth(now), r.monthsBack));
+                        setEndDate(endOfMonth(now));
+                      }}
+                    >
+                      {r.label}
+                    </Button>
+                  );
+                })}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
+                      <CalendarIcon className="w-3 h-3" />
+                      De
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={(d) => d && setStartDate(startOfMonth(d))}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
+                      <CalendarIcon className="w-3 h-3" />
+                      Até
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={(d) => d && setEndDate(endOfMonth(d))}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={280}>
@@ -130,27 +202,11 @@ export default function CashFlowTab({ invoices }: Props) {
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
-                  <Pie
-                    data={categoryData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="45%"
-                    outerRadius={75}
-                    innerRadius={45}
-                    strokeWidth={2}
-                    stroke="hsl(var(--card))"
-                    paddingAngle={3}
-                  >
+                  <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={75} innerRadius={45} strokeWidth={2} stroke="hsl(var(--card))" paddingAngle={3}>
                     {categoryData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    verticalAlign="bottom"
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value: string) => <span className="text-[11px] text-muted-foreground">{value}</span>}
-                  />
+                  <Legend verticalAlign="bottom" iconType="circle" iconSize={8} formatter={(value: string) => <span className="text-[11px] text-muted-foreground">{value}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             )}
