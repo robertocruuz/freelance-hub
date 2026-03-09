@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import heroDashboard from '@/assets/hero-dashboard.jpg';
+
 import featureClients from '@/assets/feature-clients.jpg';
 import featureKanban from '@/assets/feature-kanban.jpg';
 import featureTimetracking from '@/assets/feature-timetracking.jpg';
