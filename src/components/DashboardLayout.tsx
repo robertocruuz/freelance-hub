@@ -390,8 +390,9 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground/60">
       <NotificationBell />
+      <span className="text-sm">Notificações</span>
     </div>
   );
 };
