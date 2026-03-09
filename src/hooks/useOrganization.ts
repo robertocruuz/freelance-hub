@@ -9,7 +9,7 @@ export interface OrgMember {
   role: 'admin' | 'collaborator';
   status: string;
   created_at: string;
-  profile?: { name: string | null; email: string | null };
+  profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
 export interface OrgInvite {
