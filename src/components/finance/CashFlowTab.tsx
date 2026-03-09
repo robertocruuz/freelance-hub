@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -152,31 +153,20 @@ export default function CashFlowTab({ invoices }: Props) {
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
                       <CalendarIcon className="w-3 h-3" />
-                      De
+                      <span className="capitalize">
+                        {format(startDate, "dd MMM", { locale: ptBR })} – {format(endDate, "dd MMM yy", { locale: ptBR })}
+                      </span>
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(d) => d && setStartDate(startOfMonth(d))}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
-                      <CalendarIcon className="w-3 h-3" />
-                      Até
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="end">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={(d) => d && setEndDate(endOfMonth(d))}
+                      mode="range"
+                      selected={{ from: startDate, to: endDate }}
+                      onSelect={(range: DateRange | undefined) => {
+                        if (range?.from) setStartDate(startOfMonth(range.from));
+                        if (range?.to) setEndDate(endOfMonth(range.to));
+                      }}
+                      numberOfMonths={2}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
                     />
@@ -261,31 +251,20 @@ export default function CashFlowTab({ invoices }: Props) {
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
                     <CalendarIcon className="w-3 h-3" />
-                    De
+                    <span className="capitalize">
+                      {format(saldoStartDate, "dd MMM", { locale: ptBR })} – {format(saldoEndDate, "dd MMM yy", { locale: ptBR })}
+                    </span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
-                    mode="single"
-                    selected={saldoStartDate}
-                    onSelect={(d) => d && setSaldoStartDate(startOfMonth(d))}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
-                    <CalendarIcon className="w-3 h-3" />
-                    Até
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={saldoEndDate}
-                    onSelect={(d) => d && setSaldoEndDate(endOfMonth(d))}
+                    mode="range"
+                    selected={{ from: saldoStartDate, to: saldoEndDate }}
+                    onSelect={(range: DateRange | undefined) => {
+                      if (range?.from) setSaldoStartDate(startOfMonth(range.from));
+                      if (range?.to) setSaldoEndDate(endOfMonth(range.to));
+                    }}
+                    numberOfMonths={2}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
