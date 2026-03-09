@@ -89,8 +89,8 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
       if (members) {
         const userIds = (members as any[]).map(m => m.user_id);
         if (userIds.length > 0) {
-          const { data: profiles } = await supabase.from('profiles').select('user_id, name, email').in('user_id', userIds);
-          setOrgMembers((profiles || []).map(p => ({ user_id: p.user_id, name: p.name, email: p.email })));
+          const { data: profiles } = await supabase.from('profiles').select('user_id, name, email, avatar_url').in('user_id', userIds);
+          setOrgMembers((profiles || []).map(p => ({ user_id: p.user_id, name: p.name, email: p.email, avatar_url: p.avatar_url })));
         }
       }
     }
