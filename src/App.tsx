@@ -25,6 +25,7 @@ import InvitePage from "./pages/InvitePage";
 import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import FinancePage from "./pages/FinancePage";
 
 const queryClient = new QueryClient();
 
