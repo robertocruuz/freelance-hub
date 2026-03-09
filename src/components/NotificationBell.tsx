@@ -52,7 +52,11 @@ const typeStyles: Record<string, { icon: string; accent: string; dot: string }> 
   },
 };
 
-const NotificationBell = () => {
+interface NotificationBellProps {
+  renderTrigger?: (triggerProps: React.ComponentPropsWithoutRef<'button'>) => React.ReactNode;
+}
+
+const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
   const { user } = useAuth();
   const { lang } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -129,14 +133,18 @@ const NotificationBell = () => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="relative w-10 h-10 rounded-xl hover:bg-muted transition-all flex items-center justify-center text-muted-foreground hover:text-foreground group/bell">
-          <Bell className="w-[18px] h-[18px] transition-transform group-hover/bell:scale-110" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-card animate-in zoom-in-50 duration-200">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+        {renderTrigger ? (
+          renderTrigger({})
+        ) : (
+          <button className="relative w-10 h-10 rounded-xl hover:bg-muted transition-all flex items-center justify-center text-muted-foreground hover:text-foreground group/bell">
+            <Bell className="w-[18px] h-[18px] transition-transform group-hover/bell:scale-110" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-card animate-in zoom-in-50 duration-200">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        )}
       </PopoverTrigger>
       <PopoverContent
         align="end"

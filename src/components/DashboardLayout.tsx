@@ -371,7 +371,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex justify-center p-2.5">
+          <div className="flex justify-center">
             <NotificationBell />
           </div>
         </TooltipTrigger>
@@ -381,10 +381,27 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
   }
 
   return (
-    <div className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-150 cursor-pointer">
-      <NotificationBell />
-      <span className="text-[13px]">{label}</span>
-    </div>
+    <NotificationBell
+      renderTrigger={(triggerProps) => (
+        <button
+          {...triggerProps}
+          className={cn(
+            'w-full flex items-center gap-3 rounded-lg transition-all duration-150 px-3 py-2.5',
+            'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+          )}
+        >
+          <div className="relative shrink-0">
+            <Bell className="w-[18px] h-[18px]" strokeWidth={1.8} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center ring-2 ring-card">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[13px]">{label}</span>
+        </button>
+      )}
+    />
   );
 };
 
