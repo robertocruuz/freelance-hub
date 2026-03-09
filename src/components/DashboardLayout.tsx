@@ -25,6 +25,7 @@ const navItems = [
   { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'invoices', icon: Receipt, path: '/dashboard/invoices' },
+  { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
   { key: 'team', icon: UsersRound, path: '/dashboard/team' },
 ] as const;
 
