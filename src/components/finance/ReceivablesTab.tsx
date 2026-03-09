@@ -74,10 +74,10 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
     !isPast(new Date(inv.due_date + 'T23:59:59'))
   );
 
-  const handleMarkPaid = async (id: string) => {
-    const { error } = await supabase.from('invoices').update({ status: 'paid' }).eq('id', id);
+  const handleChangeStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase.from('invoices').update({ status: newStatus }).eq('id', id);
     if (error) { toast.error('Erro ao atualizar'); return; }
-    toast.success('Fatura marcada como paga');
+    toast.success('Status atualizado');
     onRefresh();
   };
 
