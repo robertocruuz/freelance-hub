@@ -1934,7 +1934,7 @@ const TimeTrackingPage = () => {
                 );
               })()}
 
-              {filteredEntries.length === 0 ? (
+              {reportEntries.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p className="text-sm font-medium">Sem dados para o período selecionado</p>
