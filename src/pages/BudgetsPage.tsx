@@ -309,8 +309,22 @@ const BudgetsPage = () => {
   const addItemToProject = async (projectId: string) => {
     if (!projectPickerItem) return;
     const { item, budget } = projectPickerItem;
-    
+
+    // Load existing items in target project to check for duplicates
+    const { data: existingItems } = await supabase
+      .from('project_items')
+      .select('name, value')
+      .eq('project_id', projectId);
+    const existingKeys = new Set(
+      (existingItems || []).map(e => makeItemKey(e.name, Number(e.value)))
+    );
+
     if (item) {
+      const key = makeItemKey(item.description, item.quantity * item.unitPrice);
+      if (existingKeys.has(key)) {
+        toast.warning(`"${item.description}" já existe neste projeto.`);
+        return;
+      }
       const { error } = await supabase.from('project_items').insert({
         project_id: projectId,
         name: item.description,
@@ -320,15 +334,30 @@ const BudgetsPage = () => {
       if (error) return toast.error(error.message);
       toast.success(`"${item.description}" adicionado ao projeto!`);
     } else {
-      const inserts = budget.items.map((bi, idx) => ({
+      const allItems = budget.items.map((bi, idx) => ({
         project_id: projectId,
         name: bi.description,
         value: bi.quantity * bi.unitPrice,
         position: idx,
       }));
-      const { error } = await supabase.from('project_items').insert(inserts);
+      const newItems = allItems.filter(
+        i => !existingKeys.has(makeItemKey(i.name, i.value))
+      );
+      const skipped = allItems.length - newItems.length;
+
+      if (newItems.length === 0) {
+        toast.warning('Todos os itens deste orçamento já existem no projeto.');
+        return;
+      }
+
+      const { error } = await supabase.from('project_items').insert(newItems);
       if (error) return toast.error(error.message);
-      toast.success(`${inserts.length} itens enviados ao projeto!`);
+
+      if (skipped > 0) {
+        toast.success(`${newItems.length} itens enviados! ${skipped} duplicado${skipped > 1 ? 's' : ''} ignorado${skipped > 1 ? 's' : ''}.`);
+      } else {
+        toast.success(`${newItems.length} itens enviados ao projeto!`);
+      }
     }
     setProjectPickerItem(null);
     loadImportedItems();
