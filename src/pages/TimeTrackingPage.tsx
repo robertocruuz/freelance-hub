@@ -1423,9 +1423,9 @@ const TimeTrackingPage = () => {
             id: uid,
             name: getProfileName(uid),
           }));
-          const reportEntries = reportUserFilter === 'all'
-            ? filteredEntries
-            : filteredEntries.filter(e => e.user_id === reportUserFilter);
+          const reportEntries = reportUserFilter === 'me'
+            ? filteredEntries.filter(e => e.user_id === user?.id)
+            : filteredEntries;
 
           const byProject = reportEntries.reduce<Record<string, number>>((acc, e) => {
             const name = getProjectName(e.project_id) || 'Sem projeto';
