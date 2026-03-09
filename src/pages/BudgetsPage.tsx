@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderInput, FolderKanban, CalendarIcon, MoreVertical } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderInput, FolderKanban, CalendarIcon, MoreVertical, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { generateDocumentPdf, generateBudgetPdf } from '@/lib/pdfGenerator';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -90,6 +91,7 @@ const BudgetsPage = () => {
   const [notes, setNotes] = useState('');
   const { clients } = useClients();
   const [organization, setOrganization] = useState<any>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -309,7 +311,6 @@ const BudgetsPage = () => {
     const { item, budget } = projectPickerItem;
     
     if (item) {
-      // Single item import
       const { error } = await supabase.from('project_items').insert({
         project_id: projectId,
         name: item.description,
@@ -319,7 +320,6 @@ const BudgetsPage = () => {
       if (error) return toast.error(error.message);
       toast.success(`"${item.description}" adicionado ao projeto!`);
     } else {
-      // All items from budget
       const inserts = budget.items.map((bi, idx) => ({
         project_id: projectId,
         name: bi.description,
@@ -336,169 +336,254 @@ const BudgetsPage = () => {
 
   const isFormOpen = creating || editingId;
 
-  const inputClass = "px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
+  const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
+
+  const filteredBudgets = budgets.filter(b => {
+    const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+    const matchSearch = !search || 
+      (b.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (b.client_name || '').toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t.budgets}</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.budgets}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {budgets.length} {budgets.length === 1 ? 'orçamento' : 'orçamentos'}
+          </p>
+        </div>
         {!isFormOpen && (
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+          <Button
+            onClick={() => setCreating(true)}
+            className="gap-2 rounded-xl font-semibold shadow-sm"
+          >
             <Plus className="w-4 h-4" /> {t.newBudget}
-          </button>
+          </Button>
         )}
       </div>
 
+      {/* Search & Filters */}
+      {!isFormOpen && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder={t.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-8 rounded-xl"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {['all', ...statuses].map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
+                  statusFilter === s
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                )}
+              >
+                {s === 'all' ? 'Todos' : statusLabel(s)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Form */}
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-5 shadow-sm animate-fade-in">
+          <h2 className="text-lg font-bold text-foreground">
+            {editingId ? 'Editar Orçamento' : t.newBudget}
+          </h2>
+
           {/* Budget name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Nome do Orçamento</label>
-            <input
+            <label className="text-xs font-medium text-muted-foreground">Nome do Orçamento</label>
+            <Input
               placeholder="Ex: Projeto Website Corporativo"
               value={budgetName}
               onChange={(e) => setBudgetName(e.target.value)}
-              className={`${inputClass} w-full`}
+              className="rounded-xl"
             />
           </div>
 
           {/* Client select */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Cliente</label>
+            <label className="text-xs font-medium text-muted-foreground">Cliente</label>
             <ClientSelect value={clientId} onChange={setClientId} placeholder={t.client} />
           </div>
 
           {/* Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Data</label>
+              <label className="text-xs font-medium text-muted-foreground">Data</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !budgetDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                  <button
+                    className={cn(
+                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      !budgetDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="w-4 h-4 shrink-0" />
                     {budgetDate ? format(budgetDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
-                  </Button>
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={budgetDate} onSelect={setBudgetDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  <Calendar mode="single" selected={budgetDate} onSelect={setBudgetDate} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Validade</label>
+              <label className="text-xs font-medium text-muted-foreground">Validade</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !validityDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                  <button
+                    className={cn(
+                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      !validityDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="w-4 h-4 shrink-0" />
                     {validityDate ? format(validityDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
-                  </Button>
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={validityDate} onSelect={setValidityDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  <Calendar mode="single" selected={validityDate} onSelect={setValidityDate} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Prazo de Entrega</label>
+              <label className="text-xs font-medium text-muted-foreground">Prazo de Entrega</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !deliveryDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                  <button
+                    className={cn(
+                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      !deliveryDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="w-4 h-4 shrink-0" />
                     {deliveryDate ? format(deliveryDate, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
-                  </Button>
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={deliveryDate} onSelect={setDeliveryDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  <Calendar mode="single" selected={deliveryDate} onSelect={setDeliveryDate} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
 
           {/* Add items section */}
-          <div className="space-y-4">
-            <h3 className="text-base font-bold text-foreground">Adicionar Itens</h3>
-            <div className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-center">
-              <input
-                placeholder={t.description}
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                className={inputClass}
-              />
-              <input
-                type="number"
-                placeholder="Qtd"
-                min={1}
-                value={newQty}
-                onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
-                className={`${inputClass} text-center`}
-              />
-              <input
-                type="number"
-                placeholder="Valor"
-                min={0}
-                step={0.01}
-                value={newPrice || ''}
-                onChange={(e) => setNewPrice(+e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                className={`${inputClass} text-right`}
-              />
-              <button
-                onClick={addItem}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-              >
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-foreground">Adicionar Itens</h3>
+            <div className="grid grid-cols-[1fr_80px_100px_auto] gap-2 items-end">
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium text-muted-foreground">Descrição</label>
+                <Input
+                  placeholder={t.description}
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                  className="rounded-lg h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium text-muted-foreground">Qtd</label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={newQty}
+                  onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
+                  className="rounded-lg h-9 text-sm text-center"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium text-muted-foreground">Valor</label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={newPrice || ''}
+                  onChange={(e) => setNewPrice(+e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                  className="rounded-lg h-9 text-sm text-right"
+                />
+              </div>
+              <Button size="sm" className="h-9 rounded-lg text-xs" onClick={addItem}>
                 Adicionar
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Items table */}
           {items.length > 0 && (
-            <div className="overflow-x-auto">
+            <div className="rounded-xl border border-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-3 font-semibold text-foreground">{t.description}</th>
-                    <th className="text-center py-3 px-3 font-semibold text-foreground w-20">Qtd</th>
-                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">Valor Unit.</th>
-                    <th className="text-right py-3 px-3 font-semibold text-foreground w-32">Total</th>
-                    <th className="text-center py-3 px-3 font-semibold text-foreground w-32">Ações</th>
+                  <tr className="bg-muted/50">
+                    <th className="text-left py-2.5 px-3 font-semibold text-muted-foreground text-xs">{t.description}</th>
+                    <th className="text-center py-2.5 px-3 font-semibold text-muted-foreground text-xs w-20">Qtd</th>
+                    <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground text-xs w-28">Valor Unit.</th>
+                    <th className="text-right py-2.5 px-3 font-semibold text-muted-foreground text-xs w-28">Total</th>
+                    <th className="text-center py-2.5 px-3 font-semibold text-muted-foreground text-xs w-28">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <tr key={idx} className="border-t border-border/50 hover:bg-muted/30 transition-colors">
                       {editingItemIdx === idx ? (
                         <>
                           <td className="py-2 px-3">
-                            <input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className={`${inputClass} w-full`} />
+                            <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="h-8 rounded-lg text-sm" />
                           </td>
                           <td className="py-2 px-3">
-                            <input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className={`${inputClass} w-full text-center`} />
+                            <Input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className="h-8 rounded-lg text-sm text-center" />
                           </td>
                           <td className="py-2 px-3">
-                            <input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={`${inputClass} w-full text-right`} />
+                            <Input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className="h-8 rounded-lg text-sm text-right" />
                           </td>
-                          <td className="py-2 px-3 text-right font-medium text-foreground">
+                          <td className="py-2 px-3 text-right font-medium text-foreground tabular-nums">
                             {formatCurrency(editQty * editPrice)}
                           </td>
                           <td className="py-2 px-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <button onClick={saveEditItem} className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">Salvar</button>
-                              <button onClick={cancelEditItem} className="px-3 py-1 rounded-md bg-secondary text-secondary-foreground text-xs font-semibold hover:opacity-90">Cancelar</button>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Button size="sm" className="h-7 rounded-lg text-xs" onClick={saveEditItem}>Salvar</Button>
+                              <Button size="sm" variant="ghost" className="h-7 rounded-lg text-xs" onClick={cancelEditItem}>Cancelar</Button>
                             </div>
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="py-3 px-3 text-foreground">{item.description}</td>
-                          <td className="py-3 px-3 text-center text-muted-foreground">{item.quantity}</td>
-                          <td className="py-3 px-3 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
-                          <td className="py-3 px-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</td>
-                          <td className="py-3 px-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <button onClick={() => startEditItem(idx)} className="px-3 py-1 rounded-md bg-amber-500 text-white text-xs font-semibold hover:opacity-90">Editar</button>
-                              <button onClick={() => removeItem(idx)} className="px-3 py-1 rounded-md bg-destructive text-destructive-foreground text-xs font-semibold hover:opacity-90">Excluir</button>
+                          <td className="py-2.5 px-3 text-foreground">{item.description}</td>
+                          <td className="py-2.5 px-3 text-center text-muted-foreground tabular-nums">{item.quantity}</td>
+                          <td className="py-2.5 px-3 text-right text-muted-foreground tabular-nums">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-2.5 px-3 text-right font-medium text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg" onClick={() => startEditItem(idx)}>
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg hover:bg-destructive/10" onClick={() => removeItem(idx)}>
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </Button>
                             </div>
                           </td>
                         </>
@@ -513,27 +598,27 @@ const BudgetsPage = () => {
           {/* Discount & Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Desconto (%)</label>
-              <input
+              <label className="text-xs font-medium text-muted-foreground">Desconto (%)</label>
+              <Input
                 type="number"
                 min={0}
                 max={100}
                 step={0.1}
-                value={discount}
+                value={discount || ''}
                 onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
-                className={`${inputClass} w-full max-w-[200px]`}
+                className="w-40 rounded-xl"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Observação</label>
+            <label className="text-xs font-medium text-muted-foreground">Observação</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Observações sobre o orçamento..."
-              className={`${inputClass} w-full resize-y`}
+              className="w-full px-3 py-2 rounded-xl bg-background border border-input text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-y text-foreground"
             />
           </div>
 
@@ -541,161 +626,234 @@ const BudgetsPage = () => {
           <div className="border-t border-border pt-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">{formatCurrency(subtotal)}</span>
+              <span className="text-foreground tabular-nums">{formatCurrency(subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Desconto ({discount}%)</span>
-                <span className="text-destructive">- {formatCurrency(discountValue)}</span>
+                <span className="text-destructive tabular-nums">- {formatCurrency(discountValue)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="text-foreground">Total</span>
-              <span className="text-foreground">{formatCurrency(total)}</span>
+              <span className="text-primary tabular-nums">{formatCurrency(total)}</span>
             </div>
             <div className="flex gap-2 pt-2 justify-end">
-              <button onClick={resetForm} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium text-sm">{t.cancel}</button>
-              <button onClick={saveBudget} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm">{t.save}</button>
+              <Button variant="ghost" onClick={resetForm} className="rounded-xl font-semibold">
+                {t.cancel}
+              </Button>
+              <Button onClick={saveBudget} className="rounded-xl font-semibold">
+                {t.save}
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      {budgets.length === 0 && !isFormOpen ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum orçamento criado ainda.</p>
+      {/* Budget list */}
+      {!isFormOpen && filteredBudgets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+            <FileText className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">Nenhum orçamento encontrado.</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">
+            {search || statusFilter !== 'all' ? 'Tente alterar os filtros de busca.' : 'Crie um orçamento para começar.'}
+          </p>
         </div>
       ) : !isFormOpen ? (
-        <>
-          {/* Status filter */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {['all', ...statuses].map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
-                  statusFilter === s
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-card text-muted-foreground border-border hover:bg-muted'
-                )}
-              >
-                {s === 'all' ? 'Todos' : statusLabel(s)}
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-6">
-            {(() => {
-              const filtered = statusFilter === 'all' ? budgets : budgets.filter(b => b.status === statusFilter);
-              const grouped: Record<string, Budget[]> = {};
-              filtered.forEach(b => {
-                const key = b.client_id || '__no_client__';
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push(b);
-              });
-            const clientNameFn = (id: string | null) => clients.find(c => c.id === id)?.name || '';
-            const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
+        <div className="space-y-8">
+          {(() => {
+            const grouped: Record<string, Budget[]> = {};
+            filteredBudgets.forEach(b => {
+              const key = b.client_id || '__no_client__';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(b);
+            });
             const sortedKeys = Object.keys(grouped).sort((a, b) => {
               if (a === '__no_client__') return 1;
               if (b === '__no_client__') return -1;
               return clientNameFn(a).localeCompare(clientNameFn(b));
             });
-            return sortedKeys.map(key => (
-              <div key={key} className="space-y-2">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                  {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
-                </h2>
-                <div className="space-y-2">
-          {grouped[key].map((b) => (
-            <div key={b.id} className="rounded-xl border border-border overflow-hidden" style={clientColorFn(b.client_id) ? { backgroundColor: `${clientColorFn(b.client_id)}15`, borderLeftWidth: '4px', borderLeftColor: clientColorFn(b.client_id) } : { backgroundColor: 'hsl(var(--card))' }}>
-              <div className="flex items-center justify-between p-4">
-                <button onClick={() => setExpandedBudget(expandedBudget === b.id ? null : b.id)} className="flex items-center gap-2 text-left">
-                  <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedBudget === b.id ? 'rotate-90' : ''}`} />
-                  <div>
-                    <p className="font-semibold text-foreground">{b.name || b.client_name || 'Sem nome'} · {b.items.length} itens</p>
-                    <p className="text-xs text-muted-foreground">
-                      {b.client_name && b.name ? `${b.client_name} · ` : ''}
-                      {b.budget_date ? format(new Date(b.budget_date + 'T12:00:00'), 'dd/MM/yyyy') : new Date(b.created_at).toLocaleDateString()}
-                      {b.validity_date && ` · Validade: ${format(new Date(b.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}`}
-                    </p>
+
+            return sortedKeys.map(key => {
+              const color = key !== '__no_client__' ? clientColorFn(key) : null;
+              return (
+                <div key={key} className="space-y-2.5">
+                  {/* Client group header */}
+                  <div className="flex items-center gap-2 px-1">
+                    {color && (
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                    )}
+                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
+                    </h2>
+                    <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
+                      {grouped[key].length}
+                    </span>
                   </div>
-                </button>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-foreground">{formatCurrency(b.total)}</span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="focus:outline-none">
-                        <Badge className={`${statusColors[b.status]} cursor-pointer flex items-center gap-1`}>
-                          {statusLabel(b.status)}
-                          <ChevronDown className="w-3 h-3" />
-                        </Badge>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {statuses.map((s) => (
-                        <DropdownMenuItem
-                          key={s}
-                          onClick={() => changeStatus(b.id, s)}
-                          className={b.status === s ? 'font-bold' : ''}
+
+                  <div className="space-y-2">
+                    {grouped[key].map((b) => {
+                      const isExpanded = expandedBudget === b.id;
+                      const color = clientColorFn(b.client_id);
+
+                      return (
+                        <div
+                          key={b.id}
+                          className={cn(
+                            "rounded-xl border overflow-hidden transition-all duration-200",
+                            isExpanded ? "shadow-md" : "hover:shadow-sm"
+                          )}
+                          style={color
+                            ? { backgroundColor: `${color}08`, borderColor: `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
+                            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
+                          }
                         >
-                          {statusLabel(s)}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <button onClick={() => startEditing(b)} className="text-muted-foreground hover:text-primary" title="Editar"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => exportBudgetPdf(b)} className="text-muted-foreground hover:text-primary" title="Exportar PDF"><Download className="w-4 h-4" /></button>
-                  <button onClick={() => openProjectPicker(null, b)} className="text-muted-foreground hover:text-primary" title="Enviar para projeto"><FolderInput className="w-4 h-4" /></button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="text-muted-foreground hover:text-foreground focus:outline-none"><MoreVertical className="w-4 h-4" /></button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="text-destructive focus:text-destructive">
-                        <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              {expandedBudget === b.id && b.items.length > 0 && (
-                <div className="border-t border-border px-4 pb-3 pt-2 space-y-1">
-                  <div className="grid grid-cols-[1fr_80px_100px_100px] gap-2 text-xs font-medium text-muted-foreground px-1 pb-1">
-                    <span>{t.description}</span>
-                    <span className="text-center">{t.quantity}</span>
-                    <span className="text-right">{t.unitPrice}</span>
-                    <span className="text-right">Subtotal</span>
+                          {/* Budget header */}
+                          <div
+                            className="flex items-center justify-between p-4 cursor-pointer group"
+                            onClick={() => setExpandedBudget(isExpanded ? null : b.id)}
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
+                              )}>
+                                {isExpanded ? (
+                                  <ChevronDown className="w-4 h-4 text-primary" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-semibold text-foreground truncate">
+                                    {b.name || b.client_name || 'Sem nome'}
+                                  </p>
+                                  <Badge className={cn(statusColors[b.status], "text-[10px] px-1.5 py-0 h-5 shrink-0")}>
+                                    {statusLabel(b.status)}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                  {b.client_name && b.name && (
+                                    <span className="text-xs text-muted-foreground">{b.client_name}</span>
+                                  )}
+                                  {(b.client_name && b.name) && <span className="text-xs text-muted-foreground">·</span>}
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <CalendarIcon className="w-3 h-3" />
+                                    {b.budget_date ? format(new Date(b.budget_date + 'T12:00:00'), 'dd/MM/yyyy') : new Date(b.created_at).toLocaleDateString()}
+                                  </span>
+                                  {b.validity_date && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className="text-xs text-muted-foreground">
+                                        Val: {format(new Date(b.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                                      </span>
+                                    </>
+                                  )}
+                                  <span className="text-xs text-muted-foreground">·</span>
+                                  <span className="text-xs font-medium text-foreground/80">
+                                    {b.items.length} {b.items.length === 1 ? 'item' : 'itens'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
+                              <span className="font-semibold text-primary tabular-nums text-sm">
+                                {formatCurrency(b.total)}
+                              </span>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
+                                    <Badge className={cn(statusColors[b.status], "cursor-pointer flex items-center gap-1 text-[10px]")}>
+                                      <ChevronDown className="w-3 h-3" />
+                                    </Badge>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {statuses.map((s) => (
+                                    <DropdownMenuItem
+                                      key={s}
+                                      onClick={() => changeStatus(b.id, s)}
+                                      className={b.status === s ? 'font-bold' : ''}
+                                    >
+                                      {statusLabel(s)}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => startEditing(b)} title="Editar">
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
+                                <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => openProjectPicker(null, b)} title="Enviar para projeto">
+                                <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
+                                    <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+
+                          {/* Expanded content */}
+                          {isExpanded && b.items.length > 0 && (
+                            <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
+                              <div className="rounded-xl border border-border overflow-hidden">
+                                <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 text-[11px] font-semibold text-muted-foreground px-3 py-2 bg-muted/50">
+                                  <span>{t.description}</span>
+                                  <span className="text-center">Qtd</span>
+                                  <span className="text-right">Unit.</span>
+                                  <span className="text-right">Subtotal</span>
+                                </div>
+                                {b.items.map((item, idx) => (
+                                  <div key={idx} className="grid grid-cols-[1fr_60px_90px_90px] gap-2 items-center text-sm px-3 py-2 border-t border-border/50 hover:bg-muted/30 transition-colors">
+                                    <span className="text-foreground truncate">{item.description || '—'}</span>
+                                    <span className="text-center text-muted-foreground tabular-nums">{item.quantity}</span>
+                                    <span className="text-right text-muted-foreground tabular-nums">{formatCurrency(item.unitPrice)}</span>
+                                    <span className="text-right font-medium text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              {(b.discount > 0 || b.notes) && (
+                                <div className="mt-3 space-y-1.5">
+                                  {b.discount > 0 && (
+                                    <p className="text-xs text-muted-foreground flex items-center justify-between">
+                                      <span>Desconto: {b.discount}%</span>
+                                      <span className="text-destructive font-medium tabular-nums">
+                                        - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)}
+                                      </span>
+                                    </p>
+                                  )}
+                                  {b.notes && (
+                                    <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                                      {b.notes}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  {b.items.map((item, idx) => (
-                    <div key={idx} className="grid grid-cols-[1fr_80px_100px_100px] gap-2 items-center text-sm px-1 py-1.5 rounded-lg hover:bg-muted/50">
-                      <span className="text-foreground truncate">{item.description || '—'}</span>
-                      <span className="text-center text-muted-foreground">{item.quantity}</span>
-                      <span className="text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</span>
-                      <span className="text-right font-medium text-foreground">{formatCurrency(item.quantity * item.unitPrice)}</span>
-                    </div>
-                  ))}
-                  {(b.discount > 0 || b.notes) && (
-                    <div className="border-t border-border/50 mt-2 pt-2 space-y-1">
-                      {b.discount > 0 && (
-                        <p className="text-xs text-muted-foreground">Desconto: {b.discount}% (- {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)})</p>
-                      )}
-                      {b.notes && (
-                        <p className="text-xs text-muted-foreground">Obs: {b.notes}</p>
-                      )}
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
-          ))}
-                </div>
-              </div>
-            ));
+              );
+            });
           })()}
-          </div>
-        </>
+        </div>
       ) : null}
 
       {/* Project picker modal */}
@@ -712,9 +870,11 @@ const BudgetsPage = () => {
                 <button
                   key={p.id}
                   onClick={() => addItemToProject(p.id)}
-                  className="w-full flex items-center gap-2 p-3 rounded-xl border border-border bg-card hover:bg-accent text-left transition-colors"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-left transition-colors"
                 >
-                  <FolderKanban className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <FolderKanban className="w-4 h-4 text-primary" />
+                  </div>
                   <span className="text-sm font-medium text-foreground">{p.name}</span>
                 </button>
               ))}
@@ -723,6 +883,7 @@ const BudgetsPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete confirmation */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
