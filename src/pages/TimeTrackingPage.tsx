@@ -1744,7 +1744,8 @@ const TimeTrackingPage = () => {
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(gray.r, gray.g, gray.b);
                 doc.setFontSize(8);
-                const memberTrunc = userName.length > 16 ? userName.substring(0, 13) + '...' : userName || '—';
+                const entryUserName = getProfileName(entry.user_id) || userName || '—';
+                const memberTrunc = entryUserName.length > 16 ? entryUserName.substring(0, 13) + '...' : entryUserName;
                 doc.text(memberTrunc, 104, y);
 
                 doc.setFontSize(8);
