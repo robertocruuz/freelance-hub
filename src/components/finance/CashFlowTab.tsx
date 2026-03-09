@@ -30,10 +30,19 @@ export default function CashFlowTab({ invoices }: Props) {
   const { expenses } = useExpenses();
   const now = new Date();
 
-  const [startDate, setStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
-  const [endDate, setEndDate] = useState<Date>(endOfMonth(now));
-  const [saldoStartDate, setSaldoStartDate] = useState<Date>(subMonths(startOfMonth(now), 5));
-  const [saldoEndDate, setSaldoEndDate] = useState<Date>(endOfMonth(now));
+  const [barRange, setBarRange] = useState<DateRange>({
+    from: subMonths(startOfMonth(now), 5),
+    to: endOfMonth(now),
+  });
+  const [saldoRange, setSaldoRange] = useState<DateRange>({
+    from: subMonths(startOfMonth(now), 5),
+    to: endOfMonth(now),
+  });
+
+  const startDate = barRange.from ?? subMonths(startOfMonth(now), 5);
+  const endDate = barRange.to ?? endOfMonth(now);
+  const saldoStartDate = saldoRange.from ?? subMonths(startOfMonth(now), 5);
+  const saldoEndDate = saldoRange.to ?? endOfMonth(now);
 
   const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
   const saldoMonths = eachMonthOfInterval({ start: startOfMonth(saldoStartDate), end: endOfMonth(saldoEndDate) });
@@ -141,8 +150,7 @@ export default function CashFlowTab({ invoices }: Props) {
                       size="sm"
                       className="h-7 px-2.5 text-[11px] font-medium"
                       onClick={() => {
-                        setStartDate(subMonths(startOfMonth(now), r.monthsBack));
-                        setEndDate(endOfMonth(now));
+                        setBarRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
                       }}
                     >
                       {r.label}
@@ -161,10 +169,9 @@ export default function CashFlowTab({ invoices }: Props) {
                   <PopoverContent className="w-auto p-0" align="end">
                     <Calendar
                       mode="range"
-                      selected={{ from: startDate, to: endDate }}
+                      selected={barRange}
                       onSelect={(range: DateRange | undefined) => {
-                        if (range?.from) setStartDate(startOfMonth(range.from));
-                        if (range?.to) setEndDate(endOfMonth(range.to));
+                        if (range) setBarRange(range);
                       }}
                       numberOfMonths={2}
                       initialFocus
@@ -239,8 +246,7 @@ export default function CashFlowTab({ invoices }: Props) {
                     size="sm"
                     className="h-7 px-2.5 text-[11px] font-medium"
                     onClick={() => {
-                      setSaldoStartDate(subMonths(startOfMonth(now), r.monthsBack));
-                      setSaldoEndDate(endOfMonth(now));
+                      setSaldoRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
                     }}
                   >
                     {r.label}
@@ -259,10 +265,9 @@ export default function CashFlowTab({ invoices }: Props) {
                 <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="range"
-                    selected={{ from: saldoStartDate, to: saldoEndDate }}
+                    selected={saldoRange}
                     onSelect={(range: DateRange | undefined) => {
-                      if (range?.from) setSaldoStartDate(startOfMonth(range.from));
-                      if (range?.to) setSaldoEndDate(endOfMonth(range.to));
+                      if (range) setSaldoRange(range);
                     }}
                     numberOfMonths={2}
                     initialFocus
