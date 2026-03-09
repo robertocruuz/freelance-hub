@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
