@@ -363,6 +363,16 @@ const TimeTrackingPage = () => {
   useEffect(() => { loadEntries(); }, [loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
+  useEffect(() => { loadProfiles(); }, [loadProfiles]);
+
+  const getProfileName = useCallback((userId: string) => {
+    if (userId === user?.id) {
+      const myProfile = profiles.find(p => p.user_id === userId);
+      return myProfile?.name || 'Eu';
+    }
+    const profile = profiles.find(p => p.user_id === userId);
+    return profile?.name || profile?.email || 'Desconhecido';
+  }, [profiles, user]);
 
   // Drag effect — must be after loadEntries is declared
   useEffect(() => {
