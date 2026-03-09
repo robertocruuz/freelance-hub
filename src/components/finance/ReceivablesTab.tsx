@@ -118,6 +118,9 @@ export default function ReceivablesTab({ invoices, onRefresh }: Props) {
           </SelectContent>
         </Select>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?import_invoice=1')}>
+            <FolderKanban className="w-3.5 h-3.5" /> Importar
+          </Button>
           <Button size="sm" className="rounded-lg gap-1.5" onClick={() => navigate('/dashboard/invoices?new_invoice=1')}>
             <Plus className="w-3.5 h-3.5" /> Nova Fatura
           </Button>
