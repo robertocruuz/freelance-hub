@@ -86,6 +86,7 @@ export default function ExpensesTab() {
     setDueDate(e.due_date ? new Date(e.due_date + 'T12:00:00') : undefined);
     setPaymentMethod(e.payment_method || '');
     setNotes(e.notes || '');
+    setIsRecurring(e.is_recurring);
     setDialogOpen(true);
   };
 
