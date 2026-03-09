@@ -56,10 +56,18 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
 
   const totalReceivable = filteredInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
   const totalPayable = filteredExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
-  const totalReceived = filteredInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
-  const totalPaid = filteredExpenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+
+  // Saldo atual acumulado: soma tudo que foi pago/recebido ATÉ o fim do mês selecionado
+  const endOfSelectedMonth = monthFilter ? monthFilter + '-31' : '9999-12-31';
+  const accumulatedReceived = invoices
+    .filter(i => i.status === 'paid' && i.due_date && i.due_date <= endOfSelectedMonth)
+    .reduce((s, i) => s + i.total, 0);
+  const accumulatedPaid = expenses
+    .filter(e => e.status === 'paid' && e.paid_date && e.paid_date <= endOfSelectedMonth)
+    .reduce((s, e) => s + e.amount, 0);
+
   const projectedBalance = totalReceivable - totalPayable;
-  const currentBalance = totalReceived - totalPaid;
+  const currentBalance = accumulatedReceived - accumulatedPaid;
 
   const barData = months.map(month => {
     const key = format(month, 'yyyy-MM');
