@@ -246,8 +246,7 @@ export default function CashFlowTab({ invoices }: Props) {
                     size="sm"
                     className="h-7 px-2.5 text-[11px] font-medium"
                     onClick={() => {
-                      setSaldoStartDate(subMonths(startOfMonth(now), r.monthsBack));
-                      setSaldoEndDate(endOfMonth(now));
+                      setSaldoRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
                     }}
                   >
                     {r.label}
@@ -266,10 +265,9 @@ export default function CashFlowTab({ invoices }: Props) {
                 <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="range"
-                    selected={{ from: saldoStartDate, to: saldoEndDate }}
+                    selected={saldoRange}
                     onSelect={(range: DateRange | undefined) => {
-                      if (range?.from) setSaldoStartDate(startOfMonth(range.from));
-                      if (range?.to) setSaldoEndDate(endOfMonth(range.to));
+                      if (range) setSaldoRange(range);
                     }}
                     numberOfMonths={2}
                     initialFocus
