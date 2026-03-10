@@ -153,6 +153,9 @@ export default function FinancePage() {
         nextDueCount={nextDueCount}
       />
 
+      {/* Calendar - always visible below cards */}
+      <FinanceCalendarTab invoices={invoices} />
+
       {/* Tabs */}
       <Tabs defaultValue="cashflow" className="w-full">
         <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1" aria-label="Seções financeiras">
@@ -172,7 +175,6 @@ export default function FinancePage() {
         <TabsContent value="cashflow" className="mt-5"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
         <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} /></TabsContent>
         <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} /></TabsContent>
-        <TabsContent value="calendar" className="mt-5"><FinanceCalendarTab invoices={invoices} /></TabsContent>
       </Tabs>
     </div>
   );
