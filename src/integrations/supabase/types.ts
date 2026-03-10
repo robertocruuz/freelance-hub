@@ -125,6 +125,7 @@ export type Database = {
           notes: string | null
           paid_date: string | null
           payment_method: string | null
+          recurring_months: number | null
           status: string
           updated_at: string
           user_id: string
@@ -141,6 +142,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
+          recurring_months?: number | null
           status?: string
           updated_at?: string
           user_id: string
@@ -157,6 +159,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
+          recurring_months?: number | null
           status?: string
           updated_at?: string
           user_id?: string

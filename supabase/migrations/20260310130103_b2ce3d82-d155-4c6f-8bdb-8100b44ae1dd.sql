@@ -1,0 +1,1 @@
+ALTER TABLE public.expenses ADD COLUMN recurring_months integer DEFAULT 12;

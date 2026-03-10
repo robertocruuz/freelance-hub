@@ -17,6 +17,7 @@ export interface Expense {
   payment_method: string | null;
   notes: string | null;
   is_recurring: boolean;
+  recurring_months: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -72,7 +73,8 @@ export function useExpenses() {
       if (!expense.is_recurring || !expense.due_date) continue;
       const baseDate = new Date(expense.due_date + 'T12:00:00');
       
-      for (let i = 1; i <= 12; i++) {
+      const months = expense.recurring_months || 12;
+      for (let i = 1; i <= months; i++) {
         const futureDate = addMonths(baseDate, i);
         const futureMonth = format(futureDate, 'yyyy-MM');
         // Only generate if future month is after the original month
