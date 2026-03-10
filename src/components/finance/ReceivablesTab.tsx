@@ -337,7 +337,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   };
 
   // Near due warning
-  const nearDue = invoices.filter(inv =>
+  const nearDue = monthInvoices.filter(inv =>
     inv.status === 'pending' && inv.due_date &&
     isBefore(new Date(inv.due_date + 'T12:00:00'), addDays(new Date(), 3)) &&
     !isPast(new Date(inv.due_date + 'T23:59:59'))
