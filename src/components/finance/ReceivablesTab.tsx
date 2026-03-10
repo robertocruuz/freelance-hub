@@ -197,6 +197,11 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
 
+  // Filter by month
+  const monthInvoices = monthFilter
+    ? invoices.filter(inv => (inv.due_date && inv.due_date.startsWith(monthFilter)) || (!inv.due_date && inv.created_at.startsWith(monthFilter)))
+    : invoices;
+
   // Auto-update overdue invoices
   useEffect(() => {
     const overdueIds = invoices
