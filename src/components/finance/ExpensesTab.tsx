@@ -105,6 +105,7 @@ export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
       client_id: null,
       paid_date: null,
       is_recurring: isRecurring,
+      recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,
     };
     let ok: boolean | undefined;
     if (editing) {
