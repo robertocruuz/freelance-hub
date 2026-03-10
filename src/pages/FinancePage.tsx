@@ -97,7 +97,6 @@ export default function FinancePage() {
     { value: 'cashflow', label: 'Fluxo de Caixa', shortLabel: 'Fluxo', icon: BarChart3 },
     { value: 'receivables', label: 'A Receber', shortLabel: 'Receber', icon: ArrowDownToLine },
     { value: 'payables', label: 'A Pagar', shortLabel: 'Pagar', icon: ArrowUpFromLine },
-    { value: 'calendar', label: 'Calendário', shortLabel: 'Agenda', icon: CalendarDays },
   ];
 
   return (
