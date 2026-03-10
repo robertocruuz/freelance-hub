@@ -71,9 +71,10 @@ export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringMonths, setRecurringMonths] = useState('12');
 
   const resetForm = () => {
-    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false);
+    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false); setRecurringMonths('12');
     setEditing(null);
   };
 
