@@ -88,6 +88,7 @@ export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
     setPaymentMethod(e.payment_method || '');
     setNotes(e.notes || '');
     setIsRecurring(e.is_recurring);
+    setRecurringMonths(String(e.recurring_months || 12));
     setDialogOpen(true);
   };
 
