@@ -171,8 +171,8 @@ export default function FinancePage() {
           ))}
         </TabsList>
         <TabsContent value="cashflow" className="mt-5"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
-        <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} /></TabsContent>
-        <TabsContent value="payables" className="mt-5"><ExpensesTab /></TabsContent>
+        <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} /></TabsContent>
+        <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} /></TabsContent>
         <TabsContent value="calendar" className="mt-5"><FinanceCalendarTab invoices={invoices} /></TabsContent>
       </Tabs>
     </div>

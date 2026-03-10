@@ -56,7 +56,7 @@ function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatu
   );
 }
 
-export default function ExpensesTab() {
+export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
   const { expenses, loading, addExpense, updateExpense, deleteExpense, markAsPaid } = useExpenses();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);

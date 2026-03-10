@@ -90,9 +90,10 @@ const statusDots: Record<string, string> = {
 interface Props {
   invoices: FinanceInvoice[];
   onRefresh: () => void;
+  monthFilter?: string;
 }
 
-export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: Props) {
+export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter }: Props) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
