@@ -56,7 +56,7 @@ function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatu
   );
 }
 
-export default function ExpensesTab() {
+export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
   const { expenses, loading, addExpense, updateExpense, deleteExpense, markAsPaid } = useExpenses();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
@@ -113,8 +113,13 @@ export default function ExpensesTab() {
     if (ok) { setDialogOpen(false); resetForm(); }
   };
 
+  // Filter by month first
+  const monthExpenses = monthFilter
+    ? expenses.filter(e => (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter)))
+    : expenses;
+
   // Auto-update overdue
-  const displayExpenses = expenses.map(e => {
+  const displayExpenses = monthExpenses.map(e => {
     if (e.status === 'pending' && e.due_date && isPast(new Date(e.due_date + 'T23:59:59')) && !isToday(new Date(e.due_date + 'T12:00:00'))) {
       return { ...e, status: 'overdue' };
     }

@@ -90,9 +90,10 @@ const statusDots: Record<string, string> = {
 interface Props {
   invoices: FinanceInvoice[];
   onRefresh: () => void;
+  monthFilter?: string;
 }
 
-export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: Props) {
+export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter }: Props) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
@@ -195,6 +196,11 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
   }, [user, clients]);
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
+  // Filter by month
+  const monthInvoices = monthFilter
+    ? invoices.filter(inv => (inv.due_date && inv.due_date.startsWith(monthFilter)) || (!inv.due_date && inv.created_at.startsWith(monthFilter)))
+    : invoices;
 
   // Auto-update overdue invoices
   useEffect(() => {
@@ -331,7 +337,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
   };
 
   // Near due warning
-  const nearDue = invoices.filter(inv =>
+  const nearDue = monthInvoices.filter(inv =>
     inv.status === 'pending' && inv.due_date &&
     isBefore(new Date(inv.due_date + 'T12:00:00'), addDays(new Date(), 3)) &&
     !isPast(new Date(inv.due_date + 'T23:59:59'))
@@ -691,7 +697,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
       )}
 
       {/* Invoices List */}
-      {invoices.length === 0 && !creating ? (
+      {monthInvoices.length === 0 && !creating ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
             <Receipt className="w-8 h-8 opacity-50" />
@@ -714,14 +720,14 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh }: 
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
                 )}
               >
-                {s === 'all' ? `Todos (${invoices.length})` : statusLabel(s)}
+                {s === 'all' ? `Todos (${monthInvoices.length})` : statusLabel(s)}
               </button>
             ))}
           </div>
 
           <div className="space-y-8">
             {(() => {
-              const filtered = statusFilter === 'all' ? invoices : invoices.filter(inv => inv.status === statusFilter);
+              const filtered = statusFilter === 'all' ? monthInvoices : monthInvoices.filter(inv => inv.status === statusFilter);
               const grouped: Record<string, Invoice[]> = {};
               filtered.forEach(inv => {
                 const key = inv.client_id || '__no_client__';
