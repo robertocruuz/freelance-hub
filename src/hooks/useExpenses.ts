@@ -17,6 +17,7 @@ export interface Expense {
   payment_method: string | null;
   notes: string | null;
   is_recurring: boolean;
+  recurring_months: number | null;
   created_at: string;
   updated_at: string;
 }
