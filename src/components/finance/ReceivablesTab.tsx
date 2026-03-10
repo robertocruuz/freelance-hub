@@ -720,7 +720,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
                 )}
               >
-                {s === 'all' ? `Todos (${invoices.length})` : statusLabel(s)}
+                {s === 'all' ? `Todos (${monthInvoices.length})` : statusLabel(s)}
               </button>
             ))}
           </div>
