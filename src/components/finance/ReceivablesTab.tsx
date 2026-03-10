@@ -727,7 +727,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
 
           <div className="space-y-8">
             {(() => {
-              const filtered = statusFilter === 'all' ? invoices : invoices.filter(inv => inv.status === statusFilter);
+              const filtered = statusFilter === 'all' ? monthInvoices : monthInvoices.filter(inv => inv.status === statusFilter);
               const grouped: Record<string, Invoice[]> = {};
               filtered.forEach(inv => {
                 const key = inv.client_id || '__no_client__';
