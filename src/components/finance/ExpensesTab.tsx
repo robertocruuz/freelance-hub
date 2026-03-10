@@ -356,11 +356,26 @@ export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
               >
                 {isRecurring && <Repeat className="w-3 h-3" />}
               </button>
-              <div>
+              <div className="flex-1">
                 <Label className="text-sm font-medium cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>Despesa recorrente</Label>
                 <p className="text-xs text-muted-foreground">Repetir automaticamente nos próximos meses</p>
               </div>
             </div>
+            {isRecurring && (
+              <div className="ml-8">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Duração da recorrência</Label>
+                <Select value={recurringMonths} onValueChange={setRecurringMonths}>
+                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 meses</SelectItem>
+                    <SelectItem value="6">6 meses</SelectItem>
+                    <SelectItem value="12">12 meses</SelectItem>
+                    <SelectItem value="24">24 meses</SelectItem>
+                    <SelectItem value="36">36 meses</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Observações</Label>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="mt-1.5" />
