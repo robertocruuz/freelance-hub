@@ -431,7 +431,6 @@ const HomePage = () => {
               </div>
               <span className="font-bold text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</span>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="text-2xl font-extrabold text-foreground mt-3">{budgetStats.total}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{fmtCurrency(budgetStats.totalValue)}</p>
