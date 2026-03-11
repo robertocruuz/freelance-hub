@@ -229,6 +229,17 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           />
         </PopoverContent>
       </Popover>
+      {quickFilter === 'custom' && customRange?.from && customRange?.to && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-destructive gap-1"
+          onClick={() => handleQuickFilter('full')}
+        >
+          <X className="w-3 h-3" />
+          Limpar filtro
+        </Button>
+      )}
     </div>
   );
 
