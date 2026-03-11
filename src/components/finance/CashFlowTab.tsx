@@ -10,7 +10,7 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon, X } from 'lucide-react';
 
 const PIE_COLORS = [
   'hsl(225, 100%, 50%)',
