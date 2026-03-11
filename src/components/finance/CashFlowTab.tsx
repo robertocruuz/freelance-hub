@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addDays, subDays, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
@@ -39,7 +39,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
 
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('full');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
-  const ignoreNextSelect = useRef(false);
+  
 
   // Compute the active date range based on the quick filter
   const activeRange = useMemo((): { from: Date; to: Date } => {
@@ -167,7 +167,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
 
   const rangeLabel = format(activeRange.from, "dd MMM", { locale: ptBR }) + ' – ' + format(activeRange.to, "dd MMM", { locale: ptBR });
 
-  const FilterBar = () => (
+  const filterBar = (
     <div className="flex items-center gap-1.5 flex-wrap">
       {filterButtons.map(f => (
         <Button
@@ -196,19 +196,9 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             mode="range"
             selected={customRange}
             onSelect={(range: DateRange | undefined) => {
-              if (ignoreNextSelect.current) {
-                ignoreNextSelect.current = false;
-                return;
-              }
               setCustomRange(range);
               if (range?.from && range?.to) {
                 setQuickFilter('custom');
-              }
-            }}
-            onDayClick={(day) => {
-              if (customRange?.from && customRange?.to) {
-                ignoreNextSelect.current = true;
-                setCustomRange({ from: day, to: undefined });
               }
             }}
             fromDate={monthStart}
@@ -250,7 +240,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
                 <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
                 <CardDescription className="text-xs capitalize">{rangeLabel}</CardDescription>
               </div>
-              <FilterBar />
+              {filterBar}
             </div>
           </CardHeader>
           <CardContent className="pt-4">
