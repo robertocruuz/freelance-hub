@@ -10,7 +10,7 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon, X } from 'lucide-react';
 
 const PIE_COLORS = [
   'hsl(225, 100%, 50%)',
@@ -229,6 +229,17 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           />
         </PopoverContent>
       </Popover>
+      {quickFilter === 'custom' && customRange?.from && customRange?.to && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-destructive gap-1"
+          onClick={() => handleQuickFilter('full')}
+        >
+          <X className="w-3 h-3" />
+          Limpar filtro
+        </Button>
+      )}
     </div>
   );
 
