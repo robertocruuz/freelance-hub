@@ -37,6 +37,7 @@ interface Props {
   onResetToMonthly?: () => void;
   filtersOpen: boolean;
   onFiltersOpenChange: (open: boolean) => void;
+  onActiveFilterCountChange?: (count: number) => void;
 }
 
 function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
