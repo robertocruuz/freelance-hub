@@ -21,7 +21,7 @@ import type { FinanceInvoice } from '@/pages/FinancePage';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Receipt,
   AlertTriangle, Target, CalendarIcon, Filter, X, ChevronDown,
-  ArrowDownToLine, ArrowUpFromLine, Users,
+  ArrowDownToLine, ArrowUpFromLine, Users, FolderKanban,
 } from 'lucide-react';
 
 const PIE_COLORS = [
