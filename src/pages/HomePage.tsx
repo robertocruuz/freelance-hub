@@ -24,6 +24,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const isPt = lang === 'pt-BR';
   const [firstName, setFirstName] = useState('');
+  const [orgName, setOrgName] = useState('');
   const [data, setData] = useState<DashboardData>({
     clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
   });
