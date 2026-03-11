@@ -58,7 +58,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
+  
   const [statusFilterInvoice, setStatusFilterInvoice] = useState<string>('all');
   const [statusFilterExpense, setStatusFilterExpense] = useState<string>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
