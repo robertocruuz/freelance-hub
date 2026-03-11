@@ -546,12 +546,62 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <FileText className="w-3.5 h-3.5" /> Gerar Orçamento
               </Button>
             </div>
-            <Button variant="destructive" size="sm" onClick={() => { onDelete(task.id); onClose(); }} className="text-xs">
+            <Button variant="destructive" size="sm" onClick={() => fetchDeleteImpact()} className="text-xs">
               <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir tarefa
             </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>Tem certeza que deseja excluir "<strong>{task.title}</strong>"? Esta ação não pode ser desfeita.</p>
+                {deleteImpact && (
+                  <div className="mt-3 space-y-1.5 text-sm">
+                    <p className="font-medium text-foreground">Os seguintes dados também serão excluídos:</p>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                      {deleteImpact.projectName && (
+                        <li>Vínculo com o projeto "<strong className="text-foreground">{deleteImpact.projectName}</strong>"</li>
+                      )}
+                      {deleteImpact.timeEntries > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.timeEntries}</strong> registro{deleteImpact.timeEntries > 1 ? 's' : ''} de tempo ({formatImpactDuration(deleteImpact.totalSeconds)})
+                        </li>
+                      )}
+                      {deleteImpact.comments > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.comments}</strong> comentário{deleteImpact.comments > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {deleteImpact.checklists > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.checklists}</strong> checklist{deleteImpact.checklists > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {!deleteImpact.projectName && deleteImpact.timeEntries === 0 && deleteImpact.comments === 0 && deleteImpact.checklists === 0 && (
+                        <li>Nenhum dado adicional vinculado.</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { onDelete(task.id); onClose(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
