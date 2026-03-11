@@ -24,6 +24,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const isPt = lang === 'pt-BR';
   const [firstName, setFirstName] = useState('');
+  const [orgName, setOrgName] = useState('');
   const [data, setData] = useState<DashboardData>({
     clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
   });
@@ -53,7 +54,7 @@ const HomePage = () => {
         supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-        supabase.from('organization_members').select('id, user_id, role, status').eq('status', 'accepted'),
+        supabase.from('organization_members').select('id, user_id, role, status, organization_id').eq('status', 'accepted'),
       ]);
 
       // Fetch profiles for org members
@@ -62,6 +63,15 @@ const HomePage = () => {
       if (memberUserIds.length > 0) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, name, avatar_url').in('user_id', memberUserIds);
         memberProfiles = profiles || [];
+      }
+
+      // Fetch org name
+      const orgId = (orgMembers.data || [])[0]?.organization_id;
+      if (orgId) {
+        const { data: org } = await supabase.from('organizations').select('company_name, trade_name').eq('id', orgId).maybeSingle();
+        if (org) {
+          setOrgName(org.trade_name || org.company_name || '');
+        }
       }
 
       const enrichedMembers = (orgMembers.data || []).map((m: any) => {
@@ -325,7 +335,10 @@ const HomePage = () => {
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
                 <UserPlus className="w-4.5 h-4.5 text-violet-500" />
               </div>
-              <span className="font-bold text-foreground">{isPt ? 'Equipe' : 'Team'}</span>
+              <div>
+                <span className="font-bold text-foreground">{orgName || (isPt ? 'Equipe' : 'Team')}</span>
+                {orgName && <p className="text-[10px] text-muted-foreground">{isPt ? 'Equipe' : 'Team'}</p>}
+              </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
