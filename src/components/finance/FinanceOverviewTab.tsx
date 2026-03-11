@@ -20,7 +20,7 @@ import {
 import type { FinanceInvoice } from '@/pages/FinancePage';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Receipt,
-  AlertTriangle, Target, CalendarIcon, Filter, X, ChevronDown,
+  AlertTriangle, Target, CalendarIcon, X,
   ArrowDownToLine, ArrowUpFromLine, Users, FolderKanban,
 } from 'lucide-react';
 
