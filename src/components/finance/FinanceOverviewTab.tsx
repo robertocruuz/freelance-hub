@@ -50,8 +50,6 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
 export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
-  const { user } = useAuth();
-
   // Projects are not directly linked to invoices/expenses, so removed project filter for now
 
   // Filter states
