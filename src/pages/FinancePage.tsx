@@ -194,11 +194,16 @@ export default function FinancePage() {
               <Button
                 variant={overviewFiltersOpen ? 'default' : 'outline'}
                 size="sm"
-                className="h-7 text-xs gap-1.5"
+                className="h-7 text-xs gap-1.5 relative"
                 onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
                 <Filter className="w-3 h-3" />
                 Filtros
+                {overviewFilterCount > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold -mr-1">
+                    {overviewFilterCount}
+                  </span>
+                )}
               </Button>
             </div>
           )}
