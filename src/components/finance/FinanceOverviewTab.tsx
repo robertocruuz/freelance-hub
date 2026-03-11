@@ -456,6 +456,28 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                   </Select>
                 </div>
 
+                {/* PROJETO */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Projeto</span>
+                  </div>
+                  <Select value={projectFilter} onValueChange={setProjectFilter}>
+                    <SelectTrigger className={cn(
+                      "h-8 text-xs transition-colors",
+                      projectFilter !== 'all' ? "border-violet-500/50 bg-violet-500/5" : "border-dashed"
+                    )}>
+                      <SelectValue placeholder="Todos os projetos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Todos os projetos</SelectItem>
+                      {projects.map(p => (
+                        <SelectItem key={p.id} value={p.id} className="text-xs">{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* PAGAMENTO */}
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-1.5">
