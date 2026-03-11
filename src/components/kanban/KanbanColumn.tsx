@@ -71,6 +71,36 @@ export const KanbanColumnComponent = ({
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<{
+    taskCount: number; timeEntries: number; totalSeconds: number; projectLinks: number;
+  } | null>(null);
+
+  const fetchColumnDeleteImpact = async () => {
+    if (tasks.length === 0) {
+      setDeleteImpact({ taskCount: 0, timeEntries: 0, totalSeconds: 0, projectLinks: 0 });
+      setShowDeleteConfirm(true);
+      return;
+    }
+    const taskIds = tasks.map(t => t.id);
+    const { data: timeData } = await supabase
+      .from('time_entries')
+      .select('duration')
+      .in('task_id', taskIds);
+    const timeEntries = timeData || [];
+    const totalSeconds = timeEntries.reduce((acc, e) => acc + (e.duration || 0), 0);
+    const projectLinks = tasks.filter(t => t.project_id).length;
+    setDeleteImpact({ taskCount: tasks.length, timeEntries: timeEntries.length, totalSeconds, projectLinks });
+    setShowDeleteConfirm(true);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0 && m > 0) return `${h}h ${m}min`;
+    if (h > 0) return `${h}h`;
+    return `${m}min`;
+  };
 
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
