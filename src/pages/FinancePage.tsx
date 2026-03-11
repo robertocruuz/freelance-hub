@@ -32,6 +32,15 @@ export default function FinancePage() {
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [activeTab, setActiveTab] = useState('cashflow');
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const handleEventClick = (type: 'receivable' | 'expense') => {
+    setActiveTab(type === 'receivable' ? 'receivables' : 'payables');
+    setTimeout(() => {
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   useEffect(() => {
     if (!user) return;
