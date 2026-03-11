@@ -35,6 +35,8 @@ interface Props {
   invoices: FinanceInvoice[];
   selectedYear: number;
   onResetToMonthly?: () => void;
+  filtersOpen: boolean;
+  onFiltersOpenChange: (open: boolean) => void;
 }
 
 function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
