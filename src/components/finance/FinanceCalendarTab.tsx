@@ -25,7 +25,7 @@ interface Props {
   onEventClick?: (type: 'receivable' | 'expense') => void;
 }
 
-export default function FinanceCalendarTab({ invoices, onRefresh }: Props) {
+export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }: Props) {
   const { user } = useAuth();
   const { expenses, addExpense, fetchExpenses } = useExpenses();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
