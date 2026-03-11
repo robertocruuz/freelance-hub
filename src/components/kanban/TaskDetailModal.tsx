@@ -63,6 +63,37 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTitles, setNewItemTitles] = useState<Record<string, string>>({});
   const [totalTrackedSeconds, setTotalTrackedSeconds] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<{
+    timeEntries: number; totalSeconds: number; comments: number; checklists: number; projectName: string | null;
+  } | null>(null);
+
+  const formatImpactDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0 && m > 0) return `${h}h ${m}min`;
+    if (h > 0) return `${h}h`;
+    return `${m}min`;
+  };
+
+  const fetchDeleteImpact = useCallback(async () => {
+    const [timeRes, commentsRes, checklistsRes, projectRes] = await Promise.all([
+      supabase.from('time_entries').select('duration').eq('task_id', task.id),
+      supabase.from('task_comments').select('id').eq('task_id', task.id),
+      supabase.from('task_checklists').select('id').eq('task_id', task.id),
+      task.project_id
+        ? supabase.from('projects').select('name').eq('id', task.project_id).single()
+        : Promise.resolve({ data: null }),
+    ]);
+    const timeEntries = timeRes.data || [];
+    const totalSec = timeEntries.reduce((acc: number, e: any) => acc + (e.duration || 0), 0);
+    setDeleteImpact({
+      timeEntries: timeEntries.length, totalSeconds: totalSec,
+      comments: (commentsRes.data || []).length, checklists: (checklistsRes.data || []).length,
+      projectName: projectRes.data?.name || null,
+    });
+    setShowDeleteConfirm(true);
+  }, [task.id, task.project_id]);
 
   useEffect(() => {
     loadDetails();
