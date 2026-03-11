@@ -232,6 +232,14 @@ const ProjectsPage = () => {
 
   useEffect(() => { loadProjects(); loadExistingTasks(); }, [loadProjects, loadExistingTasks]);
 
+  // Refresh task keys when window regains focus (detects tasks deleted in Kanban)
+  useEffect(() => {
+    const onFocus = () => { loadExistingTasks(); };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [loadExistingTasks]);
+
+
   const resetForm = () => {
     setName('');
     setClientId('');
