@@ -221,7 +221,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{taskStats.total} total</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex mb-4 mt-4">
