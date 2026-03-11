@@ -92,11 +92,7 @@ export default function FinancePage() {
     .reduce((s, i) => s + i.total, 0);
 
   const paidThisMonth = expenses
-    .filter(e => {
-      const paidInMonth = e.status === 'paid' && e.paid_date && e.paid_date.startsWith(monthStr);
-      const dueInMonth = e.status === 'paid' && e.due_date && e.due_date.startsWith(monthStr);
-      return paidInMonth || dueInMonth;
-    })
+    .filter(e => (e.due_date && e.due_date.startsWith(monthStr)) || (e.paid_date && e.paid_date.startsWith(monthStr)))
     .reduce((s, e) => s + e.amount, 0);
 
   const totalReceivable = invoices
