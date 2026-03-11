@@ -54,7 +54,7 @@ const HomePage = () => {
         supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-        supabase.from('organization_members').select('id, user_id, role, status').eq('status', 'accepted'),
+        supabase.from('organization_members').select('id, user_id, role, status, organization_id').eq('status', 'accepted'),
       ]);
 
       // Fetch profiles for org members
@@ -66,10 +66,11 @@ const HomePage = () => {
       }
 
       // Fetch org name
-      if ((orgMembers.data || []).length > 0) {
-        const orgId = (orgMembers.data as any[])[0]?.organization_id;
-        if (orgId) {
-          // Get org_id from first member's record - need to re-query with organization_id
+      const orgId = (orgMembers.data || [])[0]?.organization_id;
+      if (orgId) {
+        const { data: org } = await supabase.from('organizations').select('company_name, trade_name').eq('id', orgId).maybeSingle();
+        if (org) {
+          setOrgName(org.trade_name || org.company_name || '');
         }
       }
 
