@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/hooks/useExpenses';
 import { useClients } from '@/hooks/useClients';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area,
@@ -17,7 +20,8 @@ import {
 import type { FinanceInvoice } from '@/pages/FinancePage';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Receipt,
-  AlertTriangle, Target, CalendarIcon, Filter, X,
+  AlertTriangle, Target, CalendarIcon, Filter, X, ChevronDown,
+  ArrowDownToLine, ArrowUpFromLine, FolderKanban, Users,
 } from 'lucide-react';
 
 const PIE_COLORS = [
