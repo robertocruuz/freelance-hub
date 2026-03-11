@@ -348,8 +348,22 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
       {/* Period indicator */}
       {periodFilter !== 'year' && (
-        <div className="text-xs text-muted-foreground font-medium">
-          Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+          <span>Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}</span>
+          {periodFilter === 'custom' && customRange?.from && customRange?.to && onResetToMonthly && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1.5 border-dashed text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                clearAllFilters();
+                onResetToMonthly();
+              }}
+            >
+              <X className="w-3 h-3" />
+              Limpar e voltar ao Mensal
+            </Button>
+          )}
         </div>
       )}
 
