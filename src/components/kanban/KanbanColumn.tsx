@@ -360,6 +360,54 @@ export const KanbanColumnComponent = ({
           </button>
         )}
       </div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir lista "{column.name}"</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                {deleteImpact && deleteImpact.taskCount === 0 ? (
+                  <p>Esta lista está vazia. Deseja excluí-la?</p>
+                ) : (
+                  <>
+                    <p>Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.</p>
+                    {deleteImpact && (
+                      <div className="mt-3 space-y-1.5 text-sm">
+                        <p className="font-medium text-foreground">Os seguintes dados serão excluídos:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          <li>
+                            <strong className="text-foreground">{deleteImpact.taskCount}</strong> tarefa{deleteImpact.taskCount > 1 ? 's' : ''}
+                          </li>
+                          {deleteImpact.projectLinks > 0 && (
+                            <li>
+                              <strong className="text-foreground">{deleteImpact.projectLinks}</strong> vínculo{deleteImpact.projectLinks > 1 ? 's' : ''} com projeto{deleteImpact.projectLinks > 1 ? 's' : ''}
+                            </li>
+                          )}
+                          {deleteImpact.timeEntries > 0 && (
+                            <li>
+                              <strong className="text-foreground">{deleteImpact.timeEntries}</strong> registro{deleteImpact.timeEntries > 1 ? 's' : ''} de tempo ({formatDuration(deleteImpact.totalSeconds)})
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onDeleteColumn(column.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
