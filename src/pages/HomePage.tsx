@@ -210,8 +210,8 @@ const HomePage = () => {
         {/* ═══ ROW 1: Tarefas (ação principal) + Calendário ═══ */}
 
         {/* Tarefas — hero card */}
-        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} md:col-span-6 xl:col-span-8 p-6 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(0)}>
-          <div className="flex items-center justify-between mb-5">
+        <div className={`${cardBase} md:col-span-6 xl:col-span-8 p-6`} style={stagger(0)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/kanban')}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
                 <SquareKanban className="w-5 h-5 text-orange-500" />
@@ -224,7 +224,7 @@ const HomePage = () => {
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
-          <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex mb-4">
+          <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex mb-4 mt-4">
             {taskStats.total > 0 && (
               <>
                 <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${(taskStats.done / taskStats.total) * 100}%` }} />
@@ -234,23 +234,47 @@ const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-4 gap-3">
-            <MiniStat value={taskStats.todo} label={isPt ? 'A fazer' : 'To do'} dotColor="bg-muted-foreground/40" />
-            <MiniStat value={taskStats.inProgress} label={isPt ? 'Fazendo' : 'Doing'} dotColor="bg-blue-500" />
-            <MiniStat value={taskStats.done} label={isPt ? 'Feito' : 'Done'} dotColor="bg-green-500" />
-            <MiniStat value={taskStats.overdue} label={isPt ? 'Atrasadas' : 'Overdue'} dotColor="bg-destructive" />
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/kanban')}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+                <span className="text-xl font-extrabold text-foreground">{taskStats.todo}</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'A fazer' : 'To do'}</span>
+            </div>
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/kanban')}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-xl font-extrabold text-foreground">{taskStats.inProgress}</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Fazendo' : 'Doing'}</span>
+            </div>
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/kanban')}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-xl font-extrabold text-foreground">{taskStats.done}</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Feito' : 'Done'}</span>
+            </div>
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/kanban')}>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-destructive" />
+                <span className="text-xl font-extrabold text-foreground">{taskStats.overdue}</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Atrasadas' : 'Overdue'}</span>
+            </div>
           </div>
         </div>
 
         {/* Calendário de Tarefas */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(1)} onClick={undefined}>
+        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3`} style={stagger(1)}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </div>
 
         {/* ═══ ROW 2: Financeiro + Time Tracking ═══ */}
 
         {/* Financeiro */}
-        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(2)}>
-          <div className="flex items-center justify-between mb-4">
+        <div className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`} style={stagger(2)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/finance')}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                 <Wallet className="w-5 h-5 text-emerald-500" />
@@ -263,7 +287,7 @@ const HomePage = () => {
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
-          <div className="rounded-xl bg-muted/50 p-4 mb-4">
+          <div className={`${clickableItem} bg-muted/50 p-4 mb-4 mt-4`} onClick={() => navigate('/dashboard/finance')}>
             <span className="text-[11px] text-muted-foreground font-medium block mb-1">{isPt ? 'Saldo' : 'Balance'}</span>
             <div className={`text-2xl font-extrabold ${financeStats.balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
               {fmtCurrency(financeStats.balance)}
@@ -271,18 +295,18 @@ const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+            <div className={`${clickableItem} bg-primary/5 border border-primary/10 p-3`} onClick={() => navigate('/dashboard/finance')}>
               <span className="text-[11px] text-primary/70 font-medium block mb-0.5">{isPt ? 'A receber' : 'Receivable'}</span>
               <span className="text-sm font-extrabold text-primary">{fmtCurrency(financeStats.totalReceivable)}</span>
             </div>
-            <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
+            <div className={`${clickableItem} bg-destructive/5 border border-destructive/10 p-3`} onClick={() => navigate('/dashboard/finance')}>
               <span className="text-[11px] text-destructive/70 font-medium block mb-0.5">{isPt ? 'A pagar' : 'Payable'}</span>
               <span className="text-sm font-extrabold text-destructive">{fmtCurrency(financeStats.totalPayable)}</span>
             </div>
           </div>
 
           {financeStats.overdueExpenses > 0 && (
-            <div className="flex items-center gap-1.5 text-destructive bg-destructive/5 rounded-lg px-3 py-2">
+            <div className={`${clickableItem} flex items-center gap-1.5 text-destructive bg-destructive/5 px-3 py-2`} onClick={() => navigate('/dashboard/finance')}>
               <AlertCircle className="w-3.5 h-3.5" />
               <span className="text-xs font-semibold">{financeStats.overdueExpenses} {isPt ? 'despesas atrasadas' : 'overdue expenses'}</span>
             </div>
@@ -290,8 +314,8 @@ const HomePage = () => {
         </div>
 
         {/* Time Tracking */}
-        <div onClick={() => navigate('/dashboard/time')} className={`${cardBase} md:col-span-6 xl:col-span-7 p-6 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(3)}>
-          <div className="flex items-center justify-between mb-5">
+        <div className={`${cardBase} md:col-span-6 xl:col-span-7 p-6`} style={stagger(3)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/time')}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-cyan-500" />
@@ -309,16 +333,16 @@ const HomePage = () => {
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/time')}>
               <div className="text-xl font-extrabold text-foreground">{fmtTime(timeStats.todayMin)}</div>
               <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Hoje' : 'Today'}</span>
             </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/time')}>
               <div className="text-xl font-extrabold text-foreground">{fmtTime(timeStats.weekMin)}</div>
               <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Semana' : 'Week'}</span>
             </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <div className={`${clickableItem} bg-muted/50 p-3 text-center`} onClick={() => navigate('/dashboard/time')}>
               <div className="text-xl font-extrabold text-foreground">{data.timeEntries.length}</div>
               <span className="text-[11px] text-muted-foreground font-medium">{isPt ? 'Registros' : 'Entries'}</span>
             </div>
@@ -333,8 +357,8 @@ const HomePage = () => {
         {/* ═══ ROW 3: Projetos + Clientes + Orçamentos + Equipe ═══ */}
 
         {/* Projetos */}
-        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(4)}>
-          <div className="flex items-center justify-between mb-3">
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`} style={stagger(4)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/projects')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
                 <FolderKanban className="w-4.5 h-4.5 text-purple-500" />
@@ -348,9 +372,9 @@ const HomePage = () => {
           </div>
 
           {data.projects.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-3">
               {data.projects.slice(0, 3).map(p => (
-                <div key={p.id} className="rounded-lg bg-muted/50 px-3 py-2.5 flex items-center justify-between">
+                <div key={p.id} className={`${clickableItem} bg-muted/50 px-3 py-2.5 flex items-center justify-between`} onClick={() => navigate('/dashboard/projects')}>
                   <span className="text-xs font-semibold text-foreground line-clamp-1">{p.name}</span>
                   {p.due_date && (
                     <div className="flex items-center gap-1 text-muted-foreground shrink-0 ml-2">
@@ -361,17 +385,19 @@ const HomePage = () => {
                 </div>
               ))}
               {data.projects.length > 3 && (
-                <span className="text-[11px] text-primary font-semibold">+{data.projects.length - 3} {isPt ? 'mais' : 'more'}</span>
+                <button onClick={() => navigate('/dashboard/projects')} className="text-[11px] text-primary font-semibold hover:underline">
+                  +{data.projects.length - 3} {isPt ? 'mais' : 'more'}
+                </button>
               )}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">{isPt ? 'Nenhum projeto ainda' : 'No projects yet'}</p>
+            <p className="text-xs text-muted-foreground mt-3">{isPt ? 'Nenhum projeto ainda' : 'No projects yet'}</p>
           )}
         </div>
 
         {/* Clientes */}
-        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(5)}>
-          <div className="flex items-center justify-between mb-3">
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`} style={stagger(5)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/clients')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="w-4.5 h-4.5 text-primary" />
@@ -380,12 +406,12 @@ const HomePage = () => {
             </div>
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="text-2xl font-extrabold text-foreground">{data.clients.length}</div>
+          <div className="text-2xl font-extrabold text-foreground mt-3">{data.clients.length}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{isPt ? 'cadastrados' : 'registered'}</p>
           {data.clients.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border space-y-1.5">
+            <div className="mt-3 pt-3 border-t border-border space-y-1">
               {data.clients.slice(0, 3).map(c => (
-                <div key={c.id} className="flex items-center gap-2">
+                <div key={c.id} className={`${clickableItem} flex items-center gap-2 px-2 py-1.5`} onClick={() => navigate('/dashboard/clients')}>
                   <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-primary-foreground shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
                     {c.name?.charAt(0).toUpperCase()}
                   </div>
@@ -393,15 +419,17 @@ const HomePage = () => {
                 </div>
               ))}
               {data.clients.length > 3 && (
-                <span className="text-[11px] text-primary font-semibold">+{data.clients.length - 3} {isPt ? 'mais' : 'more'}</span>
+                <button onClick={() => navigate('/dashboard/clients')} className="text-[11px] text-primary font-semibold hover:underline pl-2">
+                  +{data.clients.length - 3} {isPt ? 'mais' : 'more'}
+                </button>
               )}
             </div>
           )}
         </div>
 
         {/* Orçamentos */}
-        <div onClick={() => navigate('/dashboard/budgets')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(6)}>
-          <div className="flex items-center justify-between mb-3">
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`} style={stagger(6)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/budgets')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
                 <FileText className="w-4.5 h-4.5 text-amber-500" />
@@ -410,18 +438,36 @@ const HomePage = () => {
             </div>
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="text-2xl font-extrabold text-foreground">{budgetStats.total}</div>
+          <div className="text-2xl font-extrabold text-foreground mt-3">{budgetStats.total}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{fmtCurrency(budgetStats.totalValue)}</p>
-          <div className="mt-3 pt-3 border-t border-border space-y-1.5">
-            <StatusRow label={isPt ? 'Rascunho' : 'Draft'} count={budgetStats.draft} dotColor="bg-muted-foreground/40" />
-            <StatusRow label={isPt ? 'Enviado' : 'Sent'} count={budgetStats.sent} dotColor="bg-blue-500" />
-            <StatusRow label={isPt ? 'Aprovado' : 'Approved'} count={budgetStats.approved} dotColor="bg-green-500" />
+          <div className="mt-3 pt-3 border-t border-border space-y-1">
+            <div className={`${clickableItem} flex items-center justify-between px-2 py-1.5`} onClick={() => navigate('/dashboard/budgets')}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+                <span className="text-xs text-muted-foreground">{isPt ? 'Rascunho' : 'Draft'}</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{budgetStats.draft}</span>
+            </div>
+            <div className={`${clickableItem} flex items-center justify-between px-2 py-1.5`} onClick={() => navigate('/dashboard/budgets')}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-xs text-muted-foreground">{isPt ? 'Enviado' : 'Sent'}</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{budgetStats.sent}</span>
+            </div>
+            <div className={`${clickableItem} flex items-center justify-between px-2 py-1.5`} onClick={() => navigate('/dashboard/budgets')}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-xs text-muted-foreground">{isPt ? 'Aprovado' : 'Approved'}</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{budgetStats.approved}</span>
+            </div>
           </div>
         </div>
 
         {/* Equipe / Organização */}
-        <div onClick={() => navigate('/dashboard/team')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(7)}>
-          <div className="flex items-center justify-between mb-3">
+        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`} style={stagger(7)}>
+          <div className={cardHeader} onClick={() => navigate('/dashboard/team')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
                 <UserPlus className="w-4.5 h-4.5 text-violet-500" />
@@ -433,18 +479,18 @@ const HomePage = () => {
             </div>
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="text-2xl font-extrabold text-foreground">{teamStats.total}</div>
+          <div className="text-2xl font-extrabold text-foreground mt-3">{teamStats.total}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{isPt ? 'membros' : 'members'}</p>
 
           {teamStats.members.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border">
+            <div className="mt-3 pt-3 border-t border-border cursor-pointer" onClick={() => navigate('/dashboard/team')}>
               <div className="flex items-center -space-x-2">
                 {teamStats.members.slice(0, 5).map((m: any, i: number) => {
                   const profile = m.profile;
                   const name = profile?.name || '?';
                   const avatarUrl = profile?.avatar_url;
                   return (
-                    <div key={m.id || i} className="w-8 h-8 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary shrink-0 overflow-hidden" title={name}>
+                    <div key={m.id || i} className="w-8 h-8 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary shrink-0 overflow-hidden transition-transform hover:scale-110 hover:z-10" title={name}>
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
                       ) : (
