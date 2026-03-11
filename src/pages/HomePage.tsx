@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
@@ -14,6 +14,8 @@ interface DashboardData {
   tasks: any[];
   timeEntries: any[];
   invoices: any[];
+  expenses: any[];
+  orgMembers: any[];
 }
 
 const HomePage = () => {
@@ -23,21 +25,16 @@ const HomePage = () => {
   const isPt = lang === 'pt-BR';
   const [firstName, setFirstName] = useState('');
   const [data, setData] = useState<DashboardData>({
-    clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [],
+    clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchName = async () => {
       if (user?.id) {
-        // Prioriza o nome do perfil (editável pelo usuário)
         const { data } = await supabase.from('profiles').select('name').eq('user_id', user.id).maybeSingle();
-        if (data?.name) { 
-          setFirstName(data.name.split(' ')[0]); 
-          return; 
-        }
+        if (data?.name) { setFirstName(data.name.split(' ')[0]); return; }
       }
-      // Fallback para user_metadata
       const metaName = user?.user_metadata?.name;
       if (metaName) setFirstName(metaName.split(' ')[0]);
     };
@@ -48,13 +45,15 @@ const HomePage = () => {
     const fetchAll = async () => {
       if (!user) return;
       setLoading(true);
-      const [clients, budgets, projects, tasks, timeEntries, invoices] = await Promise.all([
+      const [clients, budgets, projects, tasks, timeEntries, invoices, expenses, orgMembers] = await Promise.all([
         supabase.from('clients').select('*').order('created_at', { ascending: false }),
         supabase.from('budgets').select('*').order('created_at', { ascending: false }),
         supabase.from('projects').select('*').order('created_at', { ascending: false }),
         supabase.from('tasks').select('*').order('created_at', { ascending: false }),
         supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
+        supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+        supabase.from('organization_members').select('*, profiles:profiles!inner(name, avatar_url)').eq('status', 'accepted'),
       ]);
       setData({
         clients: clients.data || [],
@@ -63,6 +62,8 @@ const HomePage = () => {
         tasks: tasks.data || [],
         timeEntries: timeEntries.data || [],
         invoices: invoices.data || [],
+        expenses: expenses.data || [],
+        orgMembers: orgMembers.data || [],
       });
       setLoading(false);
     };
@@ -95,7 +96,6 @@ const HomePage = () => {
       return sum;
     }, 0);
 
-    // Last 7 days chart data
     const last7 = Array.from({ length: 7 }, (_, i) => {
       const day = subDays(now, 6 - i);
       const dayEntries = data.timeEntries.filter(e => e.start_time && isSameDay(parseISO(e.start_time), day));
@@ -125,6 +125,22 @@ const HomePage = () => {
     return { draft, sent, approved, total: data.budgets.length, totalValue: data.budgets.reduce((s, b) => s + (Number(b.total) || 0), 0) };
   }, [data.budgets]);
 
+  const financeStats = useMemo(() => {
+    const totalReceivable = data.invoices.filter(i => i.status === 'pending').reduce((s, i) => s + (Number(i.total) || 0), 0);
+    const totalPayable = data.expenses.filter(e => e.status === 'pending').reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const totalReceived = data.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (Number(i.total) || 0), 0);
+    const totalPaid = data.expenses.filter(e => e.status === 'paid').reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const balance = totalReceived - totalPaid;
+    const pendingExpenses = data.expenses.filter(e => e.status === 'pending').length;
+    const overdueExpenses = data.expenses.filter(e => e.due_date && new Date(e.due_date) < now && e.status === 'pending').length;
+    return { totalReceivable, totalPayable, totalReceived, totalPaid, balance, pendingExpenses, overdueExpenses };
+  }, [data.invoices, data.expenses]);
+
+  const teamStats = useMemo(() => {
+    const members = data.orgMembers;
+    return { total: members.length, members };
+  }, [data.orgMembers]);
+
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
@@ -135,7 +151,7 @@ const HomePage = () => {
       <div className="max-w-6xl mx-auto relative z-10 space-y-6">
         <div className="h-10 bg-muted rounded-xl w-64 animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div key={i} className="rounded-2xl border border-border bg-card p-6 animate-pulse space-y-3">
               <div className="h-4 bg-muted rounded w-1/3" />
               <div className="h-8 bg-muted rounded w-1/2" />
@@ -203,9 +219,51 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ═══ Calendário de Tarefas — compacto ═══ */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-3 p-3 cursor-default`} onClick={undefined}>
+        {/* ═══ Calendário de Tarefas ═══ */}
+        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default`} onClick={undefined}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
+        </div>
+
+        {/* ═══ Financeiro — destaque ═══ */}
+        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <span className="font-bold text-foreground text-base">{isPt ? 'Financeiro' : 'Finance'}</span>
+                <p className="text-[10px] text-muted-foreground">{isPt ? 'Visão geral' : 'Overview'}</p>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          {/* Balance */}
+          <div className="rounded-xl bg-muted/50 p-4 mb-4">
+            <span className="text-[11px] text-muted-foreground font-medium block mb-1">{isPt ? 'Saldo' : 'Balance'}</span>
+            <div className={`text-2xl font-extrabold ${financeStats.balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+              {fmtCurrency(financeStats.balance)}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+              <span className="text-[11px] text-primary/70 font-medium block mb-0.5">{isPt ? 'A receber' : 'Receivable'}</span>
+              <span className="text-sm font-extrabold text-primary">{fmtCurrency(financeStats.totalReceivable)}</span>
+            </div>
+            <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
+              <span className="text-[11px] text-destructive/70 font-medium block mb-0.5">{isPt ? 'A pagar' : 'Payable'}</span>
+              <span className="text-sm font-extrabold text-destructive">{fmtCurrency(financeStats.totalPayable)}</span>
+            </div>
+          </div>
+
+          {financeStats.overdueExpenses > 0 && (
+            <div className="flex items-center gap-1.5 text-destructive bg-destructive/5 rounded-lg px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span className="text-xs font-semibold">{financeStats.overdueExpenses} {isPt ? 'despesas atrasadas' : 'overdue expenses'}</span>
+            </div>
+          )}
         </div>
 
         {/* ═══ Tarefas ═══ */}
@@ -246,8 +304,59 @@ const HomePage = () => {
           )}
         </div>
 
+        {/* ═══ Equipe ═══ */}
+        <div onClick={() => navigate('/dashboard/team')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                <UserPlus className="w-4.5 h-4.5 text-violet-500" />
+              </div>
+              <span className="font-bold text-foreground">{isPt ? 'Equipe' : 'Team'}</span>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="text-2xl font-extrabold text-foreground">{teamStats.total}</div>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{isPt ? 'membros' : 'members'}</p>
+
+          {teamStats.members.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border">
+              {/* Avatar stack */}
+              <div className="flex items-center -space-x-2">
+                {teamStats.members.slice(0, 5).map((m: any, i: number) => {
+                  const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                  const name = profile?.name || '?';
+                  const avatarUrl = profile?.avatar_url;
+                  return (
+                    <div key={m.id || i} className="w-8 h-8 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-primary-foreground bg-primary shrink-0 overflow-hidden" title={name}>
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                      ) : (
+                        name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                  );
+                })}
+                {teamStats.members.length > 5 && (
+                  <div className="w-8 h-8 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-muted-foreground bg-muted shrink-0">
+                    +{teamStats.members.length - 5}
+                  </div>
+                )}
+              </div>
+              {teamStats.members.length > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  {teamStats.members.slice(0, 2).map((m: any) => {
+                    const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                    return profile?.name?.split(' ')[0] || '';
+                  }).filter(Boolean).join(', ')}
+                  {teamStats.members.length > 2 ? ` ${isPt ? 'e mais' : 'and'} ${teamStats.members.length - 2}` : ''}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* ═══ Clientes ═══ */}
-        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} md:col-span-3 xl:col-span-4 p-5`}>
+        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -263,7 +372,7 @@ const HomePage = () => {
             <div className="mt-3 pt-3 border-t border-border space-y-1.5">
               {data.clients.slice(0, 3).map(c => (
                 <div key={c.id} className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-primary-foreground shrink-0" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
                     {c.name?.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-xs text-foreground truncate font-medium">{c.name}</span>
@@ -277,7 +386,7 @@ const HomePage = () => {
         </div>
 
         {/* ═══ Projetos ═══ */}
-        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-4 p-5`}>
+        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
@@ -317,8 +426,8 @@ const HomePage = () => {
         <div onClick={() => navigate('/dashboard/budgets')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-accent/20 flex items-center justify-center">
-                <FileText className="w-4.5 h-4.5 text-accent-foreground" />
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <FileText className="w-4.5 h-4.5 text-amber-500" />
               </div>
               <span className="font-bold text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</span>
             </div>
@@ -334,11 +443,11 @@ const HomePage = () => {
         </div>
 
         {/* ═══ Faturas ═══ */}
-        <div onClick={() => navigate('/dashboard/invoices')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <Receipt className="w-4.5 h-4.5 text-emerald-500" />
+              <div className="w-9 h-9 rounded-xl bg-teal-500/10 flex items-center justify-center">
+                <Receipt className="w-4.5 h-4.5 text-teal-500" />
               </div>
               <span className="font-bold text-foreground">{isPt ? 'Faturas' : 'Invoices'}</span>
             </div>
@@ -403,12 +512,6 @@ const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours:
       {data.map((d, i) => (
         <div key={i} className="flex-1 flex flex-col items-center gap-1">
           <div className="w-full relative flex items-end justify-center" style={{ height: '44px' }}>
-            {d.minutes > 0 && (
-              <div
-                className="absolute bottom-0 -top-6 flex items-start justify-center pointer-events-none opacity-0 group-hover:opacity-100"
-              >
-              </div>
-            )}
             <div
               className={`w-full rounded-md transition-all duration-300 ${d.isToday ? 'bg-cyan-500' : 'bg-cyan-500/30'}`}
               style={{ height: `${Math.max((d.minutes / maxMin) * 44, d.minutes > 0 ? 4 : 2)}px` }}
@@ -424,7 +527,6 @@ const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours:
   );
 };
 
-
 const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boolean; navigate: (path: string) => void }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -432,7 +534,6 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Tasks mapped by date string
   const tasksByDate = useMemo(() => {
     const map: Record<string, any[]> = {};
     tasks.forEach(task => {
@@ -444,9 +545,8 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
     return map;
   }, [tasks]);
 
-  // Day of week the month starts on (0=Sun, adjust for Mon start)
   const startDay = getDay(monthStart);
-  const leadingBlanks = startDay === 0 ? 6 : startDay - 1; // Monday start
+  const leadingBlanks = startDay === 0 ? 6 : startDay - 1;
 
   const weekDays = isPt
     ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
@@ -463,7 +563,6 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
 
   return (
     <div className="space-y-1.5">
-      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -489,14 +588,12 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
         </div>
       </div>
 
-      {/* Week day headers */}
       <div className="grid grid-cols-7 gap-0.5 mb-0.5">
         {weekDays.map(d => (
           <div key={d} className="text-center text-[8px] font-semibold text-muted-foreground/50 py-0.5">{d.charAt(0)}</div>
         ))}
       </div>
 
-      {/* Day grid */}
       <div className="grid grid-cols-7 gap-0.5">
         {Array.from({ length: leadingBlanks }).map((_, i) => (
           <div key={`blank-${i}`} className="h-7" />
@@ -511,7 +608,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
             <button
               key={dateStr}
               onClick={() => setSelectedDay(isSelected ? null : dateStr)}
-              className={`h-7 rounded flex flex-col items-center justify-center relative transition-all
+              className={`h-7 rounded-full flex flex-col items-center justify-center relative transition-all
                 ${today ? 'bg-primary text-primary-foreground font-bold' : 'hover:bg-muted text-foreground'}
                 ${isSelected && !today ? 'bg-primary/10 ring-1 ring-primary' : ''}
               `}
@@ -529,7 +626,6 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
         })}
       </div>
 
-      {/* Selected day tasks */}
       {selectedDay && (
         <div className="mt-1.5 pt-1.5 border-t border-border">
           <span className="text-[10px] font-semibold text-muted-foreground mb-1 block">
