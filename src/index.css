@@ -339,3 +339,8 @@
   width: 8px;
   background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--destructive)));
 }
+
+/* Animation fill mode utility */
+.fill-mode-forwards {
+  animation-fill-mode: forwards;
+}
