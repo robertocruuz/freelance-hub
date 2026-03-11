@@ -51,7 +51,7 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
   }
 }
 
-export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly }: Props) {
+export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly, filtersOpen, onFiltersOpenChange }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
   const { user } = useAuth();
@@ -66,7 +66,6 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
   }, [user]);
 
   // Filter states
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('year');
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
