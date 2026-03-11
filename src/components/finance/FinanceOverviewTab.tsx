@@ -37,6 +37,7 @@ interface Props {
   onResetToMonthly?: () => void;
   filtersOpen: boolean;
   onFiltersOpenChange: (open: boolean) => void;
+  onActiveFilterCountChange?: (count: number) => void;
 }
 
 function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
@@ -51,7 +52,7 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
   }
 }
 
-export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly, filtersOpen, onFiltersOpenChange }: Props) {
+export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly, filtersOpen, onFiltersOpenChange, onActiveFilterCountChange }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
   const { user } = useAuth();
@@ -187,6 +188,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     statusFilterInvoice !== 'all',
     statusFilterExpense !== 'all',
   ].filter(Boolean).length;
+
+  useEffect(() => {
+    onActiveFilterCountChange?.(activeFilterCount);
+  }, [activeFilterCount, onActiveFilterCountChange]);
 
   const clearAllFilters = () => {
     setPeriodFilter('year');
