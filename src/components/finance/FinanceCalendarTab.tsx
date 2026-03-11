@@ -77,6 +77,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
         payment_method: paymentMethod || null,
         notes: null,
         client_id: null,
+        project_id: null,
         is_recurring: false,
         recurring_months: null,
       });
