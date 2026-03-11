@@ -175,18 +175,29 @@ export default function FinancePage() {
             </div>
           )}
           {viewMode === 'overview' && (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <button
-                onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <button
+                  onClick={() => setSelectedMonth(new Date())}
+                  className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                >
+                  {selectedMonth.getFullYear()}
+                </button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+              <Button
+                variant={overviewFiltersOpen ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
-                {selectedMonth.getFullYear()}
-              </button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
-                <ChevronRight className="w-4 h-4" />
+                <Filter className="w-3 h-3" />
+                Filtros
               </Button>
             </div>
           )}
