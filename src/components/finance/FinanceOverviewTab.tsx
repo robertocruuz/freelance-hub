@@ -248,62 +248,93 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
         <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
           <CollapsibleTrigger asChild>
-            <button className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs font-semibold text-foreground">Filtros</span>
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
+            <button className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/40 transition-colors group">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Filter className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">Filtros</span>
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </div>
+                {/* Active filter chips when collapsed */}
                 {activeFilterCount > 0 && !filtersOpen && (
-                  <span className="text-[10px] text-muted-foreground ml-1">
-                    {activeFilterCount} {activeFilterCount === 1 ? 'filtro ativo' : 'filtros ativos'}
-                  </span>
+                  <div className="hidden sm:flex items-center gap-1.5 ml-1">
+                    {periodFilter !== 'year' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        <CalendarIcon className="w-2.5 h-2.5" />
+                        {periodLabel}
+                      </span>
+                    )}
+                    {clientFilter !== 'all' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        <Users className="w-2.5 h-2.5" />
+                        {clients.find(c => c.id === clientFilter)?.name || 'Cliente'}
+                      </span>
+                    )}
+                    {categoryFilter !== 'all' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        Categoria
+                      </span>
+                    )}
+                    {(statusFilterInvoice !== 'all' || statusFilterExpense !== 'all' || paymentFilter !== 'all') && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        +{[statusFilterInvoice !== 'all', statusFilterExpense !== 'all', paymentFilter !== 'all'].filter(Boolean).length}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
-              <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", filtersOpen && "rotate-180")} />
+              <ChevronDown className={cn(
+                "w-4 h-4 text-muted-foreground transition-transform duration-300 group-hover:text-foreground",
+                filtersOpen && "rotate-180"
+              )} />
             </button>
           </CollapsibleTrigger>
 
           <CollapsibleContent>
-            <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
-              {/* PERÍODO */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  <CalendarIcon className="w-3 h-3" />
-                  Período
+            <div className="px-4 pb-4 border-t border-border">
+              {/* PERÍODO - full width row */}
+              <div className="py-3.5 space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Período</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={periodFilter === 'custom' ? 'custom' : periodFilter} onValueChange={(v) => {
-                    if (v === 'custom') return;
-                    setPeriodFilter(v as PeriodFilter);
-                    setCustomRange(undefined);
-                  }}>
-                    <SelectTrigger className="h-8 w-auto min-w-[160px] text-xs border-dashed">
-                      <SelectValue placeholder="Período" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {periodOptions.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
+                  {periodOptions.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setPeriodFilter(opt.value as PeriodFilter); setCustomRange(undefined); }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+                        periodFilter === opt.value
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant={periodFilter === 'custom' ? 'default' : 'outline'}
-                        size="sm"
-                        className="h-8 text-xs gap-1.5 border-dashed"
+                      <button
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border flex items-center gap-1.5",
+                          periodFilter === 'custom'
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                        )}
                       >
                         <CalendarIcon className="w-3 h-3" />
                         {periodFilter === 'custom' && customRange?.from && customRange?.to
                           ? format(customRange.from, 'dd/MM', { locale: ptBR }) + ' – ' + format(customRange.to, 'dd/MM', { locale: ptBR })
                           : 'Personalizado'
                         }
-                      </Button>
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -327,15 +358,21 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="h-px bg-border" />
+
+              {/* Filter groups grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-3.5">
                 {/* ENTRADAS */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <ArrowDownToLine className="w-3 h-3" />
-                    Entradas
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Entradas</span>
                   </div>
                   <Select value={statusFilterInvoice} onValueChange={setStatusFilterInvoice}>
-                    <SelectTrigger className="h-8 text-xs border-dashed">
+                    <SelectTrigger className={cn(
+                      "h-8 text-xs transition-colors",
+                      statusFilterInvoice !== 'all' ? "border-primary/50 bg-primary/5" : "border-dashed"
+                    )}>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -348,14 +385,17 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 </div>
 
                 {/* SAÍDAS */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <ArrowUpFromLine className="w-3 h-3" />
-                    Saídas
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Saídas</span>
                   </div>
                   <div className="space-y-2">
                     <Select value={statusFilterExpense} onValueChange={setStatusFilterExpense}>
-                      <SelectTrigger className="h-8 text-xs border-dashed">
+                      <SelectTrigger className={cn(
+                        "h-8 text-xs transition-colors",
+                        statusFilterExpense !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
+                      )}>
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -365,7 +405,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                       </SelectContent>
                     </Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="h-8 text-xs border-dashed">
+                      <SelectTrigger className={cn(
+                        "h-8 text-xs transition-colors",
+                        categoryFilter !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
+                      )}>
                         <SelectValue placeholder="Categoria" />
                       </SelectTrigger>
                       <SelectContent>
@@ -378,50 +421,62 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                   </div>
                 </div>
 
-                {/* CLIENTES & PROJETOS */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <Users className="w-3 h-3" />
-                    Clientes & Projetos
+                {/* CLIENTES */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Cliente</span>
                   </div>
-                  <div className="space-y-2">
-                    <Select value={clientFilter} onValueChange={setClientFilter}>
-                      <SelectTrigger className="h-8 text-xs border-dashed">
-                        <SelectValue placeholder="Cliente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
-                        {clients.map(c => (
-                          <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                      <SelectTrigger className="h-8 text-xs border-dashed">
-                        <SelectValue placeholder="Forma de pagamento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all" className="text-xs">Todas formas</SelectItem>
-                        {PAYMENT_METHODS.map(pm => (
-                          <SelectItem key={pm.value} value={pm.value} className="text-xs">{pm.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <Select value={clientFilter} onValueChange={setClientFilter}>
+                    <SelectTrigger className={cn(
+                      "h-8 text-xs transition-colors",
+                      clientFilter !== 'all' ? "border-amber-500/50 bg-amber-500/5" : "border-dashed"
+                    )}>
+                      <SelectValue placeholder="Todos os clientes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
+                      {clients.map(c => (
+                        <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* PAGAMENTO */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Pagamento</span>
                   </div>
+                  <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                    <SelectTrigger className={cn(
+                      "h-8 text-xs transition-colors",
+                      paymentFilter !== 'all' ? "border-emerald-500/50 bg-emerald-500/5" : "border-dashed"
+                    )}>
+                      <SelectValue placeholder="Todas formas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Todas formas</SelectItem>
+                      {PAYMENT_METHODS.map(pm => (
+                        <SelectItem key={pm.value} value={pm.value} className="text-xs">{pm.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {/* Clear button */}
               {activeFilterCount > 0 && (
-                <div className="flex justify-end pt-1">
+                <div className="flex justify-end pt-3 mt-3 border-t border-border">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="h-7 text-xs text-muted-foreground hover:text-destructive gap-1"
+                    className="h-7 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/50 gap-1.5"
                     onClick={clearAllFilters}
                   >
                     <X className="w-3 h-3" />
-                    Limpar todos os filtros
+                    Limpar filtros ({activeFilterCount})
                   </Button>
                 </div>
               )}
