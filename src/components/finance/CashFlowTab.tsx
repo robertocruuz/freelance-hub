@@ -196,6 +196,24 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             mode="range"
             selected={customRange}
             onSelect={(range: DateRange | undefined) => {
+              // If both dates were already selected and user clicks a new day,
+              // react-day-picker sends a range with 3+ days. We want to reset.
+              if (customRange?.from && customRange?.to && range?.from && range?.to) {
+                // User clicked a new day after a complete range — start fresh
+                // The new click could be the `from` or `to` depending on position
+                // We detect this by checking if the range changed significantly
+                const prevFromStr = format(customRange.from, 'yyyy-MM-dd');
+                const newFromStr = format(range.from, 'yyyy-MM-dd');
+                if (prevFromStr !== newFromStr) {
+                  // from changed, user clicked before old from — use new from as start
+                  setCustomRange({ from: range.from, to: undefined });
+                } else {
+                  // to changed — accept the new range
+                  setCustomRange(range);
+                  setQuickFilter('custom');
+                }
+                return;
+              }
               setCustomRange(range);
               if (range?.from && range?.to) {
                 setQuickFilter('custom');
