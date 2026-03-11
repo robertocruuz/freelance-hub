@@ -232,12 +232,12 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
       {quickFilter === 'custom' && customRange?.from && customRange?.to && (
         <Button
           variant="ghost"
-          size="sm"
-          className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-destructive gap-1"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-destructive"
           onClick={() => handleQuickFilter('full')}
+          title="Limpar filtro"
         >
-          <X className="w-3 h-3" />
-          Limpar filtro
+          <X className="w-3.5 h-3.5" />
         </Button>
       )}
     </div>
