@@ -247,7 +247,7 @@ const HomePage = () => {
         {/* ═══ ROW 2: Financeiro + Time Tracking ═══ */}
 
         {/* Financeiro */}
-        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`}>
+        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(2)}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
