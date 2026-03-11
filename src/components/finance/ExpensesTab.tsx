@@ -77,7 +77,8 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     setEditing(null);
   };
 
-  const openNew = () => { resetForm(); setDialogOpen(true); };
+  const openNew = () => { resetForm(); setDialogOpen(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100); };
+  const formRef = useRef<HTMLDivElement>(null);
   const openEdit = (e: Expense) => {
     setEditing(e);
     setDescription(e.description);
