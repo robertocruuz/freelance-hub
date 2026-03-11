@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus } from 'lucide-react';
+import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
@@ -221,7 +221,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{taskStats.total} total</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex mb-4 mt-4">
@@ -284,7 +283,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{isPt ? 'Visão geral' : 'Overview'}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className={`${clickableItem} bg-muted/50 p-4 mb-4 mt-4`} onClick={() => navigate('/dashboard/finance')}>
@@ -330,7 +328,6 @@ const HomePage = () => {
                 )}
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
@@ -368,7 +365,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{data.projects.length} {isPt ? 'ativos' : 'active'}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           {data.projects.length > 0 ? (
@@ -404,7 +400,6 @@ const HomePage = () => {
               </div>
               <span className="font-bold text-foreground">{isPt ? 'Clientes' : 'Clients'}</span>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="text-2xl font-extrabold text-foreground mt-3">{data.clients.length}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{isPt ? 'cadastrados' : 'registered'}</p>
@@ -436,7 +431,6 @@ const HomePage = () => {
               </div>
               <span className="font-bold text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</span>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="text-2xl font-extrabold text-foreground mt-3">{budgetStats.total}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{fmtCurrency(budgetStats.totalValue)}</p>
@@ -477,7 +471,7 @@ const HomePage = () => {
                 {orgName && <p className="text-[10px] text-muted-foreground">{isPt ? 'Equipe' : 'Team'}</p>}
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            
           </div>
           <div className="text-2xl font-extrabold text-foreground mt-3">{teamStats.total}</div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{isPt ? 'membros' : 'members'}</p>
