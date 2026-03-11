@@ -212,6 +212,7 @@ export default function FinancePage() {
         <>
           {/* Summary Cards */}
           <FinanceSummaryCards
+            balance={balance}
             receivedThisMonth={receivedThisMonth}
             paidThisMonth={paidThisMonth}
             totalReceivable={totalReceivable}
