@@ -359,7 +359,7 @@ const HomePage = () => {
               {teamStats.members.length > 0 && (
                 <p className="text-[10px] text-muted-foreground mt-2">
                   {teamStats.members.slice(0, 2).map((m: any) => {
-                    const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                    const profile = m.profile;
                     return profile?.name?.split(' ')[0] || '';
                   }).filter(Boolean).join(', ')}
                   {teamStats.members.length > 2 ? ` ${isPt ? 'e mais' : 'and'} ${teamStats.members.length - 2}` : ''}
