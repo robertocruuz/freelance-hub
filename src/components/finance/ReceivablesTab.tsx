@@ -720,7 +720,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
           <p className="text-sm font-medium">Nenhuma fatura criada ainda</p>
           <p className="text-xs mt-1 text-muted-foreground/70">Clique em "Nova Fatura" para começar.</p>
         </div>
-      ) : !creating ? (
+      ) : monthInvoices.length > 0 ? (
         <>
           {/* Status filter */}
           <div className="flex items-center gap-1.5 flex-wrap">
