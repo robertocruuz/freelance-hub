@@ -30,6 +30,7 @@ type PeriodFilter = 'year' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'S1' | 'S2' | 'custom';
 interface Props {
   invoices: FinanceInvoice[];
   selectedYear: number;
+  onResetToMonthly?: () => void;
 }
 
 function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
@@ -44,7 +45,7 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
   }
 }
 
-export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
+export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
 
@@ -347,8 +348,22 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
 
       {/* Period indicator */}
       {periodFilter !== 'year' && (
-        <div className="text-xs text-muted-foreground font-medium">
-          Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+          <span>Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}</span>
+          {periodFilter === 'custom' && customRange?.from && customRange?.to && onResetToMonthly && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1.5 border-dashed text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                clearAllFilters();
+                onResetToMonthly();
+              }}
+            >
+              <X className="w-3 h-3" />
+              Limpar e voltar ao Mensal
+            </Button>
+          )}
         </div>
       )}
 
