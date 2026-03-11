@@ -276,14 +276,18 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                   </div>
                 ))}
                 {selectedEvents.expenses.map(exp => (
-                  <div key={exp.id} className="group flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10 hover:border-destructive/20">
+                  <div
+                    key={exp.id}
+                    className="group flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10 hover:border-destructive/20 cursor-pointer"
+                    onClick={() => onEventClick?.('expense')}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center">
                         <ArrowUpRight className="w-4 h-4 text-destructive" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{exp.description}</p>
-                        <p className="text-[11px] text-destructive/70 font-medium">A pagar</p>
+                        <p className="text-[11px] text-destructive/70 font-medium">A pagar · clique para editar</p>
                       </div>
                     </div>
                     <span className="font-extrabold text-sm text-destructive tabular-nums">{formatCurrency(exp.amount)}</span>
