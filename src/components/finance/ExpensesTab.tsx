@@ -178,40 +178,6 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <div className="flex gap-2 flex-wrap">
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Categoria" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas categorias</SelectItem>
-              {EXPENSE_CATEGORIES.map(c => (
-                <SelectItem key={c.value} value={c.value}>
-                  {categoryIcons[c.value] || '📦'} {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos ({expenses.length})</SelectItem>
-              <SelectItem value="pending">Pendente</SelectItem>
-              <SelectItem value="paid">Pago</SelectItem>
-              <SelectItem value="overdue">Atrasado</SelectItem>
-            </SelectContent>
-          </Select>
-          {filtered.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/60 text-xs">
-              <span className="text-muted-foreground">Total:</span>
-              <span className="font-bold text-foreground">{formatCurrency(totalFiltered)}</span>
-            </div>
-          )}
-        </div>
-        <Button onClick={openNew} size="sm" className="rounded-lg gap-1.5">
-          <Plus className="w-4 h-4" /> Nova Despesa
-        </Button>
-      </div>
-
       {dialogOpen && (
         <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in shadow-sm">
           <div className="flex items-center justify-between">
@@ -311,6 +277,40 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           </div>
         </div>
       )}
+
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex gap-2 flex-wrap">
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Categoria" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas categorias</SelectItem>
+              {EXPENSE_CATEGORIES.map(c => (
+                <SelectItem key={c.value} value={c.value}>
+                  {categoryIcons[c.value] || '📦'} {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos ({expenses.length})</SelectItem>
+              <SelectItem value="pending">Pendente</SelectItem>
+              <SelectItem value="paid">Pago</SelectItem>
+              <SelectItem value="overdue">Atrasado</SelectItem>
+            </SelectContent>
+          </Select>
+          {filtered.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/60 text-xs">
+              <span className="text-muted-foreground">Total:</span>
+              <span className="font-bold text-foreground">{formatCurrency(totalFiltered)}</span>
+            </div>
+          )}
+        </div>
+        <Button onClick={openNew} size="sm" className="rounded-lg gap-1.5">
+          <Plus className="w-4 h-4" /> Nova Despesa
+        </Button>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
