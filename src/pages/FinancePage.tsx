@@ -12,7 +12,7 @@ import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
