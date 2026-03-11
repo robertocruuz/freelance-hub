@@ -180,6 +180,9 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     categoryFilter !== 'all',
     paymentFilter !== 'all',
     periodFilter !== 'year',
+    projectFilter !== 'all',
+    statusFilterInvoice !== 'all',
+    statusFilterExpense !== 'all',
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
@@ -187,6 +190,9 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     setClientFilter('all');
     setCategoryFilter('all');
     setPaymentFilter('all');
+    setProjectFilter('all');
+    setStatusFilterInvoice('all');
+    setStatusFilterExpense('all');
     setCustomRange(undefined);
   };
 
