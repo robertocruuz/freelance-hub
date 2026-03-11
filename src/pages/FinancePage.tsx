@@ -33,9 +33,11 @@ export default function FinancePage() {
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [activeTab, setActiveTab] = useState('cashflow');
+  const [autoEditId, setAutoEditId] = useState<string | null>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  const handleEventClick = (type: 'receivable' | 'expense') => {
+  const handleEventClick = (type: 'receivable' | 'expense', id: string) => {
+    setAutoEditId(id);
     setActiveTab(type === 'receivable' ? 'receivables' : 'payables');
     setTimeout(() => {
       tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -183,8 +185,8 @@ export default function FinancePage() {
           ))}
         </TabsList>
         <TabsContent value="cashflow" className="mt-5"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
-        <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} /></TabsContent>
-        <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} /></TabsContent>
+        <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
+        <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
       </Tabs>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Pencil, Trash2, Receipt, Repeat } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -56,7 +56,7 @@ function StatusBadge({ status, onChangeStatus }: { status: string; onChangeStatu
   );
 }
 
-export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
+export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }: { monthFilter?: string; autoEditId?: string | null; onAutoEditDone?: () => void }) {
   const { expenses, loading, addExpense, updateExpense, deleteExpense, markAsPaid } = useExpenses();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
@@ -115,6 +115,19 @@ export default function ExpensesTab({ monthFilter }: { monthFilter?: string }) {
     }
     if (ok) { setDialogOpen(false); resetForm(); }
   };
+
+  // Auto-edit from calendar click
+  const autoEditProcessed = useRef<string | null>(null);
+  useEffect(() => {
+    if (autoEditId && autoEditId !== autoEditProcessed.current && expenses.length > 0) {
+      const exp = expenses.find(e => e.id === autoEditId);
+      if (exp) {
+        autoEditProcessed.current = autoEditId;
+        openEdit(exp);
+        onAutoEditDone?.();
+      }
+    }
+  }, [autoEditId, expenses]);
 
   // Filter by month first
   const monthExpenses = monthFilter

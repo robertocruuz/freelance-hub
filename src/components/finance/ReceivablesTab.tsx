@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -91,9 +91,11 @@ interface Props {
   invoices: FinanceInvoice[];
   onRefresh: () => void;
   monthFilter?: string;
+  autoEditId?: string | null;
+  onAutoEditDone?: () => void;
 }
 
-export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter }: Props) {
+export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter, autoEditId, onAutoEditDone }: Props) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
@@ -196,6 +198,19 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   }, [user, clients]);
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
+  // Auto-edit from calendar click
+  const autoEditProcessed = useRef<string | null>(null);
+  useEffect(() => {
+    if (autoEditId && autoEditId !== autoEditProcessed.current && invoices.length > 0) {
+      const inv = invoices.find(i => i.id === autoEditId);
+      if (inv) {
+        autoEditProcessed.current = autoEditId;
+        editInvoice(inv);
+        onAutoEditDone?.();
+      }
+    }
+  }, [autoEditId, invoices]);
 
   // Filter by month
   const monthInvoices = monthFilter
