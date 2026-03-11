@@ -103,9 +103,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       if (!isInRange(i.due_date)) return false;
       if (clientFilter !== 'all' && i.client_id !== clientFilter) return false;
       if (paymentFilter !== 'all' && i.payment_method !== paymentFilter) return false;
+      if (statusFilterInvoice !== 'all' && i.status !== statusFilterInvoice) return false;
       return true;
     });
-  }, [invoices, activeRange, clientFilter, paymentFilter]);
+  }, [invoices, activeRange, clientFilter, paymentFilter, statusFilterInvoice]);
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter(e => {
@@ -114,9 +115,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       if (clientFilter !== 'all' && e.client_id !== clientFilter) return false;
       if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
       if (paymentFilter !== 'all' && e.payment_method !== paymentFilter) return false;
+      if (statusFilterExpense !== 'all' && e.status !== statusFilterExpense) return false;
       return true;
     });
-  }, [expenses, activeRange, clientFilter, categoryFilter, paymentFilter]);
+  }, [expenses, activeRange, clientFilter, categoryFilter, paymentFilter, statusFilterExpense]);
 
   // === COMPUTATIONS ===
   const totalReceived = filteredInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
