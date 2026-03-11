@@ -226,7 +226,7 @@ export const KanbanColumnComponent = ({
             <DropdownMenuItem onClick={() => { setEditName(column.name); setIsEditing(true); }}>
               <Pencil className="w-3.5 h-3.5 mr-2" /> Renomear
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDeleteColumn(column.id)} className="text-destructive">
+            <DropdownMenuItem onClick={() => fetchColumnDeleteImpact()} className="text-destructive">
               <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
