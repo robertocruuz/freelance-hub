@@ -1,15 +1,30 @@
-import { DollarSign, TrendingUp, TrendingDown, CalendarClock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, CalendarClock, ArrowUpRight, ArrowDownRight, Wallet, Scale } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface Props {
+  balance: number;
   receivedThisMonth: number;
   paidThisMonth: number;
   totalReceivable: number;
   nextDueCount: number;
 }
 
-export default function FinanceSummaryCards({ receivedThisMonth, paidThisMonth, totalReceivable, nextDueCount }: Props) {
+export default function FinanceSummaryCards({ balance, receivedThisMonth, paidThisMonth, totalReceivable, nextDueCount }: Props) {
   const cards = [
+    {
+      label: 'Balanço do mês',
+      value: formatCurrency(Math.abs(balance)),
+      prefix: balance >= 0 ? '+' : '-',
+      icon: Scale,
+      trend: balance >= 0 ? ArrowUpRight : ArrowDownRight,
+      gradient: balance >= 0
+        ? 'from-blue-500/10 to-blue-500/5 dark:from-blue-500/20 dark:to-blue-500/5'
+        : 'from-red-500/10 to-red-500/5 dark:from-red-500/20 dark:to-red-500/5',
+      iconBg: balance >= 0 ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-red-100 dark:bg-red-900/50',
+      iconColor: balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400',
+      valueColor: balance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300',
+      borderColor: balance >= 0 ? 'border-blue-200/60 dark:border-blue-800/40' : 'border-red-200/60 dark:border-red-800/40',
+    },
     {
       label: 'Recebido no mês',
       value: formatCurrency(receivedThisMonth),
@@ -56,7 +71,7 @@ export default function FinanceSummaryCards({ receivedThisMonth, paidThisMonth, 
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       {cards.map((c) => (
         <div
           key={c.label}
@@ -73,7 +88,7 @@ export default function FinanceSummaryCards({ receivedThisMonth, paidThisMonth, 
           </div>
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{c.label}</p>
           <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${c.valueColor}`}>
-            {c.subtitle ? c.subtitle : c.value}
+            {'prefix' in c && (c as any).prefix ? `${(c as any).prefix} ` : ''}{c.subtitle ? c.subtitle : c.value}
           </p>
           {!c.subtitle && (
             <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0 sm:opacity-100">este mês</p>
