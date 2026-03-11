@@ -41,6 +41,7 @@ export default function FinancePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const tabsRef = useRef<HTMLDivElement>(null);
   const [overviewFiltersOpen, setOverviewFiltersOpen] = useState(false);
+  const [overviewFilterCount, setOverviewFilterCount] = useState(0);
 
   const handleEventClick = (type: 'receivable' | 'expense', id: string) => {
     setAutoEditId(id);
