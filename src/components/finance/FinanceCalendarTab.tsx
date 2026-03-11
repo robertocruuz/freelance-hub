@@ -261,7 +261,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                   <div
                     key={inv.id}
                     className="group flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 hover:border-primary/20 cursor-pointer"
-                    onClick={() => onEventClick?.('receivable')}
+                    onClick={() => onEventClick?.('receivable', inv.id)}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
