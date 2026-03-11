@@ -206,7 +206,7 @@ export default function FinancePage() {
 
       {/* Overview mode */}
       {viewMode === 'overview' && (
-        <FinanceOverviewTab invoices={invoices} selectedYear={selectedMonth.getFullYear()} onResetToMonthly={() => setViewMode('month')} />
+        <FinanceOverviewTab invoices={invoices} selectedYear={selectedMonth.getFullYear()} onResetToMonthly={() => setViewMode('month')} filtersOpen={overviewFiltersOpen} onFiltersOpenChange={setOverviewFiltersOpen} />
       )}
 
       {/* Month mode */}
