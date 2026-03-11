@@ -337,7 +337,7 @@ const HomePage = () => {
               {/* Avatar stack */}
               <div className="flex items-center -space-x-2">
                 {teamStats.members.slice(0, 5).map((m: any, i: number) => {
-                  const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                  const profile = m.profile;
                   const name = profile?.name || '?';
                   const avatarUrl = profile?.avatar_url;
                   return (
