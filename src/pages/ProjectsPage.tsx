@@ -232,6 +232,19 @@ const ProjectsPage = () => {
 
   useEffect(() => { loadProjects(); loadExistingTasks(); }, [loadProjects, loadExistingTasks]);
 
+  // Refresh task keys when window regains focus or tab becomes visible
+  useEffect(() => {
+    const onFocus = () => { loadExistingTasks(); };
+    const onVisibility = () => { if (document.visibilityState === 'visible') loadExistingTasks(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [loadExistingTasks]);
+
+
   const resetForm = () => {
     setName('');
     setClientId('');

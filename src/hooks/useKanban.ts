@@ -265,6 +265,22 @@ export const useKanban = (activeBoardId?: string | null) => {
   };
 
   const deleteTask = async (id: string) => {
+    // Delete related data first (time entries, activity logs, comments, checklists)
+    await Promise.all([
+      supabase.from('time_entries').delete().eq('task_id', id),
+      supabase.from('task_activity_logs').delete().eq('task_id', id),
+      supabase.from('task_comments').delete().eq('task_id', id),
+      supabase.from('task_label_assignments').delete().eq('task_id', id),
+    ]);
+    // Delete checklists and their items
+    const { data: checklists } = await supabase.from('task_checklists').select('id').eq('task_id', id);
+    if (checklists && checklists.length > 0) {
+      await supabase.from('task_checklist_items').delete().in('checklist_id', checklists.map(c => c.id));
+      await supabase.from('task_checklists').delete().eq('task_id', id);
+    }
+    // Delete shares for this task
+    await supabase.from('shares').delete().eq('resource_id', id).eq('resource_type', 'task');
+    // Finally delete the task
     await supabase.from('tasks').delete().eq('id', id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
