@@ -240,7 +240,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
                 <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
                 <CardDescription className="text-xs capitalize">{rangeLabel}</CardDescription>
               </div>
-              <FilterBar />
+              {filterBar}
             </div>
           </CardHeader>
           <CardContent className="pt-4">
