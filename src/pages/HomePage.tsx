@@ -331,7 +331,7 @@ const HomePage = () => {
         {/* ═══ ROW 3: Projetos + Clientes + Orçamentos + Equipe ═══ */}
 
         {/* Projetos */}
-        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(4)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
