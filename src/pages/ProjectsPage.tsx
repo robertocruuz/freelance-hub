@@ -523,6 +523,7 @@ const ProjectsPage = () => {
       .select('id')
       .eq('title', pendingTaskItem.name)
       .eq('project_id', pendingTaskItem.projectId)
+      .not('column_id', 'is', null)
       .limit(1);
 
     if (existingDup && existingDup.length > 0) {
