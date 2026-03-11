@@ -205,7 +205,13 @@ const ProjectsPage = () => {
 
   const loadExistingTasks = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from('tasks').select('title, project_id').not('project_id', 'is', null).not('column_id', 'is', null);
+    const { data } = await supabase
+      .from('tasks')
+      .select('title, project_id, kanban_columns!inner(board_id)')
+      .not('project_id', 'is', null)
+      .not('column_id', 'is', null)
+      .not('kanban_columns.board_id', 'is', null);
+
     if (data) {
       setExistingTaskKeys(new Set(data.map(t => `${t.title}::${t.project_id}`)));
     }
