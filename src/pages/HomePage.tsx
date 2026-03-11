@@ -168,7 +168,9 @@ const HomePage = () => {
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
-  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-300 ease-out hover:shadow-xl hover:shadow-primary/5 hover:border-primary/25 hover:-translate-y-1 active:scale-[0.98] active:shadow-md cursor-pointer";
+  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-300 ease-out animate-fade-in opacity-0 fill-mode-forwards";
+  const clickableItem = "cursor-pointer rounded-lg transition-all duration-200 hover:bg-muted hover:scale-[1.02] active:scale-[0.98]";
+  const cardHeader = "flex items-center justify-between cursor-pointer rounded-xl px-2 py-1.5 -mx-2 -mt-1.5 transition-colors hover:bg-muted/60";
 
   // Stagger animation delays for cards
   const stagger = (i: number) => ({ animationDelay: `${i * 80}ms` });
