@@ -313,3 +313,81 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
       )}
 
       {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : grouped.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
+            <Receipt className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">Nenhuma despesa encontrada</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">Clique em "Nova Despesa" para começar.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {grouped.map(e => {
+            const config = statusConfig[e.status] || statusConfig.pending;
+            return (
+              <div key={e.id} className="group rounded-xl border border-border bg-card hover:shadow-sm transition-all">
+                <div className="flex items-center gap-3 p-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center text-lg shrink-0">
+                    {categoryIcons[e.category] || '📦'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground truncate">{e.description}</p>
+                      {e.is_recurring && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 shrink-0">
+                          <Repeat className="w-2.5 h-2.5" />
+                          {e.recurring_months}m
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                      <StatusBadge status={e.status} onChangeStatus={(s) => {
+                        if (s === 'paid') markAsPaid(e.id);
+                        else updateExpense(e.id, { status: s, paid_date: null });
+                      }} />
+                      {e.due_date && (
+                        <span className="tabular-nums">{format(new Date(e.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-bold text-sm tabular-nums text-foreground">{formatCurrency(e.amount)}</p>
+                    {e.payment_method && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{PAYMENT_METHODS.find(p => p.value === e.payment_method)?.label || e.payment_method}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => openEdit(e)}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir despesa?</AlertDialogTitle>
+                          <AlertDialogDescription>Esta ação não poderá ser desfeita.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteExpense(e.id)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
