@@ -258,134 +258,107 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
   return (
     <div className="space-y-5">
-      {/* Collapsible Filter bar */}
-      <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <CollapsibleTrigger asChild>
-            <button className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/40 transition-colors group">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Filter className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">Filtros</span>
-                  {activeFilterCount > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </div>
-                {/* Active filter chips when collapsed */}
-                {activeFilterCount > 0 && !filtersOpen && (
-                  <div className="hidden sm:flex items-center gap-1.5 ml-1">
-                    {periodFilter !== 'year' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        <CalendarIcon className="w-2.5 h-2.5" />
-                        {periodLabel}
-                      </span>
-                    )}
-                    {clientFilter !== 'all' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        <Users className="w-2.5 h-2.5" />
-                        {clients.find(c => c.id === clientFilter)?.name || 'Cliente'}
-                      </span>
-                    )}
-                    {categoryFilter !== 'all' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        Categoria
-                      </span>
-                    )}
-                    {(statusFilterInvoice !== 'all' || statusFilterExpense !== 'all' || paymentFilter !== 'all') && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        +{[statusFilterInvoice !== 'all', statusFilterExpense !== 'all', paymentFilter !== 'all'].filter(Boolean).length}
-                      </span>
-                    )}
-                  </div>
-                )}
+      {/* Collapsible Filter panel */}
+      {filtersOpen && (
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="px-4 py-4 space-y-4">
+            {/* PERÍODO - full width row */}
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-1.5">
+                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Período</span>
               </div>
-              <ChevronDown className={cn(
-                "w-4 h-4 text-muted-foreground transition-transform duration-300 group-hover:text-foreground",
-                filtersOpen && "rotate-180"
-              )} />
-            </button>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <div className="px-4 pb-4 border-t border-border">
-              {/* PERÍODO - full width row */}
-              <div className="py-3.5 space-y-2.5">
-                <div className="flex items-center gap-1.5">
-                  <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Período</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {periodOptions.map(opt => (
+              <div className="flex flex-wrap items-center gap-2">
+                {periodOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setPeriodFilter(opt.value as PeriodFilter); setCustomRange(undefined); }}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+                      periodFilter === opt.value
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+                <Popover>
+                  <PopoverTrigger asChild>
                     <button
-                      key={opt.value}
-                      onClick={() => { setPeriodFilter(opt.value as PeriodFilter); setCustomRange(undefined); }}
                       className={cn(
-                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
-                        periodFilter === opt.value
+                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border flex items-center gap-1.5",
+                        periodFilter === 'custom'
                           ? "bg-primary text-primary-foreground border-primary shadow-sm"
                           : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      {opt.label}
+                      <CalendarIcon className="w-3 h-3" />
+                      {periodFilter === 'custom' && customRange?.from && customRange?.to
+                        ? format(customRange.from, 'dd/MM', { locale: ptBR }) + ' – ' + format(customRange.to, 'dd/MM', { locale: ptBR })
+                        : 'Personalizado'
+                      }
                     </button>
-                  ))}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border flex items-center gap-1.5",
-                          periodFilter === 'custom'
-                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                            : "bg-transparent text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="w-3 h-3" />
-                        {periodFilter === 'custom' && customRange?.from && customRange?.to
-                          ? format(customRange.from, 'dd/MM', { locale: ptBR }) + ' – ' + format(customRange.to, 'dd/MM', { locale: ptBR })
-                          : 'Personalizado'
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={customRange}
+                      onSelect={(range: DateRange | undefined) => {
+                        setCustomRange(range);
+                        if (range?.from && range?.to) {
+                          setPeriodFilter('custom');
                         }
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="range"
-                        selected={customRange}
-                        onSelect={(range: DateRange | undefined) => {
-                          setCustomRange(range);
-                          if (range?.from && range?.to) {
-                            setPeriodFilter('custom');
-                          }
-                        }}
-                        fromDate={new Date(selectedYear, 0, 1)}
-                        toDate={new Date(selectedYear, 11, 31)}
-                        numberOfMonths={2}
-                        defaultMonth={new Date(selectedYear, 0, 1)}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                      }}
+                      fromDate={new Date(selectedYear, 0, 1)}
+                      toDate={new Date(selectedYear, 11, 31)}
+                      numberOfMonths={2}
+                      defaultMonth={new Date(selectedYear, 0, 1)}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="h-px bg-border" />
+
+            {/* Filter groups grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+              {/* ENTRADAS */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Entradas</span>
                 </div>
+                <Select value={statusFilterInvoice} onValueChange={setStatusFilterInvoice}>
+                  <SelectTrigger className={cn(
+                    "h-8 text-xs transition-colors",
+                    statusFilterInvoice !== 'all' ? "border-primary/50 bg-primary/5" : "border-dashed"
+                  )}>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Todos os status</SelectItem>
+                    <SelectItem value="paid" className="text-xs">Pagas</SelectItem>
+                    <SelectItem value="pending" className="text-xs">Pendentes</SelectItem>
+                    <SelectItem value="overdue" className="text-xs">Atrasadas</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="h-px bg-border" />
-
-              {/* Filter groups grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 pt-3.5">
-                {/* ENTRADAS */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Entradas</span>
-                  </div>
-                  <Select value={statusFilterInvoice} onValueChange={setStatusFilterInvoice}>
+              {/* SAÍDAS */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Saídas</span>
+                </div>
+                <div className="space-y-2">
+                  <Select value={statusFilterExpense} onValueChange={setStatusFilterExpense}>
                     <SelectTrigger className={cn(
                       "h-8 text-xs transition-colors",
-                      statusFilterInvoice !== 'all' ? "border-primary/50 bg-primary/5" : "border-dashed"
+                      statusFilterExpense !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
                     )}>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -393,133 +366,109 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                       <SelectItem value="all" className="text-xs">Todos os status</SelectItem>
                       <SelectItem value="paid" className="text-xs">Pagas</SelectItem>
                       <SelectItem value="pending" className="text-xs">Pendentes</SelectItem>
-                      <SelectItem value="overdue" className="text-xs">Atrasadas</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* SAÍDAS */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Saídas</span>
-                  </div>
-                  <div className="space-y-2">
-                    <Select value={statusFilterExpense} onValueChange={setStatusFilterExpense}>
-                      <SelectTrigger className={cn(
-                        "h-8 text-xs transition-colors",
-                        statusFilterExpense !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
-                      )}>
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all" className="text-xs">Todos os status</SelectItem>
-                        <SelectItem value="paid" className="text-xs">Pagas</SelectItem>
-                        <SelectItem value="pending" className="text-xs">Pendentes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className={cn(
-                        "h-8 text-xs transition-colors",
-                        categoryFilter !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
-                      )}>
-                        <SelectValue placeholder="Categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all" className="text-xs">Todas categorias</SelectItem>
-                        {EXPENSE_CATEGORIES.map(cat => (
-                          <SelectItem key={cat.value} value={cat.value} className="text-xs">{cat.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* CLIENTES */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Cliente</span>
-                  </div>
-                  <Select value={clientFilter} onValueChange={setClientFilter}>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className={cn(
                       "h-8 text-xs transition-colors",
-                      clientFilter !== 'all' ? "border-amber-500/50 bg-amber-500/5" : "border-dashed"
+                      categoryFilter !== 'all' ? "border-destructive/50 bg-destructive/5" : "border-dashed"
                     )}>
-                      <SelectValue placeholder="Todos os clientes" />
+                      <SelectValue placeholder="Categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
-                      {clients.map(c => (
-                        <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* PROJETO */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Projeto</span>
-                  </div>
-                  <Select value={projectFilter} onValueChange={setProjectFilter}>
-                    <SelectTrigger className={cn(
-                      "h-8 text-xs transition-colors",
-                      projectFilter !== 'all' ? "border-violet-500/50 bg-violet-500/5" : "border-dashed"
-                    )}>
-                      <SelectValue placeholder="Todos os projetos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all" className="text-xs">Todos os projetos</SelectItem>
-                      {projects.map(p => (
-                        <SelectItem key={p.id} value={p.id} className="text-xs">{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* PAGAMENTO */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Pagamento</span>
-                  </div>
-                  <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                    <SelectTrigger className={cn(
-                      "h-8 text-xs transition-colors",
-                      paymentFilter !== 'all' ? "border-emerald-500/50 bg-emerald-500/5" : "border-dashed"
-                    )}>
-                      <SelectValue placeholder="Todas formas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all" className="text-xs">Todas formas</SelectItem>
-                      {PAYMENT_METHODS.map(pm => (
-                        <SelectItem key={pm.value} value={pm.value} className="text-xs">{pm.label}</SelectItem>
+                      <SelectItem value="all" className="text-xs">Todas categorias</SelectItem>
+                      {EXPENSE_CATEGORIES.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value} className="text-xs">{cat.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              {/* Clear button */}
-              {activeFilterCount > 0 && (
-                <div className="flex justify-end pt-3 mt-3 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/50 gap-1.5"
-                    onClick={clearAllFilters}
-                  >
-                    <X className="w-3 h-3" />
-                    Limpar filtros ({activeFilterCount})
-                  </Button>
+              {/* CLIENTES */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Cliente</span>
                 </div>
-              )}
+                <Select value={clientFilter} onValueChange={setClientFilter}>
+                  <SelectTrigger className={cn(
+                    "h-8 text-xs transition-colors",
+                    clientFilter !== 'all' ? "border-amber-500/50 bg-amber-500/5" : "border-dashed"
+                  )}>
+                    <SelectValue placeholder="Todos os clientes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
+                    {clients.map(c => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* PROJETO */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Projeto</span>
+                </div>
+                <Select value={projectFilter} onValueChange={setProjectFilter}>
+                  <SelectTrigger className={cn(
+                    "h-8 text-xs transition-colors",
+                    projectFilter !== 'all' ? "border-violet-500/50 bg-violet-500/5" : "border-dashed"
+                  )}>
+                    <SelectValue placeholder="Todos os projetos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Todos os projetos</SelectItem>
+                    {projects.map(p => (
+                      <SelectItem key={p.id} value={p.id} className="text-xs">{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* PAGAMENTO */}
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Pagamento</span>
+                </div>
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger className={cn(
+                    "h-8 text-xs transition-colors",
+                    paymentFilter !== 'all' ? "border-emerald-500/50 bg-emerald-500/5" : "border-dashed"
+                  )}>
+                    <SelectValue placeholder="Todas formas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Todas formas</SelectItem>
+                    {PAYMENT_METHODS.map(pm => (
+                      <SelectItem key={pm.value} value={pm.value} className="text-xs">{pm.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </CollapsibleContent>
+
+            {/* Clear button */}
+            {activeFilterCount > 0 && (
+              <div className="flex justify-end pt-3 mt-1 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/50 gap-1.5"
+                  onClick={clearAllFilters}
+                >
+                  <X className="w-3 h-3" />
+                  Limpar filtros ({activeFilterCount})
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-      </Collapsible>
+      )}
 
 
       {/* Annual summary */}
