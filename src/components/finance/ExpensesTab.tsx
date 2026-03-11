@@ -90,6 +90,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     setIsRecurring(e.is_recurring);
     setRecurringMonths(String(e.recurring_months || 12));
     setDialogOpen(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
   };
 
   const handleSave = async () => {
