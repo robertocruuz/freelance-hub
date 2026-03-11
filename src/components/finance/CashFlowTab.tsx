@@ -196,23 +196,24 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             mode="range"
             selected={customRange}
             onSelect={(range: DateRange | undefined) => {
-              // If both dates were already selected and user clicks a new day,
-              // react-day-picker sends a range with 3+ days. We want to reset.
-              if (customRange?.from && customRange?.to && range?.from && range?.to) {
-                // User clicked a new day after a complete range — start fresh
-                // The new click could be the `from` or `to` depending on position
-                // We detect this by checking if the range changed significantly
-                const prevFromStr = format(customRange.from, 'yyyy-MM-dd');
-                const newFromStr = format(range.from, 'yyyy-MM-dd');
-                if (prevFromStr !== newFromStr) {
-                  // from changed, user clicked before old from — use new from as start
-                  setCustomRange({ from: range.from, to: undefined });
-                } else {
-                  // to changed — accept the new range
-                  setCustomRange(range);
-                  setQuickFilter('custom');
+              // If a complete range exists and user clicks again, always reset to new start
+              if (customRange?.from && customRange?.to) {
+                if (range?.from && range?.to) {
+                  const prevFromStr = format(customRange.from, 'yyyy-MM-dd');
+                  const newFromStr = format(range.from, 'yyyy-MM-dd');
+                  const prevToStr = format(customRange.to, 'yyyy-MM-dd');
+                  const newToStr = format(range.to, 'yyyy-MM-dd');
+                  
+                  // Figure out which day the user clicked and use it as new start
+                  if (newFromStr !== prevFromStr) {
+                    setCustomRange({ from: range.from, to: undefined });
+                  } else if (newToStr !== prevToStr) {
+                    setCustomRange({ from: range.to, to: undefined });
+                  } else {
+                    setCustomRange({ from: range.from, to: undefined });
+                  }
+                  return;
                 }
-                return;
               }
               setCustomRange(range);
               if (range?.from && range?.to) {
