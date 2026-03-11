@@ -125,6 +125,7 @@ export type Database = {
           notes: string | null
           paid_date: string | null
           payment_method: string | null
+          project_id: string | null
           recurring_months: number | null
           status: string
           updated_at: string
@@ -142,6 +143,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
+          project_id?: string | null
           recurring_months?: number | null
           status?: string
           updated_at?: string
@@ -159,6 +161,7 @@ export type Database = {
           notes?: string | null
           paid_date?: string | null
           payment_method?: string | null
+          project_id?: string | null
           recurring_months?: number | null
           status?: string
           updated_at?: string
@@ -170,6 +173,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -184,6 +194,7 @@ export type Database = {
           items: Json
           name: string | null
           payment_method: string | null
+          project_id: string | null
           status: string
           taxes: number
           total: number
@@ -199,6 +210,7 @@ export type Database = {
           items?: Json
           name?: string | null
           payment_method?: string | null
+          project_id?: string | null
           status?: string
           taxes?: number
           total?: number
@@ -214,6 +226,7 @@ export type Database = {
           items?: Json
           name?: string | null
           payment_method?: string | null
+          project_id?: string | null
           status?: string
           taxes?: number
           total?: number
@@ -226,6 +239,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
