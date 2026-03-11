@@ -30,6 +30,7 @@ type PeriodFilter = 'year' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'S1' | 'S2' | 'custom';
 interface Props {
   invoices: FinanceInvoice[];
   selectedYear: number;
+  onResetToMonthly?: () => void;
 }
 
 function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
