@@ -53,8 +53,22 @@ const HomePage = () => {
         supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-        supabase.from('organization_members').select('*, profiles:profiles!inner(name, avatar_url)').eq('status', 'accepted'),
+        supabase.from('organization_members').select('id, user_id, role, status').eq('status', 'accepted'),
       ]);
+
+      // Fetch profiles for org members
+      const memberUserIds = (orgMembers.data || []).map((m: any) => m.user_id);
+      let memberProfiles: any[] = [];
+      if (memberUserIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, name, avatar_url').in('user_id', memberUserIds);
+        memberProfiles = profiles || [];
+      }
+
+      const enrichedMembers = (orgMembers.data || []).map((m: any) => {
+        const profile = memberProfiles.find((p: any) => p.user_id === m.user_id);
+        return { ...m, profile };
+      });
+
       setData({
         clients: clients.data || [],
         budgets: budgets.data || [],
@@ -63,7 +77,7 @@ const HomePage = () => {
         timeEntries: timeEntries.data || [],
         invoices: invoices.data || [],
         expenses: expenses.data || [],
-        orgMembers: orgMembers.data || [],
+        orgMembers: enrichedMembers,
       });
       setLoading(false);
     };
@@ -323,7 +337,7 @@ const HomePage = () => {
               {/* Avatar stack */}
               <div className="flex items-center -space-x-2">
                 {teamStats.members.slice(0, 5).map((m: any, i: number) => {
-                  const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                  const profile = m.profile;
                   const name = profile?.name || '?';
                   const avatarUrl = profile?.avatar_url;
                   return (
@@ -345,7 +359,7 @@ const HomePage = () => {
               {teamStats.members.length > 0 && (
                 <p className="text-[10px] text-muted-foreground mt-2">
                   {teamStats.members.slice(0, 2).map((m: any) => {
-                    const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                    const profile = m.profile;
                     return profile?.name?.split(' ')[0] || '';
                   }).filter(Boolean).join(', ')}
                   {teamStats.members.length > 2 ? ` ${isPt ? 'e mais' : 'and'} ${teamStats.members.length - 2}` : ''}
