@@ -168,7 +168,10 @@ const HomePage = () => {
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
-  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 cursor-pointer";
+  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-300 ease-out hover:shadow-xl hover:shadow-primary/5 hover:border-primary/25 hover:-translate-y-1 active:scale-[0.98] active:shadow-md cursor-pointer";
+
+  // Stagger animation delays for cards
+  const stagger = (i: number) => ({ animationDelay: `${i * 80}ms` });
 
   if (loading) {
     return (
