@@ -1,17 +1,23 @@
-import { useMemo } from 'react';
-import { format, eachMonthOfInterval, startOfYear, endOfYear } from 'date-fns';
+import { useState, useMemo } from 'react';
+import { format, eachMonthOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
-import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatCurrency, cn } from '@/lib/utils';
+import { useExpenses, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/hooks/useExpenses';
+import { useClients } from '@/hooks/useClients';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, AreaChart, Area, LineChart, Line,
+  PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
 import {
-  TrendingUp, TrendingDown, Wallet, PiggyBank, Users, Receipt,
-  AlertTriangle, Target,
+  TrendingUp, TrendingDown, Wallet, PiggyBank, Receipt,
+  AlertTriangle, Target, CalendarIcon, Filter, X,
 } from 'lucide-react';
 
 const PIE_COLORS = [
@@ -19,59 +25,106 @@ const PIE_COLORS = [
   'hsl(45, 93%, 47%)', 'hsl(280, 60%, 55%)', 'hsl(170, 60%, 45%)', 'hsl(220, 15%, 60%)',
 ];
 
+type PeriodFilter = 'year' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'S1' | 'S2' | 'custom';
+
 interface Props {
   invoices: FinanceInvoice[];
   selectedYear: number;
 }
 
+function getMonthRange(year: number, period: PeriodFilter): { startMonth: number; endMonth: number } {
+  switch (period) {
+    case 'Q1': return { startMonth: 0, endMonth: 2 };
+    case 'Q2': return { startMonth: 3, endMonth: 5 };
+    case 'Q3': return { startMonth: 6, endMonth: 8 };
+    case 'Q4': return { startMonth: 9, endMonth: 11 };
+    case 'S1': return { startMonth: 0, endMonth: 5 };
+    case 'S2': return { startMonth: 6, endMonth: 11 };
+    default: return { startMonth: 0, endMonth: 11 };
+  }
+}
+
 export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
   const { expenses } = useExpenses();
+  const { clients } = useClients();
 
-  const yearStart = startOfYear(new Date(selectedYear, 0, 1));
-  const yearEnd = endOfYear(new Date(selectedYear, 0, 1));
-  const months = eachMonthOfInterval({ start: yearStart, end: yearEnd });
+  // Filter states
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('year');
+  const [clientFilter, setClientFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [paymentFilter, setPaymentFilter] = useState<string>('all');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+
   const yearStr = String(selectedYear);
 
-  // Filter data to this year
-  const yearInvoices = invoices.filter(i => i.due_date?.startsWith(yearStr));
-  const yearExpenses = expenses.filter(e =>
-    (e.due_date?.startsWith(yearStr)) || (e.paid_date?.startsWith(yearStr))
-  );
+  // Compute active date range
+  const activeRange = useMemo(() => {
+    if (periodFilter === 'custom' && customRange?.from && customRange?.to) {
+      return { from: customRange.from, to: customRange.to };
+    }
+    const { startMonth, endMonth } = getMonthRange(selectedYear, periodFilter);
+    return {
+      from: new Date(selectedYear, startMonth, 1),
+      to: endOfMonth(new Date(selectedYear, endMonth, 1)),
+    };
+  }, [periodFilter, customRange, selectedYear]);
 
-  // === ANNUAL SUMMARY ===
-  const totalReceived = yearInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
-  const totalSpent = yearExpenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
-  const totalPending = yearInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
-  const totalExpensesPending = yearExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
+  const months = eachMonthOfInterval({ start: startOfMonth(activeRange.from), end: endOfMonth(activeRange.to) });
+
+  // Check if date falls within active range
+  const isInRange = (dateStr: string | null) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr + 'T12:00:00');
+    return isWithinInterval(d, { start: activeRange.from, end: activeRange.to });
+  };
+
+  // Apply all filters
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter(i => {
+      if (!isInRange(i.due_date)) return false;
+      if (clientFilter !== 'all' && i.client_id !== clientFilter) return false;
+      if (paymentFilter !== 'all' && i.payment_method !== paymentFilter) return false;
+      return true;
+    });
+  }, [invoices, activeRange, clientFilter, paymentFilter]);
+
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      const dateMatch = isInRange(e.due_date) || isInRange(e.paid_date);
+      if (!dateMatch) return false;
+      if (clientFilter !== 'all' && e.client_id !== clientFilter) return false;
+      if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
+      if (paymentFilter !== 'all' && e.payment_method !== paymentFilter) return false;
+      return true;
+    });
+  }, [expenses, activeRange, clientFilter, categoryFilter, paymentFilter]);
+
+  // === COMPUTATIONS ===
+  const totalReceived = filteredInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
+  const totalSpent = filteredExpenses.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+  const totalPending = filteredInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
+  const totalExpensesPending = filteredExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
   const annualBalance = totalReceived - totalSpent;
 
-  // === KPIs ===
-  const paidInvoiceCount = yearInvoices.filter(i => i.status === 'paid').length;
+  const paidInvoiceCount = filteredInvoices.filter(i => i.status === 'paid').length;
   const avgTicket = paidInvoiceCount > 0 ? totalReceived / paidInvoiceCount : 0;
 
-  const overdueInvoices = yearInvoices.filter(i => {
+  const overdueInvoices = filteredInvoices.filter(i => {
     if (i.status === 'paid' || !i.due_date) return false;
     return new Date(i.due_date + 'T23:59:59') < new Date();
   });
   const overdueAmount = overdueInvoices.reduce((s, i) => s + i.total, 0);
-  const overdueRate = yearInvoices.length > 0
-    ? (overdueInvoices.length / yearInvoices.length) * 100
+  const overdueRate = filteredInvoices.length > 0
+    ? (overdueInvoices.length / filteredInvoices.length) * 100
     : 0;
 
-  // Top client by revenue
-  const clientRevenue: Record<string, number> = {};
-  yearInvoices.filter(i => i.status === 'paid' && i.client_id).forEach(i => {
-    clientRevenue[i.client_id!] = (clientRevenue[i.client_id!] || 0) + i.total;
-  });
-  const topClientId = Object.entries(clientRevenue).sort((a, b) => b[1] - a[1])[0];
-
-  // === MONTHLY COMPARISON ===
+  // Monthly data for charts
   const monthlyData = months.map(month => {
     const key = format(month, 'yyyy-MM');
-    const entradas = invoices
+    const entradas = filteredInvoices
       .filter(i => i.status === 'paid' && i.due_date?.startsWith(key))
       .reduce((s, i) => s + i.total, 0);
-    const saidas = expenses
+    const saidas = filteredExpenses
       .filter(e => e.status === 'paid' && e.paid_date?.startsWith(key))
       .reduce((s, e) => s + e.amount, 0);
     return {
@@ -82,25 +135,56 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
     };
   });
 
-  // Cumulative balance
   let cumulative = 0;
   const cumulativeData = months.map(month => {
     const key = format(month, 'yyyy-MM');
-    const entradas = invoices
+    const entradas = filteredInvoices
       .filter(i => i.status === 'paid' && i.due_date?.startsWith(key))
       .reduce((s, i) => s + i.total, 0);
-    const saidas = expenses
+    const saidas = filteredExpenses
       .filter(e => e.status === 'paid' && e.paid_date?.startsWith(key))
       .reduce((s, e) => s + e.amount, 0);
     cumulative += entradas - saidas;
     return { name: format(month, 'MMM', { locale: ptBR }), Acumulado: cumulative };
   });
 
-  // Category breakdown
   const categoryData = EXPENSE_CATEGORIES.map(cat => {
-    const total = yearExpenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
+    const total = filteredExpenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
     return { name: cat.label, value: total };
   }).filter(d => d.value > 0);
+
+  // Active filter count
+  const activeFilterCount = [
+    clientFilter !== 'all',
+    categoryFilter !== 'all',
+    paymentFilter !== 'all',
+    periodFilter !== 'year',
+  ].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setPeriodFilter('year');
+    setClientFilter('all');
+    setCategoryFilter('all');
+    setPaymentFilter('all');
+    setCustomRange(undefined);
+  };
+
+  const periodLabel = useMemo(() => {
+    if (periodFilter === 'custom' && customRange?.from && customRange?.to) {
+      return format(customRange.from, 'dd MMM', { locale: ptBR }) + ' – ' + format(customRange.to, 'dd MMM', { locale: ptBR });
+    }
+    const labels: Record<PeriodFilter, string> = {
+      year: 'Ano completo',
+      Q1: '1º Trimestre',
+      Q2: '2º Trimestre',
+      Q3: '3º Trimestre',
+      Q4: '4º Trimestre',
+      S1: '1º Semestre',
+      S2: '2º Semestre',
+      custom: 'Personalizado',
+    };
+    return labels[periodFilter];
+  }, [periodFilter, customRange]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload) return null;
@@ -122,7 +206,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
     { label: 'Total recebido', value: totalReceived, icon: TrendingUp, color: 'text-primary', bgColor: 'bg-primary/10' },
     { label: 'Total gasto', value: totalSpent, icon: TrendingDown, color: 'text-destructive', bgColor: 'bg-destructive/10' },
     { label: 'A receber', value: totalPending, icon: Receipt, color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-100 dark:bg-amber-900/50' },
-    { label: 'Saldo anual', value: annualBalance, icon: Wallet, color: annualBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: annualBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
+    { label: 'Saldo do período', value: annualBalance, icon: Wallet, color: annualBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: annualBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
   ];
 
   const kpiItems = [
@@ -132,8 +216,142 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
     { label: 'A pagar', value: formatCurrency(totalExpensesPending), icon: PiggyBank, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/50' },
   ];
 
+  const periodOptions = [
+    { value: 'year', label: 'Ano completo' },
+    { value: 'Q1', label: '1º Trimestre (Jan-Mar)' },
+    { value: 'Q2', label: '2º Trimestre (Abr-Jun)' },
+    { value: 'Q3', label: '3º Trimestre (Jul-Set)' },
+    { value: 'Q4', label: '4º Trimestre (Out-Dez)' },
+    { value: 'S1', label: '1º Semestre (Jan-Jun)' },
+    { value: 'S2', label: '2º Semestre (Jul-Dez)' },
+  ];
+
   return (
     <div className="space-y-5">
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mr-1">
+          <Filter className="w-3.5 h-3.5" />
+          Filtros
+          {activeFilterCount > 0 && (
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </div>
+
+        {/* Period */}
+        <Select value={periodFilter === 'custom' ? 'custom' : periodFilter} onValueChange={(v) => {
+          if (v === 'custom') return;
+          setPeriodFilter(v as PeriodFilter);
+          setCustomRange(undefined);
+        }}>
+          <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs border-dashed">
+            <SelectValue placeholder="Período" />
+          </SelectTrigger>
+          <SelectContent>
+            {periodOptions.map(opt => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Custom date range */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={periodFilter === 'custom' ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs gap-1.5 border-dashed"
+            >
+              <CalendarIcon className="w-3 h-3" />
+              {periodFilter === 'custom' && customRange?.from && customRange?.to
+                ? format(customRange.from, 'dd/MM', { locale: ptBR }) + ' – ' + format(customRange.to, 'dd/MM', { locale: ptBR })
+                : 'Personalizado'
+              }
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              selected={customRange}
+              onSelect={(range: DateRange | undefined) => {
+                setCustomRange(range);
+                if (range?.from && range?.to) {
+                  setPeriodFilter('custom');
+                }
+              }}
+              fromDate={new Date(selectedYear, 0, 1)}
+              toDate={new Date(selectedYear, 11, 31)}
+              numberOfMonths={2}
+              defaultMonth={new Date(selectedYear, 0, 1)}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+        {/* Client */}
+        <Select value={clientFilter} onValueChange={setClientFilter}>
+          <SelectTrigger className="h-8 w-auto min-w-[130px] text-xs border-dashed">
+            <SelectValue placeholder="Cliente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
+            {clients.map(c => (
+              <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Category */}
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs border-dashed">
+            <SelectValue placeholder="Categoria" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">Todas categorias</SelectItem>
+            {EXPENSE_CATEGORIES.map(cat => (
+              <SelectItem key={cat.value} value={cat.value} className="text-xs">{cat.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Payment method */}
+        <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+          <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs border-dashed">
+            <SelectValue placeholder="Pagamento" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">Todas formas</SelectItem>
+            {PAYMENT_METHODS.map(pm => (
+              <SelectItem key={pm.value} value={pm.value} className="text-xs">{pm.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {activeFilterCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1"
+            onClick={clearAllFilters}
+          >
+            <X className="w-3 h-3" />
+            Limpar
+          </Button>
+        )}
+      </div>
+
+      {/* Period indicator */}
+      {periodFilter !== 'year' && (
+        <div className="text-xs text-muted-foreground font-medium">
+          Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}
+        </div>
+      )}
+
       {/* Annual summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {summaryItems.map(item => (
@@ -172,7 +390,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
         <Card className="lg:col-span-2 overflow-hidden">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Comparativo Mensal</CardTitle>
-            <CardDescription className="text-xs">Entradas vs Saídas — {yearStr}</CardDescription>
+            <CardDescription className="text-xs">Entradas vs Saídas — {periodLabel} {yearStr}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={280}>
@@ -192,7 +410,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
         <Card className="overflow-hidden">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Despesas por Categoria</CardTitle>
-            <CardDescription className="text-xs">Distribuição anual</CardDescription>
+            <CardDescription className="text-xs">Distribuição do período</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
             {categoryData.length === 0 ? (
@@ -222,7 +440,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
         <Card className="overflow-hidden">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Evolução Acumulada</CardTitle>
-            <CardDescription className="text-xs">Saldo acumulado mês a mês — {yearStr}</CardDescription>
+            <CardDescription className="text-xs">Saldo acumulado — {periodLabel} {yearStr}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={200}>
@@ -246,7 +464,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear }: Props) {
         <Card className="overflow-hidden">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Saldo Mensal</CardTitle>
-            <CardDescription className="text-xs">Resultado de cada mês — {yearStr}</CardDescription>
+            <CardDescription className="text-xs">Resultado de cada mês — {periodLabel} {yearStr}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={200}>
