@@ -154,7 +154,7 @@ export default function FinancePage() {
       />
 
       {/* Calendar - always visible below cards */}
-      <FinanceCalendarTab invoices={invoices} />
+      <FinanceCalendarTab invoices={invoices} onRefresh={fetchInvoices} />
 
       {/* Tabs */}
       <Tabs defaultValue="cashflow" className="w-full">
