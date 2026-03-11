@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareButton } from '@/components/kanban/ShareButton';
 import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
@@ -12,6 +12,16 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Progress } from '@/components/ui/progress';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -53,6 +63,37 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTitles, setNewItemTitles] = useState<Record<string, string>>({});
   const [totalTrackedSeconds, setTotalTrackedSeconds] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<{
+    timeEntries: number; totalSeconds: number; comments: number; checklists: number; projectName: string | null;
+  } | null>(null);
+
+  const formatImpactDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0 && m > 0) return `${h}h ${m}min`;
+    if (h > 0) return `${h}h`;
+    return `${m}min`;
+  };
+
+  const fetchDeleteImpact = useCallback(async () => {
+    const [timeRes, commentsRes, checklistsRes, projectRes] = await Promise.all([
+      supabase.from('time_entries').select('duration').eq('task_id', task.id),
+      supabase.from('task_comments').select('id').eq('task_id', task.id),
+      supabase.from('task_checklists').select('id').eq('task_id', task.id),
+      task.project_id
+        ? supabase.from('projects').select('name').eq('id', task.project_id).single()
+        : Promise.resolve({ data: null }),
+    ]);
+    const timeEntries = timeRes.data || [];
+    const totalSec = timeEntries.reduce((acc: number, e: any) => acc + (e.duration || 0), 0);
+    setDeleteImpact({
+      timeEntries: timeEntries.length, totalSeconds: totalSec,
+      comments: (commentsRes.data || []).length, checklists: (checklistsRes.data || []).length,
+      projectName: projectRes.data?.name || null,
+    });
+    setShowDeleteConfirm(true);
+  }, [task.id, task.project_id]);
 
   useEffect(() => {
     loadDetails();
@@ -505,12 +546,62 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <FileText className="w-3.5 h-3.5" /> Gerar Orçamento
               </Button>
             </div>
-            <Button variant="destructive" size="sm" onClick={() => { onDelete(task.id); onClose(); }} className="text-xs">
+            <Button variant="destructive" size="sm" onClick={() => fetchDeleteImpact()} className="text-xs">
               <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir tarefa
             </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>Tem certeza que deseja excluir "<strong>{task.title}</strong>"? Esta ação não pode ser desfeita.</p>
+                {deleteImpact && (
+                  <div className="mt-3 space-y-1.5 text-sm">
+                    <p className="font-medium text-foreground">Os seguintes dados também serão excluídos:</p>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                      {deleteImpact.projectName && (
+                        <li>Vínculo com o projeto "<strong className="text-foreground">{deleteImpact.projectName}</strong>"</li>
+                      )}
+                      {deleteImpact.timeEntries > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.timeEntries}</strong> registro{deleteImpact.timeEntries > 1 ? 's' : ''} de tempo ({formatImpactDuration(deleteImpact.totalSeconds)})
+                        </li>
+                      )}
+                      {deleteImpact.comments > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.comments}</strong> comentário{deleteImpact.comments > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {deleteImpact.checklists > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.checklists}</strong> checklist{deleteImpact.checklists > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {!deleteImpact.projectName && deleteImpact.timeEntries === 0 && deleteImpact.comments === 0 && deleteImpact.checklists === 0 && (
+                        <li>Nenhum dado adicional vinculado.</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { onDelete(task.id); onClose(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
