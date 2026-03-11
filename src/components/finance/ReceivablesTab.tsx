@@ -199,6 +199,19 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
 
   useEffect(() => { loadInvoices(); }, [loadInvoices]);
 
+  // Auto-edit from calendar click
+  const autoEditProcessed = useRef<string | null>(null);
+  useEffect(() => {
+    if (autoEditId && autoEditId !== autoEditProcessed.current && invoices.length > 0) {
+      const inv = invoices.find(i => i.id === autoEditId);
+      if (inv) {
+        autoEditProcessed.current = autoEditId;
+        editInvoice(inv);
+        onAutoEditDone?.();
+      }
+    }
+  }, [autoEditId, invoices]);
+
   // Filter by month
   const monthInvoices = monthFilter
     ? invoices.filter(inv => (inv.due_date && inv.due_date.startsWith(monthFilter)) || (!inv.due_date && inv.created_at.startsWith(monthFilter)))

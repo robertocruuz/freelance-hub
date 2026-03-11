@@ -116,6 +116,19 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     if (ok) { setDialogOpen(false); resetForm(); }
   };
 
+  // Auto-edit from calendar click
+  const autoEditProcessed = useRef<string | null>(null);
+  useEffect(() => {
+    if (autoEditId && autoEditId !== autoEditProcessed.current && expenses.length > 0) {
+      const exp = expenses.find(e => e.id === autoEditId);
+      if (exp) {
+        autoEditProcessed.current = autoEditId;
+        openEdit(exp);
+        onAutoEditDone?.();
+      }
+    }
+  }, [autoEditId, expenses]);
+
   // Filter by month first
   const monthExpenses = monthFilter
     ? expenses.filter(e => (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter)))
