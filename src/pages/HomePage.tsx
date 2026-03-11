@@ -365,7 +365,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{data.projects.length} {isPt ? 'ativos' : 'active'}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           {data.projects.length > 0 ? (
