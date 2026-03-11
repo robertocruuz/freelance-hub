@@ -65,6 +65,14 @@ const HomePage = () => {
         memberProfiles = profiles || [];
       }
 
+      // Fetch org name
+      if ((orgMembers.data || []).length > 0) {
+        const orgId = (orgMembers.data as any[])[0]?.organization_id;
+        if (orgId) {
+          // Get org_id from first member's record - need to re-query with organization_id
+        }
+      }
+
       const enrichedMembers = (orgMembers.data || []).map((m: any) => {
         const profile = memberProfiles.find((p: any) => p.user_id === m.user_id);
         return { ...m, profile };
