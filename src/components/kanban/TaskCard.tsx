@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { Task } from '@/hooks/useKanban';
 import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,9 +48,20 @@ interface TaskCardProps {
   clientColor?: string | null;
 }
 
+interface DeleteImpact {
+  timeEntries: number;
+  totalSeconds: number;
+  comments: number;
+  checklists: number;
+  projectName: string | null;
+}
+
 export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<DeleteImpact | null>(null);
+  const [loadingImpact, setLoadingImpact] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -68,6 +80,39 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
   const priority = priorityConfig[task.priority] || priorityConfig.medium;
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
   const isDueToday = task.due_date && isToday(new Date(task.due_date));
+
+  const fetchDeleteImpact = async () => {
+    setLoadingImpact(true);
+    const [timeRes, commentsRes, checklistsRes, projectRes] = await Promise.all([
+      supabase.from('time_entries').select('duration').eq('task_id', task.id),
+      supabase.from('task_comments').select('id').eq('task_id', task.id),
+      supabase.from('task_checklists').select('id').eq('task_id', task.id),
+      task.project_id
+        ? supabase.from('projects').select('name').eq('id', task.project_id).single()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const timeEntries = timeRes.data || [];
+    const totalSeconds = timeEntries.reduce((acc, e) => acc + (e.duration || 0), 0);
+
+    setDeleteImpact({
+      timeEntries: timeEntries.length,
+      totalSeconds,
+      comments: (commentsRes.data || []).length,
+      checklists: (checklistsRes.data || []).length,
+      projectName: projectRes.data?.name || null,
+    });
+    setLoadingImpact(false);
+    setShowDeleteConfirm(true);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0 && m > 0) return `${h}h ${m}min`;
+    if (h > 0) return `${h}h`;
+    return `${m}min`;
+  };
 
   return (
     <>
@@ -100,7 +145,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowDeleteConfirm(true);
+                  fetchDeleteImpact();
                 }}
                 className="text-destructive focus:text-destructive"
               >
@@ -199,8 +244,38 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir "{task.title}"? Esta ação não pode ser desfeita.
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>Tem certeza que deseja excluir "<strong>{task.title}</strong>"? Esta ação não pode ser desfeita.</p>
+                {deleteImpact && (
+                  <div className="mt-3 space-y-1.5 text-sm">
+                    <p className="font-medium text-foreground">Os seguintes dados também serão excluídos:</p>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                      {deleteImpact.projectName && (
+                        <li>Vínculo com o projeto "<strong className="text-foreground">{deleteImpact.projectName}</strong>"</li>
+                      )}
+                      {deleteImpact.timeEntries > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.timeEntries}</strong> registro{deleteImpact.timeEntries > 1 ? 's' : ''} de tempo ({formatDuration(deleteImpact.totalSeconds)} registrado{deleteImpact.totalSeconds !== 1 ? 's' : ''})
+                        </li>
+                      )}
+                      {deleteImpact.comments > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.comments}</strong> comentário{deleteImpact.comments > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {deleteImpact.checklists > 0 && (
+                        <li>
+                          <strong className="text-foreground">{deleteImpact.checklists}</strong> checklist{deleteImpact.checklists > 1 ? 's' : ''}
+                        </li>
+                      )}
+                      {!deleteImpact.projectName && deleteImpact.timeEntries === 0 && deleteImpact.comments === 0 && deleteImpact.checklists === 0 && (
+                        <li>Nenhum dado adicional vinculado.</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
