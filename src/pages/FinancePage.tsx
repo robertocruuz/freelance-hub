@@ -117,37 +117,36 @@ export default function FinancePage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative z-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
-            {/* View mode toggle */}
-            <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border">
-              <button
-                onClick={() => setViewMode('month')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'month'
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Mensal
-              </button>
-              <button
-                onClick={() => setViewMode('overview')}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
-                  viewMode === 'overview'
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LayoutDashboard className="w-3 h-3" />
-                Visão Geral
-              </button>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
+          {/* View mode toggle */}
+          <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border">
+            <button
+              onClick={() => setViewMode('overview')}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                viewMode === 'overview'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LayoutDashboard className="w-3 h-3" />
+              Visão Geral
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                viewMode === 'month'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Mensal
+            </button>
           </div>
+          {/* Date navigation */}
           {viewMode === 'month' && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -180,7 +179,7 @@ export default function FinancePage() {
             </div>
           )}
           {viewMode === 'overview' && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
