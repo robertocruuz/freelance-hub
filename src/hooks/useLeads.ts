@@ -117,7 +117,8 @@ export function useLeads() {
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
-    const { error } = await supabase.from('leads').update(updates).eq('id', id);
+    const { created_at, updated_at, id: _id, ...rest } = updates as any;
+    const { error } = await supabase.from('leads').update(rest).eq('id', id);
     if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
     fetchData();
   };
