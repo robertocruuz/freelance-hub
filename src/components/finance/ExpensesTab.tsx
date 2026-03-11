@@ -104,6 +104,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
       notes: notes || null,
       status: 'pending' as string,
       client_id: null,
+      project_id: null,
       paid_date: null,
       is_recurring: isRecurring,
       recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,

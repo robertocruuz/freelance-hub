@@ -8,6 +8,7 @@ export interface Expense {
   id: string;
   user_id: string;
   client_id: string | null;
+  project_id: string | null;
   description: string;
   category: string;
   amount: number;

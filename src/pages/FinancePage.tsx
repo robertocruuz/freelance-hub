@@ -19,6 +19,7 @@ export interface FinanceInvoice {
   id: string;
   name: string | null;
   client_id: string | null;
+  project_id: string | null;
   total: number;
   status: string;
   due_date: string | null;
@@ -69,7 +70,7 @@ export default function FinancePage() {
     if (!user) return;
     const { data } = await supabase
       .from('invoices')
-      .select('id, name, client_id, total, status, due_date, payment_method, created_at')
+      .select('id, name, client_id, project_id, total, status, due_date, payment_method, created_at')
       .order('due_date', { ascending: true, nullsFirst: false });
     setInvoices((data as FinanceInvoice[]) || []);
   }, [user]);

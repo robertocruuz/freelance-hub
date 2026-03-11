@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, eachMonthOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
@@ -11,6 +11,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/hooks/useExpenses';
 import { useClients } from '@/hooks/useClients';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area,
@@ -19,7 +21,7 @@ import type { FinanceInvoice } from '@/pages/FinancePage';
 import {
   TrendingUp, TrendingDown, Wallet, PiggyBank, Receipt,
   AlertTriangle, Target, CalendarIcon, Filter, X, ChevronDown,
-  ArrowDownToLine, ArrowUpFromLine, Users,
+  ArrowDownToLine, ArrowUpFromLine, Users, FolderKanban,
 } from 'lucide-react';
 
 const PIE_COLORS = [
@@ -50,7 +52,16 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
 export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
+  const { user } = useAuth();
 
+  // Fetch projects
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('projects').select('id, name').order('name').then(({ data }) => {
+      if (data) setProjects(data);
+    });
+  }, [user]);
 
   // Filter states
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -58,7 +69,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
-  
+  const [projectFilter, setProjectFilter] = useState<string>('all');
   const [statusFilterInvoice, setStatusFilterInvoice] = useState<string>('all');
   const [statusFilterExpense, setStatusFilterExpense] = useState<string>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
@@ -93,9 +104,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       if (clientFilter !== 'all' && i.client_id !== clientFilter) return false;
       if (paymentFilter !== 'all' && i.payment_method !== paymentFilter) return false;
       if (statusFilterInvoice !== 'all' && i.status !== statusFilterInvoice) return false;
+      if (projectFilter !== 'all' && i.project_id !== projectFilter) return false;
       return true;
     });
-  }, [invoices, activeRange, clientFilter, paymentFilter, statusFilterInvoice]);
+  }, [invoices, activeRange, clientFilter, paymentFilter, statusFilterInvoice, projectFilter]);
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter(e => {
@@ -105,9 +117,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
       if (paymentFilter !== 'all' && e.payment_method !== paymentFilter) return false;
       if (statusFilterExpense !== 'all' && e.status !== statusFilterExpense) return false;
+      if (projectFilter !== 'all' && e.project_id !== projectFilter) return false;
       return true;
     });
-  }, [expenses, activeRange, clientFilter, categoryFilter, paymentFilter, statusFilterExpense]);
+  }, [expenses, activeRange, clientFilter, categoryFilter, paymentFilter, statusFilterExpense, projectFilter]);
 
   // === COMPUTATIONS ===
   const totalReceived = filteredInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0);
@@ -169,7 +182,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     categoryFilter !== 'all',
     paymentFilter !== 'all',
     periodFilter !== 'year',
-    
+    projectFilter !== 'all',
     statusFilterInvoice !== 'all',
     statusFilterExpense !== 'all',
   ].filter(Boolean).length;
@@ -179,7 +192,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     setClientFilter('all');
     setCategoryFilter('all');
     setPaymentFilter('all');
-    
+    setProjectFilter('all');
     setStatusFilterInvoice('all');
     setStatusFilterExpense('all');
     setCustomRange(undefined);
@@ -361,7 +374,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
               <div className="h-px bg-border" />
 
               {/* Filter groups grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 pt-3.5">
                 {/* ENTRADAS */}
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-1.5">
@@ -438,6 +451,28 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                       <SelectItem value="all" className="text-xs">Todos os clientes</SelectItem>
                       {clients.map(c => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* PROJETO */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Projeto</span>
+                  </div>
+                  <Select value={projectFilter} onValueChange={setProjectFilter}>
+                    <SelectTrigger className={cn(
+                      "h-8 text-xs transition-colors",
+                      projectFilter !== 'all' ? "border-violet-500/50 bg-violet-500/5" : "border-dashed"
+                    )}>
+                      <SelectValue placeholder="Todos os projetos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Todos os projetos</SelectItem>
+                      {projects.map(p => (
+                        <SelectItem key={p.id} value={p.id} className="text-xs">{p.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
