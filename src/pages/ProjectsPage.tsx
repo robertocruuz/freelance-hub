@@ -205,7 +205,13 @@ const ProjectsPage = () => {
 
   const loadExistingTasks = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from('tasks').select('title, project_id').not('project_id', 'is', null).not('column_id', 'is', null);
+    const { data } = await supabase
+      .from('tasks')
+      .select('title, project_id, kanban_columns!inner(board_id)')
+      .not('project_id', 'is', null)
+      .not('column_id', 'is', null)
+      .not('kanban_columns.board_id', 'is', null);
+
     if (data) {
       setExistingTaskKeys(new Set(data.map(t => `${t.title}::${t.project_id}`)));
     }
@@ -520,10 +526,11 @@ const ProjectsPage = () => {
 
     const { data: existingDup } = await supabase
       .from('tasks')
-      .select('id')
+      .select('id, kanban_columns!inner(board_id)')
       .eq('title', pendingTaskItem.name)
       .eq('project_id', pendingTaskItem.projectId)
       .not('column_id', 'is', null)
+      .not('kanban_columns.board_id', 'is', null)
       .limit(1);
 
     if (existingDup && existingDup.length > 0) {
