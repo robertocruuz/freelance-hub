@@ -123,14 +123,6 @@ export default function FinancePage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
-          {viewMode === 'month' && (
-            <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm" role="status" aria-label="Balanço do mês">
-              <span className="text-xs font-medium text-muted-foreground">Balanço do mês</span>
-              <span className={`font-extrabold text-lg tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                {balance >= 0 ? '+' : ''}{balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-              </span>
-            </div>
-          )}
         </div>
         <div className="flex items-center gap-3">
           {/* View mode toggle */}
