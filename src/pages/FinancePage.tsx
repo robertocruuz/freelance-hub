@@ -166,7 +166,7 @@ export default function FinancePage() {
       <FinanceCalendarTab invoices={invoices} onRefresh={fetchInvoices} onEventClick={handleEventClick} />
 
       {/* Tabs */}
-      <Tabs defaultValue="cashflow" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" ref={tabsRef}>
         <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1" aria-label="Seções financeiras">
           {tabItems.map(tab => (
             <TabsTrigger
