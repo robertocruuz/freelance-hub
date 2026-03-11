@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/hooks/useExpenses';
 import { useClients } from '@/hooks/useClients';
