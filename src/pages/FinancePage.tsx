@@ -19,6 +19,7 @@ export interface FinanceInvoice {
   id: string;
   name: string | null;
   client_id: string | null;
+  project_id: string | null;
   total: number;
   status: string;
   due_date: string | null;
