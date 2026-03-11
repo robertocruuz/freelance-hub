@@ -179,7 +179,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     setClientFilter('all');
     setCategoryFilter('all');
     setPaymentFilter('all');
-    setProjectFilter('all');
+    
     setStatusFilterInvoice('all');
     setStatusFilterExpense('all');
     setCustomRange(undefined);
