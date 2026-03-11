@@ -22,6 +22,7 @@ type EventType = 'receivable' | 'expense' | null;
 interface Props {
   invoices: FinanceInvoice[];
   onRefresh?: () => void;
+  onEventClick?: (type: 'receivable' | 'expense') => void;
 }
 
 export default function FinanceCalendarTab({ invoices, onRefresh }: Props) {
