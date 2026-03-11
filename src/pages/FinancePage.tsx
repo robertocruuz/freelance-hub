@@ -117,9 +117,19 @@ export default function FinancePage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto relative z-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-4">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
+          {viewMode === 'month' && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm" role="status" aria-label="Balanço do mês">
+              <span className="text-xs font-medium text-muted-foreground">Balanço do mês</span>
+              <span className={`font-extrabold text-lg tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                {balance >= 0 ? '+' : ''}{balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
           {/* View mode toggle */}
           <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border">
             <button
@@ -147,78 +157,38 @@ export default function FinancePage() {
           {/* Date navigation */}
           {viewMode === 'month' && (
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg"
-                onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
-                aria-label="Mês anterior"
-              >
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <button
                 onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium capitalize px-2 py-0.5 rounded-md transition-colors ${
-                  isCurrentMonth
-                    ? 'text-foreground'
-                    : 'text-primary hover:bg-primary/10 cursor-pointer'
-                }`}
+                className={`text-sm font-medium capitalize px-2 py-0.5 rounded-md transition-colors ${isCurrentMonth ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
                 title={isCurrentMonth ? monthLabel : 'Voltar ao mês atual'}
               >
                 {monthLabel}
               </button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg"
-                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
-                aria-label="Próximo mês"
-              >
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}
           {viewMode === 'overview' && (
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg"
-                onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))}
-                aria-label="Ano anterior"
-              >
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <button
                 onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${
-                  selectedMonth.getFullYear() === new Date().getFullYear()
-                    ? 'text-foreground'
-                    : 'text-primary hover:bg-primary/10 cursor-pointer'
-                }`}
+                className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
               >
                 {selectedMonth.getFullYear()}
               </button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg"
-                onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))}
-                aria-label="Próximo ano"
-              >
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}
         </div>
-        {viewMode === 'month' && (
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm" role="status" aria-label="Balanço do mês">
-            <span className="text-xs font-medium text-muted-foreground">Balanço do mês</span>
-            <span className={`font-extrabold text-lg tabular-nums ${balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
-              {balance >= 0 ? '+' : ''}{balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Overview mode */}
