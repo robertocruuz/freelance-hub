@@ -314,3 +314,28 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* Finance calendar dot indicators */
+.finance-dot {
+  position: relative;
+}
+.finance-dot::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  height: 4px;
+  width: 4px;
+}
+.finance-dot--receivable::after {
+  background-color: hsl(var(--primary));
+}
+.finance-dot--payable::after {
+  background-color: hsl(var(--destructive));
+}
+.finance-dot--mixed::after {
+  width: 8px;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--destructive)));
+}
