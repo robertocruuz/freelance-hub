@@ -346,12 +346,6 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
         )}
       </div>
 
-      {/* Period indicator */}
-      {periodFilter !== 'year' && (
-        <div className="text-xs text-muted-foreground font-medium">
-          Exibindo: <span className="text-foreground font-semibold">{periodLabel}</span> de {yearStr}
-        </div>
-      )}
 
       {/* Annual summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
