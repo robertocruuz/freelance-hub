@@ -12,7 +12,7 @@ import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
@@ -40,6 +40,7 @@ export default function FinancePage() {
   const [autoEditId, setAutoEditId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const tabsRef = useRef<HTMLDivElement>(null);
+  const [overviewFiltersOpen, setOverviewFiltersOpen] = useState(false);
 
   const handleEventClick = (type: 'receivable' | 'expense', id: string) => {
     setAutoEditId(id);
@@ -174,18 +175,29 @@ export default function FinancePage() {
             </div>
           )}
           {viewMode === 'overview' && (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <button
-                onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <button
+                  onClick={() => setSelectedMonth(new Date())}
+                  className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                >
+                  {selectedMonth.getFullYear()}
+                </button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+              <Button
+                variant={overviewFiltersOpen ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
-                {selectedMonth.getFullYear()}
-              </button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
-                <ChevronRight className="w-4 h-4" />
+                <Filter className="w-3 h-3" />
+                Filtros
               </Button>
             </div>
           )}
@@ -194,7 +206,7 @@ export default function FinancePage() {
 
       {/* Overview mode */}
       {viewMode === 'overview' && (
-        <FinanceOverviewTab invoices={invoices} selectedYear={selectedMonth.getFullYear()} onResetToMonthly={() => setViewMode('month')} />
+        <FinanceOverviewTab invoices={invoices} selectedYear={selectedMonth.getFullYear()} onResetToMonthly={() => setViewMode('month')} filtersOpen={overviewFiltersOpen} onFiltersOpenChange={setOverviewFiltersOpen} />
       )}
 
       {/* Month mode */}
