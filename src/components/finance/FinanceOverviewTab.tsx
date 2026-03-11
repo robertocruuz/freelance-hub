@@ -54,14 +54,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
   const { clients } = useClients();
   const { user } = useAuth();
 
-  // Fetch projects
-  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
-  useState(() => {
-    if (!user) return;
-    supabase.from('projects').select('id, name').order('name').then(({ data }) => {
-      if (data) setProjects(data);
-    });
-  });
+  // Projects are not directly linked to invoices/expenses, so removed project filter for now
 
   // Filter states
   const [filtersOpen, setFiltersOpen] = useState(false);
