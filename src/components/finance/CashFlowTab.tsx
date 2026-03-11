@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { format, startOfMonth, subMonths, eachMonthOfInterval, endOfMonth } from 'date-fns';
+import { useRef, useState, useMemo } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, addDays, subDays, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { useExpenses, EXPENSE_CATEGORIES } from '@/hooks/useExpenses';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import type { FinanceInvoice } from '@/pages/FinancePage';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CalendarIcon } from 'lucide-react';
 
 const PIE_COLORS = [
   'hsl(225, 100%, 50%)',
@@ -22,6 +22,8 @@ const PIE_COLORS = [
   'hsl(220, 15%, 60%)',
 ];
 
+type QuickFilter = '3d' | '7d' | '15d' | 'custom' | 'full';
+
 interface Props {
   invoices: FinanceInvoice[];
   monthFilter?: string;
@@ -29,35 +31,54 @@ interface Props {
 
 export default function CashFlowTab({ invoices, monthFilter }: Props) {
   const { expenses } = useExpenses();
-  const now = new Date();
 
-  const [barRange, setBarRange] = useState<DateRange>({
-    from: subMonths(startOfMonth(now), 5),
-    to: endOfMonth(now),
-  });
-  const [saldoRange, setSaldoRange] = useState<DateRange>({
-    from: subMonths(startOfMonth(now), 5),
-    to: endOfMonth(now),
-  });
+  // Derive the selected month boundaries
+  const selectedMonth = monthFilter ? parseISO(monthFilter + '-01') : new Date();
+  const monthStart = startOfMonth(selectedMonth);
+  const monthEnd = endOfMonth(selectedMonth);
 
-  const ignoreNextBarSelect = useRef(false);
-  const ignoreNextSaldoSelect = useRef(false);
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('full');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const ignoreNextSelect = useRef(false);
 
-  const startDate = barRange.from ?? subMonths(startOfMonth(now), 5);
-  const endDate = barRange.to ?? endOfMonth(now);
-  const saldoStartDate = saldoRange.from ?? subMonths(startOfMonth(now), 5);
-  const saldoEndDate = saldoRange.to ?? endOfMonth(now);
+  // Compute the active date range based on the quick filter
+  const activeRange = useMemo((): { from: Date; to: Date } => {
+    const today = new Date();
+    // Use today if within selected month, otherwise use month end
+    const anchor = isWithinInterval(today, { start: monthStart, end: monthEnd }) ? today : monthEnd;
 
-  const months = eachMonthOfInterval({ start: startOfMonth(startDate), end: endOfMonth(endDate) });
-  const saldoMonths = eachMonthOfInterval({ start: startOfMonth(saldoStartDate), end: endOfMonth(saldoEndDate) });
+    if (quickFilter === '3d') {
+      const from = subDays(anchor, 2);
+      return { from: from < monthStart ? monthStart : from, to: anchor > monthEnd ? monthEnd : anchor };
+    }
+    if (quickFilter === '7d') {
+      const from = subDays(anchor, 6);
+      return { from: from < monthStart ? monthStart : from, to: anchor > monthEnd ? monthEnd : anchor };
+    }
+    if (quickFilter === '15d') {
+      const from = subDays(anchor, 14);
+      return { from: from < monthStart ? monthStart : from, to: anchor > monthEnd ? monthEnd : anchor };
+    }
+    if (quickFilter === 'custom' && customRange?.from && customRange?.to) {
+      return { from: customRange.from, to: customRange.to };
+    }
+    // 'full' — entire month
+    return { from: monthStart, to: monthEnd };
+  }, [quickFilter, customRange, monthStart, monthEnd]);
 
-  const filteredInvoices = monthFilter ? invoices.filter(i => i.due_date && i.due_date.startsWith(monthFilter)) : invoices;
-  const filteredExpenses = monthFilter ? expenses.filter(e => (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter))) : expenses;
+  const days = eachDayOfInterval({ start: activeRange.from, end: activeRange.to });
 
-  const totalReceivable = filteredInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
-  const totalPayable = filteredExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
+  // Filter data to the selected month
+  const monthInvoices = invoices.filter(i => i.due_date && i.due_date.startsWith(monthFilter || ''));
+  const monthExpenses = expenses.filter(e =>
+    (e.due_date && e.due_date.startsWith(monthFilter || '')) ||
+    (e.paid_date && e.paid_date.startsWith(monthFilter || ''))
+  );
 
-  // Saldo atual acumulado: soma tudo que foi pago/recebido ATÉ o fim do mês selecionado
+  const totalReceivable = monthInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.total, 0);
+  const totalPayable = monthExpenses.filter(e => e.status !== 'paid').reduce((s, e) => s + e.amount, 0);
+
+  // Accumulated balance up to end of selected month
   const endOfSelectedMonth = monthFilter ? monthFilter + '-31' : '9999-12-31';
   const accumulatedReceived = invoices
     .filter(i => i.status === 'paid' && i.due_date && i.due_date <= endOfSelectedMonth)
@@ -69,31 +90,43 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
   const projectedBalance = totalReceivable - totalPayable;
   const currentBalance = accumulatedReceived - accumulatedPaid;
 
-  const barData = months.map(month => {
-    const key = format(month, 'yyyy-MM');
+  // Daily bar chart data within the active range
+  const barData = days.map(day => {
+    const dayStr = format(day, 'yyyy-MM-dd');
     const entradas = invoices
-      .filter(i => i.status === 'paid' && i.due_date && i.due_date.startsWith(key))
+      .filter(i => i.status === 'paid' && i.due_date === dayStr)
       .reduce((s, i) => s + i.total, 0);
     const saidas = expenses
-      .filter(e => e.status === 'paid' && e.paid_date && e.paid_date.startsWith(key))
+      .filter(e => e.status === 'paid' && e.paid_date === dayStr)
       .reduce((s, e) => s + e.amount, 0);
-    return { name: format(month, 'MMM/yy', { locale: ptBR }), Entradas: entradas, Saídas: saidas, Saldo: entradas - saidas };
+    return {
+      name: format(day, days.length > 15 ? 'dd' : 'dd/MM', { locale: ptBR }),
+      fullDate: dayStr,
+      Entradas: entradas,
+      Saídas: saidas,
+      Saldo: entradas - saidas,
+    };
   });
 
-
-  const saldoData = saldoMonths.map(month => {
-    const key = format(month, 'yyyy-MM');
+  // Cumulative balance line for the active range
+  let cumulative = 0;
+  const saldoData = days.map(day => {
+    const dayStr = format(day, 'yyyy-MM-dd');
     const entradas = invoices
-      .filter(i => i.status === 'paid' && i.due_date && i.due_date.startsWith(key))
+      .filter(i => i.status === 'paid' && i.due_date === dayStr)
       .reduce((s, i) => s + i.total, 0);
     const saidas = expenses
-      .filter(e => e.status === 'paid' && e.paid_date && e.paid_date.startsWith(key))
+      .filter(e => e.status === 'paid' && e.paid_date === dayStr)
       .reduce((s, e) => s + e.amount, 0);
-    return { name: format(month, 'MMM/yy', { locale: ptBR }), Saldo: entradas - saidas };
+    cumulative += entradas - saidas;
+    return {
+      name: format(day, days.length > 15 ? 'dd' : 'dd/MM', { locale: ptBR }),
+      Saldo: cumulative,
+    };
   });
 
   const categoryData = EXPENSE_CATEGORIES.map(cat => {
-    const total = filteredExpenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
+    const total = monthExpenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
     return { name: cat.label, value: total };
   }).filter(d => d.value > 0);
 
@@ -120,11 +153,75 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
     );
   };
 
-  const quickRanges = [
-    { label: '3M', monthsBack: 2 },
-    { label: '6M', monthsBack: 5 },
-    { label: '12M', monthsBack: 11 },
+  const filterButtons: { label: string; value: QuickFilter }[] = [
+    { label: '3 dias', value: '3d' },
+    { label: '7 dias', value: '7d' },
+    { label: '15 dias', value: '15d' },
+    { label: 'Mês', value: 'full' },
   ];
+
+  const handleQuickFilter = (f: QuickFilter) => {
+    setQuickFilter(f);
+    if (f !== 'custom') setCustomRange(undefined);
+  };
+
+  const rangeLabel = format(activeRange.from, "dd MMM", { locale: ptBR }) + ' – ' + format(activeRange.to, "dd MMM", { locale: ptBR });
+
+  const FilterBar = () => (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {filterButtons.map(f => (
+        <Button
+          key={f.value}
+          variant={quickFilter === f.value ? "default" : "outline"}
+          size="sm"
+          className="h-7 px-2.5 text-[11px] font-medium"
+          onClick={() => handleQuickFilter(f.value)}
+        >
+          {f.label}
+        </Button>
+      ))}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={quickFilter === 'custom' ? "default" : "outline"}
+            size="sm"
+            className="h-7 px-2.5 text-[11px] gap-1.5"
+          >
+            <CalendarIcon className="w-3 h-3" />
+            <span className="capitalize">{quickFilter === 'custom' ? rangeLabel : 'Personalizado'}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <Calendar
+            mode="range"
+            selected={customRange}
+            onSelect={(range: DateRange | undefined) => {
+              if (ignoreNextSelect.current) {
+                ignoreNextSelect.current = false;
+                return;
+              }
+              setCustomRange(range);
+              if (range?.from && range?.to) {
+                setQuickFilter('custom');
+              }
+            }}
+            onDayClick={(day) => {
+              if (customRange?.from && customRange?.to) {
+                ignoreNextSelect.current = true;
+                setCustomRange({ from: day, to: undefined });
+              }
+            }}
+            fromDate={monthStart}
+            toDate={monthEnd}
+            numberOfMonths={1}
+            defaultMonth={selectedMonth}
+            initialFocus
+            className={cn("p-3 pointer-events-auto")}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 
   return (
     <div className="space-y-5">
@@ -151,78 +248,16 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-sm font-bold">Entradas vs Saídas</CardTitle>
-                <CardDescription className="text-xs capitalize">
-                  {format(startDate, "MMM/yyyy", { locale: ptBR })} — {format(endDate, "MMM/yyyy", { locale: ptBR })}
-                </CardDescription>
+                <CardDescription className="text-xs capitalize">{rangeLabel}</CardDescription>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {quickRanges.map(r => {
-                  const isActive = months.length === r.monthsBack + 1;
-                  return (
-                    <Button
-                      key={r.label}
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 px-2.5 text-[11px] font-medium"
-                      onClick={() => {
-                        setBarRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
-                      }}
-                    >
-                      {r.label}
-                    </Button>
-                  );
-                })}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
-                      <CalendarIcon className="w-3 h-3" />
-                      <span className="capitalize">
-                        {format(startDate, "dd MMM", { locale: ptBR })} – {format(endDate, "dd MMM yy", { locale: ptBR })}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="end">
-                    <Calendar
-                      mode="range"
-                      selected={barRange}
-                      onSelect={(range: DateRange | undefined) => {
-                        if (ignoreNextBarSelect.current) {
-                          ignoreNextBarSelect.current = false;
-                          return;
-                        }
-                        setBarRange(range ?? { from: undefined, to: undefined });
-                      }}
-                      onDayClick={(day) => {
-                        if (barRange.from && barRange.to) {
-                          ignoreNextBarSelect.current = true;
-                          setBarRange({ from: day, to: undefined });
-                        }
-                      }}
-                      numberOfMonths={1}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {(barRange.from || barRange.to) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
-                    onClick={() => setBarRange({ from: subMonths(startOfMonth(now), 5), to: endOfMonth(now) })}
-                  >
-                    <X className="w-3 h-3 mr-1" />
-                    Limpar
-                  </Button>
-                )}
-              </div>
+              <FilterBar />
             </div>
           </CardHeader>
           <CardContent className="pt-4">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={barData} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} className="capitalize" />
+                <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={40} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="Entradas" fill="hsl(225, 100%, 50%)" radius={[6, 6, 0, 0]} maxBarSize={32} />
@@ -236,7 +271,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
         <Card className="overflow-hidden">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Despesas por Categoria</CardTitle>
-            <CardDescription className="text-xs">Distribuição geral</CardDescription>
+            <CardDescription className="text-xs">Distribuição do mês</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
             {categoryData.length === 0 ? (
@@ -268,70 +303,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <CardTitle className="text-sm font-bold">Evolução do Saldo</CardTitle>
-              <CardDescription className="text-xs capitalize">
-                {format(saldoStartDate, "MMM/yyyy", { locale: ptBR })} — {format(saldoEndDate, "MMM/yyyy", { locale: ptBR })}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {quickRanges.map(r => {
-                const isActive = saldoMonths.length === r.monthsBack + 1;
-                return (
-                  <Button
-                    key={r.label}
-                    variant={isActive ? "default" : "outline"}
-                    size="sm"
-                    className="h-7 px-2.5 text-[11px] font-medium"
-                    onClick={() => {
-                      setSaldoRange({ from: subMonths(startOfMonth(now), r.monthsBack), to: endOfMonth(now) });
-                    }}
-                  >
-                    {r.label}
-                  </Button>
-                );
-              })}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 px-2.5 text-[11px] gap-1.5">
-                    <CalendarIcon className="w-3 h-3" />
-                    <span className="capitalize">
-                      {format(saldoStartDate, "dd MMM", { locale: ptBR })} – {format(saldoEndDate, "dd MMM yy", { locale: ptBR })}
-                    </span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="range"
-                    selected={saldoRange}
-                    onSelect={(range: DateRange | undefined) => {
-                      if (ignoreNextSaldoSelect.current) {
-                        ignoreNextSaldoSelect.current = false;
-                        return;
-                      }
-                      setSaldoRange(range ?? { from: undefined, to: undefined });
-                    }}
-                    onDayClick={(day) => {
-                      if (saldoRange.from && saldoRange.to) {
-                        ignoreNextSaldoSelect.current = true;
-                        setSaldoRange({ from: day, to: undefined });
-                      }
-                    }}
-                    numberOfMonths={1}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              {(saldoRange.from || saldoRange.to) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
-                  onClick={() => setSaldoRange({ from: subMonths(startOfMonth(now), 5), to: endOfMonth(now) })}
-                >
-                  <X className="w-3 h-3 mr-1" />
-                  Limpar
-                </Button>
-              )}
+              <CardDescription className="text-xs capitalize">{rangeLabel}</CardDescription>
             </div>
           </div>
         </CardHeader>
