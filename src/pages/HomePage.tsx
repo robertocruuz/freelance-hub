@@ -466,14 +466,8 @@ const HomePage = () => {
             </div>
           )}
         </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">{isPt ? 'A receber' : 'Receivable'}</span>
-                  <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400">{fmtCurrency(invoiceStats.totalPending)}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+
+
 
       </div>
     </div>
