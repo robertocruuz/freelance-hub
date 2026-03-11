@@ -240,7 +240,7 @@ const HomePage = () => {
         </div>
 
         {/* Calendário de Tarefas */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default`} onClick={undefined}>
+        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(1)} onClick={undefined}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </div>
 
