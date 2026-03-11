@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { startOfMonth, endOfMonth, addMonths, subMonths, addDays, isPast, isBefore, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -32,6 +32,15 @@ export default function FinancePage() {
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [activeTab, setActiveTab] = useState('cashflow');
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const handleEventClick = (type: 'receivable' | 'expense') => {
+    setActiveTab(type === 'receivable' ? 'receivables' : 'payables');
+    setTimeout(() => {
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -154,10 +163,11 @@ export default function FinancePage() {
       />
 
       {/* Calendar - always visible below cards */}
-      <FinanceCalendarTab invoices={invoices} onRefresh={fetchInvoices} />
+      <FinanceCalendarTab invoices={invoices} onRefresh={fetchInvoices} onEventClick={handleEventClick} />
 
       {/* Tabs */}
-      <Tabs defaultValue="cashflow" className="w-full">
+      <div ref={tabsRef}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1" aria-label="Seções financeiras">
           {tabItems.map(tab => (
             <TabsTrigger
@@ -176,6 +186,7 @@ export default function FinancePage() {
         <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} /></TabsContent>
         <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} /></TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

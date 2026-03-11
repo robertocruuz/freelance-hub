@@ -22,9 +22,10 @@ type EventType = 'receivable' | 'expense' | null;
 interface Props {
   invoices: FinanceInvoice[];
   onRefresh?: () => void;
+  onEventClick?: (type: 'receivable' | 'expense') => void;
 }
 
-export default function FinanceCalendarTab({ invoices, onRefresh }: Props) {
+export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }: Props) {
   const { user } = useAuth();
   const { expenses, addExpense, fetchExpenses } = useExpenses();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -257,28 +258,36 @@ export default function FinanceCalendarTab({ invoices, onRefresh }: Props) {
             ) : (
               <div className="space-y-2.5">
                 {selectedEvents.invoices.map(inv => (
-                  <div key={inv.id} className="group flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 hover:border-primary/20">
+                  <div
+                    key={inv.id}
+                    className="group flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 hover:border-primary/20 cursor-pointer"
+                    onClick={() => onEventClick?.('receivable')}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                         <ArrowDownLeft className="w-4 h-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{inv.name || 'Fatura'}</p>
-                        <p className="text-[11px] text-primary/70 font-medium">A receber</p>
+                        <p className="text-[11px] text-primary/70 font-medium">A receber · clique para editar</p>
                       </div>
                     </div>
                     <span className="font-extrabold text-sm text-primary tabular-nums">{formatCurrency(inv.total)}</span>
                   </div>
                 ))}
                 {selectedEvents.expenses.map(exp => (
-                  <div key={exp.id} className="group flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10 hover:border-destructive/20">
+                  <div
+                    key={exp.id}
+                    className="group flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10 hover:border-destructive/20 cursor-pointer"
+                    onClick={() => onEventClick?.('expense')}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center">
                         <ArrowUpRight className="w-4 h-4 text-destructive" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{exp.description}</p>
-                        <p className="text-[11px] text-destructive/70 font-medium">A pagar</p>
+                        <p className="text-[11px] text-destructive/70 font-medium">A pagar · clique para editar</p>
                       </div>
                     </div>
                     <span className="font-extrabold text-sm text-destructive tabular-nums">{formatCurrency(exp.amount)}</span>
