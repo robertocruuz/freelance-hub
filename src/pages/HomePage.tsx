@@ -283,7 +283,6 @@ const HomePage = () => {
                 <p className="text-[10px] text-muted-foreground">{isPt ? 'Visão geral' : 'Overview'}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className={`${clickableItem} bg-muted/50 p-4 mb-4 mt-4`} onClick={() => navigate('/dashboard/finance')}>
