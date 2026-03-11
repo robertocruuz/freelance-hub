@@ -52,7 +52,16 @@ function getMonthRange(year: number, period: PeriodFilter): { startMonth: number
 export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMonthly }: Props) {
   const { expenses } = useExpenses();
   const { clients } = useClients();
+  const { user } = useAuth();
 
+  // Fetch projects
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('projects').select('id, name').order('name').then(({ data }) => {
+      if (data) setProjects(data);
+    });
+  }, [user]);
 
   // Filter states
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -60,7 +69,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
-  
+  const [projectFilter, setProjectFilter] = useState<string>('all');
   const [statusFilterInvoice, setStatusFilterInvoice] = useState<string>('all');
   const [statusFilterExpense, setStatusFilterExpense] = useState<string>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
