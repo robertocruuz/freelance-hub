@@ -189,6 +189,19 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           >
             <CalendarIcon className="w-3 h-3" />
             <span className="capitalize">{quickFilter === 'custom' ? rangeLabel : 'Personalizado'}</span>
+            {quickFilter === 'custom' && customRange?.from && customRange?.to && (
+              <span
+                role="button"
+                className="ml-0.5 rounded-full hover:bg-primary-foreground/20 p-0.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleQuickFilter('full');
+                }}
+                title="Limpar filtro"
+              >
+                <X className="w-3 h-3" />
+              </span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
@@ -196,15 +209,12 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             mode="range"
             selected={customRange}
             onSelect={(range: DateRange | undefined) => {
-              // If a complete range exists and user clicks again, always reset to new start
               if (customRange?.from && customRange?.to) {
                 if (range?.from && range?.to) {
                   const prevFromStr = format(customRange.from, 'yyyy-MM-dd');
                   const newFromStr = format(range.from, 'yyyy-MM-dd');
                   const prevToStr = format(customRange.to, 'yyyy-MM-dd');
                   const newToStr = format(range.to, 'yyyy-MM-dd');
-                  
-                  // Figure out which day the user clicked and use it as new start
                   if (newFromStr !== prevFromStr) {
                     setCustomRange({ from: range.from, to: undefined });
                   } else if (newToStr !== prevToStr) {
@@ -229,17 +239,6 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           />
         </PopoverContent>
       </Popover>
-      {quickFilter === 'custom' && customRange?.from && customRange?.to && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-          onClick={() => handleQuickFilter('full')}
-          title="Limpar filtro"
-        >
-          <X className="w-3.5 h-3.5" />
-        </Button>
-      )}
     </div>
   );
 
