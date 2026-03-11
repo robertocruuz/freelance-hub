@@ -15,6 +15,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ProjectItem {
   id: string;
@@ -61,6 +71,36 @@ export const KanbanColumnComponent = ({
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loadingItems, setLoadingItems] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteImpact, setDeleteImpact] = useState<{
+    taskCount: number; timeEntries: number; totalSeconds: number; projectLinks: number;
+  } | null>(null);
+
+  const fetchColumnDeleteImpact = async () => {
+    if (tasks.length === 0) {
+      setDeleteImpact({ taskCount: 0, timeEntries: 0, totalSeconds: 0, projectLinks: 0 });
+      setShowDeleteConfirm(true);
+      return;
+    }
+    const taskIds = tasks.map(t => t.id);
+    const { data: timeData } = await supabase
+      .from('time_entries')
+      .select('duration')
+      .in('task_id', taskIds);
+    const timeEntries = timeData || [];
+    const totalSeconds = timeEntries.reduce((acc, e) => acc + (e.duration || 0), 0);
+    const projectLinks = tasks.filter(t => t.project_id).length;
+    setDeleteImpact({ taskCount: tasks.length, timeEntries: timeEntries.length, totalSeconds, projectLinks });
+    setShowDeleteConfirm(true);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0 && m > 0) return `${h}h ${m}min`;
+    if (h > 0) return `${h}h`;
+    return `${m}min`;
+  };
 
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -186,7 +226,7 @@ export const KanbanColumnComponent = ({
             <DropdownMenuItem onClick={() => { setEditName(column.name); setIsEditing(true); }}>
               <Pencil className="w-3.5 h-3.5 mr-2" /> Renomear
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDeleteColumn(column.id)} className="text-destructive">
+            <DropdownMenuItem onClick={() => fetchColumnDeleteImpact()} className="text-destructive">
               <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -320,6 +360,54 @@ export const KanbanColumnComponent = ({
           </button>
         )}
       </div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir lista "{column.name}"</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                {deleteImpact && deleteImpact.taskCount === 0 ? (
+                  <p>Esta lista está vazia. Deseja excluí-la?</p>
+                ) : (
+                  <>
+                    <p>Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.</p>
+                    {deleteImpact && (
+                      <div className="mt-3 space-y-1.5 text-sm">
+                        <p className="font-medium text-foreground">Os seguintes dados serão excluídos:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          <li>
+                            <strong className="text-foreground">{deleteImpact.taskCount}</strong> tarefa{deleteImpact.taskCount > 1 ? 's' : ''}
+                          </li>
+                          {deleteImpact.projectLinks > 0 && (
+                            <li>
+                              <strong className="text-foreground">{deleteImpact.projectLinks}</strong> vínculo{deleteImpact.projectLinks > 1 ? 's' : ''} com projeto{deleteImpact.projectLinks > 1 ? 's' : ''}
+                            </li>
+                          )}
+                          {deleteImpact.timeEntries > 0 && (
+                            <li>
+                              <strong className="text-foreground">{deleteImpact.timeEntries}</strong> registro{deleteImpact.timeEntries > 1 ? 's' : ''} de tempo ({formatDuration(deleteImpact.totalSeconds)})
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onDeleteColumn(column.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

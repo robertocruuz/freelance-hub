@@ -224,6 +224,11 @@ export const useKanban = (activeBoardId?: string | null) => {
   };
 
   const deleteColumn = async (id: string) => {
+    // Delete all tasks in this column and their related data
+    const columnTasks = tasks.filter(t => t.column_id === id);
+    for (const t of columnTasks) {
+      await deleteTask(t.id);
+    }
     await supabase.from('kanban_columns').delete().eq('id', id);
     setColumns((prev) => prev.filter((c) => c.id !== id));
   };
