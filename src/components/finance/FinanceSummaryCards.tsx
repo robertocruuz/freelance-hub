@@ -37,7 +37,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       borderColor: 'border-emerald-200/60 dark:border-emerald-800/40',
     },
     {
-      label: 'Pago no mês',
+      label: 'Despesas do mês',
       value: formatCurrency(paidThisMonth),
       icon: TrendingDown,
       trend: ArrowDownRight,
