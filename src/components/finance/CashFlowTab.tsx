@@ -167,7 +167,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
 
   const rangeLabel = format(activeRange.from, "dd MMM", { locale: ptBR }) + ' – ' + format(activeRange.to, "dd MMM", { locale: ptBR });
 
-  const FilterBar = () => (
+  const filterBar = (
     <div className="flex items-center gap-1.5 flex-wrap">
       {filterButtons.map(f => (
         <Button
@@ -196,19 +196,9 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
             mode="range"
             selected={customRange}
             onSelect={(range: DateRange | undefined) => {
-              if (ignoreNextSelect.current) {
-                ignoreNextSelect.current = false;
-                return;
-              }
               setCustomRange(range);
               if (range?.from && range?.to) {
                 setQuickFilter('custom');
-              }
-            }}
-            onDayClick={(day) => {
-              if (customRange?.from && customRange?.to) {
-                ignoreNextSelect.current = true;
-                setCustomRange({ from: day, to: undefined });
               }
             }}
             fromDate={monthStart}
