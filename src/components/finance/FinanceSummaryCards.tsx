@@ -71,7 +71,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       {cards.map((c) => (
         <div
           key={c.label}
@@ -88,7 +88,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
           </div>
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{c.label}</p>
           <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${c.valueColor}`}>
-            {c.subtitle ? c.subtitle : c.value}
+            {'prefix' in c && (c as any).prefix ? `${(c as any).prefix} ` : ''}{c.subtitle ? c.subtitle : c.value}
           </p>
           {!c.subtitle && (
             <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0 sm:opacity-100">este mês</p>
