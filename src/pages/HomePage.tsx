@@ -328,7 +328,6 @@ const HomePage = () => {
                 )}
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
