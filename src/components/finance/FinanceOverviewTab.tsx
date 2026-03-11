@@ -189,6 +189,10 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     statusFilterExpense !== 'all',
   ].filter(Boolean).length;
 
+  useEffect(() => {
+    onActiveFilterCountChange?.(activeFilterCount);
+  }, [activeFilterCount, onActiveFilterCountChange]);
+
   const clearAllFilters = () => {
     setPeriodFilter('year');
     setClientFilter('all');
