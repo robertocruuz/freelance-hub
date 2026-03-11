@@ -25,6 +25,7 @@ import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import FinancePage from "./pages/FinancePage";
+import LeadsPage from "./pages/LeadsPage";
 
 const queryClient = new QueryClient();
 
