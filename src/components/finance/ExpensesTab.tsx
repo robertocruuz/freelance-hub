@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, Trash2, Receipt, Repeat } from 'lucide-react';
+import { Plus, Pencil, Trash2, Receipt, Repeat, ChevronUp } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -78,7 +77,8 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     setEditing(null);
   };
 
-  const openNew = () => { resetForm(); setDialogOpen(true); };
+  const openNew = () => { resetForm(); setDialogOpen(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100); };
+  const formRef = useRef<HTMLDivElement>(null);
   const openEdit = (e: Expense) => {
     setEditing(e);
     setDescription(e.description);
@@ -90,6 +90,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     setIsRecurring(e.is_recurring);
     setRecurringMonths(String(e.recurring_months || 12));
     setDialogOpen(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
   };
 
   const handleSave = async () => {
@@ -304,15 +305,18 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) resetForm(); setDialogOpen(v); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold">{editing ? 'Editar Despesa' : 'Nova Despesa'}</DialogTitle>
-          </DialogHeader>
+      {dialogOpen && (
+        <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-foreground">{editing ? 'Editar Despesa' : 'Nova Despesa'}</h3>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setDialogOpen(false); resetForm(); }}>
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="space-y-4">
             <div>
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Descrição *</Label>
-              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Assinatura Adobe" className="mt-1.5" />
+              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Assinatura Adobe" className="mt-1.5" autoFocus />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -393,10 +397,13 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Observações</Label>
               <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="mt-1.5" />
             </div>
-            <Button onClick={handleSave} className="w-full">{editing ? 'Salvar alterações' : 'Adicionar despesa'}</Button>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
+              <Button onClick={handleSave}>{editing ? 'Salvar alterações' : 'Adicionar despesa'}</Button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
