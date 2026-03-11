@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { useExpenses, type Expense } from '@/hooks/useExpenses';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import type { FinanceInvoice } from '@/pages/FinancePage';
 
 interface Props {
@@ -46,6 +46,31 @@ export default function FinanceCalendarTab({ invoices }: Props) {
   const totalPayables = selectedEvents.expenses.reduce((s, e) => s + e.amount, 0);
   const hasEvents = selectedEvents.invoices.length > 0 || selectedEvents.expenses.length > 0;
 
+  // Build modifiers for receivable-only, payable-only, and mixed dates
+  const receivableDates = useMemo(() => {
+    const dates: Date[] = [];
+    eventDates.forEach((val, key) => {
+      if (val.receivables > 0 && val.payables === 0) dates.push(new Date(key + 'T12:00:00'));
+    });
+    return dates;
+  }, [eventDates]);
+
+  const payableDates = useMemo(() => {
+    const dates: Date[] = [];
+    eventDates.forEach((val, key) => {
+      if (val.payables > 0 && val.receivables === 0) dates.push(new Date(key + 'T12:00:00'));
+    });
+    return dates;
+  }, [eventDates]);
+
+  const mixedDates = useMemo(() => {
+    const dates: Date[] = [];
+    eventDates.forEach((val, key) => {
+      if (val.receivables > 0 && val.payables > 0) dates.push(new Date(key + 'T12:00:00'));
+    });
+    return dates;
+  }, [eventDates]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
       <Card className="overflow-hidden">
@@ -56,9 +81,31 @@ export default function FinanceCalendarTab({ invoices }: Props) {
             onSelect={setSelectedDate}
             locale={ptBR}
             className="p-3 pointer-events-auto"
-            modifiers={{ hasEvent: (date) => eventDates.has(format(date, 'yyyy-MM-dd')) }}
-            modifiersClassNames={{ hasEvent: 'bg-primary/15 font-bold text-primary ring-1 ring-primary/20' }}
+            modifiers={{
+              receivable: receivableDates,
+              payable: payableDates,
+              mixed: mixedDates,
+            }}
+            modifiersClassNames={{
+              receivable: 'finance-dot finance-dot--receivable',
+              payable: 'finance-dot finance-dot--payable',
+              mixed: 'finance-dot finance-dot--mixed',
+            }}
           />
+          <div className="flex items-center gap-4 mt-3 px-1 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              A receber
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+              A pagar
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-destructive" />
+              Ambos
+            </span>
+          </div>
         </CardContent>
       </Card>
 
@@ -92,24 +139,28 @@ export default function FinanceCalendarTab({ invoices }: Props) {
           ) : (
             <div className="space-y-2.5">
               {selectedEvents.invoices.map(inv => (
-                <div key={inv.id} className="flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10">
+                <div key={inv.id} className="group flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 hover:border-primary/20">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">📥</div>
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <ArrowDownLeft className="w-4 h-4 text-primary" />
+                    </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{inv.name || 'Fatura'}</p>
-                      <p className="text-[11px] text-primary font-medium">A receber</p>
+                      <p className="text-[11px] text-primary/70 font-medium">A receber</p>
                     </div>
                   </div>
                   <span className="font-extrabold text-sm text-primary tabular-nums">{formatCurrency(inv.total)}</span>
                 </div>
               ))}
               {selectedEvents.expenses.map(exp => (
-                <div key={exp.id} className="flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10">
+                <div key={exp.id} className="group flex items-center justify-between p-3.5 rounded-xl bg-destructive/5 border border-destructive/10 transition-all hover:bg-destructive/10 hover:border-destructive/20">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center text-sm">📤</div>
+                    <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center">
+                      <ArrowUpRight className="w-4 h-4 text-destructive" />
+                    </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{exp.description}</p>
-                      <p className="text-[11px] text-destructive font-medium">A pagar</p>
+                      <p className="text-[11px] text-destructive/70 font-medium">A pagar</p>
                     </div>
                   </div>
                   <span className="font-extrabold text-sm text-destructive tabular-nums">{formatCurrency(exp.amount)}</span>
