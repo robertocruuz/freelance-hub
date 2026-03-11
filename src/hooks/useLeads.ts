@@ -98,7 +98,20 @@ export function useLeads() {
     if (!user) return;
     const stageLeads = leads.filter(l => l.stage_id === lead.stage_id);
     const position = stageLeads.length;
-    const { error } = await supabase.from('leads').insert({ ...lead, position, user_id: user.id });
+    const { error } = await supabase.from('leads').insert({
+      title: lead.title || '',
+      value: lead.value || 0,
+      probability: lead.probability || 50,
+      expected_close_date: lead.expected_close_date,
+      contact_name: lead.contact_name,
+      contact_email: lead.contact_email,
+      contact_phone: lead.contact_phone,
+      notes: lead.notes,
+      stage_id: lead.stage_id,
+      client_id: lead.client_id,
+      position,
+      user_id: user.id,
+    });
     if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
     fetchData();
   };

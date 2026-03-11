@@ -56,6 +56,7 @@ const App = () => (
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="team" element={<TeamPage />} />
                   <Route path="finance" element={<FinancePage />} />
+                  <Route path="leads" element={<LeadsPage />} />
                 </Route>
                 <Route path="/invite/:token" element={<InvitePage />} />
                 <Route path="*" element={<NotFound />} />

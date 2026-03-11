@@ -36,6 +36,7 @@ const labelMap: Record<string, (t: any) => string> = {
   projects: (t) => t.projects,
   kanban: (t) => t.tasks || 'Tarefas',
   time: (t) => t.timeTracking,
+  leads: () => 'Leads',
   finance: () => 'Financeiro',
   team: (t) => t.team || 'Equipe',
 };
