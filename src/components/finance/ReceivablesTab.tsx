@@ -91,9 +91,11 @@ interface Props {
   invoices: FinanceInvoice[];
   onRefresh: () => void;
   monthFilter?: string;
+  autoEditId?: string | null;
+  onAutoEditDone?: () => void;
 }
 
-export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter }: Props) {
+export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter, autoEditId, onAutoEditDone }: Props) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
