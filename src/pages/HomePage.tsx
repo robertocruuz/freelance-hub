@@ -335,7 +335,10 @@ const HomePage = () => {
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
                 <UserPlus className="w-4.5 h-4.5 text-violet-500" />
               </div>
-              <span className="font-bold text-foreground">{isPt ? 'Equipe' : 'Team'}</span>
+              <div>
+                <span className="font-bold text-foreground">{orgName || (isPt ? 'Equipe' : 'Team')}</span>
+                {orgName && <p className="text-[10px] text-muted-foreground">{isPt ? 'Equipe' : 'Team'}</p>}
+              </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
