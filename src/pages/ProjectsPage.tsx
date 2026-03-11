@@ -526,10 +526,11 @@ const ProjectsPage = () => {
 
     const { data: existingDup } = await supabase
       .from('tasks')
-      .select('id')
+      .select('id, kanban_columns!inner(board_id)')
       .eq('title', pendingTaskItem.name)
       .eq('project_id', pendingTaskItem.projectId)
       .not('column_id', 'is', null)
+      .not('kanban_columns.board_id', 'is', null)
       .limit(1);
 
     if (existingDup && existingDup.length > 0) {
