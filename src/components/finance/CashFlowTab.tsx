@@ -39,7 +39,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
 
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('full');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
-  const ignoreNextSelect = useRef(false);
+  
 
   // Compute the active date range based on the quick filter
   const activeRange = useMemo((): { from: Date; to: Date } => {
