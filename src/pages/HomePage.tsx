@@ -168,7 +168,10 @@ const HomePage = () => {
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
-  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 cursor-pointer";
+  const cardBase = "group rounded-2xl border border-border bg-card text-left transition-all duration-300 ease-out hover:shadow-xl hover:shadow-primary/5 hover:border-primary/25 hover:-translate-y-1 active:scale-[0.98] active:shadow-md cursor-pointer";
+
+  // Stagger animation delays for cards
+  const stagger = (i: number) => ({ animationDelay: `${i * 80}ms` });
 
   if (loading) {
     return (
@@ -205,7 +208,7 @@ const HomePage = () => {
         {/* ═══ ROW 1: Tarefas (ação principal) + Calendário ═══ */}
 
         {/* Tarefas — hero card */}
-        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} md:col-span-6 xl:col-span-8 p-6`}>
+        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} md:col-span-6 xl:col-span-8 p-6 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(0)}>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
@@ -237,14 +240,14 @@ const HomePage = () => {
         </div>
 
         {/* Calendário de Tarefas */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default`} onClick={undefined}>
+        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-3 cursor-default animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(1)} onClick={undefined}>
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </div>
 
         {/* ═══ ROW 2: Financeiro + Time Tracking ═══ */}
 
         {/* Financeiro */}
-        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`}>
+        <div onClick={() => navigate('/dashboard/finance')} className={`${cardBase} md:col-span-6 xl:col-span-5 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(2)}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -285,7 +288,7 @@ const HomePage = () => {
         </div>
 
         {/* Time Tracking */}
-        <div onClick={() => navigate('/dashboard/time')} className={`${cardBase} md:col-span-6 xl:col-span-7 p-6`}>
+        <div onClick={() => navigate('/dashboard/time')} className={`${cardBase} md:col-span-6 xl:col-span-7 p-6 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(3)}>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
@@ -328,7 +331,7 @@ const HomePage = () => {
         {/* ═══ ROW 3: Projetos + Clientes + Orçamentos + Equipe ═══ */}
 
         {/* Projetos */}
-        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/projects')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(4)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
@@ -365,7 +368,7 @@ const HomePage = () => {
         </div>
 
         {/* Clientes */}
-        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/clients')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(5)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -395,7 +398,7 @@ const HomePage = () => {
         </div>
 
         {/* Orçamentos */}
-        <div onClick={() => navigate('/dashboard/budgets')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/budgets')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(6)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -415,7 +418,7 @@ const HomePage = () => {
         </div>
 
         {/* Equipe / Organização */}
-        <div onClick={() => navigate('/dashboard/team')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5`}>
+        <div onClick={() => navigate('/dashboard/team')} className={`${cardBase} md:col-span-3 xl:col-span-3 p-5 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(7)}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
