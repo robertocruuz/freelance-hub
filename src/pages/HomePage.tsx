@@ -208,7 +208,7 @@ const HomePage = () => {
         {/* ═══ ROW 1: Tarefas (ação principal) + Calendário ═══ */}
 
         {/* Tarefas — hero card */}
-        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} md:col-span-6 xl:col-span-8 p-6`}>
+        <div onClick={() => navigate('/dashboard/kanban')} className={`${cardBase} md:col-span-6 xl:col-span-8 p-6 animate-fade-in opacity-0 fill-mode-forwards`} style={stagger(0)}>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
