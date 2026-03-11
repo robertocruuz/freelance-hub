@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, ArrowUpRight, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus } from 'lucide-react';
+import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
