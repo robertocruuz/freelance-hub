@@ -34,6 +34,7 @@ export default function LeadsPage() {
   const [stageSettings, setStageSettings] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
   const [convertLead, setConvertLead] = useState<Lead | null>(null);
   const [winAndConvertLead, setWinAndConvertLead] = useState<Lead | null>(null);
 
@@ -146,14 +147,29 @@ export default function LeadsPage() {
   };
 
   // Drag & drop handlers
-  const handleDragStart = (leadId: string) => setDraggedLeadId(leadId);
-  const handleDragEnd = () => setDraggedLeadId(null);
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDragStart = (e: React.DragEvent, leadId: string) => {
+    setDraggedLeadId(leadId);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+  const handleDragEnd = () => { setDraggedLeadId(null); setDragOverStageId(null); };
+  const handleDragOver = (e: React.DragEvent, stageId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverStageId(stageId);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverStageId(null);
+    }
+  };
   const handleDrop = (stageId: string) => {
     if (draggedLeadId) {
       moveLeadToStage(draggedLeadId, stageId);
       setDraggedLeadId(null);
     }
+    setDragOverStageId(null);
   };
 
   if (loading) {
@@ -254,8 +270,13 @@ export default function LeadsPage() {
             return (
               <div
                 key={stage.id}
-                className="flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-xl bg-muted/30 border border-border"
-                onDragOver={handleDragOver}
+                className={`flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-xl border transition-all duration-200 ${
+                  dragOverStageId === stage.id
+                    ? 'bg-primary/5 border-primary/40 shadow-lg scale-[1.01]'
+                    : 'bg-muted/30 border-border'
+                }`}
+                onDragOver={(e) => handleDragOver(e, stage.id)}
+                onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(stage.id)}
               >
                 {/* Stage header */}
@@ -276,8 +297,13 @@ export default function LeadsPage() {
                     <div
                       key={lead.id}
                       draggable
-                      onDragStart={() => handleDragStart(lead.id)}
+                      onDragStart={(e) => handleDragStart(e, lead.id)}
                       onDragEnd={handleDragEnd}
+                      className={`transition-all duration-200 ${
+                        draggedLeadId === lead.id
+                          ? 'opacity-40 scale-95 rotate-1'
+                          : 'opacity-100 scale-100'
+                      }`}
                     >
                       <LeadCard
                         lead={lead}
