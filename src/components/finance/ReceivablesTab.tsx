@@ -306,6 +306,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
       discount,
       due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
       payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
+      is_recurring: isRecurring,
+      recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,
     };
 
     let error;
