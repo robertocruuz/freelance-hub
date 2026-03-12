@@ -339,6 +339,40 @@ export default function LeadsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Win & Convert dialog */}
+      <AlertDialog open={!!winAndConvertLead} onOpenChange={v => !v && setWinAndConvertLead(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>🏆 Negócio ganho!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja converter "{winAndConvertLead?.title}" em um projeto?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => confirmWin(false)}>Apenas marcar como ganho</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmWin(true)}>
+              Converter em Projeto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Convert existing won lead dialog */}
+      <AlertDialog open={!!convertLead} onOpenChange={v => !v && setConvertLead(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Converter em Projeto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Criar um novo projeto a partir de "{convertLead?.title}" com valor de {convertLead?.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmConvert}>Criar Projeto</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
