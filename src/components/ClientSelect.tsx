@@ -48,7 +48,7 @@ const ClientSelect = ({ value, onChange, onClientChange, placeholder = 'Cliente'
           {value && (
             <span
               role="button"
-              onClick={(e) => { e.stopPropagation(); onChange(''); }}
+              onClick={(e) => { e.stopPropagation(); onChange(''); onClientChange?.(null); }}
               className="p-0.5 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-3 h-3" />
