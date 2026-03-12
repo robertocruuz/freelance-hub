@@ -180,7 +180,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
             </div>
             <div>
               <Label>Telefone</Label>
-              <Input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="(00) 00000-0000" />
+              <Input value={contactPhone} onChange={e => setContactPhone(maskPhone(e.target.value))} placeholder="(00) 00000-0000" />
             </div>
           </div>
 
