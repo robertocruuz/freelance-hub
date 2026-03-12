@@ -92,7 +92,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Valor (R$)</Label>
-              <Input type="number" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" />
+              <Input value={value} onChange={e => setValue(maskCurrency(e.target.value))} placeholder="0,00" />
             </div>
             <div>
               <Label>Etapa</Label>
