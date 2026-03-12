@@ -864,6 +864,15 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                                       </span>
                                     </>
                                   )}
+                                  {inv.is_recurring && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 gap-1 bg-primary/10 text-primary border-primary/30">
+                                        <Repeat className="w-2.5 h-2.5" />
+                                        {inv.recurring_months}x
+                                      </Badge>
+                                    </>
+                                  )}
                                   <span className="text-xs text-muted-foreground">·</span>
                                   <span className="text-xs text-muted-foreground">
                                     {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}
