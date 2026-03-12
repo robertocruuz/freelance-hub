@@ -191,10 +191,12 @@ export type Database = {
           discount: number
           due_date: string | null
           id: string
+          is_recurring: boolean
           items: Json
           name: string | null
           payment_method: string | null
           project_id: string | null
+          recurring_months: number | null
           status: string
           taxes: number
           total: number
@@ -207,10 +209,12 @@ export type Database = {
           discount?: number
           due_date?: string | null
           id?: string
+          is_recurring?: boolean
           items?: Json
           name?: string | null
           payment_method?: string | null
           project_id?: string | null
+          recurring_months?: number | null
           status?: string
           taxes?: number
           total?: number
@@ -223,10 +227,12 @@ export type Database = {
           discount?: number
           due_date?: string | null
           id?: string
+          is_recurring?: boolean
           items?: Json
           name?: string | null
           payment_method?: string | null
           project_id?: string | null
+          recurring_months?: number | null
           status?: string
           taxes?: number
           total?: number
