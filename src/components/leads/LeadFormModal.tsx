@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
 import type { Client } from '@/hooks/useClients';
-import { maskCurrency, unmaskCurrency } from '@/lib/masks';
+import { maskCurrency, unmaskCurrency, maskPhone } from '@/lib/masks';
 
 interface LeadFormModalProps {
   open: boolean;
@@ -180,7 +180,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
             </div>
             <div>
               <Label>Telefone</Label>
-              <Input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="(00) 00000-0000" />
+              <Input value={contactPhone} onChange={e => setContactPhone(maskPhone(e.target.value))} placeholder="(00) 00000-0000" />
             </div>
           </div>
 
