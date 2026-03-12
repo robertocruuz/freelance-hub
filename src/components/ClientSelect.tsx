@@ -5,6 +5,7 @@ import { ChevronDown, X } from 'lucide-react';
 interface ClientSelectProps {
   value: string;
   onChange: (id: string) => void;
+  onClientChange?: (client: Client | null) => void;
   placeholder?: string;
 }
 
