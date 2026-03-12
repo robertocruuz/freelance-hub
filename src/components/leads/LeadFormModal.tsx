@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
 import type { Client } from '@/hooks/useClients';
-import { maskCurrency, unmaskCurrency } from '@/lib/masks';
+import { maskCurrency, unmaskCurrency, maskPhone } from '@/lib/masks';
 
 interface LeadFormModalProps {
   open: boolean;
