@@ -1,9 +1,9 @@
 import { Lead } from '@/hooks/useLeads';
-import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle } from 'lucide-react';
+import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle, FolderPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ interface LeadCardProps {
   onDelete: (id: string) => void;
   onWin: (id: string) => void;
   onLose: (id: string) => void;
+  onConvertToProject?: (lead: Lead) => void;
 }
 
 const formatCurrency = (v: number) =>
