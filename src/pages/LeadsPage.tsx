@@ -34,6 +34,7 @@ export default function LeadsPage() {
   const [stageSettings, setStageSettings] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
   const [convertLead, setConvertLead] = useState<Lead | null>(null);
   const [winAndConvertLead, setWinAndConvertLead] = useState<Lead | null>(null);
 
