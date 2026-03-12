@@ -59,6 +59,8 @@ interface DeleteImpact {
 }
 
 export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
+  const { user } = useAuth();
+  const isShared = user ? task.user_id !== user.id : false;
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteImpact, setDeleteImpact] = useState<DeleteImpact | null>(null);
