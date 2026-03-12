@@ -24,6 +24,8 @@ const formatCurrency = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConvertToProject }: LeadCardProps) {
+  const { user } = useAuth();
+  const isShared = user ? lead.user_id !== user.id : false;
   const probColor = lead.probability >= 70 ? 'text-green-500' : lead.probability >= 40 ? 'text-yellow-500' : 'text-red-400';
 
   return (
