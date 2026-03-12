@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
 import type { Client } from '@/hooks/useClients';
+import { maskCurrency, unmaskCurrency } from '@/lib/masks';
 
 interface LeadFormModalProps {
   open: boolean;
