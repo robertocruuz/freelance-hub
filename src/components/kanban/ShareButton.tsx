@@ -231,7 +231,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
         <div className="p-3 border-b border-border">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">
             <Share2 className="w-4 h-4" />
-            Compartilhar {resourceType === 'board' ? 'painel' : 'tarefa'}
+            Compartilhar {resourceType === 'board' ? 'painel' : resourceType === 'pipeline' ? 'pipeline' : 'tarefa'}
           </h4>
         </div>
 

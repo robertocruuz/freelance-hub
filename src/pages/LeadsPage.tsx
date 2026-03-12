@@ -193,6 +193,7 @@ export default function LeadsPage() {
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
         <div className="flex items-center gap-2">
+          {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
           <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
             <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
           </Button>
