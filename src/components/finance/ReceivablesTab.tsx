@@ -65,6 +65,8 @@ interface Invoice {
   due_date: string | null;
   payment_method: string | null;
   created_at: string;
+  is_recurring: boolean;
+  recurring_months: number | null;
 }
 
 interface ProjectWithItems {
