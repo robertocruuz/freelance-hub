@@ -147,14 +147,29 @@ export default function LeadsPage() {
   };
 
   // Drag & drop handlers
-  const handleDragStart = (leadId: string) => setDraggedLeadId(leadId);
-  const handleDragEnd = () => setDraggedLeadId(null);
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDragStart = (e: React.DragEvent, leadId: string) => {
+    setDraggedLeadId(leadId);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+  const handleDragEnd = () => { setDraggedLeadId(null); setDragOverStageId(null); };
+  const handleDragOver = (e: React.DragEvent, stageId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverStageId(stageId);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverStageId(null);
+    }
+  };
   const handleDrop = (stageId: string) => {
     if (draggedLeadId) {
       moveLeadToStage(draggedLeadId, stageId);
       setDraggedLeadId(null);
     }
+    setDragOverStageId(null);
   };
 
   if (loading) {
