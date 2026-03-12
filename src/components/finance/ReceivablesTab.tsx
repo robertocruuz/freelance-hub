@@ -276,6 +276,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setNewDesc('');
     setNewQty(1);
     setNewPrice(0);
+    setIsRecurring(false);
+    setRecurringMonths('12');
   };
 
   const editInvoice = (inv: Invoice) => {
