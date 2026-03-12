@@ -17,7 +17,7 @@ import {
 import { Share2, Users, UserPlus, X, Building2, Globe, Mail, Loader2 } from 'lucide-react';
 
 interface ShareButtonProps {
-  resourceType: 'board' | 'task' | 'pipeline';
+  resourceType: 'board' | 'task' | 'pipeline' | 'lead';
   resourceId: string;
   compact?: boolean;
 }
@@ -231,7 +231,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
         <div className="p-3 border-b border-border">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">
             <Share2 className="w-4 h-4" />
-            Compartilhar {resourceType === 'board' ? 'painel' : resourceType === 'pipeline' ? 'pipeline' : 'tarefa'}
+            Compartilhar {resourceType === 'board' ? 'painel' : resourceType === 'pipeline' ? 'pipeline' : resourceType === 'lead' ? 'negócio' : 'tarefa'}
           </h4>
         </div>
 
