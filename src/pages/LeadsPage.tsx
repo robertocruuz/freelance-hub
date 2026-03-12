@@ -34,6 +34,12 @@ export default function LeadsPage() {
   const [stageSettings, setStageSettings] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [convertLead, setConvertLead] = useState<Lead | null>(null);
+  const [winAndConvertLead, setWinAndConvertLead] = useState<Lead | null>(null);
+
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const openLeads = useMemo(() => leads.filter(l => l.status === 'open'), [leads]);
 
