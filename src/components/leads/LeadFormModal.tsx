@@ -34,7 +34,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
   useEffect(() => {
     if (lead) {
       setTitle(lead.title);
-      setValue(String(lead.value));
+      setValue(maskCurrency(String(Math.round(lead.value * 100))));
       setProbability(lead.probability);
       setExpectedCloseDate(lead.expected_close_date || '');
       setContactName(lead.contact_name || '');
