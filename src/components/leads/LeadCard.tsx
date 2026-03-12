@@ -7,6 +7,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { ShareButton } from '@/components/kanban/ShareButton';
+import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LeadCardProps {
   lead: Lead;
