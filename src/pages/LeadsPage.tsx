@@ -237,8 +237,16 @@ export default function LeadsPage() {
             placeholder="Buscar negócios..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9"
+            className="pl-9 pr-8 h-9"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
