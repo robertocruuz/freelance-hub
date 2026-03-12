@@ -199,6 +199,17 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               {'⭐'.repeat(Math.min(task.complexity, 5))}
             </Badge>
           )}
+          {isShared && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/30 gap-1">
+                  <Share2 className="w-2.5 h-2.5" />
+                  Compartilhada
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>Tarefa compartilhada com você</TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         {/* Checklist progress */}
