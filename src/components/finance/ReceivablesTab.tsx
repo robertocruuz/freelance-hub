@@ -289,6 +289,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setDiscount(inv.discount);
     setDueDate(inv.due_date ? new Date(inv.due_date + 'T12:00:00') : undefined);
     setPaymentMethods(inv.payment_method ? inv.payment_method.split(', ') : []);
+    setIsRecurring(inv.is_recurring || false);
+    setRecurringMonths(String(inv.recurring_months || 12));
     setCreating(true);
   };
 
