@@ -85,11 +85,56 @@ export default function LeadsPage() {
   };
 
   const handleWin = (id: string) => {
-    updateLead(id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
+    const lead = leads.find(l => l.id === id);
+    if (lead) {
+      setWinAndConvertLead(lead);
+    }
   };
 
-  const handleLose = (id: string) => {
-    updateLead(id, { status: 'lost', lost_at: new Date().toISOString() } as Partial<Lead>);
+  const confirmWin = async (convert: boolean) => {
+    if (!winAndConvertLead) return;
+    await updateLead(winAndConvertLead.id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
+    if (convert) {
+      await doConvertToProject(winAndConvertLead);
+    }
+    setWinAndConvertLead(null);
+  };
+
+  const doConvertToProject = async (lead: Lead) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('projects').insert({
+      name: lead.title,
+      client_id: lead.client_id,
+      user_id: user.id,
+    }).select().single();
+
+    if (error) {
+      toast({ title: 'Erro ao criar projeto', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    // Create project item with lead value
+    if (lead.value > 0) {
+      await supabase.from('project_items').insert({
+        project_id: data.id,
+        name: lead.title,
+        value: lead.value,
+        position: 0,
+      });
+    }
+
+    toast({ title: 'Projeto criado!', description: `"${lead.title}" foi convertido em projeto.` });
+    navigate('/dashboard/projects');
+  };
+
+  const handleConvertToProject = (lead: Lead) => {
+    setConvertLead(lead);
+  };
+
+  const confirmConvert = async () => {
+    if (!convertLead) return;
+    await doConvertToProject(convertLead);
+    setConvertLead(null);
   };
 
   const handleConfirmDelete = () => {
