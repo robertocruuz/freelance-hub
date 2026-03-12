@@ -70,8 +70,23 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
         </div>
       </div>
 
-      {lead.contact_name && (
-        <p className="text-xs text-muted-foreground mt-1 truncate">{lead.contact_name}</p>
+      {(lead.contact_name || isShared) && (
+        <div className="flex items-center gap-1.5 mt-1">
+          {lead.contact_name && (
+            <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
+          )}
+          {isShared && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 shrink-0">
+                  <Share2 className="w-2.5 h-2.5" />
+                  Compartilhado
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>Negócio compartilhado com você</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       )}
 
       <div className="mt-3 flex items-center gap-3 flex-wrap">
