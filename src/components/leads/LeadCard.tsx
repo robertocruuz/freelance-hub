@@ -1,11 +1,12 @@
 import { Lead } from '@/hooks/useLeads';
-import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle, FolderPlus } from 'lucide-react';
+import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle, FolderPlus, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { ShareButton } from '@/components/kanban/ShareButton';
 
 interface LeadCardProps {
   lead: Lead;
@@ -29,36 +30,39 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
     >
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground truncate flex-1">{lead.title}</h4>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-            <button className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted transition-all">
-              <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => onEdit(lead)}>
-              <Edit className="w-4 h-4 mr-2" /> Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onWin(lead.id)} className="text-green-600">
-              <Trophy className="w-4 h-4 mr-2" /> Marcar como ganho
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onLose(lead.id)} className="text-yellow-600">
-              <XCircle className="w-4 h-4 mr-2" /> Marcar como perdido
-            </DropdownMenuItem>
-            {lead.status === 'won' && onConvertToProject && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onConvertToProject(lead)} className="text-primary">
-                  <FolderPlus className="w-4 h-4 mr-2" /> Converter em Projeto
-                </DropdownMenuItem>
-              </>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onDelete(lead.id)} className="text-destructive">
-              <Trash2 className="w-4 h-4 mr-2" /> Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
+          <ShareButton resourceType="lead" resourceId={lead.id} compact />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted transition-all">
+                <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(lead)}>
+                <Edit className="w-4 h-4 mr-2" /> Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onWin(lead.id)} className="text-green-600">
+                <Trophy className="w-4 h-4 mr-2" /> Marcar como ganho
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onLose(lead.id)} className="text-yellow-600">
+                <XCircle className="w-4 h-4 mr-2" /> Marcar como perdido
+              </DropdownMenuItem>
+              {lead.status === 'won' && onConvertToProject && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onConvertToProject(lead)} className="text-primary">
+                    <FolderPlus className="w-4 h-4 mr-2" /> Converter em Projeto
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onDelete(lead.id)} className="text-destructive">
+                <Trash2 className="w-4 h-4 mr-2" /> Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {lead.contact_name && (
