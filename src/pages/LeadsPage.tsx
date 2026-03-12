@@ -297,8 +297,13 @@ export default function LeadsPage() {
                     <div
                       key={lead.id}
                       draggable
-                      onDragStart={() => handleDragStart(lead.id)}
+                      onDragStart={(e) => handleDragStart(e, lead.id)}
                       onDragEnd={handleDragEnd}
+                      className={`transition-all duration-200 ${
+                        draggedLeadId === lead.id
+                          ? 'opacity-40 scale-95 rotate-1'
+                          : 'opacity-100 scale-100'
+                      }`}
                     >
                       <LeadCard
                         lead={lead}
