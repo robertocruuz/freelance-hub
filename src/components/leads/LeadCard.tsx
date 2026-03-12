@@ -19,7 +19,7 @@ interface LeadCardProps {
 const formatCurrency = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose }: LeadCardProps) {
+export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConvertToProject }: LeadCardProps) {
   const probColor = lead.probability >= 70 ? 'text-green-500' : lead.probability >= 40 ? 'text-yellow-500' : 'text-red-400';
 
   return (
