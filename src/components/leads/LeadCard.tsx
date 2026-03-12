@@ -45,6 +45,15 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
             <DropdownMenuItem onClick={() => onLose(lead.id)} className="text-yellow-600">
               <XCircle className="w-4 h-4 mr-2" /> Marcar como perdido
             </DropdownMenuItem>
+            {lead.status === 'won' && onConvertToProject && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onConvertToProject(lead)} className="text-primary">
+                  <FolderPlus className="w-4 h-4 mr-2" /> Converter em Projeto
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(lead.id)} className="text-destructive">
               <Trash2 className="w-4 h-4 mr-2" /> Excluir
             </DropdownMenuItem>
