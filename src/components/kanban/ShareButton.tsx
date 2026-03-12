@@ -17,7 +17,7 @@ import {
 import { Share2, Users, UserPlus, X, Building2, Globe, Mail, Loader2 } from 'lucide-react';
 
 interface ShareButtonProps {
-  resourceType: 'board' | 'task' | 'pipeline';
+  resourceType: 'board' | 'task' | 'pipeline' | 'lead';
   resourceId: string;
   compact?: boolean;
 }
