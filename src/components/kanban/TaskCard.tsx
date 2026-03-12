@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2 } from 'lucide-react';
+import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2, Share2 } from 'lucide-react';
 import { Task } from '@/hooks/useKanban';
 import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +59,8 @@ interface DeleteImpact {
 }
 
 export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
+  const { user } = useAuth();
+  const isShared = user ? task.user_id !== user.id : false;
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteImpact, setDeleteImpact] = useState<DeleteImpact | null>(null);
@@ -194,6 +198,17 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
               {'⭐'.repeat(Math.min(task.complexity, 5))}
             </Badge>
+          )}
+          {isShared && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/30 gap-1">
+                  <Share2 className="w-2.5 h-2.5" />
+                  Compartilhada
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>Tarefa compartilhada com você</TooltipContent>
+            </Tooltip>
           )}
         </div>
 
