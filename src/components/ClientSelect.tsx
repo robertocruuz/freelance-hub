@@ -9,7 +9,7 @@ interface ClientSelectProps {
   placeholder?: string;
 }
 
-const ClientSelect = ({ value, onChange, placeholder = 'Cliente' }: ClientSelectProps) => {
+const ClientSelect = ({ value, onChange, onClientChange, placeholder = 'Cliente' }: ClientSelectProps) => {
   const { clients } = useClients();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
