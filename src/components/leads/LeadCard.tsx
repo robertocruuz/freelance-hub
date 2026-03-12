@@ -1,9 +1,9 @@
 import { Lead } from '@/hooks/useLeads';
-import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle } from 'lucide-react';
+import { DollarSign, Calendar, Percent, MoreHorizontal, Trash2, Edit, Trophy, XCircle, FolderPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -13,12 +13,13 @@ interface LeadCardProps {
   onDelete: (id: string) => void;
   onWin: (id: string) => void;
   onLose: (id: string) => void;
+  onConvertToProject?: (lead: Lead) => void;
 }
 
 const formatCurrency = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose }: LeadCardProps) {
+export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConvertToProject }: LeadCardProps) {
   const probColor = lead.probability >= 70 ? 'text-green-500' : lead.probability >= 40 ? 'text-yellow-500' : 'text-red-400';
 
   return (
@@ -44,6 +45,15 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose }: Lead
             <DropdownMenuItem onClick={() => onLose(lead.id)} className="text-yellow-600">
               <XCircle className="w-4 h-4 mr-2" /> Marcar como perdido
             </DropdownMenuItem>
+            {lead.status === 'won' && onConvertToProject && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onConvertToProject(lead)} className="text-primary">
+                  <FolderPlus className="w-4 h-4 mr-2" /> Converter em Projeto
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(lead.id)} className="text-destructive">
               <Trash2 className="w-4 h-4 mr-2" /> Excluir
             </DropdownMenuItem>

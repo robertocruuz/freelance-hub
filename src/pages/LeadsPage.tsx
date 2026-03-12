@@ -1,5 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useLeads, Lead } from '@/hooks/useLeads';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import LeadCard from '@/components/leads/LeadCard';
 import LeadFormModal from '@/components/leads/LeadFormModal';
 import StageSettingsModal from '@/components/leads/StageSettingsModal';
@@ -30,6 +34,12 @@ export default function LeadsPage() {
   const [stageSettings, setStageSettings] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [convertLead, setConvertLead] = useState<Lead | null>(null);
+  const [winAndConvertLead, setWinAndConvertLead] = useState<Lead | null>(null);
+
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const openLeads = useMemo(() => leads.filter(l => l.status === 'open'), [leads]);
 
@@ -75,7 +85,56 @@ export default function LeadsPage() {
   };
 
   const handleWin = (id: string) => {
-    updateLead(id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
+    const lead = leads.find(l => l.id === id);
+    if (lead) {
+      setWinAndConvertLead(lead);
+    }
+  };
+
+  const confirmWin = async (convert: boolean) => {
+    if (!winAndConvertLead) return;
+    await updateLead(winAndConvertLead.id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
+    if (convert) {
+      await doConvertToProject(winAndConvertLead);
+    }
+    setWinAndConvertLead(null);
+  };
+
+  const doConvertToProject = async (lead: Lead) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('projects').insert({
+      name: lead.title,
+      client_id: lead.client_id,
+      user_id: user.id,
+    }).select().single();
+
+    if (error) {
+      toast({ title: 'Erro ao criar projeto', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    // Create project item with lead value
+    if (lead.value > 0) {
+      await supabase.from('project_items').insert({
+        project_id: data.id,
+        name: lead.title,
+        value: lead.value,
+        position: 0,
+      });
+    }
+
+    toast({ title: 'Projeto criado!', description: `"${lead.title}" foi convertido em projeto.` });
+    navigate('/dashboard/projects');
+  };
+
+  const handleConvertToProject = (lead: Lead) => {
+    setConvertLead(lead);
+  };
+
+  const confirmConvert = async () => {
+    if (!convertLead) return;
+    await doConvertToProject(convertLead);
+    setConvertLead(null);
   };
 
   const handleLose = (id: string) => {
@@ -226,6 +285,7 @@ export default function LeadsPage() {
                         onDelete={id => setDeleteId(id)}
                         onWin={handleWin}
                         onLose={handleLose}
+                        onConvertToProject={handleConvertToProject}
                       />
                     </div>
                   ))}
@@ -276,6 +336,40 @@ export default function LeadsPage() {
             <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Win & Convert dialog */}
+      <AlertDialog open={!!winAndConvertLead} onOpenChange={v => !v && setWinAndConvertLead(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>🏆 Negócio ganho!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja converter "{winAndConvertLead?.title}" em um projeto?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => confirmWin(false)}>Apenas marcar como ganho</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmWin(true)}>
+              Converter em Projeto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Convert existing won lead dialog */}
+      <AlertDialog open={!!convertLead} onOpenChange={v => !v && setConvertLead(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Converter em Projeto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Criar um novo projeto a partir de "{convertLead?.title}" com valor de {convertLead?.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmConvert}>Criar Projeto</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
