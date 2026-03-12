@@ -9,7 +9,7 @@ import LeadFormModal from '@/components/leads/LeadFormModal';
 import StageSettingsModal from '@/components/leads/StageSettingsModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle } from 'lucide-react';
+import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
