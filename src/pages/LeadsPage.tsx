@@ -1,5 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useLeads, Lead } from '@/hooks/useLeads';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import LeadCard from '@/components/leads/LeadCard';
 import LeadFormModal from '@/components/leads/LeadFormModal';
 import StageSettingsModal from '@/components/leads/StageSettingsModal';
