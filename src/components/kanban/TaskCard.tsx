@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2 } from 'lucide-react';
+import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2, Share2 } from 'lucide-react';
 import { Task } from '@/hooks/useKanban';
 import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
