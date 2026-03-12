@@ -61,7 +61,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
     if (!title.trim()) return;
     onSave({
       title: title.trim(),
-      value: parseFloat(value) || 0,
+      value: unmaskCurrency(value),
       probability,
       expected_close_date: expectedCloseDate || null,
       contact_name: contactName || null,
