@@ -126,7 +126,32 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
 
           <div>
             <Label>Data esperada de fechamento</Label>
-            <Input type="date" value={expectedCloseDate} onChange={e => setExpectedCloseDate(e.target.value)} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-full justify-start text-left font-normal',
+                    !expectedCloseDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {expectedCloseDate
+                    ? format(parse(expectedCloseDate, 'yyyy-MM-dd', new Date()), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                    : 'Selecionar data'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={expectedCloseDate ? parse(expectedCloseDate, 'yyyy-MM-dd', new Date()) : undefined}
+                  onSelect={(date) => setExpectedCloseDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                  locale={ptBR}
+                  initialFocus
+                  className={cn('p-3 pointer-events-auto')}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>
