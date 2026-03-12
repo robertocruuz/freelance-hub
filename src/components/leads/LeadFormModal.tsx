@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
 import type { Client } from '@/hooks/useClients';
+import { maskCurrency, unmaskCurrency } from '@/lib/masks';
 
 interface LeadFormModalProps {
   open: boolean;
@@ -33,7 +34,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
   useEffect(() => {
     if (lead) {
       setTitle(lead.title);
-      setValue(String(lead.value));
+      setValue(maskCurrency(String(Math.round(lead.value * 100))));
       setProbability(lead.probability);
       setExpectedCloseDate(lead.expected_close_date || '');
       setContactName(lead.contact_name || '');
@@ -60,7 +61,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
     if (!title.trim()) return;
     onSave({
       title: title.trim(),
-      value: parseFloat(value) || 0,
+      value: unmaskCurrency(value),
       probability,
       expected_close_date: expectedCloseDate || null,
       contact_name: contactName || null,
@@ -91,7 +92,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Valor (R$)</Label>
-              <Input type="number" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" />
+              <Input value={value} onChange={e => setValue(maskCurrency(e.target.value))} placeholder="0,00" />
             </div>
             <div>
               <Label>Etapa</Label>
