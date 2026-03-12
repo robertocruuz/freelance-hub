@@ -270,8 +270,13 @@ export default function LeadsPage() {
             return (
               <div
                 key={stage.id}
-                className="flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-xl bg-muted/30 border border-border"
-                onDragOver={handleDragOver}
+                className={`flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-xl border transition-all duration-200 ${
+                  dragOverStageId === stage.id
+                    ? 'bg-primary/5 border-primary/40 shadow-lg scale-[1.01]'
+                    : 'bg-muted/30 border-border'
+                }`}
+                onDragOver={(e) => handleDragOver(e, stage.id)}
+                onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(stage.id)}
               >
                 {/* Stage header */}
