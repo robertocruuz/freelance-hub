@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle, Repeat } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -14,6 +14,8 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +65,8 @@ interface Invoice {
   due_date: string | null;
   payment_method: string | null;
   created_at: string;
+  is_recurring: boolean;
+  recurring_months: number | null;
 }
 
 interface ProjectWithItems {
@@ -111,6 +115,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringMonths, setRecurringMonths] = useState('12');
   const [organization, setOrganization] = useState<any>(null);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -270,6 +276,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setNewDesc('');
     setNewQty(1);
     setNewPrice(0);
+    setIsRecurring(false);
+    setRecurringMonths('12');
   };
 
   const editInvoice = (inv: Invoice) => {
@@ -281,6 +289,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setDiscount(inv.discount);
     setDueDate(inv.due_date ? new Date(inv.due_date + 'T12:00:00') : undefined);
     setPaymentMethods(inv.payment_method ? inv.payment_method.split(', ') : []);
+    setIsRecurring(inv.is_recurring || false);
+    setRecurringMonths(String(inv.recurring_months || 12));
     setCreating(true);
   };
 
@@ -296,6 +306,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
       discount,
       due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
       payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
+      is_recurring: isRecurring,
+      recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,
     };
 
     let error;
@@ -676,6 +688,41 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
             />
           </div>
 
+          {/* Recurring */}
+          <div className="flex items-center gap-3 py-1">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={isRecurring}
+              onClick={() => setIsRecurring(!isRecurring)}
+              className={cn(
+                'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
+                isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'
+              )}
+            >
+              {isRecurring && <Repeat className="w-3 h-3" />}
+            </button>
+            <div className="flex-1">
+              <Label className="text-sm font-medium cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>Fatura recorrente</Label>
+              <p className="text-xs text-muted-foreground">Repetir automaticamente nos próximos meses</p>
+            </div>
+          </div>
+          {isRecurring && (
+            <div className="ml-8">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Duração da recorrência</Label>
+              <Select value={recurringMonths} onValueChange={setRecurringMonths}>
+                <SelectTrigger className="mt-1.5 w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 meses</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="12">12 meses</SelectItem>
+                  <SelectItem value="24">24 meses</SelectItem>
+                  <SelectItem value="36">36 meses</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Summary & actions */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -815,6 +862,15 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                                         <CalendarIcon className="w-3 h-3" />
                                         {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
                                       </span>
+                                    </>
+                                  )}
+                                  {inv.is_recurring && (
+                                    <>
+                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 gap-1 bg-primary/10 text-primary border-primary/30">
+                                        <Repeat className="w-2.5 h-2.5" />
+                                        {inv.recurring_months}x
+                                      </Badge>
                                     </>
                                   )}
                                   <span className="text-xs text-muted-foreground">·</span>
