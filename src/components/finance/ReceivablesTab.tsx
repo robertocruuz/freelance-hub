@@ -688,6 +688,41 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
             />
           </div>
 
+          {/* Recurring */}
+          <div className="flex items-center gap-3 py-1">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={isRecurring}
+              onClick={() => setIsRecurring(!isRecurring)}
+              className={cn(
+                'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
+                isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'
+              )}
+            >
+              {isRecurring && <Repeat className="w-3 h-3" />}
+            </button>
+            <div className="flex-1">
+              <Label className="text-sm font-medium cursor-pointer" onClick={() => setIsRecurring(!isRecurring)}>Fatura recorrente</Label>
+              <p className="text-xs text-muted-foreground">Repetir automaticamente nos próximos meses</p>
+            </div>
+          </div>
+          {isRecurring && (
+            <div className="ml-8">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Duração da recorrência</Label>
+              <Select value={recurringMonths} onValueChange={setRecurringMonths}>
+                <SelectTrigger className="mt-1.5 w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 meses</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="12">12 meses</SelectItem>
+                  <SelectItem value="24">24 meses</SelectItem>
+                  <SelectItem value="36">36 meses</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Summary & actions */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
