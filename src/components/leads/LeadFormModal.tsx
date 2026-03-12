@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
+import type { Client } from '@/hooks/useClients';
 
 interface LeadFormModalProps {
   open: boolean;
