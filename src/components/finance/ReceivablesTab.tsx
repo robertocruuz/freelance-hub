@@ -115,6 +115,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [otherPaymentMethod, setOtherPaymentMethod] = useState('');
   const [notes, setNotes] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringMonths, setRecurringMonths] = useState('12');
   const [organization, setOrganization] = useState<any>(null);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
