@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import LeadCard from '@/components/leads/LeadCard';
 import LeadFormModal from '@/components/leads/LeadFormModal';
 import StageSettingsModal from '@/components/leads/StageSettingsModal';
+import { ShareButton } from '@/components/kanban/ShareButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle, X } from 'lucide-react';
