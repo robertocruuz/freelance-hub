@@ -285,6 +285,7 @@ export default function LeadsPage() {
                         onDelete={id => setDeleteId(id)}
                         onWin={handleWin}
                         onLose={handleLose}
+                        onConvertToProject={handleConvertToProject}
                       />
                     </div>
                   ))}
