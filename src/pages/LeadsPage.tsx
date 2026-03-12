@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import LeadCard from '@/components/leads/LeadCard';
 import LeadFormModal from '@/components/leads/LeadFormModal';
 import StageSettingsModal from '@/components/leads/StageSettingsModal';
+import { ShareButton } from '@/components/kanban/ShareButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle, X } from 'lucide-react';
@@ -192,6 +193,7 @@ export default function LeadsPage() {
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
         <div className="flex items-center gap-2">
+          {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
           <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
             <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
           </Button>
