@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Lead, LeadStage } from '@/hooks/useLeads';
 import ClientSelect from '@/components/ClientSelect';
+import type { Client } from '@/hooks/useClients';
 
 interface LeadFormModalProps {
   open: boolean;
@@ -123,7 +124,17 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
 
           <div>
             <Label>Cliente</Label>
-            <ClientSelect value={clientId} onChange={setClientId} />
+            <ClientSelect
+              value={clientId}
+              onChange={setClientId}
+              onClientChange={(client: Client | null) => {
+                if (client) {
+                  if (!contactName && client.responsible) setContactName(client.responsible);
+                  if (!contactEmail && client.email) setContactEmail(client.email);
+                  if (!contactPhone && client.phone) setContactPhone(client.phone);
+                }
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

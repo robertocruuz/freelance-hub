@@ -5,10 +5,11 @@ import { ChevronDown, X } from 'lucide-react';
 interface ClientSelectProps {
   value: string;
   onChange: (id: string) => void;
+  onClientChange?: (client: Client | null) => void;
   placeholder?: string;
 }
 
-const ClientSelect = ({ value, onChange, placeholder = 'Cliente' }: ClientSelectProps) => {
+const ClientSelect = ({ value, onChange, onClientChange, placeholder = 'Cliente' }: ClientSelectProps) => {
   const { clients } = useClients();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -47,7 +48,7 @@ const ClientSelect = ({ value, onChange, placeholder = 'Cliente' }: ClientSelect
           {value && (
             <span
               role="button"
-              onClick={(e) => { e.stopPropagation(); onChange(''); }}
+              onClick={(e) => { e.stopPropagation(); onChange(''); onClientChange?.(null); }}
               className="p-0.5 rounded-full hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-3 h-3" />
@@ -66,7 +67,7 @@ const ClientSelect = ({ value, onChange, placeholder = 'Cliente' }: ClientSelect
               <button
                 key={c.id}
                 type="button"
-                onClick={() => { onChange(c.id); setOpen(false); }}
+                onClick={() => { onChange(c.id); onClientChange?.(c); setOpen(false); }}
                 className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-muted transition-colors ${c.id === value ? 'bg-muted font-medium' : ''}`}
               >
                 <span
