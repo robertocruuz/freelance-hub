@@ -137,6 +137,10 @@ export default function LeadsPage() {
     setConvertLead(null);
   };
 
+  const handleLose = (id: string) => {
+    updateLead(id, { status: 'lost', lost_at: new Date().toISOString() } as Partial<Lead>);
+  };
+
   const handleConfirmDelete = () => {
     if (deleteId) { deleteLead(deleteId); setDeleteId(null); }
   };
