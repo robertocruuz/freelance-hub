@@ -16,6 +16,7 @@ interface DashboardData {
   invoices: any[];
   expenses: any[];
   orgMembers: any[];
+  leads: any[];
 }
 
 const HomePage = () => {
