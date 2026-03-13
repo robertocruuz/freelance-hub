@@ -25,10 +25,13 @@ const HomePage = () => {
   const isPt = lang === 'pt-BR';
   const [firstName, setFirstName] = useState('');
   const [orgName, setOrgName] = useState('');
+  const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData>({
     clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
   });
   const [loading, setLoading] = useState(true);
+
+  const isAdminUser = userOrgRole === 'admin' || userOrgRole === null;
 
   useEffect(() => {
     const fetchName = async () => {
@@ -40,6 +43,20 @@ const HomePage = () => {
       if (metaName) setFirstName(metaName.split(' ')[0]);
     };
     if (user) fetchName();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchOrgRole = async () => {
+      const { data: member } = await supabase.from('organization_members').select('role').eq('user_id', user.id).eq('status', 'accepted').single();
+      if (member) {
+        setUserOrgRole((member as any).role);
+      } else {
+        const { data: ownOrg } = await supabase.from('organizations').select('id').eq('user_id', user.id).single();
+        if (ownOrg) setUserOrgRole('admin');
+      }
+    };
+    fetchOrgRole();
   }, [user]);
 
   useEffect(() => {
@@ -271,7 +288,8 @@ const HomePage = () => {
 
         {/* ═══ ROW 2: Financeiro + Time Tracking ═══ */}
 
-        {/* Financeiro */}
+        {/* Financeiro — only for admin users */}
+        {isAdminUser && (
         <div className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`} style={stagger(2)}>
           <div className={cardHeader} onClick={() => navigate('/dashboard/finance')}>
             <div className="flex items-center gap-3">
@@ -310,6 +328,7 @@ const HomePage = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Time Tracking */}
         <div className={`${cardBase} md:col-span-6 xl:col-span-7 p-6`} style={stagger(3)}>
