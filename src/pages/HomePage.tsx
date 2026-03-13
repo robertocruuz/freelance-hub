@@ -554,7 +554,7 @@ const HomePage = () => {
         </div>
 
         {/* Equipe / Organização */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-${isAdminUser ? '3' : '4'} p-5`} style={stagger(isAdminUser ? 8 : 7)}>
+        <div className={`${cardBase} md:col-span-3 ${isAdminUser ? 'xl:col-span-3' : 'xl:col-span-4'} p-5`} style={stagger(isAdminUser ? 8 : 7)}>
           <div className={cardHeader} onClick={() => navigate('/dashboard/team')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
