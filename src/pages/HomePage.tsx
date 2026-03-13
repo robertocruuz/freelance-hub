@@ -107,6 +107,7 @@ const HomePage = () => {
         invoices: invoices.data || [],
         expenses: expenses.data || [],
         orgMembers: enrichedMembers,
+        leads: leads.data || [],
       });
       setLoading(false);
     };
