@@ -185,6 +185,15 @@ const HomePage = () => {
     return { total: members.length, members };
   }, [data.orgMembers]);
 
+  const leadStats = useMemo(() => {
+    const open = data.leads.filter(l => l.status === 'open');
+    const won = data.leads.filter(l => l.status === 'won');
+    const lost = data.leads.filter(l => l.status === 'lost');
+    const totalValue = open.reduce((s, l) => s + (Number(l.value) || 0), 0);
+    const wonValue = won.reduce((s, l) => s + (Number(l.value) || 0), 0);
+    return { total: data.leads.length, open: open.length, won: won.length, lost: lost.length, totalValue, wonValue };
+  }, [data.leads]);
+
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
