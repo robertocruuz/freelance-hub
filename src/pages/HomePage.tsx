@@ -25,10 +25,13 @@ const HomePage = () => {
   const isPt = lang === 'pt-BR';
   const [firstName, setFirstName] = useState('');
   const [orgName, setOrgName] = useState('');
+  const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData>({
     clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
   });
   const [loading, setLoading] = useState(true);
+
+  const isAdminUser = userOrgRole === 'admin' || userOrgRole === null;
 
   useEffect(() => {
     const fetchName = async () => {
