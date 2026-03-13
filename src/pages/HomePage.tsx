@@ -288,7 +288,8 @@ const HomePage = () => {
 
         {/* ═══ ROW 2: Financeiro + Time Tracking ═══ */}
 
-        {/* Financeiro */}
+        {/* Financeiro — only for admin users */}
+        {isAdminUser && (
         <div className={`${cardBase} md:col-span-6 xl:col-span-5 p-5`} style={stagger(2)}>
           <div className={cardHeader} onClick={() => navigate('/dashboard/finance')}>
             <div className="flex items-center gap-3">
@@ -327,6 +328,7 @@ const HomePage = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Time Tracking */}
         <div className={`${cardBase} md:col-span-6 xl:col-span-7 p-6`} style={stagger(3)}>
