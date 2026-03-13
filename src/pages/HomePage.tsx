@@ -46,6 +46,20 @@ const HomePage = () => {
   }, [user]);
 
   useEffect(() => {
+    if (!user) return;
+    const fetchOrgRole = async () => {
+      const { data: member } = await supabase.from('organization_members').select('role').eq('user_id', user.id).eq('status', 'accepted').single();
+      if (member) {
+        setUserOrgRole((member as any).role);
+      } else {
+        const { data: ownOrg } = await supabase.from('organizations').select('id').eq('user_id', user.id).single();
+        if (ownOrg) setUserOrgRole('admin');
+      }
+    };
+    fetchOrgRole();
+  }, [user]);
+
+  useEffect(() => {
     const fetchAll = async () => {
       if (!user) return;
       setLoading(true);
