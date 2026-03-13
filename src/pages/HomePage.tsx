@@ -446,7 +446,7 @@ const HomePage = () => {
         )}
 
         {/* Projetos — shares row with Financeiro when admin, or starts new row */}
-        <div className={`${cardBase} md:col-span-3 xl:col-span-${isAdminUser ? '4' : '4'} p-5`} style={stagger(isAdminUser ? 5 : 4)}>
+        <div className={`${cardBase} md:col-span-3 xl:col-span-4 p-5`} style={stagger(isAdminUser ? 5 : 4)}>
           <div className={cardHeader} onClick={() => navigate('/dashboard/projects')}>
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
