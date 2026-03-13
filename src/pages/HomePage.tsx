@@ -64,7 +64,7 @@ const HomePage = () => {
     const fetchAll = async () => {
       if (!user) return;
       setLoading(true);
-      const [clients, budgets, projects, tasks, timeEntries, invoices, expenses, orgMembers] = await Promise.all([
+      const [clients, budgets, projects, tasks, timeEntries, invoices, expenses, orgMembers, leads] = await Promise.all([
         supabase.from('clients').select('*').order('created_at', { ascending: false }),
         supabase.from('budgets').select('*').order('created_at', { ascending: false }),
         supabase.from('projects').select('*').order('created_at', { ascending: false }),
@@ -73,6 +73,7 @@ const HomePage = () => {
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('expenses').select('*').order('created_at', { ascending: false }),
         supabase.from('organization_members').select('id, user_id, role, status, organization_id').eq('status', 'accepted'),
+        supabase.from('leads').select('*').order('created_at', { ascending: false }),
       ]);
 
       // Fetch profiles for org members
