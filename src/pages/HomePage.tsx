@@ -543,15 +543,6 @@ const HomePage = () => {
           )}
         </div>
 
-  const leadStats = useMemo(() => {
-    const open = data.leads.filter(l => l.status === 'open');
-    const won = data.leads.filter(l => l.status === 'won');
-    const lost = data.leads.filter(l => l.status === 'lost');
-    const totalValue = open.reduce((s, l) => s + (Number(l.value) || 0), 0);
-    const wonValue = won.reduce((s, l) => s + (Number(l.value) || 0), 0);
-    return { total: data.leads.length, open: open.length, won: won.length, lost: lost.length, totalValue, wonValue };
-  }, [data.leads]);
-
 
       </div>
     </div>
