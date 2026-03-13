@@ -28,7 +28,7 @@ const HomePage = () => {
   const [orgName, setOrgName] = useState('');
   const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData>({
-    clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [],
+    clients: [], budgets: [], projects: [], tasks: [], timeEntries: [], invoices: [], expenses: [], orgMembers: [], leads: [],
   });
   const [loading, setLoading] = useState(true);
 
