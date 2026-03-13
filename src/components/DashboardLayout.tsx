@@ -41,6 +41,324 @@ const labelMap: Record<string, (t: any) => string> = {
   team: (t) => t.team || 'Equipe',
 };
 
+/* ─── Helpers ─── */
+const formatElapsed = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
+
+/* ─── Sidebar Notification Item ─── */
+const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
+  const { user } = useAuth();
+  const { lang } = useI18n();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const isPt = lang === 'pt-BR';
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      setUnreadCount(count || 0);
+    };
+    fetch();
+
+    const channel = supabase
+      .channel('sidebar-notif-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const label = isPt ? 'Notificações' : 'Notifications';
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex justify-center">
+            <NotificationBell />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <NotificationBell
+      renderTrigger={(triggerProps) => (
+        <button
+          {...triggerProps}
+          className={cn(
+            'w-full flex items-center gap-3 rounded-lg transition-all duration-150 px-3 py-2.5',
+            'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+          )}
+        >
+          <div className="relative shrink-0">
+            <Bell className="w-[18px] h-[18px]" strokeWidth={1.8} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center ring-2 ring-card">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[13px]">{label}</span>
+        </button>
+      )}
+    />
+  );
+};
+
+/* ─── Timer Indicator ─── */
+const TimerIndicator = ({ navigate, collapsed }: { navigate: (path: string) => void; collapsed: boolean }) => {
+  const { running, elapsed, stopTimer } = useTimer();
+
+  if (!running) return null;
+
+  return (
+    <div className={cn('px-3 pb-2', collapsed && 'px-2')}>
+      <button
+        onClick={() => navigate('/dashboard/time')}
+        className={cn(
+          'w-full flex items-center gap-2 rounded-lg bg-destructive/10 hover:bg-destructive/15 transition-all py-2.5',
+          collapsed ? 'justify-center px-2' : 'px-3'
+        )}
+      >
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
+        </span>
+        {!collapsed && (
+          <>
+            <span className="text-xs font-mono font-bold text-foreground tabular-nums">
+              {formatElapsed(elapsed)}
+            </span>
+            <Square
+              className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive transition ml-auto"
+              onClick={(e) => {
+                e.stopPropagation();
+                stopTimer();
+              }}
+            />
+          </>
+        )}
+      </button>
+    </div>
+  );
+};
+
+interface SidebarNavProps {
+  isMobile?: boolean;
+  collapsed: boolean;
+  setMobileOpen: (open: boolean) => void;
+  navigate: (path: string) => void;
+  location: any;
+  t: any;
+  filteredNavItems: any[];
+  user: any;
+  userName: string;
+  avatarUrl: string | null;
+  initials: string;
+  userExpanded: boolean;
+  setUserExpanded: (expanded: boolean) => void;
+  orgName: string;
+  handleLogout: () => Promise<void>;
+  isActive: (path: string) => boolean;
+}
+
+const SidebarNav = ({ 
+  isMobile = false, 
+  collapsed, 
+  setMobileOpen, 
+  navigate, 
+  location, 
+  t, 
+  filteredNavItems,
+  user,
+  userName,
+  avatarUrl,
+  initials,
+  userExpanded,
+  setUserExpanded,
+  orgName,
+  handleLogout,
+  isActive
+}: SidebarNavProps) => (
+  <div className="flex flex-col h-full">
+    {/* Logo */}
+    <div className={cn('flex items-center shrink-0', collapsed && !isMobile ? 'justify-center h-20' : 'gap-3 px-5 h-20')}>
+      <button onClick={() => { navigate('/dashboard'); if (isMobile) setMobileOpen(false); }} className="flex items-center gap-3 group">
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+          <span className="text-primary-foreground font-black text-sm">F</span>
+        </div>
+        {(!collapsed || isMobile) && (
+          <div className="flex flex-col">
+            <span className="text-[15px] font-extrabold tracking-tight text-sidebar-foreground leading-tight">
+              Freelaz
+            </span>
+            <span className="text-[10px] font-medium text-sidebar-foreground/40 leading-none tracking-wide">
+              connect
+            </span>
+          </div>
+        )}
+      </button>
+    </div>
+
+    {/* Nav items */}
+    <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
+      {filteredNavItems.map((item) => {
+        const active = isActive(item.path);
+        const label = labelMap[item.key](t);
+
+        const btn = (
+          <button
+            key={item.key}
+            onClick={() => {
+              navigate(item.path);
+              if (isMobile) setMobileOpen(false);
+            }}
+            className={cn(
+              'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
+              collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
+              active
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+            )}
+          >
+            <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={active ? 2.2 : 1.8} />
+            {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
+          </button>
+        );
+
+        if (collapsed && !isMobile) {
+          return (
+            <Tooltip key={item.key}>
+              <TooltipTrigger asChild>{btn}</TooltipTrigger>
+              <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+            </Tooltip>
+          );
+        }
+        return <div key={item.key}>{btn}</div>;
+      })}
+    </nav>
+
+    {/* Timer */}
+    <TimerIndicator navigate={(path) => { navigate(path); if (isMobile) setMobileOpen(false); }} collapsed={collapsed && !isMobile} />
+
+    {/* Bottom section */}
+    <div className="shrink-0">
+      {/* Notifications & Settings links */}
+      <div className={cn('px-3 space-y-0.5', collapsed && !isMobile && 'px-2')}>
+        <SidebarNotificationItem collapsed={collapsed && !isMobile} />
+
+        {(() => {
+          const settingsActive = location.pathname === '/dashboard/settings';
+          const settingsBtn = (
+            <button
+              onClick={() => { navigate('/dashboard/settings'); if (isMobile) setMobileOpen(false); }}
+              className={cn(
+                'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
+                collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
+                settingsActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                  : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+              )}
+            >
+              <Settings className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} />
+              {(!collapsed || isMobile) && <span className="text-[13px]">{t.settings}</span>}
+            </button>
+          );
+          if (collapsed && !isMobile) {
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>{settingsBtn}</TooltipTrigger>
+                <TooltipContent side="right" className="text-xs font-medium">{t.settings}</TooltipContent>
+              </Tooltip>
+            );
+          }
+          return settingsBtn;
+        })()}
+      </div>
+
+      {/* User profile */}
+      <div className={cn('px-3 py-3', collapsed && !isMobile && 'px-2 py-2')}>
+        <button
+          onClick={() => {
+            if (collapsed && !isMobile) {
+              navigate('/dashboard/profile');
+            } else {
+              setUserExpanded(!userExpanded);
+            }
+          }}
+          className={cn(
+            'w-full flex items-center gap-3 rounded-xl p-2.5 transition-all',
+            'hover:bg-sidebar-accent/50',
+            collapsed && !isMobile && 'justify-center',
+            userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/40'
+          )}
+        >
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 ring-2 ring-sidebar-border">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xs font-bold text-muted-foreground">{initials}</span>
+            )}
+          </div>
+          {(!collapsed || isMobile) && (
+            <>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-[13px] font-semibold text-sidebar-foreground truncate">{userName || user?.email}</p>
+              </div>
+              <ChevronsUpDown className={cn('w-4 h-4 text-sidebar-foreground/30 shrink-0 transition-transform', userExpanded && 'rotate-180')} />
+            </>
+          )}
+        </button>
+
+        {/* Expanded user info */}
+        {userExpanded && (!collapsed || isMobile) && (
+          <div className="mt-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
+            <div className="px-4 py-3 space-y-2.5">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Email</p>
+                <p className="text-[12px] text-sidebar-foreground/80 truncate">{user?.email}</p>
+              </div>
+              {orgName && (
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Empresa</p>
+                  <p className="text-[12px] text-sidebar-foreground/80 truncate">{orgName}</p>
+                </div>
+              )}
+            </div>
+            <Separator className="bg-sidebar-border" />
+            <div className="p-1.5 space-y-0.5">
+              <button
+                onClick={() => { navigate('/dashboard/profile'); if (isMobile) setMobileOpen(false); setUserExpanded(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <User className="w-4 h-4" /> {t.profile}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> {t.logout}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
 const DashboardLayout = () => {
   const { t, lang, setLang } = useI18n();
   const { signOut, user } = useAuth();
@@ -116,177 +434,6 @@ const DashboardLayout = () => {
     return true;
   });
 
-  const SidebarNav = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className={cn('flex items-center shrink-0', collapsed && !isMobile ? 'justify-center h-20' : 'gap-3 px-5 h-20')}>
-        <button onClick={() => { navigate('/dashboard'); if (isMobile) setMobileOpen(false); }} className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-            <span className="text-primary-foreground font-black text-sm">F</span>
-          </div>
-          {(!collapsed || isMobile) && (
-            <div className="flex flex-col">
-              <span className="text-[15px] font-extrabold tracking-tight text-sidebar-foreground leading-tight">
-                Freelaz
-              </span>
-              <span className="text-[10px] font-medium text-sidebar-foreground/40 leading-none tracking-wide">
-                connect
-              </span>
-            </div>
-          )}
-        </button>
-      </div>
-
-
-      {/* Menu label */}
-
-      {/* Nav items */}
-      <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
-        {filteredNavItems.map((item) => {
-          const active = isActive(item.path);
-          const label = labelMap[item.key](t);
-
-          const btn = (
-            <button
-              key={item.key}
-              onClick={() => {
-                navigate(item.path);
-                if (isMobile) setMobileOpen(false);
-              }}
-              className={cn(
-                'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
-                collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-                active
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
-                  : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-              )}
-            >
-              <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={active ? 2.2 : 1.8} />
-              {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
-            </button>
-          );
-
-          if (collapsed && !isMobile) {
-            return (
-              <Tooltip key={item.key}>
-                <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
-              </Tooltip>
-            );
-          }
-          return <div key={item.key}>{btn}</div>;
-        })}
-      </nav>
-
-      {/* Timer */}
-      <TimerIndicator navigate={(path) => { navigate(path); if (isMobile) setMobileOpen(false); }} collapsed={collapsed && !isMobile} />
-
-      {/* Bottom section */}
-      <div className="shrink-0">
-        {/* Notifications & Settings links */}
-        <div className={cn('px-3 space-y-0.5', collapsed && !isMobile && 'px-2')}>
-          <SidebarNotificationItem collapsed={collapsed && !isMobile} />
-
-          {(() => {
-            const settingsActive = location.pathname === '/dashboard/settings';
-            const settingsBtn = (
-              <button
-                onClick={() => { navigate('/dashboard/settings'); if (isMobile) setMobileOpen(false); }}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
-                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-                  settingsActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
-                    : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-                )}
-              >
-                <Settings className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} />
-                {(!collapsed || isMobile) && <span className="text-[13px]">{t.settings}</span>}
-              </button>
-            );
-            if (collapsed && !isMobile) {
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>{settingsBtn}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs font-medium">{t.settings}</TooltipContent>
-                </Tooltip>
-              );
-            }
-            return settingsBtn;
-          })()}
-        </div>
-
-        {/* User profile */}
-        <div className={cn('px-3 py-3', collapsed && !isMobile && 'px-2 py-2')}>
-          <button
-            onClick={() => {
-              if (collapsed && !isMobile) {
-                navigate('/dashboard/profile');
-              } else {
-                setUserExpanded(!userExpanded);
-              }
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 rounded-xl p-2.5 transition-all',
-              'hover:bg-sidebar-accent/50',
-              collapsed && !isMobile && 'justify-center',
-              userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/40'
-            )}
-          >
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 ring-2 ring-sidebar-border">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xs font-bold text-muted-foreground">{initials}</span>
-              )}
-            </div>
-            {(!collapsed || isMobile) && (
-              <>
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-[13px] font-semibold text-sidebar-foreground truncate">{userName || user?.email}</p>
-                </div>
-                <ChevronsUpDown className={cn('w-4 h-4 text-sidebar-foreground/30 shrink-0 transition-transform', userExpanded && 'rotate-180')} />
-              </>
-            )}
-          </button>
-
-          {/* Expanded user info */}
-          {userExpanded && (!collapsed || isMobile) && (
-            <div className="mt-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
-              <div className="px-4 py-3 space-y-2.5">
-                <div className="space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Email</p>
-                  <p className="text-[12px] text-sidebar-foreground/80 truncate">{user?.email}</p>
-                </div>
-                {orgName && (
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Empresa</p>
-                    <p className="text-[12px] text-sidebar-foreground/80 truncate">{orgName}</p>
-                  </div>
-                )}
-              </div>
-              <Separator className="bg-sidebar-border" />
-              <div className="p-1.5 space-y-0.5">
-                <button
-                  onClick={() => { navigate('/dashboard/profile'); if (isMobile) setMobileOpen(false); setUserExpanded(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-                >
-                  <User className="w-4 h-4" /> {t.profile}
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" /> {t.logout}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen flex bg-background">
       {/* Desktop sidebar */}
@@ -296,7 +443,23 @@ const DashboardLayout = () => {
           collapsed ? 'w-[60px]' : 'w-[250px]'
         )}
       >
-        <SidebarNav />
+        <SidebarNav 
+          collapsed={collapsed}
+          setMobileOpen={setMobileOpen}
+          navigate={navigate}
+          location={location}
+          t={t}
+          filteredNavItems={filteredNavItems}
+          user={user}
+          userName={userName}
+          avatarUrl={avatarUrl}
+          initials={initials}
+          userExpanded={userExpanded}
+          setUserExpanded={setUserExpanded}
+          orgName={orgName}
+          handleLogout={handleLogout}
+          isActive={isActive}
+        />
 
         {/* Collapse toggle - subtle pill on border */}
         <button
@@ -321,7 +484,24 @@ const DashboardLayout = () => {
             >
               <X className="w-5 h-5" />
             </button>
-            <SidebarNav isMobile />
+            <SidebarNav 
+              isMobile 
+              collapsed={collapsed}
+              setMobileOpen={setMobileOpen}
+              navigate={navigate}
+              location={location}
+              t={t}
+              filteredNavItems={filteredNavItems}
+              user={user}
+              userName={userName}
+              avatarUrl={avatarUrl}
+              initials={initials}
+              userExpanded={userExpanded}
+              setUserExpanded={setUserExpanded}
+              orgName={orgName}
+              handleLogout={handleLogout}
+              isActive={isActive}
+            />
           </aside>
         </div>
       )}
@@ -351,119 +531,6 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
-    </div>
-  );
-};
-
-/* ─── Sidebar Notification Item ─── */
-const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
-  const { user } = useAuth();
-  const { lang } = useI18n();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const isPt = lang === 'pt-BR';
-
-  useEffect(() => {
-    if (!user) return;
-    const fetch = async () => {
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
-      setUnreadCount(count || 0);
-    };
-    fetch();
-
-    const channel = supabase
-      .channel('sidebar-notif-count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetch())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  const label = isPt ? 'Notificações' : 'Notifications';
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex justify-center">
-            <NotificationBell />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return (
-    <NotificationBell
-      renderTrigger={(triggerProps) => (
-        <button
-          {...triggerProps}
-          className={cn(
-            'w-full flex items-center gap-3 rounded-lg transition-all duration-150 px-3 py-2.5',
-            'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-          )}
-        >
-          <div className="relative shrink-0">
-            <Bell className="w-[18px] h-[18px]" strokeWidth={1.8} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center ring-2 ring-card">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
-          <span className="text-[13px]">{label}</span>
-        </button>
-      )}
-    />
-  );
-};
-
-/* ─── Timer Indicator ─── */
-const formatElapsed = (seconds: number) => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return h > 0
-    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-    : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-};
-
-const TimerIndicator = ({ navigate, collapsed }: { navigate: (path: string) => void; collapsed: boolean }) => {
-  const { running, elapsed, stopTimer } = useTimer();
-
-  if (!running) return null;
-
-  return (
-    <div className={cn('px-3 pb-2', collapsed && 'px-2')}>
-      <button
-        onClick={() => navigate('/dashboard/time')}
-        className={cn(
-          'w-full flex items-center gap-2 rounded-lg bg-destructive/10 hover:bg-destructive/15 transition-all py-2.5',
-          collapsed ? 'justify-center px-2' : 'px-3'
-        )}
-      >
-        <span className="relative flex h-2 w-2 shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
-        </span>
-        {!collapsed && (
-          <>
-            <span className="text-xs font-mono font-bold text-foreground tabular-nums">
-              {formatElapsed(elapsed)}
-            </span>
-            <Square
-              className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive transition ml-auto"
-              onClick={(e) => {
-                e.stopPropagation();
-                stopTimer();
-              }}
-            />
-          </>
-        )}
-      </button>
     </div>
   );
 };
