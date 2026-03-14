@@ -127,7 +127,23 @@ const KanbanPage = () => {
     });
   }, [user]);
 
-  // Load shared tasks
+  // Load tasks I've shared with others (outgoing shares)
+  useEffect(() => {
+    if (!user) return;
+    const loadMyShares = async () => {
+      const { data } = await supabase
+        .from('shares')
+        .select('resource_id')
+        .eq('resource_type', 'task')
+        .eq('created_by', user.id);
+      if (data) {
+        setSharedByMeTaskIds(new Set(data.map(s => s.resource_id)));
+      }
+    };
+    loadMyShares();
+  }, [user, tasks]);
+
+  // Load shared tasks (tasks shared WITH me)
   useEffect(() => {
     if (!user || activeTab !== 'shared') return;
     const loadSharedTasks = async () => {
