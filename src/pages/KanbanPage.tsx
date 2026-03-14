@@ -101,6 +101,7 @@ const KanbanPage = () => {
   const [sharedColumns, setSharedColumns] = useState<any[]>([]);
   const [loadingShared, setLoadingShared] = useState(false);
   const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
+  const [sharedByMeTaskIds, setSharedByMeTaskIds] = useState<Set<string>>(new Set());
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
