@@ -47,6 +47,7 @@ interface KanbanColumnProps {
   onUpdateColumn: (id: string, name: string) => void;
   onDeleteColumn: (id: string) => void;
   clientColorMap?: Record<string, string>;
+  sharedByMeTaskIds?: Set<string>;
 }
 
 type AddMode = 'choice' | 'project' | 'project-items';
