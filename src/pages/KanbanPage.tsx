@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { formatCurrency } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useSearchParams } from 'react-router-dom';
 import {
   DndContext,
@@ -93,6 +94,13 @@ const KanbanPage = () => {
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
+  const [activeTab, setActiveTab] = useState('my-boards');
+
+  // Shared tasks state
+  const [sharedTasks, setSharedTasks] = useState<Task[]>([]);
+  const [sharedColumns, setSharedColumns] = useState<any[]>([]);
+  const [loadingShared, setLoadingShared] = useState(false);
+  const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
@@ -117,6 +125,44 @@ const KanbanPage = () => {
       if (data) setProjects(data);
     });
   }, [user]);
+
+  // Load shared tasks
+  useEffect(() => {
+    if (!user || activeTab !== 'shared') return;
+    const loadSharedTasks = async () => {
+      setLoadingShared(true);
+      const { data: shares } = await supabase
+        .from('shares')
+        .select('resource_id')
+        .eq('resource_type', 'task')
+        .eq('shared_with_user_id', user.id);
+      
+      if (shares && shares.length > 0) {
+        const taskIds = shares.map(s => s.resource_id);
+        const { data: tasksData } = await supabase
+          .from('tasks')
+          .select('*')
+          .in('id', taskIds)
+          .order('updated_at', { ascending: false });
+        
+        if (tasksData) {
+          setSharedTasks(tasksData);
+          const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
+          if (colIds.length > 0) {
+            const { data: colsData } = await supabase
+              .from('kanban_columns')
+              .select('*')
+              .in('id', colIds as string[]);
+            if (colsData) setSharedColumns(colsData);
+          }
+        }
+      } else {
+        setSharedTasks([]);
+      }
+      setLoadingShared(false);
+    };
+    loadSharedTasks();
+  }, [user, activeTab]);
 
   // Create task from budget item
   useEffect(() => {
@@ -346,6 +392,20 @@ const KanbanPage = () => {
 
         </div>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-fit mb-3">
+          <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
+            <Kanban className="w-3.5 h-3.5" />
+            Meus Painéis
+          </TabsTrigger>
+          <TabsTrigger value="shared" className="gap-1.5 text-xs">
+            <Share2 className="w-3.5 h-3.5" />
+            Compartilhadas comigo
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0">
 
       {/* Board selector */}
       <div className="flex items-center gap-2 mb-3">
@@ -1041,6 +1101,102 @@ const KanbanPage = () => {
         />
       )}
       </>)}
+        </TabsContent>
+
+        <TabsContent value="shared" className="flex-1 flex flex-col min-h-0 mt-0">
+          {loadingShared ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-pulse text-muted-foreground">Carregando tarefas compartilhadas...</div>
+            </div>
+          ) : sharedTasks.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <Share2 className="w-10 h-10 opacity-30" />
+              <p className="text-sm">Nenhuma tarefa compartilhada com você</p>
+              <p className="text-xs text-muted-foreground/70">Quando alguém compartilhar uma tarefa, ela aparecerá aqui.</p>
+            </div>
+          ) : (
+            <>
+              <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+                <table className="w-full min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tarefa</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prioridade</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prazo</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Valor Est.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sharedTasks.map((task) => {
+                      const col = sharedColumns.find((c: any) => c.id === task.column_id);
+                      const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
+                      return (
+                        <tr
+                          key={task.id}
+                          onClick={() => setSelectedSharedTask(task)}
+                          className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition"
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={!!task.completed_at}
+                                onCheckedChange={async (checked) => {
+                                  await supabase.from('tasks').update({
+                                    completed_at: checked ? new Date().toISOString() : null,
+                                  }).eq('id', task.id);
+                                  setSharedTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed_at: checked ? new Date().toISOString() : null } : t));
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className={`text-sm font-medium ${task.completed_at ? 'line-through text-muted-foreground' : ''}`}>
+                                {task.title}
+                              </span>
+                              <Badge variant="outline" className="text-[9px] gap-1 px-1.5 py-0">
+                                <Share2 className="w-2.5 h-2.5" /> Compartilhada
+                              </Badge>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="secondary" className="text-[10px]">{col?.name || '-'}</Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
+                          </td>
+                          <td className={`px-4 py-3 text-xs ${isOverdue ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                            {task.due_date ? format(new Date(task.due_date), "dd/MM/yyyy") : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">
+                            {task.estimated_value ? formatCurrency(Number(task.estimated_value)) : '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {selectedSharedTask && (
+                <TaskDetailModal
+                  task={selectedSharedTask}
+                  columns={sharedColumns}
+                  onClose={() => setSelectedSharedTask(null)}
+                  onUpdate={async (id, updates) => {
+                    await supabase.from('tasks').update(updates).eq('id', id);
+                    setSharedTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+                    setSelectedSharedTask(prev => prev ? { ...prev, ...updates } : null);
+                  }}
+                  onDelete={async (id) => {
+                    await supabase.from('tasks').delete().eq('id', id);
+                    setSharedTasks(prev => prev.filter(t => t.id !== id));
+                  }}
+                  kanban={kanban}
+                />
+              )}
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Board create/edit dialog */}
       <Dialog open={showBoardDialog} onOpenChange={setShowBoardDialog}>
