@@ -979,7 +979,7 @@ const KanbanPage = () => {
           }}>
             {activeTask && (
               <div className="w-72 rotate-[3deg] scale-105 shadow-2xl shadow-primary/20 ring-2 ring-primary/40 rounded-xl">
-                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} />
+                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} isSharedByMe={sharedByMeTaskIds.has(activeTask.id)} />
               </div>
             )}
           </DragOverlay>
