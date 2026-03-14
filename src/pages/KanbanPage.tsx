@@ -393,6 +393,20 @@ const KanbanPage = () => {
         </div>
       </div>
 
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-fit mb-3">
+          <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
+            <Kanban className="w-3.5 h-3.5" />
+            Meus Painéis
+          </TabsTrigger>
+          <TabsTrigger value="shared" className="gap-1.5 text-xs">
+            <Share2 className="w-3.5 h-3.5" />
+            Compartilhadas comigo
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0">
+
       {/* Board selector */}
       <div className="flex items-center gap-2 mb-3">
         <DropdownMenu>
