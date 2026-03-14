@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2, Share2 } from 'lucide-react';
