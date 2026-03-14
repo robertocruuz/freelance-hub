@@ -940,6 +940,7 @@ const KanbanPage = () => {
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
                   clientColorMap={clientColorMap}
+                  sharedByMeTaskIds={sharedByMeTaskIds}
                 />
               ))}
             </SortableContext>
