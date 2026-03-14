@@ -48,6 +48,7 @@ interface TaskCardProps {
   onDelete?: (taskId: string) => void;
   checklistProgress?: { done: number; total: number } | null;
   clientColor?: string | null;
+  isSharedByMe?: boolean;
 }
 
 interface DeleteImpact {
