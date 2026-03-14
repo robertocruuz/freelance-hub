@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Calendar, CheckSquare, AlertTriangle, Clock, MoreVertical, Trash2, Share2 } from 'lucide-react';
@@ -7,7 +7,7 @@ import { format, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -48,6 +48,7 @@ interface TaskCardProps {
   onDelete?: (taskId: string) => void;
   checklistProgress?: { done: number; total: number } | null;
   clientColor?: string | null;
+  isSharedByMe?: boolean;
 }
 
 interface DeleteImpact {
@@ -58,9 +59,7 @@ interface DeleteImpact {
   projectName: string | null;
 }
 
-export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor }: TaskCardProps) => {
-  const { user } = useAuth();
-  const isShared = user ? task.user_id !== user.id : false;
+export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistProgress, clientColor, isSharedByMe = false }: TaskCardProps) => {
   const isCompleted = !!task.completed_at;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteImpact, setDeleteImpact] = useState<DeleteImpact | null>(null);
@@ -199,7 +198,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               {'⭐'.repeat(Math.min(task.complexity, 5))}
             </Badge>
           )}
-          {isShared && (
+          {isSharedByMe && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/30 gap-1">
@@ -207,7 +206,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
                   Compartilhada
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent>Tarefa compartilhada com você</TooltipContent>
+              <TooltipContent>Você compartilhou esta tarefa</TooltipContent>
             </Tooltip>
           )}
         </div>

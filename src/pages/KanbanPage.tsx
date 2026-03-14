@@ -101,6 +101,7 @@ const KanbanPage = () => {
   const [sharedColumns, setSharedColumns] = useState<any[]>([]);
   const [loadingShared, setLoadingShared] = useState(false);
   const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
+  const [sharedByMeTaskIds, setSharedByMeTaskIds] = useState<Set<string>>(new Set());
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
@@ -126,7 +127,23 @@ const KanbanPage = () => {
     });
   }, [user]);
 
-  // Load shared tasks
+  // Load tasks I've shared with others (outgoing shares)
+  useEffect(() => {
+    if (!user) return;
+    const loadMyShares = async () => {
+      const { data } = await supabase
+        .from('shares')
+        .select('resource_id')
+        .eq('resource_type', 'task')
+        .eq('created_by', user.id);
+      if (data) {
+        setSharedByMeTaskIds(new Set(data.map(s => s.resource_id)));
+      }
+    };
+    loadMyShares();
+  }, [user, tasks]);
+
+  // Load shared tasks (tasks shared WITH me)
   useEffect(() => {
     if (!user || activeTab !== 'shared') return;
     const loadSharedTasks = async () => {
@@ -244,6 +261,8 @@ const KanbanPage = () => {
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
+      // Only show tasks owned by the user in "Meus Painéis"
+      if (user && t.user_id !== user.id) return false;
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterPriorities.size > 0 && !filterPriorities.has(t.priority)) return false;
       if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
@@ -921,6 +940,7 @@ const KanbanPage = () => {
                   onUpdateColumn={(id, name) => kanban.updateColumn(id, { name })}
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
                   clientColorMap={clientColorMap}
+                  sharedByMeTaskIds={sharedByMeTaskIds}
                 />
               ))}
             </SortableContext>
@@ -959,7 +979,7 @@ const KanbanPage = () => {
           }}>
             {activeTask && (
               <div className="w-72 rotate-[3deg] scale-105 shadow-2xl shadow-primary/20 ring-2 ring-primary/40 rounded-xl">
-                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} />
+                <TaskCard task={activeTask} onClick={() => {}} clientColor={activeTask.client_id ? clientColorMap[activeTask.client_id] || null : null} isSharedByMe={sharedByMeTaskIds.has(activeTask.id)} />
               </div>
             )}
           </DragOverlay>
