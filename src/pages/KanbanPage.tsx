@@ -261,6 +261,8 @@ const KanbanPage = () => {
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
+      // Only show tasks owned by the user in "Meus Painéis"
+      if (user && t.user_id !== user.id) return false;
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterPriorities.size > 0 && !filterPriorities.has(t.priority)) return false;
       if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
