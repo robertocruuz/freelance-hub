@@ -414,9 +414,11 @@ const KanbanPage = () => {
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
               <Kanban className="w-3.5 h-3.5" />
               {boards.find(b => b.id === activeBoardId)?.name || 'Selecionar painel'}
-              {activeBoardId && getBoardSubtitle(boards.find(b => b.id === activeBoardId)!) && (
-                <span className="text-[10px] opacity-70">{getBoardSubtitle(boards.find(b => b.id === activeBoardId)!)}</span>
-              )}
+              {(() => {
+                const activeBoard = activeBoardId ? boards.find(b => b.id === activeBoardId) : undefined;
+                const subtitle = activeBoard ? getBoardSubtitle(activeBoard) : '';
+                return subtitle ? <span className="text-[10px] opacity-70">{subtitle}</span> : null;
+              })()}
               <ChevronDown className="w-3 h-3" />
             </Button>
           </DropdownMenuTrigger>
