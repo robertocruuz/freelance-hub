@@ -62,6 +62,7 @@ export const KanbanColumnComponent = ({
   onUpdateColumn,
   onDeleteColumn,
   clientColorMap = {},
+  sharedByMeTaskIds,
 }: KanbanColumnProps) => {
   const [addMode, setAddMode] = useState<AddMode | null>(null);
   const [newTitle, setNewTitle] = useState('');
