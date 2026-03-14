@@ -126,6 +126,44 @@ const KanbanPage = () => {
     });
   }, [user]);
 
+  // Load shared tasks
+  useEffect(() => {
+    if (!user || activeTab !== 'shared') return;
+    const loadSharedTasks = async () => {
+      setLoadingShared(true);
+      const { data: shares } = await supabase
+        .from('shares')
+        .select('resource_id')
+        .eq('resource_type', 'task')
+        .eq('shared_with_user_id', user.id);
+      
+      if (shares && shares.length > 0) {
+        const taskIds = shares.map(s => s.resource_id);
+        const { data: tasksData } = await supabase
+          .from('tasks')
+          .select('*')
+          .in('id', taskIds)
+          .order('updated_at', { ascending: false });
+        
+        if (tasksData) {
+          setSharedTasks(tasksData);
+          const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
+          if (colIds.length > 0) {
+            const { data: colsData } = await supabase
+              .from('kanban_columns')
+              .select('*')
+              .in('id', colIds as string[]);
+            if (colsData) setSharedColumns(colsData);
+          }
+        }
+      } else {
+        setSharedTasks([]);
+      }
+      setLoadingShared(false);
+    };
+    loadSharedTasks();
+  }, [user, activeTab]);
+
   // Create task from budget item
   useEffect(() => {
     const fromBudget = searchParams.get('from_budget');
