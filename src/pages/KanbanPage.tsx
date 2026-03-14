@@ -94,6 +94,13 @@ const KanbanPage = () => {
   const [newColumnName, setNewColumnName] = useState('');
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
+  const [activeTab, setActiveTab] = useState('my-boards');
+
+  // Shared tasks state
+  const [sharedTasks, setSharedTasks] = useState<Task[]>([]);
+  const [sharedColumns, setSharedColumns] = useState<any[]>([]);
+  const [loadingShared, setLoadingShared] = useState(false);
+  const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
