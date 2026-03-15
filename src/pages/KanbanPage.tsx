@@ -520,11 +520,21 @@ const KanbanPage = () => {
                   : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
               }`}
             >
+              {/* Color indicator bar */}
+              {(() => {
+                const color = getBoardColor(board);
+                return color ? (
+                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                ) : null;
+              })()}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${
-                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                  }`}>
+                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
+                    style={{
+                      backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                      color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                    }}
+                  >
                     <FolderKanban className="w-3.5 h-3.5" />
                   </div>
                   <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
