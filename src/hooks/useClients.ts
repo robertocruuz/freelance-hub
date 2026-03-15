@@ -9,6 +9,7 @@ export interface Client {
   phone: string | null;
   document: string | null;
   responsible: string | null;
+  color: string | null;
   created_at: string;
 }
 

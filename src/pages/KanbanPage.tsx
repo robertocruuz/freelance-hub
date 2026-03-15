@@ -112,7 +112,14 @@ const KanbanPage = () => {
   const [boardName, setBoardName] = useState('');
   const [boardClientId, setBoardClientId] = useState<string | null>(null);
   const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
+  const [boardColor, setBoardColor] = useState<string | null>(null);
   const [deletingBoard, setDeletingBoard] = useState<KanbanBoard | null>(null);
+
+  const BOARD_COLORS = [
+    '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#EF4444',
+    '#F97316', '#F59E0B', '#22C55E', '#14B8A6', '#06B6D4',
+    '#64748B', '#78716C',
+  ];
 
   useEffect(() => {
     if (!loading && boards.length > 0) {
@@ -394,16 +401,18 @@ const KanbanPage = () => {
 
   const handleSaveBoard = async () => {
     if (!boardName.trim()) return;
+    const resolvedColor = boardColor || getAutoColor(boardClientId, boardProjectId);
     if (editingBoard) {
-      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId });
+      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId, color: resolvedColor });
     } else {
-      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId);
+      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId, resolvedColor);
       if (newBoard) setActiveBoardId(newBoard.id);
     }
     setShowBoardDialog(false);
     setBoardName('');
     setBoardClientId(null);
     setBoardProjectId(null);
+    setBoardColor(null);
     setEditingBoard(null);
   };
 
@@ -412,7 +421,28 @@ const KanbanPage = () => {
     setBoardName(board.name);
     setBoardClientId(board.client_id);
     setBoardProjectId(board.project_id);
+    setBoardColor(board.color);
     setShowBoardDialog(true);
+  };
+
+  const getAutoColor = (clientId: string | null, projectId: string | null): string | null => {
+    if (clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (client?.color) return client.color;
+    }
+    if (projectId) {
+      const project = projects.find(p => p.id === projectId);
+      if (project?.client_id) {
+        const client = clients.find(c => c.id === project.client_id);
+        if (client?.color) return client.color;
+      }
+    }
+    return null;
+  };
+
+  const getBoardColor = (board: KanbanBoard): string | null => {
+    if (board.color) return board.color;
+    return getAutoColor(board.client_id, board.project_id);
   };
 
   const handleDeleteBoard = async () => {
@@ -484,17 +514,32 @@ const KanbanPage = () => {
             <button
               key={board.id}
               onClick={() => setActiveBoardId(board.id)}
-              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 ${
+              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                 isActive
-                  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20'
+                  ? 'shadow-sm ring-1'
                   : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
               }`}
+              style={isActive ? {
+                borderColor: getBoardColor(board) || 'hsl(var(--primary))',
+                backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
+                '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+              } as React.CSSProperties : undefined}
             >
+              {/* Color indicator bar */}
+              {(() => {
+                const color = getBoardColor(board);
+                return color ? (
+                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                ) : null;
+              })()}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${
-                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                  }`}>
+                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
+                    style={{
+                      backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                      color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                    }}
+                  >
                     <FolderKanban className="w-3.5 h-3.5" />
                   </div>
                   <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
@@ -543,6 +588,7 @@ const KanbanPage = () => {
             setBoardName('');
             setBoardClientId(null);
             setBoardProjectId(null);
+            setBoardColor(null);
             setShowBoardDialog(true);
           }}
           className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 min-w-[140px] min-h-[76px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
@@ -564,6 +610,7 @@ const KanbanPage = () => {
               setBoardName('');
               setBoardClientId(null);
               setBoardProjectId(null);
+              setBoardColor(null);
               setShowBoardDialog(true);
             }}
             className="btn-glow"
@@ -1386,6 +1433,49 @@ const KanbanPage = () => {
                 )}
               </div>
             )}
+            <div className="space-y-2">
+              <Label className="text-xs">Cor do painel</Label>
+              {(() => {
+                const autoColor = getAutoColor(boardClientId, boardProjectId);
+                return autoColor && !boardColor ? (
+                  <p className="text-[11px] text-muted-foreground mb-1">
+                    Cor herdada do cliente. Clique para personalizar.
+                  </p>
+                ) : null;
+              })()}
+              <div className="flex flex-wrap gap-2">
+                {BOARD_COLORS.map((c) => {
+                  const isSelected = boardColor === c;
+                  const autoColor = getAutoColor(boardClientId, boardProjectId);
+                  const isAuto = !boardColor && autoColor === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setBoardColor(boardColor === c ? null : c)}
+                      className={`w-7 h-7 rounded-full border-2 transition-all duration-150 ${
+                        isSelected ? 'scale-110 ring-2 ring-offset-2 ring-offset-background' : isAuto ? 'ring-1 ring-offset-1 ring-offset-background opacity-80' : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: c,
+                        borderColor: isSelected || isAuto ? c : 'transparent',
+                        '--tw-ring-color': c,
+                      } as React.CSSProperties}
+                    />
+                  );
+                })}
+                {boardColor && (
+                  <button
+                    type="button"
+                    onClick={() => setBoardColor(null)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full border border-border hover:bg-muted text-muted-foreground transition-colors"
+                    title="Remover cor"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           {editingBoard && (
             <div className="pt-2">

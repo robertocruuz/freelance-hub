@@ -259,6 +259,7 @@ export type Database = {
       kanban_boards: {
         Row: {
           client_id: string | null
+          color: string | null
           created_at: string
           id: string
           name: string
@@ -268,6 +269,7 @@ export type Database = {
         }
         Insert: {
           client_id?: string | null
+          color?: string | null
           created_at?: string
           id?: string
           name: string
@@ -277,6 +279,7 @@ export type Database = {
         }
         Update: {
           client_id?: string | null
+          color?: string | null
           created_at?: string
           id?: string
           name?: string

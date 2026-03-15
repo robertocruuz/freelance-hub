@@ -8,6 +8,7 @@ export interface KanbanBoard {
   name: string;
   client_id: string | null;
   project_id: string | null;
+  color: string | null;
   position: number;
   created_at: string;
 }
@@ -113,12 +114,12 @@ export const useKanban = (activeBoardId?: string | null) => {
     return data || [];
   }, [user]);
 
-  const addBoard = async (name: string, clientId?: string | null, projectId?: string | null) => {
+  const addBoard = async (name: string, clientId?: string | null, projectId?: string | null, color?: string | null) => {
     if (!user) return;
     const position = boards.length;
     const { data } = await supabase
       .from('kanban_boards')
-      .insert({ name, position, user_id: user.id, client_id: clientId || null, project_id: projectId || null })
+      .insert({ name, position, user_id: user.id, client_id: clientId || null, project_id: projectId || null, color: color || null })
       .select()
       .single();
     if (data) {
