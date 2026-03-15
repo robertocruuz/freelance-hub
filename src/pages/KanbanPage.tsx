@@ -401,16 +401,18 @@ const KanbanPage = () => {
 
   const handleSaveBoard = async () => {
     if (!boardName.trim()) return;
+    const resolvedColor = boardColor || getAutoColor(boardClientId, boardProjectId);
     if (editingBoard) {
-      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId });
+      await kanban.updateBoard(editingBoard.id, { name: boardName.trim(), client_id: boardClientId, project_id: boardProjectId, color: resolvedColor });
     } else {
-      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId);
+      const newBoard = await kanban.addBoard(boardName.trim(), boardClientId, boardProjectId, resolvedColor);
       if (newBoard) setActiveBoardId(newBoard.id);
     }
     setShowBoardDialog(false);
     setBoardName('');
     setBoardClientId(null);
     setBoardProjectId(null);
+    setBoardColor(null);
     setEditingBoard(null);
   };
 
@@ -419,7 +421,28 @@ const KanbanPage = () => {
     setBoardName(board.name);
     setBoardClientId(board.client_id);
     setBoardProjectId(board.project_id);
+    setBoardColor(board.color);
     setShowBoardDialog(true);
+  };
+
+  const getAutoColor = (clientId: string | null, projectId: string | null): string | null => {
+    if (clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (client?.color) return client.color;
+    }
+    if (projectId) {
+      const project = projects.find(p => p.id === projectId);
+      if (project?.client_id) {
+        const client = clients.find(c => c.id === project.client_id);
+        if (client?.color) return client.color;
+      }
+    }
+    return null;
+  };
+
+  const getBoardColor = (board: KanbanBoard): string | null => {
+    if (board.color) return board.color;
+    return getAutoColor(board.client_id, board.project_id);
   };
 
   const handleDeleteBoard = async () => {
