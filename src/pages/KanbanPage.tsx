@@ -1431,6 +1431,49 @@ const KanbanPage = () => {
                 )}
               </div>
             )}
+            <div className="space-y-2">
+              <Label className="text-xs">Cor do painel</Label>
+              {(() => {
+                const autoColor = getAutoColor(boardClientId, boardProjectId);
+                return autoColor && !boardColor ? (
+                  <p className="text-[11px] text-muted-foreground mb-1">
+                    Cor herdada do cliente. Clique para personalizar.
+                  </p>
+                ) : null;
+              })()}
+              <div className="flex flex-wrap gap-2">
+                {BOARD_COLORS.map((c) => {
+                  const isSelected = boardColor === c;
+                  const autoColor = getAutoColor(boardClientId, boardProjectId);
+                  const isAuto = !boardColor && autoColor === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setBoardColor(boardColor === c ? null : c)}
+                      className={`w-7 h-7 rounded-full border-2 transition-all duration-150 ${
+                        isSelected ? 'scale-110 ring-2 ring-offset-2 ring-offset-background' : isAuto ? 'ring-1 ring-offset-1 ring-offset-background opacity-80' : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: c,
+                        borderColor: isSelected || isAuto ? c : 'transparent',
+                        '--tw-ring-color': c,
+                      } as React.CSSProperties}
+                    />
+                  );
+                })}
+                {boardColor && (
+                  <button
+                    type="button"
+                    onClick={() => setBoardColor(null)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full border border-border hover:bg-muted text-muted-foreground transition-colors"
+                    title="Remover cor"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           {editingBoard && (
             <div className="pt-2">
