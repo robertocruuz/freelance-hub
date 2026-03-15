@@ -167,6 +167,8 @@ const KanbanPage = () => {
         
         if (tasksData) {
           setSharedTasks(tasksData);
+          
+          // Load columns
           const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
           if (colIds.length > 0) {
             const { data: colsData } = await supabase
@@ -174,6 +176,48 @@ const KanbanPage = () => {
               .select('*')
               .in('id', colIds as string[]);
             if (colsData) setSharedColumns(colsData);
+          }
+          
+          // Load owner profiles
+          const ownerIds = [...new Set(tasksData.map(t => t.user_id))];
+          if (ownerIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, name, email')
+              .in('user_id', ownerIds);
+            if (profiles) {
+              const map: Record<string, { name: string | null; email: string | null }> = {};
+              profiles.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
+              setSharedOwners(map);
+            }
+          }
+          
+          // Load clients
+          const clientIds = [...new Set(tasksData.map(t => t.client_id).filter(Boolean))] as string[];
+          if (clientIds.length > 0) {
+            const { data: clientsData } = await supabase
+              .from('clients')
+              .select('id, name')
+              .in('id', clientIds);
+            if (clientsData) {
+              const map: Record<string, string> = {};
+              clientsData.forEach(c => { map[c.id] = c.name; });
+              setSharedClients(map);
+            }
+          }
+          
+          // Load projects
+          const projectIds = [...new Set(tasksData.map(t => t.project_id).filter(Boolean))] as string[];
+          if (projectIds.length > 0) {
+            const { data: projectsData } = await supabase
+              .from('projects')
+              .select('id, name')
+              .in('id', projectIds);
+            if (projectsData) {
+              const map: Record<string, string> = {};
+              projectsData.forEach(p => { map[p.id] = p.name; });
+              setSharedProjects(map);
+            }
           }
         }
       } else {
