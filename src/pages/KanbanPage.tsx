@@ -99,6 +99,9 @@ const KanbanPage = () => {
   // Shared tasks state
   const [sharedTasks, setSharedTasks] = useState<Task[]>([]);
   const [sharedColumns, setSharedColumns] = useState<any[]>([]);
+  const [sharedOwners, setSharedOwners] = useState<Record<string, { name: string | null; email: string | null }>>({});
+  const [sharedClients, setSharedClients] = useState<Record<string, string>>({});
+  const [sharedProjects, setSharedProjects] = useState<Record<string, string>>({});
   const [loadingShared, setLoadingShared] = useState(false);
   const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
   const [sharedByMeTaskIds, setSharedByMeTaskIds] = useState<Set<string>>(new Set());
