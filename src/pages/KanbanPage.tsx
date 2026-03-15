@@ -112,7 +112,14 @@ const KanbanPage = () => {
   const [boardName, setBoardName] = useState('');
   const [boardClientId, setBoardClientId] = useState<string | null>(null);
   const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
+  const [boardColor, setBoardColor] = useState<string | null>(null);
   const [deletingBoard, setDeletingBoard] = useState<KanbanBoard | null>(null);
+
+  const BOARD_COLORS = [
+    '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#EF4444',
+    '#F97316', '#F59E0B', '#22C55E', '#14B8A6', '#06B6D4',
+    '#64748B', '#78716C',
+  ];
 
   useEffect(() => {
     if (!loading && boards.length > 0) {
