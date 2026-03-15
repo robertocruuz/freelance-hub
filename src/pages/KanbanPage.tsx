@@ -514,11 +514,16 @@ const KanbanPage = () => {
             <button
               key={board.id}
               onClick={() => setActiveBoardId(board.id)}
-              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 ${
+              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                 isActive
-                  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20'
+                  ? 'shadow-sm ring-1'
                   : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
               }`}
+              style={isActive ? {
+                borderColor: getBoardColor(board) || 'hsl(var(--primary))',
+                backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
+                '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+              } as React.CSSProperties : undefined}
             >
               {/* Color indicator bar */}
               {(() => {
