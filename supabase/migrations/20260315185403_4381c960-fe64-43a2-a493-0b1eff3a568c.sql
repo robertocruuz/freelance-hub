@@ -1,0 +1,1 @@
+ALTER TABLE public.kanban_boards ADD COLUMN color text DEFAULT NULL;
