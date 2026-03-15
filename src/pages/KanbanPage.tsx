@@ -588,6 +588,7 @@ const KanbanPage = () => {
             setBoardName('');
             setBoardClientId(null);
             setBoardProjectId(null);
+            setBoardColor(null);
             setShowBoardDialog(true);
           }}
           className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 min-w-[140px] min-h-[76px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
