@@ -610,6 +610,7 @@ const KanbanPage = () => {
               setBoardName('');
               setBoardClientId(null);
               setBoardProjectId(null);
+              setBoardColor(null);
               setShowBoardDialog(true);
             }}
             className="btn-glow"
