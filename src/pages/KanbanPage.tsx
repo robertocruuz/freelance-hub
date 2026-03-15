@@ -474,71 +474,82 @@ const KanbanPage = () => {
         <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0">
 
       {/* Board selector */}
-      <div className="flex items-center gap-2 mb-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
-              <Kanban className="w-3.5 h-3.5" />
-              {boards.find(b => b.id === activeBoardId)?.name || 'Selecionar painel'}
-              {(() => {
-                const activeBoard = activeBoardId ? boards.find(b => b.id === activeBoardId) : undefined;
-                const subtitle = activeBoard ? getBoardSubtitle(activeBoard) : '';
-                return subtitle ? <span className="text-[10px] opacity-70">{subtitle}</span> : null;
-              })()}
-              <ChevronDown className="w-3 h-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[200px]">
-            {boards.map((board) => (
-              <DropdownMenuItem
-                key={board.id}
-                onClick={() => setActiveBoardId(board.id)}
-                className={`gap-2 ${activeBoardId === board.id ? 'bg-primary/10 text-primary' : ''}`}
-              >
-                <Kanban className="w-3.5 h-3.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs font-medium">{board.name}</span>
-                  {getBoardSubtitle(board) && (
-                    <span className="text-[10px] opacity-70 ml-1">{getBoardSubtitle(board)}</span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem
-              onClick={() => {
-                setEditingBoard(null);
-                setBoardName('');
-                setBoardClientId(null);
-                setBoardProjectId(null);
-                setShowBoardDialog(true);
-              }}
-              className="gap-2 text-muted-foreground"
+      <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-none">
+        {boards.map((board) => {
+          const isActive = activeBoardId === board.id;
+          const subtitle = getBoardSubtitle(board);
+          const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
+          const taskCount = boardTasks.length;
+          return (
+            <button
+              key={board.id}
+              onClick={() => setActiveBoardId(board.id)}
+              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 ${
+                isActive
+                  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20'
+                  : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="text-xs">Novo painel</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${
+                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    <FolderKanban className="w-3.5 h-3.5" />
+                  </div>
+                  <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                    {board.name}
+                  </span>
+                </div>
+                {isActive && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-muted cursor-pointer"
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+                      </span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onClick={() => openEditBoard(board)}>
+                        <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setDeletingBoard(board)} className="text-destructive focus:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+              {subtitle && (
+                <span className="text-[11px] text-muted-foreground truncate pl-9">{subtitle}</span>
+              )}
+              <div className="flex items-center gap-2 pl-9 mt-0.5">
+                <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                  {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
+                </span>
+              </div>
+            </button>
+          );
+        })}
 
-        {activeBoardId && (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => openEditBoard(boards.find(b => b.id === activeBoardId)!)}>
-                  <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDeletingBoard(boards.find(b => b.id === activeBoardId)!)} className="text-destructive focus:text-destructive">
-                  <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )}
+        {/* Add new board button */}
+        <button
+          onClick={() => {
+            setEditingBoard(null);
+            setBoardName('');
+            setBoardClientId(null);
+            setBoardProjectId(null);
+            setShowBoardDialog(true);
+          }}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 min-w-[140px] min-h-[76px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
+        >
+          <Plus className="w-5 h-5" />
+          <span className="text-xs font-medium">Novo painel</span>
+        </button>
       </div>
 
       {/* No board selected */}
