@@ -1185,14 +1185,17 @@ const KanbanPage = () => {
             </div>
           ) : (
             <>
-              <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
-                <table className="w-full min-w-[700px]">
+               <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+                <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tarefa</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Proprietário</th>
                       <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
                       <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prioridade</th>
                       <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prazo</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Cliente</th>
+                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Projeto</th>
                       <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Valor Est.</th>
                     </tr>
                   </thead>
@@ -1200,6 +1203,13 @@ const KanbanPage = () => {
                     {sharedTasks.map((task) => {
                       const col = sharedColumns.find((c: any) => c.id === task.column_id);
                       const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
+                      const owner = sharedOwners[task.user_id];
+                      const ownerName = owner?.name || owner?.email || 'Desconhecido';
+                      const clientName = task.client_id ? sharedClients[task.client_id] : null;
+                      const projectName = task.project_id ? sharedProjects[task.project_id] : null;
+                      const daysLeft = task.due_date && !task.completed_at
+                        ? Math.ceil((new Date(task.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                        : null;
                       return (
                         <tr
                           key={task.id}
@@ -1221,19 +1231,56 @@ const KanbanPage = () => {
                               <span className={`text-sm font-medium ${task.completed_at ? 'line-through text-muted-foreground' : ''}`}>
                                 {task.title}
                               </span>
-                              <Badge variant="outline" className="text-[9px] gap-1 px-1.5 py-0">
-                                <Share2 className="w-2.5 h-2.5" /> Compartilhada
-                              </Badge>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground truncate max-w-[120px]">{ownerName}</span>
                             </div>
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant="secondary" className="text-[10px]">{col?.name || '-'}</Badge>
                           </td>
                           <td className="px-4 py-3">
-                            <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-[10px] capitalize ${
+                                task.priority === 'high' ? 'border-destructive/50 text-destructive' : 
+                                task.priority === 'urgent' ? 'border-destructive bg-destructive/10 text-destructive' : ''
+                              }`}
+                            >
+                              {task.priority === 'urgent' ? 'Urgente' : task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'}
+                            </Badge>
                           </td>
-                          <td className={`px-4 py-3 text-xs ${isOverdue ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
-                            {task.due_date ? format(new Date(task.due_date), "dd/MM/yyyy") : '-'}
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col">
+                              <span className={`text-xs ${isOverdue ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                                {task.due_date ? format(new Date(task.due_date), "dd/MM/yyyy") : '-'}
+                              </span>
+                              {daysLeft !== null && !task.completed_at && (
+                                <span className={`text-[10px] ${daysLeft < 0 ? 'text-destructive' : daysLeft <= 3 ? 'text-amber-500' : 'text-muted-foreground/60'}`}>
+                                  {daysLeft < 0 ? `${Math.abs(daysLeft)}d atrasada` : daysLeft === 0 ? 'Hoje' : `${daysLeft}d restantes`}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {clientName ? (
+                              <span className="text-xs text-muted-foreground">{clientName}</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/40">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {projectName ? (
+                              <div className="flex items-center gap-1">
+                                <FolderOpen className="w-3 h-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">{projectName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/40">-</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-xs text-muted-foreground">
                             {task.estimated_value ? formatCurrency(Number(task.estimated_value)) : '-'}
