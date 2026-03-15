@@ -8,6 +8,7 @@ export interface KanbanBoard {
   name: string;
   client_id: string | null;
   project_id: string | null;
+  color: string | null;
   position: number;
   created_at: string;
 }
