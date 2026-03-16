@@ -280,36 +280,43 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="space-y-5 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-3">
+        {/* Title and subtitle */}
         <div>
           <h1 className="text-xl font-bold text-foreground">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
-        <div className="flex items-center gap-2">
-          {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
-          <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
-            <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
-          </Button>
-          <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
-            <Plus className="w-4 h-4 mr-1.5" /> Novo Negócio
-          </Button>
+
+        {/* Tabs and action buttons in one row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
+            <TabsList>
+              <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
+                <DollarSign className="w-3.5 h-3.5" />
+                Meus Leads
+              </TabsTrigger>
+              <TabsTrigger value="shared" className="gap-1.5 text-xs">
+                <Share2 className="w-3.5 h-3.5" />
+                Compartilhados comigo
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="flex items-center gap-2">
+            {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
+            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
+              <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
+            </Button>
+            <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
+              <Plus className="w-4 h-4 mr-1.5" /> Novo Negócio
+            </Button>
+          </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-fit mb-3">
-          <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
-            <DollarSign className="w-3.5 h-3.5" />
-            Meus Leads
-          </TabsTrigger>
-          <TabsTrigger value="shared" className="gap-1.5 text-xs">
-            <Share2 className="w-3.5 h-3.5" />
-            Compartilhados comigo
-          </TabsTrigger>
-        </TabsList>
-
         <TabsContent value="my-leads" className="flex-1 flex flex-col min-h-0 mt-0 space-y-5">
           {/* Summary cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -436,10 +443,10 @@ export default function LeadsPage() {
                     </div>
 
                     {/* Add button */}
-                    <div className="p-2 border-t border-border">
+                    <div className="p-2 pt-0">
                       <button
                         onClick={() => handleOpenForm(stage.id)}
-                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="w-full flex items-center justify-center gap-1.5 p-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" /> Adicionar
                       </button>
@@ -463,116 +470,69 @@ export default function LeadsPage() {
               <p className="text-xs text-muted-foreground/70">Quando alguém compartilhar um lead ou pipeline, os negócios aparecerão aqui.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Shared summary */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="rounded-xl border border-border bg-card p-3.5">
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <DollarSign className="w-4 h-4 text-primary" /> Total Compartilhado
-                  </div>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {formatCurrency(sharedLeads.filter(l => l.status === 'open').reduce((s, l) => s + l.value, 0))}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-3.5">
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <TrendingUp className="w-4 h-4 text-blue-500" /> Negócios Abertos
-                  </div>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {sharedLeads.filter(l => l.status === 'open').length}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-3.5">
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <User className="w-4 h-4 text-muted-foreground" /> Proprietários
-                  </div>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {Object.keys(sharedOwners).length}
-                  </p>
-                </div>
-              </div>
-
-              {/* Shared leads table */}
-              <div className="rounded-2xl border border-border bg-card overflow-x-auto">
-                <table className="w-full min-w-[850px]">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Negócio</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Proprietário</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Etapa</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Valor</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Probabilidade</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Previsão</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Contato</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+            <div className="flex-1 overflow-auto">
+              <div className="border border-border rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Negócio</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Valor</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Probabilidade</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Fechamento Previsto</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Etapa</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Responsável</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {sharedLeads.map((lead) => {
+                  <tbody className="divide-y divide-border">
+                    {sharedLeads.map(lead => {
                       const stage = sharedStages.find(s => s.id === lead.stage_id);
                       const owner = sharedOwners[lead.user_id];
-                      const ownerName = owner?.name || owner?.email || 'Desconhecido';
                       const clientName = lead.client_id ? sharedClients[lead.client_id] : null;
-                      const isOverdue = lead.expected_close_date && isPast(new Date(lead.expected_close_date)) && lead.status === 'open';
-                      const daysLeft = lead.expected_close_date && lead.status === 'open'
-                        ? Math.ceil((new Date(lead.expected_close_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                        : null;
-                      const probColor = lead.probability >= 70 ? 'text-green-500' : lead.probability >= 40 ? 'text-amber-500' : 'text-red-400';
 
                       return (
-                        <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/30 transition">
+                        <tr key={lead.id} className="hover:bg-muted/30 transition-colors">
                           <td className="px-4 py-3">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium text-foreground">{lead.title}</span>
-                              {clientName && (
-                                <span className="text-[11px] text-muted-foreground">{clientName}</span>
-                              )}
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage?.color || '#9ca3af' }} />
+                              <div>
+                                <p className="font-medium text-foreground">{lead.title}</p>
+                                {clientName && <p className="text-xs text-muted-foreground">{clientName}</p>}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-medium">{formatCurrency(lead.value)}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <Percent className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span>{lead.probability}%</span>
                             </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1.5">
-                              <User className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground truncate max-w-[120px]">{ownerName}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            {stage ? (
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] gap-1"
-                              >
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                                {stage.name}
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground/40">-</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="text-sm font-semibold text-foreground">{formatCurrency(lead.value)}</span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-1">
-                              <Percent className="w-3 h-3 text-muted-foreground" />
-                              <span className={`text-xs font-medium ${probColor}`}>{lead.probability}%</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-col">
-                              <span className={`text-xs ${isOverdue ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
-                                {lead.expected_close_date ? format(new Date(lead.expected_close_date), "dd/MM/yyyy") : '-'}
+                              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className={lead.expected_close_date && isPast(new Date(lead.expected_close_date)) ? 'text-red-500 font-medium' : ''}>
+                                {lead.expected_close_date ? format(new Date(lead.expected_close_date), 'dd/MM/yyyy') : '-'}
                               </span>
-                              {daysLeft !== null && (
-                                <span className={`text-[10px] ${daysLeft < 0 ? 'text-destructive' : daysLeft <= 7 ? 'text-amber-500' : 'text-muted-foreground/60'}`}>
-                                  {daysLeft < 0 ? `${Math.abs(daysLeft)}d atrasado` : daysLeft === 0 ? 'Hoje' : `${daysLeft}d restantes`}
-                                </span>
+                              {lead.expected_close_date && isPast(new Date(lead.expected_close_date)) && lead.status === 'open' && (
+                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Atrasado</Badge>
                               )}
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex flex-col gap-0.5">
-                              {lead.contact_name && <span className="text-xs text-foreground">{lead.contact_name}</span>}
-                              {lead.contact_email && <span className="text-[11px] text-muted-foreground">{lead.contact_email}</span>}
+                            <Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: stage?.color || undefined, color: '#fff' }}>
+                              {stage?.name || 'Sem etapa'}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-muted-foreground" />
+                              <div className="flex flex-col">
+                                {owner?.name && <span className="text-xs text-foreground">{owner.name}</span>}
+                                {owner?.email && <span className="text-[11px] text-muted-foreground">{owner.email}</span>}
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3">
