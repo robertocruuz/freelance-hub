@@ -316,7 +316,7 @@ export default function LeadsPage() {
         </div>
       </div>
 
-        <TabsContent value="my-leads" className="flex-1 flex flex-col min-h-0 mt-0 space-y-5">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
           {/* Summary cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="rounded-xl border border-border bg-card p-3.5">
