@@ -54,8 +54,8 @@ export function useLeads() {
     setLoading(true);
 
     const [stagesRes, leadsRes] = await Promise.all([
-      supabase.from('lead_stages').select('*').order('position'),
-      supabase.from('leads').select('*').order('position'),
+      supabase.from('lead_stages').select('*').eq('user_id', user.id).order('position'),
+      supabase.from('leads').select('*').eq('user_id', user.id).order('position'),
     ]);
 
     let stagesData = (stagesRes.data || []) as LeadStage[];
