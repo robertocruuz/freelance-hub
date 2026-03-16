@@ -280,35 +280,41 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="space-y-5 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-3">
+        {/* Title and subtitle */}
         <div>
           <h1 className="text-xl font-bold text-foreground">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
-        <div className="flex items-center gap-2">
-          {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
-          <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
-            <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
-          </Button>
-          <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
-            <Plus className="w-4 h-4 mr-1.5" /> Novo Negócio
-          </Button>
+
+        {/* Tabs and action buttons in one row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
+            <TabsList>
+              <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
+                <DollarSign className="w-3.5 h-3.5" />
+                Meus Leads
+              </TabsTrigger>
+              <TabsTrigger value="shared" className="gap-1.5 text-xs">
+                <Share2 className="w-3.5 h-3.5" />
+                Compartilhados comigo
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="flex items-center gap-2">
+            {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
+            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
+              <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
+            </Button>
+            <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
+              <Plus className="w-4 h-4 mr-1.5" /> Novo Negócio
+            </Button>
+          </div>
         </div>
       </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-fit mb-3">
-          <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
-            <DollarSign className="w-3.5 h-3.5" />
-            Meus Leads
-          </TabsTrigger>
-          <TabsTrigger value="shared" className="gap-1.5 text-xs">
-            <Share2 className="w-3.5 h-3.5" />
-            Compartilhados comigo
-          </TabsTrigger>
-        </TabsList>
 
         <TabsContent value="my-leads" className="flex-1 flex flex-col min-h-0 mt-0 space-y-5">
           {/* Summary cards */}
