@@ -213,7 +213,7 @@ const SidebarNav = ({
     </div>
 
     {/* Nav items */}
-    <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto', collapsed && !isMobile && 'px-2')}>
+    <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto scrollbar-thin', collapsed && !isMobile && 'px-2')}>
       {filteredNavItems.map((item) => {
         const active = isActive(item.path);
         const label = labelMap[item.key](t);
@@ -435,11 +435,11 @@ const DashboardLayout = () => {
   });
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="h-screen flex bg-background overflow-hidden">
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'hidden md:flex flex-col bg-card border-r border-border transition-all duration-300 shrink-0 relative',
+          'hidden md:flex flex-col bg-card border-r border-border transition-all duration-300 shrink-0 relative h-full',
           collapsed ? 'w-[60px]' : 'w-[250px]'
         )}
       >
@@ -507,7 +507,7 @@ const DashboardLayout = () => {
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full">
         {/* Mobile header */}
         <header className="md:hidden flex items-center justify-between h-14 px-4 border-b border-border bg-card shrink-0">
           <div className="flex items-center gap-3">
@@ -527,7 +527,7 @@ const DashboardLayout = () => {
           <NotificationBell />
         </header>
 
-        <main className="flex-1 p-5 md:p-6 overflow-auto hero-gradient">
+        <main className="flex-1 p-5 md:p-6 overflow-y-auto scrollbar-thin hero-gradient">
           <Outlet />
         </main>
       </div>
