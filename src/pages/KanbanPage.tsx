@@ -169,114 +169,58 @@ const KanbanPage = () => {
     loadMyShares();
   }, [user, tasks]);
 
-  // Load shared tasks (tasks shared WITH me)
+  // Load shared tasks (only directly shared individual tasks, NOT from shared boards)
   useEffect(() => {
     if (!user || activeTab !== 'shared') return;
     const loadSharedTasks = async () => {
       setLoadingShared(true);
 
-      // 1. Get directly shared tasks
       const { data: taskShares } = await supabase
         .from('shares')
-        .select('resource_id, resource_type')
-        .in('resource_type', ['task', 'board'])
+        .select('resource_id')
+        .eq('resource_type', 'task')
         .or(`shared_with_user_id.eq.${user.id},share_type.eq.org`);
 
-      const directTaskIds: string[] = [];
-      const sharedBoardIds: string[] = [];
+      const taskIds = taskShares?.map(s => s.resource_id) || [];
 
-      if (taskShares) {
-        for (const s of taskShares) {
-          if (s.resource_type === 'task') {
-            directTaskIds.push(s.resource_id);
-          } else if (s.resource_type === 'board') {
-            sharedBoardIds.push(s.resource_id);
-          }
-        }
-      }
-
-      // 2. Get tasks from shared boards
-      let boardTaskIds: string[] = [];
-      if (sharedBoardIds.length > 0) {
-        const { data: boardCols } = await supabase
-          .from('kanban_columns')
-          .select('id')
-          .in('board_id', sharedBoardIds);
-        if (boardCols && boardCols.length > 0) {
-          const colIds = boardCols.map(c => c.id);
-          const { data: boardTasks } = await supabase
-            .from('tasks')
-            .select('id')
-            .in('column_id', colIds)
-            .neq('user_id', user.id);
-          if (boardTasks) boardTaskIds = boardTasks.map(t => t.id);
-        }
-      }
-
-      // 3. Merge all task IDs (deduplicate)
-      const allTaskIds = [...new Set([...directTaskIds, ...boardTaskIds])];
-
-      if (allTaskIds.length > 0) {
+      if (taskIds.length > 0) {
         const { data: tasksData } = await supabase
           .from('tasks')
           .select('*')
-          .in('id', allTaskIds)
+          .in('id', taskIds)
           .neq('user_id', user.id)
           .order('updated_at', { ascending: false });
         
-        if (tasksData) {
+        if (tasksData && tasksData.length > 0) {
           setSharedTasks(tasksData);
           
-          // Load columns
           const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
-          if (colIds.length > 0) {
-            const { data: colsData } = await supabase
-              .from('kanban_columns')
-              .select('*')
-              .in('id', colIds as string[]);
-            if (colsData) setSharedColumns(colsData);
-          }
-          
-          // Load owner profiles
           const ownerIds = [...new Set(tasksData.map(t => t.user_id))];
-          if (ownerIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id, name, email')
-              .in('user_id', ownerIds);
-            if (profiles) {
-              const map: Record<string, { name: string | null; email: string | null }> = {};
-              profiles.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
-              setSharedOwners(map);
-            }
-          }
-          
-          // Load clients
           const clientIds = [...new Set(tasksData.map(t => t.client_id).filter(Boolean))] as string[];
-          if (clientIds.length > 0) {
-            const { data: clientsData } = await supabase
-              .from('clients')
-              .select('id, name')
-              .in('id', clientIds);
-            if (clientsData) {
-              const map: Record<string, string> = {};
-              clientsData.forEach(c => { map[c.id] = c.name; });
-              setSharedClients(map);
-            }
-          }
-          
-          // Load projects
           const projectIds = [...new Set(tasksData.map(t => t.project_id).filter(Boolean))] as string[];
-          if (projectIds.length > 0) {
-            const { data: projectsData } = await supabase
-              .from('projects')
-              .select('id, name')
-              .in('id', projectIds);
-            if (projectsData) {
-              const map: Record<string, string> = {};
-              projectsData.forEach(p => { map[p.id] = p.name; });
-              setSharedProjects(map);
-            }
+
+          const [colsRes, profilesRes, clientsRes, projectsRes] = await Promise.all([
+            colIds.length > 0 ? supabase.from('kanban_columns').select('*').in('id', colIds as string[]) : null,
+            ownerIds.length > 0 ? supabase.from('profiles').select('user_id, name, email').in('user_id', ownerIds) : null,
+            clientIds.length > 0 ? supabase.from('clients').select('id, name').in('id', clientIds) : null,
+            projectIds.length > 0 ? supabase.from('projects').select('id, name').in('id', projectIds) : null,
+          ]);
+
+          if (colsRes?.data) setSharedColumns(colsRes.data);
+          if (profilesRes?.data) {
+            const map: Record<string, { name: string | null; email: string | null }> = {};
+            profilesRes.data.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
+            setSharedOwners(prev => ({ ...prev, ...map }));
+          }
+          if (clientsRes?.data) {
+            const map: Record<string, string> = {};
+            clientsRes.data.forEach(c => { map[c.id] = c.name; });
+            setSharedClients(map);
+          }
+          if (projectsRes?.data) {
+            const map: Record<string, string> = {};
+            projectsRes.data.forEach(p => { map[p.id] = p.name; });
+            setSharedProjects(map);
           }
         } else {
           setSharedTasks([]);
