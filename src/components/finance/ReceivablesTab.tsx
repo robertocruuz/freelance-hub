@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle, Repeat } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -57,6 +57,7 @@ interface Invoice {
   name: string | null;
   client_id: string | null;
   client_name?: string;
+  project_id?: string | null;
   items: InvoiceItem[];
   total: number;
   taxes: number;
@@ -103,10 +104,10 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [creating, setCreating] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [clientId, setClientId] = useState('');
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [invoiceName, setInvoiceName] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [taxes, setTaxes] = useState(0);
@@ -172,6 +173,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const importProject = (project: ProjectWithItems) => {
     setInvoiceName(project.name);
     setClientId(project.client_id || '');
+    setProjectId(project.id);
     if (project.due_date) setDueDate(new Date(project.due_date + 'T12:00:00'));
     setItems(
       project.items.length > 0
@@ -185,54 +187,49 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     toast.success(`Projeto "${project.name}" importado!`);
   };
 
-  const loadInvoices = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('invoices')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) {
-      setInvoices(data.map(inv => {
-        const cl = clients.find(c => c.id === inv.client_id);
-        return {
-          ...inv,
-          client_name: cl?.name,
-          items: (Array.isArray(inv.items) ? inv.items : []) as unknown as InvoiceItem[],
-        };
-      }));
-    }
-  }, [user, clients]);
+  // Use parent invoices mapped to internal format
+  const mappedInvoices = useMemo(() => {
+    return parentInvoices.map(inv => {
+      const cl = clients.find(c => c.id === inv.client_id);
+      return {
+        ...inv,
+        client_name: cl?.name,
+        // Parent invoices don't have full items, so we'll cast it or handle it based on usage
+        items: [] as InvoiceItem[], 
+      } as unknown as Invoice;
+    });
+  }, [parentInvoices, clients]);
 
-  useEffect(() => { loadInvoices(); }, [loadInvoices]);
+
 
   // Auto-edit from calendar click
   const autoEditProcessed = useRef<string | null>(null);
   useEffect(() => {
-    if (autoEditId && autoEditId !== autoEditProcessed.current && invoices.length > 0) {
-      const inv = invoices.find(i => i.id === autoEditId);
+    if (autoEditId && autoEditId !== autoEditProcessed.current && mappedInvoices.length > 0) {
+      const inv = mappedInvoices.find(i => i.id === autoEditId);
       if (inv) {
         autoEditProcessed.current = autoEditId;
         editInvoice(inv);
         onAutoEditDone?.();
       }
     }
-  }, [autoEditId, invoices]);
+  }, [autoEditId, mappedInvoices]);
 
   // Filter by month
   const monthInvoices = monthFilter
-    ? invoices.filter(inv => (inv.due_date && inv.due_date.startsWith(monthFilter)) || (!inv.due_date && inv.created_at.startsWith(monthFilter)))
-    : invoices;
+    ? mappedInvoices.filter(inv => (inv.due_date && inv.due_date.startsWith(monthFilter)) || (!inv.due_date && inv.created_at.startsWith(monthFilter)))
+    : mappedInvoices;
 
   // Auto-update overdue invoices
   useEffect(() => {
-    const overdueIds = invoices
+    const overdueIds = mappedInvoices
       .filter(inv => inv.status === 'pending' && inv.due_date && isPast(new Date(inv.due_date + 'T23:59:59')) && !isToday(new Date(inv.due_date + 'T12:00:00')))
       .map(inv => inv.id);
     if (overdueIds.length > 0) {
       Promise.all(overdueIds.map(id => supabase.from('invoices').update({ status: 'overdue' }).eq('id', id)))
-        .then(() => { loadInvoices(); onRefresh(); });
+        .then(() => { onRefresh(); });
     }
-  }, [invoices, loadInvoices, onRefresh]);
+  }, [mappedInvoices, onRefresh]);
 
   const addItem = () => {
     if (!newDesc.trim()) return toast.error('Informe a descrição do item.');
@@ -265,6 +262,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setEditingInvoiceId(null);
     setInvoiceName('');
     setClientId('');
+    setProjectId(null);
     setItems([]);
     setTaxes(0);
     setDiscount(0);
@@ -280,17 +278,22 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setRecurringMonths('12');
   };
 
-  const editInvoice = (inv: Invoice) => {
-    setEditingInvoiceId(inv.id);
-    setInvoiceName(inv.name || '');
-    setClientId(inv.client_id || '');
-    setItems(inv.items);
-    setTaxes(inv.taxes);
-    setDiscount(inv.discount);
-    setDueDate(inv.due_date ? new Date(inv.due_date + 'T12:00:00') : undefined);
-    setPaymentMethods(inv.payment_method ? inv.payment_method.split(', ') : []);
-    setIsRecurring(inv.is_recurring || false);
-    setRecurringMonths(String(inv.recurring_months || 12));
+  const editInvoice = async (inv: Invoice) => {
+    // Fetch full invoice because mappedInvoices doesn't have items
+    const { data: fullInv } = await supabase.from('invoices').select('*').eq('id', inv.id).single();
+    if (!fullInv) return toast.error('Fatura não encontrada.');
+    
+    setEditingInvoiceId(fullInv.id);
+    setInvoiceName(fullInv.name || '');
+    setClientId(fullInv.client_id || '');
+    setProjectId(fullInv.project_id || null);
+    setItems((Array.isArray(fullInv.items) ? fullInv.items : []) as unknown as InvoiceItem[]);
+    setTaxes(fullInv.taxes);
+    setDiscount(fullInv.discount);
+    setDueDate(fullInv.due_date ? new Date(fullInv.due_date + 'T12:00:00') : undefined);
+    setPaymentMethods(fullInv.payment_method ? fullInv.payment_method.split(', ') : []);
+    setIsRecurring(fullInv.is_recurring || false);
+    setRecurringMonths(String(fullInv.recurring_months || 12));
     setCreating(true);
   };
 
@@ -300,6 +303,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     const invoiceData = {
       name: invoiceName.trim() || null,
       client_id: clientId || null,
+      project_id: projectId || null,
       items: items as unknown as Json,
       total,
       taxes,
@@ -320,14 +324,12 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     else {
       toast.success(editingInvoiceId ? 'Fatura atualizada!' : 'Fatura salva!');
       resetForm();
-      loadInvoices();
       onRefresh();
     }
   };
 
   const deleteInvoice = async (id: string) => {
     await supabase.from('invoices').delete().eq('id', id);
-    loadInvoices();
     onRefresh();
   };
 
@@ -336,7 +338,6 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     if (error) toast.error(error.message);
     else {
       toast.success('Status atualizado!');
-      loadInvoices();
       onRefresh();
     }
   };
@@ -347,17 +348,21 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   };
 
   const exportInvoicePdf = async (inv: Invoice) => {
+    // Fetch full invoice because mappedInvoices doesn't have items
+    const { data: fullInv } = await supabase.from('invoices').select('*').eq('id', inv.id).single();
+    if (!fullInv) return toast.error('Fatura não encontrada.');
+    
     const client = clients.find(c => c.id === inv.client_id) || null;
     await generateInvoicePdf({
-      invoiceName: inv.name,
-      items: inv.items,
-      total: inv.total,
-      taxes: inv.taxes,
-      discount: inv.discount,
-      status: statusLabel(inv.status),
-      dueDate: inv.due_date,
-      paymentMethod: inv.payment_method,
-      createdAt: inv.created_at,
+      invoiceName: fullInv.name,
+      items: (Array.isArray(fullInv.items) ? fullInv.items : []) as unknown as InvoiceItem[],
+      total: fullInv.total,
+      taxes: fullInv.taxes,
+      discount: fullInv.discount,
+      status: statusLabel(fullInv.status),
+      dueDate: fullInv.due_date,
+      paymentMethod: fullInv.payment_method,
+      createdAt: fullInv.created_at,
       organization: organization,
       client: client,
     });
@@ -422,7 +427,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {projects.map((p) => {
                       const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
-                      const alreadyImported = invoices.some(inv => inv.name === p.name);
+                      const alreadyImported = mappedInvoices.some(inv => inv.project_id === p.id);
                       return (
                         <button
                           key={p.id}
