@@ -543,7 +543,8 @@ const KanbanPage = () => {
 
       {/* Board selector */}
       <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-none">
-        {boards.map((board) => {
+        {/* Own boards */}
+        {boards.filter(b => b.user_id === user?.id).map((board) => {
           const isActive = activeBoardId === board.id;
           const subtitle = getBoardSubtitle(board);
           const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
@@ -563,7 +564,6 @@ const KanbanPage = () => {
                 '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
               } as React.CSSProperties : undefined}
             >
-              {/* Color indicator bar */}
               {(() => {
                 const color = getBoardColor(board);
                 return color ? (
@@ -618,6 +618,65 @@ const KanbanPage = () => {
             </button>
           );
         })}
+
+        {/* Shared boards separator + cards */}
+        {boards.filter(b => b.user_id !== user?.id).length > 0 && (
+          <>
+            <div className="h-12 w-px bg-border shrink-0" />
+            {boards.filter(b => b.user_id !== user?.id).map((board) => {
+              const isActive = activeBoardId === board.id;
+              const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
+              const taskCount = boardTasks.length;
+              const ownerName = sharedOwners[board.user_id]?.name || sharedOwners[board.user_id]?.email || '';
+              return (
+                <button
+                  key={board.id}
+                  onClick={() => setActiveBoardId(board.id)}
+                  className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+                    isActive
+                      ? 'shadow-sm ring-1'
+                      : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
+                  }`}
+                  style={isActive ? {
+                    borderColor: getBoardColor(board) || 'hsl(var(--primary))',
+                    backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
+                    '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+                  } as React.CSSProperties : undefined}
+                >
+                  {(() => {
+                    const color = getBoardColor(board);
+                    return color ? (
+                      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                    ) : null;
+                  })()}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
+                      style={{
+                        backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                        color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                      }}
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </div>
+                    <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                      {board.name}
+                    </span>
+                  </div>
+                  {ownerName && (
+                    <span className="text-[11px] text-muted-foreground truncate pl-9 flex items-center gap-1">
+                      <User className="w-3 h-3" /> {ownerName}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 pl-9 mt-0.5">
+                    <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                      {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </>
+        )}
 
         {/* Add new board button */}
         <button
