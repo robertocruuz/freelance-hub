@@ -347,6 +347,9 @@ const TimeTrackingPage = () => {
     const { data } = await supabase
       .from('tasks')
       .select('id, title, project_id, column_id')
+      .eq('user_id', user.id)
+      .not('column_id', 'is', null)
+      .neq('status', 'done')
       .order('title');
     if (data) setKanbanTasks(data);
   }, [user]);
