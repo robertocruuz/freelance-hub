@@ -129,6 +129,22 @@ const KanbanPage = () => {
     }
   }, [loading, boards]);
 
+  // Load profiles for shared board owners
+  useEffect(() => {
+    if (!user || !boards.length) return;
+    const sharedBoardOwnerIds = [...new Set(boards.filter(b => b.user_id !== user.id).map(b => b.user_id))];
+    if (sharedBoardOwnerIds.length === 0) return;
+    supabase.from('profiles').select('user_id, name, email').in('user_id', sharedBoardOwnerIds).then(({ data }) => {
+      if (data) {
+        setSharedOwners(prev => {
+          const map = { ...prev };
+          data.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
+          return map;
+        });
+      }
+    });
+  }, [user, boards]);
+
   // Load projects for filter
   useEffect(() => {
     if (!user) return;
