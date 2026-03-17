@@ -96,294 +96,296 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 18;
   const contentW = pw - margin * 2;
-  let y = 15;
+  let y = 14;
 
-  // ── Colors & Styles ──
-  const BLACK: [number, number, number] = [20, 20, 25];
-  const DARK: [number, number, number] = [50, 50, 60];
-  const GRAY: [number, number, number] = [100, 100, 115];
-  const LIGHT_GRAY: [number, number, number] = [225, 225, 235];
-  const BG_LIGHT: [number, number, number] = [250, 251, 254];
-  const ACCENT: [number, number, number] = [0, 82, 255]; // Vivid blue
+  // ── Colors ──
+  const BLACK: [number, number, number] = [30, 30, 30];
+  const DARK: [number, number, number] = [60, 60, 60];
+  const GRAY: [number, number, number] = [110, 110, 110];
+  const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
+  const BG_LIGHT: [number, number, number] = [248, 248, 250];
+  const ACCENT: [number, number, number] = [0, 71, 255];
 
-  // ── Header: Org info + Logo ──
+  // ── Thin top accent line ──
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, 0, pw, 2.5, 'F');
+
+  y = 14;
+
+  // ── Header: Logo + Org info ──
   if (options.organization) {
     const org = options.organization;
 
-    // Org info — LEFT aligned
-    let iy = y + 2;
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    const companyTitle = org.company_name || org.trade_name || '';
-    if (companyTitle) {
-      doc.text(companyTitle.toUpperCase(), margin, iy);
-      iy += 4.5;
-    }
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...GRAY);
-    if (org.cnpj) { doc.text(`CNPJ: ${org.cnpj}`, margin, iy); iy += 4; }
-    if (org.business_email) { doc.text(org.business_email, margin, iy); iy += 4; }
-    if (org.business_phone) { doc.text(org.business_phone, margin, iy); iy += 4; }
-    if (org.website) { doc.text(org.website, margin, iy); }
-
-    // Logo — RIGHT aligned
     if (org.logo_url) {
       const logoResult = await loadImageAsBase64(org.logo_url);
       if (logoResult) {
-        const maxLogoH = 12; // Slightly smaller MaxLogoH
-        const maxLogoW = contentW * 0.3;
+        const maxLogoH = 16;
+        const maxLogoW = contentW * 0.28;
         const ratio = logoResult.width / logoResult.height;
         let logoW = maxLogoH * ratio;
         let logoH = maxLogoH;
         if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
-        doc.addImage(logoResult.data, 'PNG', pw - margin - logoW, y, logoW, logoH);
+        doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
+        y = Math.max(y, y + logoH + 3);
       }
-    } else if (org.trade_name || org.company_name) {
-       // Placeholder if no logo: name on the right? 
-       // User explicitly said logo on right, so if no logo, we keep the right side empty or mirror the title.
-       // Let's just leave it empty if no logo as requested.
     }
-    
-    y = Math.max(y + 22, iy + 10);
-  } else {
-    y += 10;
+
+    if (!org.logo_url) {
+      doc.setFontSize(15);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...BLACK);
+      doc.text(org.trade_name || org.company_name || 'Empresa', margin, y + 5);
+      y += 10;
+    }
+
+    // Org contact — right aligned
+    const orgInfoX = pw - margin;
+    let iy = 14;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+
+    if (org.cnpj) { const t = `CNPJ ${org.cnpj}`; doc.text(t, orgInfoX - doc.getTextWidth(t), iy); iy += 4; }
+    if (org.business_email) { doc.text(org.business_email, orgInfoX - doc.getTextWidth(org.business_email), iy); iy += 4; }
+    if (org.business_phone) { doc.text(org.business_phone, orgInfoX - doc.getTextWidth(org.business_phone), iy); iy += 4; }
+    if (org.website) { doc.text(org.website, orgInfoX - doc.getTextWidth(org.website), iy); }
+
+    y = Math.max(y, iy + 4);
   }
 
-  // ── Main Header ──
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...DARK);
-  
-  const titleText = options.budgetName 
-    ? `ORÇAMENTO - ${options.budgetName.toUpperCase()}`
-    : 'ORÇAMENTO';
-    
-  doc.text(titleText, pw / 2, y + 6, { align: 'center' });
-  y += 22; // Increased gap after title
+  y += 4;
 
-  // ── Info Blocks: Client & Details ──
-  const colW = (contentW - 10) / 2;
-  const blockH = 36; // More compact height
-  const startY = y;
-
-  // Unified border/line style for blocks
+  // ── Thin separator ──
   doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.05); // Thinner line
-
-  // Client Block
-  if (options.client) {
-    const cl = options.client;
-    doc.roundedRect(margin, y, colW, blockH, 1.5, 1.5, 'S');
-    
-    let subY = y + 6;
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...ACCENT);
-    doc.text('CLIENTE', margin + 6, subY);
-    subY += 6;
-
-    doc.setFontSize(11); // Slightly smaller name
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    doc.text(cl.name, margin + 6, subY);
-    subY += 6;
-
-    doc.setFontSize(8.5); // Slightly smaller details
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...GRAY);
-    if (cl.document) { 
-      const digits = (cl.document || '').replace(/\D/g, '');
-      const docLabel = digits.length > 11 ? 'CNPJ: ' : 'CPF: ';
-      doc.text(`${docLabel}${cl.document}`, margin + 6, subY); 
-      subY += 4.5; 
-    }
-    if (cl.email) { doc.text(cl.email, margin + 6, subY); subY += 4.5; }
-    if (cl.phone) { doc.text(cl.phone, margin + 6, subY); }
-  }
-
-  // Details Block
-  doc.roundedRect(margin + colW + 10, y, colW, blockH, 1.5, 1.5, 'S');
-  
-  let detY = y + 6;
-  doc.setFontSize(6.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...ACCENT);
-  doc.text('DADOS DO ORÇAMENTO', margin + colW + 16, detY);
-  detY += 8;
-
-  const drawRow = (label: string, value: string, py: number) => {
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...DARK);
-    doc.text(label, margin + colW + 16, py);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...GRAY);
-    doc.text(value, margin + colW + 36, py);
-  };
-
-  if (options.budgetDate) {
-    drawRow('Emissão:', new Date(options.budgetDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY);
-    detY += 5.5;
-  }
-  if (options.validityDate) {
-    drawRow('Validade:', new Date(options.validityDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY);
-    detY += 5.5;
-  }
-  if (options.deliveryDate) {
-    drawRow('Entrega:', new Date(options.deliveryDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY);
-  }
-
-  y += blockH + 12; // Tighter gap after blocks
-
-  // ── Items Table ──
-  doc.setFillColor(...DARK);
-  doc.roundedRect(margin, y, contentW, 10, 1.5, 1.5, 'F');
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
-
-  const c1 = margin + 5;
-  const c2 = margin + 15;
-  const c3 = margin + contentW - 75; // QTD
-  const c4 = margin + contentW - 55; // UNIT
-  const c5 = margin + contentW - 5;  // TOTAL (Right align)
-
-  doc.text('#', c1, y + 6.5);
-  doc.text('DESCRIÇÃO', c2, y + 6.5);
-  doc.text('QTD', c3, y + 6.5);
-  doc.text('VALOR UNIT.', c4, y + 6.5);
-  const stH = 'SUBTOTAL';
-  doc.text(stH, c5 - doc.getTextWidth(stH), y + 6.5);
-  y += 15;
-
-  // Table Rows
-  doc.setFontSize(9);
-  options.items.forEach((item, idx) => {
-    const descW = c3 - c2 - 10;
-    const wrappedDesc = doc.splitTextToSize(item.description || '-', descW);
-    const rowH = Math.max(10, wrappedDesc.length * 5 + 4);
-
-    if (y + rowH > pageH - 30) {
-      doc.addPage();
-      y = 20;
-    }
-
-    // Border bottom
-    doc.setDrawColor(...LIGHT_GRAY);
-    doc.setLineWidth(0.1);
-    doc.line(margin, y + rowH - 5, pw - margin, y + rowH - 5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...GRAY);
-    doc.text(String(idx + 1).padStart(2, '0'), c1, y);
-    
-    doc.setTextColor(...DARK);
-    doc.text(wrappedDesc, c2, y);
-
-    doc.setTextColor(...GRAY);
-    doc.text(String(item.quantity), c3 + 2, y);
-    doc.text(formatCurrency(item.unitPrice), c4, y);
-    
-    const sub = item.quantity * item.unitPrice;
-    const subText = formatCurrency(sub);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    doc.text(subText, c5 - doc.getTextWidth(subText), y);
-    
-    y += rowH;
-  });
-
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pw - margin, y);
   y += 10;
 
-  // ── Totals Section ──
-  if (y > pageH - 60) {
-    doc.addPage();
-    y = 20;
+  // ── Title ──
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...BLACK);
+  doc.text('ORÇAMENTO', margin, y);
+
+  if (options.budgetName) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    const nameW = doc.getTextWidth(options.budgetName);
+    doc.text(options.budgetName, pw - margin - nameW, y);
   }
+  y += 12;
 
-  const totalsX = margin + contentW - 80;
-  y -= 5; // Move totals up
-  
-  const addTotalRow = (label: string, val: string, isFinal = false, isFirst = false) => {
-    // Add thin separator line before each total row, except the first one
-    if (!isFirst) {
-      doc.setDrawColor(...LIGHT_GRAY);
-      doc.setLineWidth(0.1);
-      doc.line(totalsX - 5, y - 5, pw - margin, y - 5);
-    }
+  // ── Two-column: Details | Client ──
+  const colLeftX = margin;
+  const colRightX = margin + contentW / 2 + 8;
+  const metaStartY = y;
 
-    if (isFinal) {
-      y += 4;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...ACCENT);
-      doc.text(label, totalsX, y);
-      const valW = doc.getTextWidth(val);
-      doc.text(val, pw - margin - valW, y);
-      y += 10;
-    } else {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...GRAY);
-      doc.text(label, totalsX, y);
-      const valW = doc.getTextWidth(val);
-      doc.text(val, pw - margin - valW, y);
-      y += 7;
-    }
+  // Left — Details (light background, no border)
+  const detailBlockW = contentW / 2 - 4;
+  const detailBlockH = 34;
+  doc.setFillColor(...BG_LIGHT);
+  doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...ACCENT);
+  doc.text('DETALHES', colLeftX + 5, y + 2);
+  y += 8;
+
+  doc.setFontSize(9.5);
+  const addMetaRow = (label: string, value: string) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...DARK);
+    doc.text(label, colLeftX + 5, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    doc.text(value, colLeftX + 28, y);
+    y += 6;
   };
 
-  const subtotalVal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-  addTotalRow('Subtotal:', formatCurrency(subtotalVal), false, true);
-  
-  if (options.discount > 0) {
-    const discVal = subtotalVal * (options.discount / 100);
-    doc.setTextColor(220, 50, 50);
-    addTotalRow(`Desconto (${options.discount}%):`, `- ${formatCurrency(discVal)}`);
-  }
+  if (options.budgetDate) addMetaRow('Data', new Date(options.budgetDate + 'T12:00:00').toLocaleDateString('pt-BR'));
+  if (options.validityDate) addMetaRow('Validade', new Date(options.validityDate + 'T12:00:00').toLocaleDateString('pt-BR'));
+  if (options.deliveryDate) addMetaRow('Entrega', new Date(options.deliveryDate + 'T12:00:00').toLocaleDateString('pt-BR'));
 
-  addTotalRow('TOTAL DO ORÇAMENTO:', formatCurrency(options.total), true);
+  // Right — Client (light background, no border)
+  if (options.client) {
+    const cl = options.client;
+    let cy = metaStartY;
 
-  // ── Notes ──
-  if (options.notes) {
-    y += 15;
-    if (y > pageH - 40) { doc.addPage(); y = 20; }
+    doc.setFillColor(...BG_LIGHT);
+    doc.roundedRect(colRightX, cy - 4, contentW / 2 - 4, detailBlockH, 2, 2, 'F');
 
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...ACCENT);
-    doc.text('OBSERVAÇÕES E TERMOS', margin, y);
-    y += 6;
+    doc.text('CLIENTE', colRightX + 5, cy + 2);
+    cy += 8;
+
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...BLACK);
+    doc.text(cl.name, colRightX + 5, cy);
+    cy += 6;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
+    if (cl.document) { doc.text(cl.document, colRightX + 5, cy); cy += 5; }
+    if (cl.email) { doc.text(cl.email, colRightX + 5, cy); cy += 5; }
+    if (cl.phone) { doc.text(cl.phone, colRightX + 5, cy); cy += 5; }
+
+    y = Math.max(y, cy);
+  }
+
+  y = metaStartY + detailBlockH + 6;
+
+  // ── Items Table ──
+  // Header — accent background
+  doc.setFillColor(...ACCENT);
+  doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+
+  const col1 = margin + 4;
+  const col2 = margin + 100;
+  const col3 = margin + 122;
+  const col4 = pw - margin - 4;
+
+  doc.text('#', col1, y + 6.5);
+  doc.text('DESCRIÇÃO', col1 + 8, y + 6.5);
+  doc.text('QTD', col2, y + 6.5);
+  doc.text('VALOR UNIT.', col3, y + 6.5);
+  const stH = 'SUBTOTAL';
+  doc.text(stH, col4 - doc.getTextWidth(stH), y + 6.5);
+  y += 12;
+
+  // Rows
+  doc.setFontSize(9.5);
+  options.items.forEach((item, idx) => {
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    // Alternating subtle bg
+    if (idx % 2 === 0) {
+      doc.setFillColor(245, 246, 250);
+      doc.rect(margin, y - 5, contentW, 10, 'F');
+    }
+
+    const sub = item.quantity * item.unitPrice;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    doc.text(String(idx + 1).padStart(2, '0'), col1, y);
+    doc.setTextColor(...DARK);
+    doc.text(item.description || '-', col1 + 8, y);
+    doc.setTextColor(...GRAY);
+    doc.text(String(item.quantity), col2 + 2, y);
+    doc.text(formatCurrency(item.unitPrice), col3, y);
+    const subText = formatCurrency(sub);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...BLACK);
+    doc.text(subText, col4 - doc.getTextWidth(subText), y);
+    y += 10;
+  });
+
+  // Thin table bottom line
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pw - margin, y);
+  y += 10;
+
+  // ── Totals ──
+  const totalsX = margin + contentW - 75;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...GRAY);
+
+  const rightAlign = (label: string, val: string) => {
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, totalsX, y);
+    const valW = doc.getTextWidth(val);
+    doc.text(val, pw - margin - valW, y);
+    y += 6;
+  };
+
+  const subtotal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  rightAlign('Subtotal', formatCurrency(subtotal));
+
+  if (options.discount > 0) {
+    doc.setTextColor(200, 60, 60);
+    rightAlign('Desconto', `- ${formatCurrency(options.discount)}`);
+  }
+
+  y += 4;
+
+  // Total — accent background, clean
+  doc.setFillColor(...ACCENT);
+  const totalBlockH = 11;
+  doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('TOTAL', totalsX, y + 6.5);
+  const totalText = formatCurrency(options.total);
+  const totalW = doc.getTextWidth(totalText);
+  doc.text(totalText, pw - margin - totalW, y + 6.5);
+  y += totalBlockH + 12;
+
+  // ── Notes ──
+  if (options.notes) {
+    if (y > 225) { doc.addPage(); y = 20; }
+
+    doc.setDrawColor(...LIGHT_GRAY);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pw - margin, y);
+    y += 7;
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...ACCENT);
+    doc.text('OBSERVAÇÕES', margin, y);
+    y += 6;
+
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
     const noteLines = doc.splitTextToSize(options.notes, contentW);
     doc.text(noteLines, margin, y);
+    y += noteLines.length * 5 + 4;
   }
 
   // ── Footer ──
-  const footerY = pageH - 15;
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, pageH - 2, pw, 2, 'F');
+
+  const footerY = pageH - 10;
   doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.5);
-  doc.line(margin, footerY - 5, pw - margin, footerY - 5);
+  doc.setLineWidth(0.2);
+  doc.line(margin, footerY - 4, pw - margin, footerY - 4);
 
-  doc.setFontSize(8);
-  doc.setTextColor(...GRAY);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  
-  const footerLeft = options.organization?.trade_name || options.organization?.company_name || '';
-  if (footerLeft) doc.text(footerLeft, margin, footerY);
+  doc.setTextColor(...GRAY);
 
-  const website = options.organization?.website || '';
-  if (website) doc.text(website, pw / 2 - doc.getTextWidth(website) / 2, footerY);
+  if (options.organization) {
+    const org = options.organization;
+    const companyName = org.company_name || org.trade_name || '';
+    const addr = buildOrgAddress(org);
+    const footerText = [companyName, addr].filter(Boolean).join('  ·  ');
+    if (footerText) {
+      const footerLines = doc.splitTextToSize(footerText, contentW - 30);
+      doc.text(footerLines[0] || '', margin, footerY);
+    }
+  }
 
-  const footerRight = 'Gerado por Freelance Hub';
-  doc.text(footerRight, pw - margin - doc.getTextWidth(footerRight), footerY);
+  if (options.budgetDate) {
+    const dateStr = new Date(options.budgetDate + 'T12:00:00').toLocaleDateString('pt-BR');
+    const dateW = doc.getTextWidth(dateStr);
+    doc.text(dateStr, pw - margin - dateW, footerY);
+  }
 
   const datePart = options.budgetDate || new Date().toISOString().slice(0, 10);
   doc.save(`orcamento_${datePart}.pdf`);
@@ -407,236 +409,253 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 18;
   const contentW = pw - margin * 2;
-  let y = 15;
+  let y = 14;
 
-  // ── Colors & Styles ──
-  const BLACK: [number, number, number] = [20, 20, 25];
-  const DARK: [number, number, number] = [50, 50, 60];
-  const GRAY: [number, number, number] = [100, 100, 115];
-  const LIGHT_GRAY: [number, number, number] = [225, 225, 235];
-  const BG_LIGHT: [number, number, number] = [250, 251, 254];
-  const ACCENT: [number, number, number] = [0, 82, 255]; // Vivid blue
+  const BLACK: [number, number, number] = [30, 30, 30];
+  const DARK: [number, number, number] = [60, 60, 60];
+  const GRAY: [number, number, number] = [110, 110, 110];
+  const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
+  const BG_LIGHT: [number, number, number] = [248, 248, 250];
+  const ACCENT: [number, number, number] = [0, 71, 255];
 
-  // ── Header: Org info + Logo ──
+  // Thin top accent line
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, 0, pw, 2.5, 'F');
+  y = 14;
+
+  // Header
   if (options.organization) {
     const org = options.organization;
 
-    // Org info — LEFT aligned
-    let iy = y + 2;
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    const companyTitle = org.company_name || org.trade_name || '';
-    if (companyTitle) {
-      doc.text(companyTitle.toUpperCase(), margin, iy);
-      iy += 4.5;
-    }
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...GRAY);
-    if (org.cnpj) { doc.text(`CNPJ: ${org.cnpj}`, margin, iy); iy += 4; }
-    if (org.business_email) { doc.text(org.business_email, margin, iy); iy += 4; }
-    if (org.business_phone) { doc.text(org.business_phone, margin, iy); iy += 4; }
-    if (org.website) { doc.text(org.website, margin, iy); }
-
-    // Logo — RIGHT aligned
     if (org.logo_url) {
       const logoResult = await loadImageAsBase64(org.logo_url);
       if (logoResult) {
-        const maxLogoH = 12;
-        const maxLogoW = contentW * 0.3;
+        const maxLogoH = 16;
+        const maxLogoW = contentW * 0.28;
         const ratio = logoResult.width / logoResult.height;
         let logoW = maxLogoH * ratio;
         let logoH = maxLogoH;
         if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
-        doc.addImage(logoResult.data, 'PNG', pw - margin - logoW, y, logoW, logoH);
+        doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
+        y = Math.max(y, y + logoH + 3);
       }
     }
-    
-    y = Math.max(y + 22, iy + 10);
-  } else {
-    y += 10;
-  }
 
-  // ── Header ──
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...DARK);
-  
-  const invoiceTitle = options.invoiceName
-    ? `FATURA - ${options.invoiceName.toUpperCase()}`
-    : 'FATURA';
+    if (!org.logo_url) {
+      doc.setFontSize(15);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...BLACK);
+      doc.text(org.trade_name || org.company_name || 'Empresa', margin, y + 5);
+      y += 10;
+    }
 
-  doc.text(invoiceTitle, pw / 2, y + 8, { align: 'center' });
-  y += 22;
-
-  // ── Info Blocks: Client & Details ──
-  const colW = (contentW - 10) / 2;
-  const blockH = 36;
-
-  doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.05);
-
-  // Client Block
-  if (options.client) {
-    const cl = options.client;
-    doc.roundedRect(margin, y, colW, blockH, 1.5, 1.5, 'S');
-    
-    let subY = y + 6;
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...ACCENT);
-    doc.text('CLIENTE', margin + 6, subY);
-    subY += 6;
-
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...BLACK);
-    doc.text(cl.name, margin + 6, subY);
-    subY += 6;
-
-    doc.setFontSize(8.5);
+    const orgInfoX = pw - margin;
+    let iy = 14;
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    if (cl.document) {
-      const digits = (cl.document || '').replace(/\D/g, '');
-      const docLabel = digits.length > 11 ? 'CNPJ: ' : 'CPF: ';
-      doc.text(`${docLabel}${cl.document}`, margin + 6, subY);
-      subY += 4.5;
-    }
-    if (cl.email) { doc.text(cl.email, margin + 6, subY); subY += 4.5; }
-    if (cl.phone) { doc.text(cl.phone, margin + 6, subY); }
+    if (org.cnpj) { const t = `CNPJ ${org.cnpj}`; doc.text(t, orgInfoX - doc.getTextWidth(t), iy); iy += 4; }
+    if (org.business_email) { doc.text(org.business_email, orgInfoX - doc.getTextWidth(org.business_email), iy); iy += 4; }
+    if (org.business_phone) { doc.text(org.business_phone, orgInfoX - doc.getTextWidth(org.business_phone), iy); iy += 4; }
+    if (org.website) { doc.text(org.website, orgInfoX - doc.getTextWidth(org.website), iy); }
+    y = Math.max(y, iy + 4);
   }
 
-  // Details Block
-  doc.roundedRect(margin + colW + 10, y, colW, blockH, 1.5, 1.5, 'S');
-  
-  let detY = y + 6;
-  doc.setFontSize(6.5);
+  y += 4;
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pw - margin, y);
+  y += 10;
+
+  // Title
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...BLACK);
+  doc.text('FATURA', margin, y);
+
+  if (options.invoiceName) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    const nameW = doc.getTextWidth(options.invoiceName);
+    doc.text(options.invoiceName, pw - margin - nameW, y);
+  }
+  y += 12;
+
+  // Two-column
+  const colLeftX = margin;
+  const colRightX = margin + contentW / 2 + 8;
+  const metaStartY = y;
+  const detailBlockW = contentW / 2 - 4;
+  const detailBlockH = 38;
+
+  doc.setFillColor(...BG_LIGHT);
+  doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
+
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...ACCENT);
-  doc.text('DADOS DA FATURA', margin + colW + 16, detY);
-  detY += 8;
+  doc.text('DETALHES', colLeftX + 5, y + 2);
+  y += 8;
 
-  const drawRow = (label: string, value: string, py: number) => {
-    doc.setFontSize(8.5);
+  doc.setFontSize(9.5);
+  const addMetaRow = (label: string, value: string) => {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...DARK);
-    doc.text(label, margin + colW + 16, py);
+    doc.text(label, colLeftX + 5, y);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    doc.text(value, margin + colW + 36, py);
+    doc.text(value, colLeftX + 32, y);
+    y += 6;
   };
 
-  drawRow('Status:', options.status || '-', detY); detY += 5.5;
-  drawRow('Emissão:', new Date(options.createdAt).toLocaleDateString('pt-BR'), detY); detY += 5.5;
-  if (options.dueDate) { drawRow('Vencimento:', new Date(options.dueDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY); detY += 5.5; }
-  if (options.paymentMethod) drawRow('Pagamento:', options.paymentMethod, detY);
+  addMetaRow('Status', options.status);
+  addMetaRow('Data', new Date(options.createdAt).toLocaleDateString('pt-BR'));
+  if (options.dueDate) addMetaRow('Vencimento', new Date(options.dueDate + 'T12:00:00').toLocaleDateString('pt-BR'));
+  if (options.paymentMethod) addMetaRow('Pagamento', options.paymentMethod);
 
-  y += blockH + 12;
+  if (options.client) {
+    const cl = options.client;
+    let cy = metaStartY;
 
-  // ── Items Table ──
-  doc.setFillColor(...DARK);
-  doc.roundedRect(margin, y, contentW, 10, 1.5, 1.5, 'F');
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
+    doc.setFillColor(...BG_LIGHT);
+    doc.roundedRect(colRightX, cy - 4, contentW / 2 - 4, detailBlockH, 2, 2, 'F');
 
-  const c1 = margin + 5;
-  const c2 = margin + 15;
-  const c3 = margin + contentW - 75; // QTD
-  const c4 = margin + contentW - 55; // UNIT
-  const c5 = margin + contentW - 5;  // TOTAL
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...ACCENT);
+    doc.text('CLIENTE', colRightX + 5, cy + 2);
+    cy += 8;
 
-  doc.text('#', c1, y + 6.5);
-  doc.text('DESCRIÇÃO', c2, y + 6.5);
-  doc.text('QTD', c3, y + 6.5);
-  doc.text('VALOR UNIT.', c4, y + 6.5);
-  const stH = 'SUBTOTAL';
-  doc.text(stH, c5 - doc.getTextWidth(stH), y + 6.5);
-  y += 15;
-
-  options.items.forEach((item, idx) => {
-    const descW = c3 - c2 - 10;
-    const wrappedDesc = doc.splitTextToSize(item.description || '-', descW);
-    const rowH = Math.max(10, wrappedDesc.length * 5 + 4);
-
-    if (y + rowH > pageH - 30) { doc.addPage(); y = 20; }
-
-    doc.setDrawColor(...LIGHT_GRAY);
-    doc.setLineWidth(0.1);
-    doc.line(margin, y + rowH - 5, pw - margin, y + rowH - 5);
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...BLACK);
+    doc.text(cl.name, colRightX + 5, cy);
+    cy += 6;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    doc.text(String(idx + 1).padStart(2, '0'), c1, y);
-    doc.setTextColor(...DARK);
-    doc.text(wrappedDesc, c2, y);
-    doc.setTextColor(...GRAY);
-    doc.text(String(item.quantity), c3 + 2, y);
-    doc.text(formatCurrency(item.unitPrice), c4, y);
+    if (cl.document) { doc.text(cl.document, colRightX + 5, cy); cy += 5; }
+    if (cl.email) { doc.text(cl.email, colRightX + 5, cy); cy += 5; }
+    if (cl.phone) { doc.text(cl.phone, colRightX + 5, cy); cy += 5; }
+
+    y = Math.max(y, cy);
+  }
+
+  y = metaStartY + detailBlockH + 6;
+
+  // Items table
+  doc.setFillColor(...ACCENT);
+  doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+
+  const col1 = margin + 4;
+  const col2 = margin + 100;
+  const col3 = margin + 122;
+  const col4 = pw - margin - 4;
+
+  doc.text('#', col1, y + 6.5);
+  doc.text('DESCRIÇÃO', col1 + 8, y + 6.5);
+  doc.text('QTD', col2, y + 6.5);
+  doc.text('VALOR UNIT.', col3, y + 6.5);
+  const stH = 'SUBTOTAL';
+  doc.text(stH, col4 - doc.getTextWidth(stH), y + 6.5);
+  y += 12;
+
+  doc.setFontSize(9.5);
+  options.items.forEach((item, idx) => {
+    if (y > 250) { doc.addPage(); y = 20; }
+    if (idx % 2 === 0) { doc.setFillColor(245, 246, 250); doc.rect(margin, y - 5, contentW, 10, 'F'); }
+
     const sub = item.quantity * item.unitPrice;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    doc.text(String(idx + 1).padStart(2, '0'), col1, y);
+    doc.setTextColor(...DARK);
+    doc.text(item.description || '-', col1 + 8, y);
+    doc.setTextColor(...GRAY);
+    doc.text(String(item.quantity), col2 + 2, y);
+    doc.text(formatCurrency(item.unitPrice), col3, y);
     const subText = formatCurrency(sub);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...BLACK);
-    doc.text(subText, c5 - doc.getTextWidth(subText), y);
-    y += rowH;
+    doc.text(subText, col4 - doc.getTextWidth(subText), y);
+    y += 10;
   });
 
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pw - margin, y);
   y += 10;
 
-  // ── Totals ──
-  const totalsX = margin + contentW - 80;
-  const subtotalVal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  // Totals
+  const totalsX = margin + contentW - 75;
+  const subtotal = options.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...GRAY);
 
-  const addTotalRow = (label: string, val: string, isFinal = false) => {
-    if (isFinal) {
-      y += 4;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...ACCENT);
-      doc.text(label, totalsX, y);
-      const valW = doc.getTextWidth(val);
-      doc.text(val, pw - margin - valW, y);
-      y += 10;
-    } else {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...GRAY);
-      doc.text(label, totalsX, y);
-      const valW = doc.getTextWidth(val);
-      doc.text(val, pw - margin - valW, y);
-      y += 7;
-    }
+  const rightAlign = (label: string, val: string) => {
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, totalsX, y);
+    const valW = doc.getTextWidth(val);
+    doc.text(val, pw - margin - valW, y);
+    y += 6;
   };
 
-  addTotalRow('Subtotal:', formatCurrency(subtotalVal));
+  rightAlign('Subtotal', formatCurrency(subtotal));
   if (options.taxes > 0) {
-    addTotalRow(`Impostos (${options.taxes}%):`, formatCurrency(subtotalVal * options.taxes / 100));
+    rightAlign(`Impostos (${options.taxes}%)`, formatCurrency(subtotal * options.taxes / 100));
   }
   if (options.discount > 0) {
-    doc.setTextColor(220, 50, 50);
-    addTotalRow(`Desconto:`, `- ${formatCurrency(options.discount)}`);
+    doc.setTextColor(200, 60, 60);
+    rightAlign('Desconto', `- ${formatCurrency(options.discount)}`);
   }
-  addTotalRow('TOTAL DA FATURA:', formatCurrency(options.total), true);
 
-  // ── Footer ──
-  const footerY = pageH - 15;
+  y += 4;
+  doc.setFillColor(...ACCENT);
+  const totalBlockH = 11;
+  doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('TOTAL', totalsX, y + 6.5);
+  const totalText = formatCurrency(options.total);
+  const totalW = doc.getTextWidth(totalText);
+  doc.text(totalText, pw - margin - totalW, y + 6.5);
+
+  // Footer
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, pageH - 2, pw, 2, 'F');
+
+  const footerY = pageH - 10;
   doc.setDrawColor(...LIGHT_GRAY);
-  doc.setLineWidth(0.5);
-  doc.line(margin, footerY - 5, pw - margin, footerY - 5);
-  doc.setFontSize(8);
-  doc.setTextColor(...GRAY);
+  doc.setLineWidth(0.2);
+  doc.line(margin, footerY - 4, pw - margin, footerY - 4);
+
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  const footerLeft = options.organization?.trade_name || options.organization?.company_name || '';
-  if (footerLeft) doc.text(footerLeft, margin, footerY);
-  const pageNum = `Página ${doc.internal.pages.length - 1}`;
-  doc.text(pageNum, pw / 2 - doc.getTextWidth(pageNum) / 2, footerY);
-  doc.text('Gerado por Freelance Hub', pw - margin - doc.getTextWidth('Gerado por Freelance Hub'), footerY);
+  doc.setTextColor(...GRAY);
+
+  if (options.organization) {
+    const org = options.organization;
+    const companyName = org.company_name || org.trade_name || '';
+    const addr = buildOrgAddress(org);
+    const footerText = [companyName, addr].filter(Boolean).join('  ·  ');
+    if (footerText) {
+      const footerLines = doc.splitTextToSize(footerText, contentW - 30);
+      doc.text(footerLines[0] || '', margin, footerY);
+    }
+  }
+
+  const dateStr = new Date(options.createdAt).toLocaleDateString('pt-BR');
+  const dateW = doc.getTextWidth(dateStr);
+  doc.text(dateStr, pw - margin - dateW, footerY);
 
   const datePart = new Date(options.createdAt).toISOString().slice(0, 10);
   doc.save(`fatura_${datePart}.pdf`);
