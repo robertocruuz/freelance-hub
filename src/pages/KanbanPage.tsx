@@ -158,18 +158,54 @@ const KanbanPage = () => {
     if (!user || activeTab !== 'shared') return;
     const loadSharedTasks = async () => {
       setLoadingShared(true);
-      const { data: shares } = await supabase
+
+      // 1. Get directly shared tasks
+      const { data: taskShares } = await supabase
         .from('shares')
-        .select('resource_id')
-        .eq('resource_type', 'task')
-        .eq('shared_with_user_id', user.id);
-      
-      if (shares && shares.length > 0) {
-        const taskIds = shares.map(s => s.resource_id);
+        .select('resource_id, resource_type')
+        .in('resource_type', ['task', 'board'])
+        .or(`shared_with_user_id.eq.${user.id},share_type.eq.org`);
+
+      const directTaskIds: string[] = [];
+      const sharedBoardIds: string[] = [];
+
+      if (taskShares) {
+        for (const s of taskShares) {
+          if (s.resource_type === 'task') {
+            directTaskIds.push(s.resource_id);
+          } else if (s.resource_type === 'board') {
+            sharedBoardIds.push(s.resource_id);
+          }
+        }
+      }
+
+      // 2. Get tasks from shared boards
+      let boardTaskIds: string[] = [];
+      if (sharedBoardIds.length > 0) {
+        const { data: boardCols } = await supabase
+          .from('kanban_columns')
+          .select('id')
+          .in('board_id', sharedBoardIds);
+        if (boardCols && boardCols.length > 0) {
+          const colIds = boardCols.map(c => c.id);
+          const { data: boardTasks } = await supabase
+            .from('tasks')
+            .select('id')
+            .in('column_id', colIds)
+            .neq('user_id', user.id);
+          if (boardTasks) boardTaskIds = boardTasks.map(t => t.id);
+        }
+      }
+
+      // 3. Merge all task IDs (deduplicate)
+      const allTaskIds = [...new Set([...directTaskIds, ...boardTaskIds])];
+
+      if (allTaskIds.length > 0) {
         const { data: tasksData } = await supabase
           .from('tasks')
           .select('*')
-          .in('id', taskIds)
+          .in('id', allTaskIds)
+          .neq('user_id', user.id)
           .order('updated_at', { ascending: false });
         
         if (tasksData) {
@@ -226,6 +262,8 @@ const KanbanPage = () => {
               setSharedProjects(map);
             }
           }
+        } else {
+          setSharedTasks([]);
         }
       } else {
         setSharedTasks([]);
