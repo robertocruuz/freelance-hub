@@ -129,6 +129,22 @@ const KanbanPage = () => {
     }
   }, [loading, boards]);
 
+  // Load profiles for shared board owners
+  useEffect(() => {
+    if (!user || !boards.length) return;
+    const sharedBoardOwnerIds = [...new Set(boards.filter(b => b.user_id !== user.id).map(b => b.user_id))];
+    if (sharedBoardOwnerIds.length === 0) return;
+    supabase.from('profiles').select('user_id, name, email').in('user_id', sharedBoardOwnerIds).then(({ data }) => {
+      if (data) {
+        setSharedOwners(prev => {
+          const map = { ...prev };
+          data.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
+          return map;
+        });
+      }
+    });
+  }, [user, boards]);
+
   // Load projects for filter
   useEffect(() => {
     if (!user) return;
@@ -153,114 +169,58 @@ const KanbanPage = () => {
     loadMyShares();
   }, [user, tasks]);
 
-  // Load shared tasks (tasks shared WITH me)
+  // Load shared tasks (only directly shared individual tasks, NOT from shared boards)
   useEffect(() => {
     if (!user || activeTab !== 'shared') return;
     const loadSharedTasks = async () => {
       setLoadingShared(true);
 
-      // 1. Get directly shared tasks
       const { data: taskShares } = await supabase
         .from('shares')
-        .select('resource_id, resource_type')
-        .in('resource_type', ['task', 'board'])
+        .select('resource_id')
+        .eq('resource_type', 'task')
         .or(`shared_with_user_id.eq.${user.id},share_type.eq.org`);
 
-      const directTaskIds: string[] = [];
-      const sharedBoardIds: string[] = [];
+      const taskIds = taskShares?.map(s => s.resource_id) || [];
 
-      if (taskShares) {
-        for (const s of taskShares) {
-          if (s.resource_type === 'task') {
-            directTaskIds.push(s.resource_id);
-          } else if (s.resource_type === 'board') {
-            sharedBoardIds.push(s.resource_id);
-          }
-        }
-      }
-
-      // 2. Get tasks from shared boards
-      let boardTaskIds: string[] = [];
-      if (sharedBoardIds.length > 0) {
-        const { data: boardCols } = await supabase
-          .from('kanban_columns')
-          .select('id')
-          .in('board_id', sharedBoardIds);
-        if (boardCols && boardCols.length > 0) {
-          const colIds = boardCols.map(c => c.id);
-          const { data: boardTasks } = await supabase
-            .from('tasks')
-            .select('id')
-            .in('column_id', colIds)
-            .neq('user_id', user.id);
-          if (boardTasks) boardTaskIds = boardTasks.map(t => t.id);
-        }
-      }
-
-      // 3. Merge all task IDs (deduplicate)
-      const allTaskIds = [...new Set([...directTaskIds, ...boardTaskIds])];
-
-      if (allTaskIds.length > 0) {
+      if (taskIds.length > 0) {
         const { data: tasksData } = await supabase
           .from('tasks')
           .select('*')
-          .in('id', allTaskIds)
+          .in('id', taskIds)
           .neq('user_id', user.id)
           .order('updated_at', { ascending: false });
         
-        if (tasksData) {
+        if (tasksData && tasksData.length > 0) {
           setSharedTasks(tasksData);
           
-          // Load columns
           const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
-          if (colIds.length > 0) {
-            const { data: colsData } = await supabase
-              .from('kanban_columns')
-              .select('*')
-              .in('id', colIds as string[]);
-            if (colsData) setSharedColumns(colsData);
-          }
-          
-          // Load owner profiles
           const ownerIds = [...new Set(tasksData.map(t => t.user_id))];
-          if (ownerIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id, name, email')
-              .in('user_id', ownerIds);
-            if (profiles) {
-              const map: Record<string, { name: string | null; email: string | null }> = {};
-              profiles.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
-              setSharedOwners(map);
-            }
-          }
-          
-          // Load clients
           const clientIds = [...new Set(tasksData.map(t => t.client_id).filter(Boolean))] as string[];
-          if (clientIds.length > 0) {
-            const { data: clientsData } = await supabase
-              .from('clients')
-              .select('id, name')
-              .in('id', clientIds);
-            if (clientsData) {
-              const map: Record<string, string> = {};
-              clientsData.forEach(c => { map[c.id] = c.name; });
-              setSharedClients(map);
-            }
-          }
-          
-          // Load projects
           const projectIds = [...new Set(tasksData.map(t => t.project_id).filter(Boolean))] as string[];
-          if (projectIds.length > 0) {
-            const { data: projectsData } = await supabase
-              .from('projects')
-              .select('id, name')
-              .in('id', projectIds);
-            if (projectsData) {
-              const map: Record<string, string> = {};
-              projectsData.forEach(p => { map[p.id] = p.name; });
-              setSharedProjects(map);
-            }
+
+          const [colsRes, profilesRes, clientsRes, projectsRes] = await Promise.all([
+            colIds.length > 0 ? supabase.from('kanban_columns').select('*').in('id', colIds as string[]) : null,
+            ownerIds.length > 0 ? supabase.from('profiles').select('user_id, name, email').in('user_id', ownerIds) : null,
+            clientIds.length > 0 ? supabase.from('clients').select('id, name').in('id', clientIds) : null,
+            projectIds.length > 0 ? supabase.from('projects').select('id, name').in('id', projectIds) : null,
+          ]);
+
+          if (colsRes?.data) setSharedColumns(colsRes.data);
+          if (profilesRes?.data) {
+            const map: Record<string, { name: string | null; email: string | null }> = {};
+            profilesRes.data.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
+            setSharedOwners(prev => ({ ...prev, ...map }));
+          }
+          if (clientsRes?.data) {
+            const map: Record<string, string> = {};
+            clientsRes.data.forEach(c => { map[c.id] = c.name; });
+            setSharedClients(map);
+          }
+          if (projectsRes?.data) {
+            const map: Record<string, string> = {};
+            projectsRes.data.forEach(p => { map[p.id] = p.name; });
+            setSharedProjects(map);
           }
         } else {
           setSharedTasks([]);
@@ -543,7 +503,8 @@ const KanbanPage = () => {
 
       {/* Board selector */}
       <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-none">
-        {boards.map((board) => {
+        {/* Own boards */}
+        {boards.filter(b => b.user_id === user?.id).map((board) => {
           const isActive = activeBoardId === board.id;
           const subtitle = getBoardSubtitle(board);
           const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
@@ -563,7 +524,6 @@ const KanbanPage = () => {
                 '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
               } as React.CSSProperties : undefined}
             >
-              {/* Color indicator bar */}
               {(() => {
                 const color = getBoardColor(board);
                 return color ? (
@@ -618,6 +578,65 @@ const KanbanPage = () => {
             </button>
           );
         })}
+
+        {/* Shared boards separator + cards */}
+        {boards.filter(b => b.user_id !== user?.id).length > 0 && (
+          <>
+            <div className="h-12 w-px bg-border shrink-0" />
+            {boards.filter(b => b.user_id !== user?.id).map((board) => {
+              const isActive = activeBoardId === board.id;
+              const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
+              const taskCount = boardTasks.length;
+              const ownerName = sharedOwners[board.user_id]?.name || sharedOwners[board.user_id]?.email || '';
+              return (
+                <button
+                  key={board.id}
+                  onClick={() => setActiveBoardId(board.id)}
+                  className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+                    isActive
+                      ? 'shadow-sm ring-1'
+                      : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
+                  }`}
+                  style={isActive ? {
+                    borderColor: getBoardColor(board) || 'hsl(var(--primary))',
+                    backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
+                    '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+                  } as React.CSSProperties : undefined}
+                >
+                  {(() => {
+                    const color = getBoardColor(board);
+                    return color ? (
+                      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                    ) : null;
+                  })()}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
+                      style={{
+                        backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                        color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                      }}
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </div>
+                    <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                      {board.name}
+                    </span>
+                  </div>
+                  {ownerName && (
+                    <span className="text-[11px] text-muted-foreground truncate pl-9 flex items-center gap-1">
+                      <User className="w-3 h-3" /> {ownerName}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 pl-9 mt-0.5">
+                    <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                      {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </>
+        )}
 
         {/* Add new board button */}
         <button
