@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ShareButton } from '@/components/kanban/ShareButton';
-import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
 import { useClients, Client } from '@/hooks/useClients';
@@ -14,6 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -339,11 +342,55 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Data início</label>
-              <Input type="date" value={task.start_date || ''} onChange={(e) => onUpdate(task.id, { start_date: e.target.value || null })} className="h-9 text-sm glass-input" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className={cn(
+                      "w-full h-9 px-3 rounded-md border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors glass-input",
+                      !task.start_date && "text-muted-foreground"
+                    )}
+                  >
+                    {task.start_date ? format(new Date(task.start_date + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR }) : "dd/mm/aaaa"}
+                    <CalendarIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar 
+                    mode="single" 
+                    selected={task.start_date ? new Date(task.start_date + 'T12:00:00') : undefined} 
+                    onSelect={(d) => onUpdate(task.id, { start_date: d ? format(d, "yyyy-MM-dd") : null })} 
+                    initialFocus 
+                    className="p-3 pointer-events-auto" 
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Prazo final</label>
-              <Input type="date" value={task.due_date || ''} onChange={(e) => onUpdate(task.id, { due_date: e.target.value || null })} className="h-9 text-sm glass-input" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className={cn(
+                      "w-full h-9 px-3 rounded-md border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors glass-input",
+                      !task.due_date && "text-muted-foreground"
+                    )}
+                  >
+                    {task.due_date ? format(new Date(task.due_date + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR }) : "dd/mm/aaaa"}
+                    <CalendarIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar 
+                    mode="single" 
+                    selected={task.due_date ? new Date(task.due_date + 'T12:00:00') : undefined} 
+                    onSelect={(d) => onUpdate(task.id, { due_date: d ? format(d, "yyyy-MM-dd") : null })} 
+                    initialFocus 
+                    className="p-3 pointer-events-auto" 
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo estimado (h)</label>
