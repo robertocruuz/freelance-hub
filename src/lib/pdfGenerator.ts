@@ -59,7 +59,7 @@ interface BudgetPdfOptions {
   client?: ClientInfo | null;
 }
 
-const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number } | null> => {
+export const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number } | null> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -80,7 +80,7 @@ const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; 
   });
 };
 
-const buildOrgAddress = (org: OrganizationInfo): string => {
+export const buildOrgAddress = (org: OrganizationInfo): string => {
   const parts: string[] = [];
   if (org.address) parts.push(org.address);
   if (org.complement) parts.push(org.complement);

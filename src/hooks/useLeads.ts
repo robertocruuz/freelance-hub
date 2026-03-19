@@ -49,9 +49,9 @@ export function useLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (showLoading = true) => {
     if (!user) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
 
     const [stagesRes, leadsRes] = await Promise.all([
       supabase.from('lead_stages').select('*').eq('user_id', user.id).order('position'),
@@ -72,7 +72,25 @@ export function useLeads() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { 
+    fetchData(true); 
+
+    if (!user) return;
+    
+    // Subscribe to realtime changes for leads and stages
+    const channel = supabase.channel(`leads_realtime_${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+        fetchData(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_stages' }, () => {
+        fetchData(false);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchData, user]);
 
   const addStage = async (name: string, color: string) => {
     if (!user) return;

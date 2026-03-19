@@ -145,6 +145,12 @@ export const useOrganization = () => {
           role,
           status: 'pending',
         });
+
+        // Notify the invited user in their bell
+        await supabase.rpc('notify_user_on_invite' as any, {
+          _user_id: existingProfile.user_id,
+          _org_id: orgId
+        });
       }
 
       await fetchOrgData();

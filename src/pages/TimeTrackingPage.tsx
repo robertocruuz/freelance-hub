@@ -8,6 +8,7 @@ import { useTimer } from '@/hooks/useTimer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClients } from '@/hooks/useClients';
+import { loadImageAsBase64, buildOrgAddress } from '@/lib/pdfGenerator';
 import {
   Dialog,
   DialogContent,
@@ -344,14 +345,25 @@ const TimeTrackingPage = () => {
 
   const loadKanbanTasks = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    
+    // Fetch all accessible tasks (own, shared boards, individually shared)
+    // RLS handles the permissions
+    const { data: allAccessibleTasks, error } = await supabase
       .from('tasks')
       .select('id, title, project_id, column_id')
-      .eq('user_id', user.id)
       .not('column_id', 'is', null)
-      .neq('status', 'done')
-      .order('title');
-    if (data) setKanbanTasks(data);
+      .neq('status', 'done');
+
+    if (error) {
+      console.error('Error fetching tasks:', error);
+      return;
+    }
+
+    const tasks = allAccessibleTasks || [];
+    // Sort tasks by title
+    tasks.sort((a, b) => a.title.localeCompare(b.title));
+    
+    setKanbanTasks(tasks);
   }, [user]);
 
   const loadEntries = useCallback(async () => {
@@ -417,6 +429,16 @@ const TimeTrackingPage = () => {
   }, [user, timeRange, selectedDate]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
+  // Reload entries when timer stops (from any source, including sidebar)
+  const prevRunningRef = useRef(running);
+  useEffect(() => {
+    if (prevRunningRef.current && !running) {
+      // Timer just stopped — reload after short delay to let DB write complete
+      const timeout = setTimeout(() => loadEntries(), 500);
+      return () => clearTimeout(timeout);
+    }
+    prevRunningRef.current = running;
+  }, [running, loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
   useEffect(() => { loadProfiles(); }, [loadProfiles]);
@@ -539,9 +561,8 @@ const TimeTrackingPage = () => {
   }, [viewMode]);
 
   const stopTimer = async () => {
-    await globalStopTimer(() => {
-      loadEntries();
-    });
+    await globalStopTimer();
+    loadEntries();
   };
 
   const confirmDeleteEntry = (id: string) => {
@@ -771,6 +792,15 @@ const TimeTrackingPage = () => {
   const recentDescriptions = useMemo(() => {
     const seen = new Set<string>();
     const results: { label: string; source: 'recent' | 'task'; projectId?: string | null; clientId?: string | null; taskId?: string | null }[] = [];
+    
+    // First priorities to Kanban tasks
+    for (const t of kanbanTasks) {
+      if (!seen.has(t.title.toLowerCase())) {
+        seen.add(t.title.toLowerCase());
+        results.push({ label: t.title, source: 'task', projectId: t.project_id, taskId: t.id });
+      }
+    }
+
     // Recent entries (unique descriptions)
     for (const e of [...entries].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())) {
       const desc = e.description?.trim();
@@ -778,16 +808,9 @@ const TimeTrackingPage = () => {
         seen.add(desc.toLowerCase());
         results.push({ label: desc, source: 'recent', projectId: e.project_id, clientId: e.client_id, taskId: e.task_id });
       }
-      if (results.length >= 15) break;
-    }
-    // Kanban tasks not yet in recents
-    for (const t of kanbanTasks) {
-      if (!seen.has(t.title.toLowerCase())) {
-        seen.add(t.title.toLowerCase());
-        results.push({ label: t.title, source: 'task', projectId: t.project_id, taskId: t.id });
-      }
       if (results.length >= 25) break;
     }
+    
     return results;
   }, [entries, kanbanTasks]);
 
@@ -812,15 +835,22 @@ const TimeTrackingPage = () => {
 
   const applySuggestion = (s: typeof recentDescriptions[0]) => {
     setDescription(s.label);
-    if (s.clientId) {
-      setClientId(s.clientId);
-      if (s.projectId) setProjectId(s.projectId);
-    } else if (s.projectId) {
-      const proj = projects.find(p => p.id === s.projectId);
-      if (proj?.client_id) setClientId(proj.client_id);
-      setProjectId(s.projectId);
+    
+    let newClientId = s.clientId || '';
+    let newProjectId = s.projectId || '';
+    let newTaskId = s.taskId || '';
+
+    // If suggestion has a project but no client, deduce client from project
+    if (!newClientId && newProjectId) {
+      const proj = projects.find(p => p.id === newProjectId);
+      if (proj?.client_id) {
+        newClientId = proj.client_id;
+      }
     }
-    if (s.taskId) setTaskId(s.taskId);
+
+    setClientId(newClientId);
+    setProjectId(newProjectId);
+    setTaskId(newTaskId);
     setShowSuggestions(false);
   };
 
@@ -1527,9 +1557,16 @@ const TimeTrackingPage = () => {
 
             // Fetch user profile
             let userName = '';
+            let exportOrg: any = null;
             if (user) {
               const { data: profile } = await supabase.from('profiles').select('name, email').eq('user_id', user.id).maybeSingle();
               userName = profile?.name || profile?.email || user.email || '';
+              
+              const { data: member } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).maybeSingle();
+              if (member?.organization_id) {
+                const { data: org } = await supabase.from('organizations').select('*').eq('id', member.organization_id).maybeSingle();
+                exportOrg = org;
+              }
             }
 
             // Use all entries when custom dates are set, otherwise use filtered by period
@@ -1538,9 +1575,18 @@ const TimeTrackingPage = () => {
             let exportEntries = (exportStartDate || exportEndDate) ? [...baseEntries] : [...reportEntries];
             if (exportFilter === 'client' && exportClientId) {
               const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
-              exportEntries = exportEntries.filter(e => e.project_id && clientProjectIds.includes(e.project_id));
-            } else if (exportFilter === 'project' && exportProjectId) {
-              exportEntries = exportEntries.filter(e => e.project_id === exportProjectId);
+              exportEntries = exportEntries.filter(e => 
+                e.client_id === exportClientId || (e.project_id && clientProjectIds.includes(e.project_id))
+              );
+            } else if (exportFilter === 'project') {
+              if (exportProjectId) {
+                exportEntries = exportEntries.filter(e => e.project_id === exportProjectId);
+              } else if (exportClientId) {
+                const clientProjectIds = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
+                exportEntries = exportEntries.filter(e => 
+                  e.client_id === exportClientId || (e.project_id && clientProjectIds.includes(e.project_id))
+                );
+              }
             }
             if (exportStartDate) {
               exportEntries = exportEntries.filter(e => new Date(e.start_time) >= new Date(exportStartDate + 'T00:00:00'));
@@ -1559,230 +1605,313 @@ const TimeTrackingPage = () => {
 
             const doc = new jsPDF();
             const pw = doc.internal.pageSize.getWidth();
-            const ph = doc.internal.pageSize.getHeight();
-            let y = 0;
-            const marginL = 16;
-            const marginR = pw - 16;
-            const contentW = marginR - marginL;
+            const pageH = doc.internal.pageSize.getHeight();
+            const margin = 18;
+            const contentW = pw - margin * 2;
+            let y = 14;
 
-            // Brand colors
-            const blue = { r: 0, g: 71, b: 255 };       // #0047FF
-            const darkBlue = { r: 0, g: 30, b: 120 };
-            const lime = { r: 163, g: 230, b: 53 };
-            const gray = { r: 120, g: 130, b: 150 };
-            const lightGray = { r: 240, g: 242, b: 247 };
-            const white = { r: 255, g: 255, b: 255 };
+            // ── Colors ──
+            const BLACK: [number, number, number] = [30, 30, 30];
+            const DARK: [number, number, number] = [60, 60, 60];
+            const GRAY: [number, number, number] = [110, 110, 110];
+            const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
+            const BG_LIGHT: [number, number, number] = [248, 248, 250];
+            const ACCENT: [number, number, number] = [0, 71, 255];
 
             const addPageFooter = () => {
+              const footerY = pageH - 10;
               doc.setFontSize(7);
-              doc.setTextColor(gray.r, gray.g, gray.b);
-              doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, marginL, ph - 10);
-              doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, marginR, ph - 10, { align: 'right' });
+              doc.setTextColor(...GRAY);
+              doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, margin, footerY);
+              doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pw - margin, footerY, { align: 'right' });
             };
 
             const checkPageBreak = (needed: number) => {
-              if (y + needed > ph - 20) {
+              if (y + needed > pageH - 20) {
                 addPageFooter();
                 doc.addPage();
                 y = 20;
               }
             };
 
-            // ── HERO HEADER ──
-            doc.setFillColor(blue.r, blue.g, blue.b);
-            doc.rect(0, 0, pw, 52, 'F');
-            // Accent bar
-            doc.setFillColor(lime.r, lime.g, lime.b);
-            doc.rect(0, 52, pw, 3, 'F');
+            // ── Thin top accent line ──
+            doc.setFillColor(...ACCENT);
+            doc.rect(0, 0, pw, 2.5, 'F');
+            y = 14;
 
-            // Title
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(22);
-            doc.setTextColor(white.r, white.g, white.b);
-            doc.text('Relatório de Tempo', marginL, 24);
+            // ── Header: Logo + Org info ──
+            if (exportOrg) {
+              if (exportOrg.logo_url) {
+                const logoResult = await loadImageAsBase64(exportOrg.logo_url);
+                if (logoResult) {
+                  const maxLogoH = 16;
+                  const maxLogoW = contentW * 0.28;
+                  const ratio = logoResult.width / logoResult.height;
+                  let logoW = maxLogoH * ratio;
+                  let logoH = maxLogoH;
+                  if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
+                  doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
+                  y = Math.max(y, y + logoH + 3);
+                }
+              }
 
-            // Subtitle line
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(200, 210, 255);
-            const periodLabel = exportStartDate && exportEndDate
-              ? `${new Date(exportStartDate).toLocaleDateString('pt-BR')} — ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
-              : dateLabel();
-            doc.text(periodLabel, marginL, 33);
+              if (!exportOrg.logo_url) {
+                doc.setFontSize(15);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...BLACK);
+                doc.text(exportOrg.trade_name || exportOrg.company_name || 'Empresa', margin, y + 5);
+                y += 10;
+              }
 
-            // User badge on header right
-            if (userName) {
-              doc.setFontSize(9);
-              doc.setTextColor(200, 210, 255);
-              doc.text(userName, marginR, 24, { align: 'right' });
+              const orgInfoX = pw - margin;
+              let iy = 14;
+              doc.setFontSize(8);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(...GRAY);
+
+              if (exportOrg.cnpj) { const t = `CNPJ ${exportOrg.cnpj}`; doc.text(t, orgInfoX - doc.getTextWidth(t), iy); iy += 4; }
+              if (exportOrg.business_email) { doc.text(exportOrg.business_email, orgInfoX - doc.getTextWidth(exportOrg.business_email), iy); iy += 4; }
+              if (exportOrg.business_phone) { doc.text(exportOrg.business_phone, orgInfoX - doc.getTextWidth(exportOrg.business_phone), iy); iy += 4; }
+              if (exportOrg.website) { doc.text(exportOrg.website, orgInfoX - doc.getTextWidth(exportOrg.website), iy); }
+
+              y = Math.max(y, iy + 4);
             }
 
-            // Total hours big number on header
+            y += 4;
+
+            // ── Thin separator ──
+            doc.setDrawColor(...LIGHT_GRAY);
+            doc.setLineWidth(0.4);
+            doc.line(margin, y, pw - margin, y);
+            y += 10;
+
+            // ── Title ──
+            doc.setFontSize(20);
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(28);
-            doc.setTextColor(lime.r, lime.g, lime.b);
-            doc.text(`${exportTotalHours}h`, marginR, 43, { align: 'right' });
-            doc.setFontSize(8);
-            doc.setTextColor(200, 210, 255);
-            doc.text(`${exportEntries.length} registros`, marginR - 1, 48, { align: 'right' });
+            doc.setTextColor(...BLACK);
+            doc.text('RELATÓRIO DE TEMPO', margin, y);
 
-            y = 65;
-
-            // ── CLIENT / PROJECT INFO CARDS ──
-            const drawInfoCard = (title: string, lines: string[]) => {
-              checkPageBreak(12 + lines.length * 5);
-              doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
-              const cardH = 10 + lines.length * 5;
-              doc.roundedRect(marginL, y - 4, contentW, cardH, 3, 3, 'F');
-              doc.setFont('helvetica', 'bold');
+            if (userName) {
               doc.setFontSize(10);
-              doc.setTextColor(darkBlue.r, darkBlue.g, darkBlue.b);
-              doc.text(title, marginL + 6, y + 2);
               doc.setFont('helvetica', 'normal');
-              doc.setFontSize(9);
-              doc.setTextColor(gray.r, gray.g, gray.b);
-              let ly = y + 8;
-              lines.forEach(l => { doc.text(l, marginL + 6, ly); ly += 5; });
-              y += cardH + 6;
-            };
+              doc.setTextColor(...GRAY);
+              const nameW = doc.getTextWidth(userName);
+              doc.text(userName, pw - margin - nameW, y);
+            }
+            y += 12;
 
+            // ── Two-column: Período | Filtros ──
+            const colLeftX = margin;
+            const colRightX = margin + contentW / 2 + 8;
+            const metaStartY = y;
+
+            const detailBlockW = contentW / 2 - 4;
+            let detailBlockH = 26;
+            
+            // Build lines for the Right Side (Client / Project) first to know the height
+            const rightLines: string[] = [];
             if (exportFilter === 'client' && exportClientId) {
               const client = clients.find(c => c.id === exportClientId);
               if (client) {
-                const lines = [client.name];
-                if (client.email) lines.push(client.email);
-                if (client.phone) lines.push(client.phone);
-                if (client.document) lines.push(client.document);
-                drawInfoCard('Cliente', lines);
+                rightLines.push(client.name);
+                if (client.document) rightLines.push(`Doc: ${client.document}`);
               }
-            }
-
-            if (exportFilter === 'project' && exportProjectId) {
+            } else if (exportFilter === 'project' && exportProjectId) {
               const proj = projects.find(p => p.id === exportProjectId);
               if (proj) {
                 const projClient = proj.client_id ? clients.find(c => c.id === proj.client_id) : null;
-                const lines = [proj.name];
-                if (projClient) lines.push(`Cliente: ${projClient.name}`);
-                drawInfoCard('Projeto', lines);
+                rightLines.push(proj.name);
+                if (projClient) rightLines.push(`Cliente: ${projClient.name}`);
               }
+            } else if (exportFilter === 'project' && exportClientId) {
+              const client = clients.find(c => c.id === exportClientId);
+              if (client) {
+                rightLines.push(client.name);
+                rightLines.push('Todos os projetos');
+              }
+            } else {
+              rightLines.push('Todos os clientes e projetos');
             }
+            
+            detailBlockH = Math.max(detailBlockH, 14 + rightLines.length * 6);
 
-            // ── SUMMARY METRICS ──
-            checkPageBreak(24);
-            const metricW = contentW / 3;
-            const metrics = [
-              { label: 'Total Horas', value: `${exportTotalHours}h` },
-              { label: 'Registros', value: `${exportEntries.length}` },
-              { label: 'Projetos', value: `${new Set(exportEntries.map(e => e.project_id).filter(Boolean)).size}` },
-            ];
-            metrics.forEach((m, i) => {
-              const x = marginL + i * metricW;
-              doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
-              doc.roundedRect(x + (i > 0 ? 2 : 0), y, metricW - 4, 18, 2, 2, 'F');
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(16);
-              doc.setTextColor(blue.r, blue.g, blue.b);
-              doc.text(m.value, x + metricW / 2, y + 10, { align: 'center' });
-              doc.setFontSize(7);
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(gray.r, gray.g, gray.b);
-              doc.text(m.label.toUpperCase(), x + metricW / 2, y + 16, { align: 'center' });
-            });
-            y += 28;
+            // Left — Details (light background, no border)
+            doc.setFillColor(...BG_LIGHT);
+            doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
 
-            // ── DETALHAMENTO ──
-            checkPageBreak(20);
+            doc.setFontSize(7);
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(13);
-            doc.setTextColor(darkBlue.r, darkBlue.g, darkBlue.b);
-            doc.text('Detalhamento', marginL, y);
-            // Accent underline
-            doc.setFillColor(blue.r, blue.g, blue.b);
-            doc.rect(marginL, y + 2, 30, 1.5, 'F');
-            y += 10;
-
-            // Table header
-            doc.setFillColor(darkBlue.r, darkBlue.g, darkBlue.b);
-            doc.roundedRect(marginL, y - 4, contentW, 8, 1.5, 1.5, 'F');
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(white.r, white.g, white.b);
-            doc.text('DESCRIÇÃO', marginL + 4, y);
-            doc.text('DURAÇÃO', 82, y);
-            doc.text('MEMBRO', 104, y);
-            doc.text('PROJETO', 136, y);
-            doc.text('TEMPO / DATA', 170, y);
+            doc.setTextColor(...ACCENT);
+            doc.text('DETALHES', colLeftX + 5, y + 2);
             y += 8;
 
+            doc.setFontSize(9.5);
+            const addMetaRow = (label: string, value: string) => {
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(...DARK);
+              doc.text(label, colLeftX + 5, y);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(...GRAY);
+              doc.text(value, colLeftX + 28, y);
+              y += 6;
+            };
+
+            const periodLabel = exportStartDate && exportEndDate
+              ? `${new Date(exportStartDate).toLocaleDateString('pt-BR')} a ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
+              : dateLabel();
+            
+            addMetaRow('Período', periodLabel);
+            addMetaRow('Filtro', reportUserFilter === 'me' ? 'Somente eu' : 'Todos os membros');
+            addMetaRow('Registros', String(exportEntries.length));
+
+            // Right — Client / Project
+            let cy = metaStartY;
+            doc.setFillColor(...BG_LIGHT);
+            doc.roundedRect(colRightX, cy - 4, detailBlockW, detailBlockH, 2, 2, 'F');
+
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT);
+            doc.text('CLIENTE / PROJETO', colRightX + 5, cy + 2);
+            cy += 8;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...BLACK);
+            doc.text(rightLines[0] || '', colRightX + 5, cy);
+            cy += 6;
+            
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...GRAY);
+            for (let i = 1; i < rightLines.length; i++) {
+              doc.text(rightLines[i], colRightX + 5, cy);
+              cy += 5;
+            }
+
+            y = metaStartY + detailBlockH + 6;
+
+            // ── Items Table ──
+            // Header — accent background
+            doc.setFillColor(...ACCENT);
+            doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 255, 255);
+
+            const col1 = margin + 4;
+            const col2 = col1 + 50;
+            const col3 = col2 + 50;
+            const col4 = col3 + 45;
+
+            doc.text('DESCRIÇÃO', col1, y + 6.5);
+            doc.text('PROJETO', col2, y + 6.5);
+            doc.text('MEMBRO', col3, y + 6.5);
+            const durText = 'DURAÇÃO';
+            doc.text(durText, pw - margin - 4 - doc.getTextWidth(durText), y + 6.5);
+            y += 12;
+
+            // Rows
             let rowIndex = 0;
             exportEntries
               .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
               .forEach((entry) => {
-                checkPageBreak(14);
+                if (y > pageH - 30) { doc.addPage(); y = 20; }
+
+                if (rowIndex % 2 === 0) {
+                  doc.setFillColor(245, 246, 250);
+                  doc.rect(margin, y - 5, contentW, 10, 'F');
+                }
+
                 const d = new Date(entry.start_time);
-                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 const desc = entry.description || getTaskName(entry.task_id) || '—';
                 const projName = getProjectName(entry.project_id) || '—';
                 const startStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 const endStr = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
                 const durStr = entry.duration ? formatDurationShort(entry.duration) : '—';
+                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-                // Zebra striping
-                if (rowIndex % 2 === 0) {
-                  doc.setFillColor(lightGray.r, lightGray.g, lightGray.b);
-                  doc.rect(marginL, y - 4, contentW, 12, 'F');
-                }
+                const entryUserName = getProfileName(entry.user_id) || userName || '—';
 
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(30, 35, 50);
-                const descTrunc = desc.length > 35 ? desc.substring(0, 32) + '...' : desc;
-                doc.text(descTrunc, marginL + 4, y);
+                doc.setTextColor(...DARK);
+                
+                const descTrunc = desc.length > 30 ? desc.substring(0, 27) + '...' : desc;
+                doc.text(descTrunc, col1, y);
+                
+                doc.setTextColor(...GRAY);
+                const projTrunc = projName.length > 25 ? projName.substring(0, 22) + '...' : projName;
+                doc.text(projTrunc, col2, y);
+                
+                const memberTrunc = entryUserName.length > 20 ? entryUserName.substring(0, 17) + '...' : entryUserName;
+                doc.text(memberTrunc, col3, y);
 
-                // Duration with accent
+                // Duration + time side by side or stacked right
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(blue.r, blue.g, blue.b);
-                doc.text(durStr, 82, y);
-
+                doc.setTextColor(...BLACK);
+                doc.text(durStr, pw - margin - 4 - doc.getTextWidth(durStr), y);
+                
+                // Small date and time under duration? No, let's put it next to description or as part of row
+                // Or maybe just right aligned before duration?
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(gray.r, gray.g, gray.b);
-                doc.setFontSize(8);
-                const entryUserName = getProfileName(entry.user_id) || userName || '—';
-                const memberTrunc = entryUserName.length > 16 ? entryUserName.substring(0, 13) + '...' : entryUserName;
-                doc.text(memberTrunc, 104, y);
+                doc.setFontSize(7.5);
+                doc.setTextColor(...GRAY);
+                const dateTimeStr = `${dateStr} ${startStr}-${endStr}`;
+                doc.text(dateTimeStr, pw - margin - 22 - doc.getTextWidth(dateTimeStr), y);
 
-                doc.setFontSize(8);
-                doc.setTextColor(30, 35, 50);
-                const projTrunc = projName.length > 14 ? projName.substring(0, 11) + '...' : projName;
-                doc.text(projTrunc, 136, y);
-
-                // Time / Date stacked
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(30, 35, 50);
-                doc.text(`${startStr} – ${endStr}`, 170, y);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7);
-                doc.setTextColor(gray.r, gray.g, gray.b);
-                doc.text(dateStr, 170, y + 4);
-
-                y += 12;
+                y += 10;
                 rowIndex++;
               });
 
-            // ── FOOTER TOTAL BAR ──
-            checkPageBreak(14);
-            y += 2;
-            doc.setFillColor(blue.r, blue.g, blue.b);
-            doc.roundedRect(marginL, y - 4, contentW, 10, 2, 2, 'F');
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(white.r, white.g, white.b);
-            doc.text('TOTAL', marginL + 6, y + 2);
-            doc.text(`${exportTotalHours}h`, 82, y + 2);
-            doc.text(`${exportEntries.length} registros`, marginR - 6, y + 2, { align: 'right' });
+            // Thin table bottom line
+            doc.setDrawColor(...LIGHT_GRAY);
+            doc.setLineWidth(0.4);
+            doc.line(margin, y, pw - margin, y);
+            y += 10;
 
-            addPageFooter();
+            // ── Totals ──
+            const totalsX = margin + contentW - 75;
+
+            // Total Block — accent background
+            doc.setFillColor(...ACCENT);
+            const totalBlockH = 11;
+            doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 255, 255);
+            doc.text('TOTAL DE HORAS', totalsX, y + 6.5);
+            const totalText = `${exportTotalHours}h`;
+            const totalW = doc.getTextWidth(totalText);
+            doc.text(totalText, pw - margin - totalW, y + 6.5);
+            y += totalBlockH + 12;
+
+            // ── Footer ──
+            doc.setFillColor(...ACCENT);
+            doc.rect(0, pageH - 2, pw, 2, 'F');
+
+            const footerY = pageH - 10;
+            doc.setDrawColor(...LIGHT_GRAY);
+            doc.setLineWidth(0.2);
+            doc.line(margin, footerY - 4, pw - margin, footerY - 4);
+
+            doc.setFontSize(7.5);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...GRAY);
+
+            if (exportOrg) {
+              const companyName = exportOrg.company_name || exportOrg.trade_name || '';
+              const addr = buildOrgAddress(exportOrg);
+              const footerText = [companyName, addr].filter(Boolean).join('  ·  ');
+              if (footerText) {
+                const footerLines = doc.splitTextToSize(footerText, contentW - 30);
+                doc.text(footerLines[0] || '', margin, footerY);
+              }
+            }
+
+            doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, pw - margin - doc.getTextWidth(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`), footerY);
+
+            // save
             doc.save(`relatorio-tempo-${new Date().toISOString().slice(0, 10)}.pdf`);
             toast.success('PDF exportado com sucesso!');
             setShowExportPanel(false);
@@ -1803,9 +1932,18 @@ const TimeTrackingPage = () => {
                 }
                 if (exportFilter === 'client' && exportClientId) {
                   const ids = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
-                  previewEntries = previewEntries.filter(e => e.project_id && ids.includes(e.project_id));
-                } else if (exportFilter === 'project' && exportProjectId) {
-                  previewEntries = previewEntries.filter(e => e.project_id === exportProjectId);
+                  previewEntries = previewEntries.filter(e => 
+                    e.client_id === exportClientId || (e.project_id && ids.includes(e.project_id))
+                  );
+                } else if (exportFilter === 'project') {
+                  if (exportProjectId) {
+                    previewEntries = previewEntries.filter(e => e.project_id === exportProjectId);
+                  } else if (exportClientId) {
+                    const ids = projects.filter(p => p.client_id === exportClientId).map(p => p.id);
+                    previewEntries = previewEntries.filter(e => 
+                      e.client_id === exportClientId || (e.project_id && ids.includes(e.project_id))
+                    );
+                  }
                 }
                 if (exportStartDate) previewEntries = previewEntries.filter(e => new Date(e.start_time) >= new Date(exportStartDate + 'T00:00:00'));
                 if (exportEndDate) previewEntries = previewEntries.filter(e => new Date(e.start_time) <= new Date(exportEndDate + 'T23:59:59'));
@@ -1832,7 +1970,7 @@ const TimeTrackingPage = () => {
                     </div>
 
                     {/* Filters bar - compact inline layout */}
-                    <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden">
+                    <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm relative z-30">
                       <div className="px-4 py-3 flex flex-wrap items-center gap-3">
                         {/* User filter pills */}
                         <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 p-1">

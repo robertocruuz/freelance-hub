@@ -23,13 +23,14 @@ import ReceivedInvites from '@/components/ReceivedInvites';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { maskCPF, maskCNPJ, maskPhone, maskCEP } from '@/lib/masks';
-
+import { useSearchParams } from 'react-router-dom';
 const ProfilePage = () => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
   const { toast } = useToast();
   const orgHook = useOrganization();
   const { orgId, isAdmin, refresh: refreshOrg } = orgHook;
+  const [searchParams, setSearchParams] = useSearchParams();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -52,6 +53,15 @@ const ProfilePage = () => {
   const [orgForm, setOrgForm] = useState({ company_name: '', trade_name: '', cnpj: '', state_registration: '', municipal_registration: '', business_email: '', business_phone: '', website: '', zip_code: '', address: '', complement: '', neighborhood: '', state: '', city: '' });
 
   useEffect(() => {
+    if (searchParams.get('openOrg') === 'true') {
+      setOrgDetailsOpen(true);
+      setEditingOrg(true);
+      searchParams.delete('openOrg');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
       const { data } = await supabase
@@ -65,8 +75,17 @@ const ProfilePage = () => {
         setEditForm({ name: d.name || '', document: d.document || '', phone: d.phone || '' });
         setAvatarUrl(d.avatar_url || null);
       } else {
-        setProfile({ name: user.user_metadata?.name || '', email: user.email || '', document: '', phone: '' });
-        setEditForm({ name: user.user_metadata?.name || '', document: '', phone: '' });
+        const fallbackName = user.user_metadata?.name || '';
+        const fallbackEmail = user.email || '';
+        setProfile({ name: fallbackName, email: fallbackEmail, document: '', phone: '' });
+        setEditForm({ name: fallbackName, document: '', phone: '' });
+
+        // Self-heal: create the missing profile row
+        await supabase.from('profiles').insert({
+          user_id: user.id,
+          name: fallbackName,
+          email: fallbackEmail
+        } as any);
       }
 
       // Fetch org data: use orgId from useOrganization (covers both owner and member)
@@ -118,12 +137,35 @@ const ProfilePage = () => {
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
+
+    // Ensure profile exists before updating
+    const { data: profileExists } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!profileExists) {
+      const fallbackName = user.user_metadata?.name || '';
+      const fallbackEmail = user.email || '';
+      await supabase.from('profiles').insert({
+        user_id: user.id,
+        name: fallbackName,
+        email: fallbackEmail
+      } as any);
+    }
+
     const { error } = await supabase
       .from('profiles')
-      .update({ name: editForm.name, document: editForm.document, phone: editForm.phone } as any)
+      .update({ 
+        name: editForm.name, 
+        document: editForm.document, 
+        phone: editForm.phone
+      } as any)
       .eq('user_id', user.id);
     setLoading(false);
     if (error) {
+      console.error("Error saving profile:", error);
       toast({ title: lang === 'pt-BR' ? 'Erro ao salvar' : 'Error saving', variant: 'destructive' });
     } else {
       setProfile((p) => ({ ...p, name: editForm.name, document: editForm.document, phone: editForm.phone }));
@@ -156,6 +198,7 @@ const ProfilePage = () => {
         .insert({ ...orgForm, user_id: user.id });
       setLoading(false);
       if (error) {
+        console.error("Error creating org:", error);
         toast({ title: lang === 'pt-BR' ? 'Erro ao criar organização' : 'Error creating organization', variant: 'destructive' });
       } else {
         setOrg({ ...orgForm });

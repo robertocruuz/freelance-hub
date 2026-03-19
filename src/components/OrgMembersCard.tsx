@@ -41,7 +41,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown, Clock, MoreVertical, LogOut } from 'lucide-react';
+import { Users, UserPlus, Mail, Link2, Copy, Trash2, Shield, Pencil, Eye, Crown, Clock, MoreVertical, LogOut, Building2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const roleIcons = {
   admin: Crown,
@@ -57,6 +58,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const { user } = useAuth();
   const { lang } = useI18n();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const internalOrgHook = useOrganization();
   const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
@@ -130,24 +132,36 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   if (!orgId && !loading) {
     if (embedded) {
       return (
-        <div className="text-sm text-muted-foreground py-2">
-          {isPt ? 'Cadastre uma organização primeiro para convidar membros' : 'Register an organization first to invite members'}
+        <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {isPt ? 'Você não possui uma equipe.' : 'You do not have a team.'}
+          </p>
+          <Button onClick={() => navigate('/dashboard/profile?openOrg=true')} size="sm" className="gap-2">
+            <Building2 className="w-4 h-4" />
+            {isPt ? 'Criar Equipe' : 'Create Team'}
+          </Button>
         </div>
       );
     }
     return (
       <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5 text-primary" />
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 text-primary" />
           </div>
-          <div>
-            <CardTitle className="text-lg">{isPt ? 'Equipe' : 'Team'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Cadastre uma organização primeiro para convidar membros' : 'Register an organization first to invite members'}
-            </CardDescription>
-          </div>
-        </CardHeader>
+          <h3 className="text-xl font-bold mb-2 text-foreground">
+            {isPt ? 'Você não possui uma equipe' : 'You do not have a team'}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-sm mb-6">
+            {isPt 
+              ? 'Cadastre as informações da sua organização para poder convidar e gerenciar novos membros.' 
+              : 'Register your organization info to invite and manage new members.'}
+          </p>
+          <Button onClick={() => navigate('/dashboard/profile?openOrg=true')} className="gap-2">
+            <Building2 className="w-4 h-4" />
+            {isPt ? 'Criar Equipe' : 'Create Team'}
+          </Button>
+        </CardContent>
       </Card>
     );
   }
@@ -395,8 +409,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="admin"><span className="flex items-center gap-2"><Crown className="w-3.5 h-3.5" /> Admin</span></SelectItem>
-                      <SelectItem value="editor"><span className="flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> Editor</span></SelectItem>
-                      <SelectItem value="viewer"><span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5" /> {isPt ? 'Visualizador' : 'Viewer'}</span></SelectItem>
+                      <SelectItem value="collaborator"><span className="flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> {isPt ? 'Colaborador' : 'Collaborator'}</span></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -71,7 +71,7 @@ const KanbanPage = () => {
   const kanban = useKanban(activeBoardId);
   const { clients } = useClients();
   const { user } = useAuth();
-  const { columns, tasks, boards, loading } = kanban;
+  const { columns, tasks, allColumns, allTasks, boards, loading } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [view, setView] = useState<ViewMode>('kanban');
@@ -105,6 +105,8 @@ const KanbanPage = () => {
   const [loadingShared, setLoadingShared] = useState(false);
   const [selectedSharedTask, setSelectedSharedTask] = useState<Task | null>(null);
   const [sharedByMeTaskIds, setSharedByMeTaskIds] = useState<Set<string>>(new Set());
+  const [sharedListSortField, setSharedListSortField] = useState<string>('due_date');
+  const [sharedListSortDir, setSharedListSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Board management state
   const [showBoardDialog, setShowBoardDialog] = useState(false);
@@ -186,7 +188,7 @@ const KanbanPage = () => {
       if (taskIds.length > 0) {
         const { data: tasksData } = await supabase
           .from('tasks')
-          .select('*')
+          .select('*, profile:profiles!fk_tasks_user_profile(name, avatar_url)')
           .in('id', taskIds)
           .neq('user_id', user.id)
           .order('updated_at', { ascending: false });
@@ -194,19 +196,44 @@ const KanbanPage = () => {
         if (tasksData && tasksData.length > 0) {
           setSharedTasks(tasksData);
           
-          const colIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))];
+          const currentColIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))] as string[];
           const ownerIds = [...new Set(tasksData.map(t => t.user_id))];
           const clientIds = [...new Set(tasksData.map(t => t.client_id).filter(Boolean))] as string[];
           const projectIds = [...new Set(tasksData.map(t => t.project_id).filter(Boolean))] as string[];
 
-          const [colsRes, profilesRes, clientsRes, projectsRes] = await Promise.all([
-            colIds.length > 0 ? supabase.from('kanban_columns').select('*').in('id', colIds as string[]) : null,
+          let finalColumns: any[] = [];
+          if (currentColIds.length > 0) {
+            const { data: initialCols } = await supabase.from('kanban_columns').select('id, board_id, user_id').in('id', currentColIds);
+            if (initialCols) {
+              const boardIds = [...new Set(initialCols.map(c => c.board_id).filter(Boolean))] as string[];
+              const ownerIdsWithNullBoard = [...new Set(initialCols.filter(c => !c.board_id).map(c => c.user_id))] as string[];
+
+              const columnPromises: Promise<any>[] = [];
+              if (boardIds.length > 0) {
+                columnPromises.push(supabase.from('kanban_columns').select('*').in('board_id', boardIds));
+              }
+              if (ownerIdsWithNullBoard.length > 0) {
+                columnPromises.push(supabase.from('kanban_columns').select('*').in('user_id', ownerIdsWithNullBoard).is('board_id', null));
+              }
+
+              const results = await Promise.all(columnPromises);
+              results.forEach(res => {
+                if (res.data) finalColumns = [...finalColumns, ...res.data];
+              });
+              
+              const uniqueColsMap = new Map();
+              finalColumns.forEach(c => uniqueColsMap.set(c.id, c));
+              finalColumns = Array.from(uniqueColsMap.values()).sort((a, b) => a.position - b.position);
+            }
+          }
+
+          const [profilesRes, clientsRes, projectsRes] = await Promise.all([
             ownerIds.length > 0 ? supabase.from('profiles').select('user_id, name, email').in('user_id', ownerIds) : null,
             clientIds.length > 0 ? supabase.from('clients').select('id, name').in('id', clientIds) : null,
             projectIds.length > 0 ? supabase.from('projects').select('id, name').in('id', projectIds) : null,
           ]);
 
-          if (colsRes?.data) setSharedColumns(colsRes.data);
+          setSharedColumns(finalColumns);
           if (profilesRes?.data) {
             const map: Record<string, { name: string | null; email: string | null }> = {};
             profilesRes.data.forEach(p => { map[p.user_id] = { name: p.name, email: p.email }; });
@@ -313,8 +340,6 @@ const KanbanPage = () => {
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
-      // Only show tasks owned by the user in "Meus Painéis"
-      if (user && t.user_id !== user.id) return false;
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (filterPriorities.size > 0 && !filterPriorities.has(t.priority)) return false;
       if (filterClients.size > 0 && (!t.client_id || !filterClients.has(t.client_id))) return false;
@@ -374,12 +399,20 @@ const KanbanPage = () => {
     const taskId = active.id as string;
     const overId = over.id as string;
 
+    const sourceColumn = columns.find(c => c.id === active.data.current?.sortable?.containerId) || 
+                         columns.find(c => c.id === tasks.find(t => t.id === taskId)?.column_id);
+                         
     // Check if dropped on a column
     const targetColumn = columns.find((c) => c.id === overId);
     if (targetColumn) {
       const colTasks = getColumnTasks(targetColumn.id);
       kanban.moveTask(taskId, targetColumn.id, colTasks.length);
-      kanban.logActivity(taskId, 'moved_to_column', { column: targetColumn.name });
+      if (sourceColumn && sourceColumn.id !== targetColumn.id) {
+        kanban.logActivity(taskId, 'moved_to_column', { 
+          from: sourceColumn.name, 
+          to: targetColumn.name 
+        });
+      }
       return;
     }
 
@@ -387,6 +420,13 @@ const KanbanPage = () => {
     const overTask = tasks.find((t) => t.id === overId);
     if (overTask && overTask.column_id) {
       kanban.moveTask(taskId, overTask.column_id, overTask.position);
+      const targetColumn = columns.find(c => c.id === overTask.column_id);
+      if (sourceColumn && targetColumn && sourceColumn.id !== targetColumn.id) {
+        kanban.logActivity(taskId, 'moved_to_column', { 
+          from: sourceColumn.name, 
+          to: targetColumn.name 
+        });
+      }
     }
   };
 
@@ -499,7 +539,7 @@ const KanbanPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0">
+        <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
 
       {/* Board selector */}
       <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-none">
@@ -507,8 +547,8 @@ const KanbanPage = () => {
         {boards.filter(b => b.user_id === user?.id).map((board) => {
           const isActive = activeBoardId === board.id;
           const subtitle = getBoardSubtitle(board);
-          const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
-          const taskCount = boardTasks.length;
+          const boardTasksForCount = (allTasks || []).filter((t: any) => (allColumns || []).some((c: any) => c.board_id === board.id && c.id === t.column_id));
+          const taskCount = boardTasksForCount.length;
           return (
             <button
               key={board.id}
@@ -585,8 +625,8 @@ const KanbanPage = () => {
             <div className="h-12 w-px bg-border shrink-0" />
             {boards.filter(b => b.user_id !== user?.id).map((board) => {
               const isActive = activeBoardId === board.id;
-              const boardTasks = tasks.filter(t => columns.some(c => c.board_id === board.id && c.id === t.column_id));
-              const taskCount = boardTasks.length;
+              const boardTasksForCount = (allTasks || []).filter((t: any) => (allColumns || []).some((c: any) => c.board_id === board.id && c.id === t.column_id));
+              const taskCount = boardTasksForCount.length;
               const ownerName = sharedOwners[board.user_id]?.name || sharedOwners[board.user_id]?.email || '';
               return (
                 <button
@@ -1287,35 +1327,94 @@ const KanbanPage = () => {
       </>)}
         </TabsContent>
 
-        <TabsContent value="shared" className="flex-1 flex flex-col min-h-0 mt-0">
+        <TabsContent value="shared" className="flex-1 flex flex-col h-full min-h-0 mt-4 outline-none data-[state=inactive]:hidden">
           {loadingShared ? (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex w-full items-center justify-center py-24">
               <div className="animate-pulse text-muted-foreground">Carregando tarefas compartilhadas...</div>
             </div>
           ) : sharedTasks.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+            <div className="flex flex-col w-full items-center justify-center py-24 gap-3 text-muted-foreground">
               <Share2 className="w-10 h-10 opacity-30" />
               <p className="text-sm">Nenhuma tarefa compartilhada com você</p>
               <p className="text-xs text-muted-foreground/70">Quando alguém compartilhar uma tarefa, ela aparecerá aqui.</p>
             </div>
           ) : (
-            <>
-               <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+            <div className="flex-1 flex flex-col w-full">
+               <div className="glass-card rounded-2xl w-full m-0 shrink-0">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Tarefa</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Proprietário</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prioridade</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Prazo</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Cliente</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Projeto</th>
-                      <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Valor Est.</th>
+                      {[
+                        { key: 'title', label: 'Tarefa' },
+                        { key: 'owner', label: 'Proprietário' },
+                        { key: 'status', label: 'Status' },
+                        { key: 'priority', label: 'Prioridade' },
+                        { key: 'due_date', label: 'Prazo' },
+                        { key: 'client', label: 'Cliente' },
+                        { key: 'project', label: 'Projeto' },
+                        { key: 'estimated_value', label: 'Valor Est.' },
+                      ].map((col) => (
+                        <th
+                          key={col.key}
+                          onClick={() => {
+                            if (sharedListSortField === col.key) {
+                              setSharedListSortDir(sharedListSortDir === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSharedListSortField(col.key);
+                              setSharedListSortDir('asc');
+                            }
+                          }}
+                          className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {col.label}
+                            {sharedListSortField === col.key ? (
+                              sharedListSortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                            ) : (
+                              <ArrowUpDown className="w-3 h-3 opacity-30" />
+                            )}
+                          </span>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {sharedTasks.map((task) => {
+                    {[...sharedTasks].sort((a, b) => {
+                      const dir = sharedListSortDir === 'asc' ? 1 : -1;
+                      const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+                      
+                      const ownerA = sharedOwners[a.user_id];
+                      const nameA = ownerA?.name || ownerA?.email || 'Desconhecido';
+                      const ownerB = sharedOwners[b.user_id];
+                      const nameB = ownerB?.name || ownerB?.email || 'Desconhecido';
+
+                      const clientA = a.client_id ? sharedClients[a.client_id] || '' : '';
+                      const clientB = b.client_id ? sharedClients[b.client_id] || '' : '';
+
+                      const projectA = a.project_id ? sharedProjects[a.project_id] || '' : '';
+                      const projectB = b.project_id ? sharedProjects[b.project_id] || '' : '';
+
+                      switch (sharedListSortField) {
+                        case 'title': return dir * a.title.localeCompare(b.title);
+                        case 'owner': return dir * nameA.localeCompare(nameB);
+                        case 'client': return dir * clientA.localeCompare(clientB);
+                        case 'project': return dir * projectA.localeCompare(projectB);
+                        case 'status': {
+                          const colA = sharedColumns.find((c: any) => c.id === a.column_id)?.name || '';
+                          const colB = sharedColumns.find((c: any) => c.id === b.column_id)?.name || '';
+                          return dir * colA.localeCompare(colB);
+                        }
+                        case 'priority': return dir * ((priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99));
+                        case 'due_date': {
+                          if (!a.due_date && !b.due_date) return 0;
+                          if (!a.due_date) return dir;
+                          if (!b.due_date) return -dir;
+                          return dir * (new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+                        }
+                        case 'estimated_value': return dir * ((a.estimated_value || 0) - (b.estimated_value || 0));
+                        default: return 0;
+                      }
+                    }).map((task) => {
                       const col = sharedColumns.find((c: any) => c.id === task.column_id);
                       const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.completed_at;
                       const owner = sharedOwners[task.user_id];
@@ -1354,19 +1453,48 @@ const KanbanPage = () => {
                               <span className="text-xs text-muted-foreground truncate max-w-[120px]">{ownerName}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <Badge variant="secondary" className="text-[10px]">{col?.name || '-'}</Badge>
+                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <Select value={task.column_id || ''} onValueChange={async (v) => {
+                              if (!v) return;
+                              await supabase.from('tasks').update({ column_id: v }).eq('id', task.id);
+                              setSharedTasks(prev => prev.map(t => t.id === task.id ? { ...t, column_id: v } : t));
+                            }}>
+                              <SelectTrigger className="h-6 min-h-0 py-0.5 px-2.5 text-[10px] border-none bg-secondary hover:bg-secondary/80 focus:ring-0 w-auto rounded-full font-medium">
+                                <SelectValue placeholder="-" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sharedColumns
+                                  .filter((c: any) => {
+                                    const taskCol = sharedColumns.find(sc => sc.id === task.column_id);
+                                    if (!taskCol) return false;
+                                    if (taskCol.board_id) {
+                                      return c.board_id === taskCol.board_id;
+                                    } else {
+                                      return !c.board_id && c.user_id === taskCol.user_id;
+                                    }
+                                  })
+                                  .map((c: any) => <SelectItem key={c.id} value={c.id} className="text-[11px]">{c.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
                           </td>
-                          <td className="px-4 py-3">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-[10px] capitalize ${
+                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <Select value={task.priority || 'low'} onValueChange={async (v) => {
+                              await supabase.from('tasks').update({ priority: v }).eq('id', task.id);
+                              setSharedTasks(prev => prev.map(t => t.id === task.id ? { ...t, priority: v } : t));
+                            }}>
+                              <SelectTrigger className={`h-6 min-h-0 py-0.5 px-2.5 text-[10px] border font-medium bg-transparent hover:bg-accent focus:ring-0 w-auto rounded-full ${
                                 task.priority === 'high' ? 'border-destructive/50 text-destructive' : 
                                 task.priority === 'urgent' ? 'border-destructive bg-destructive/10 text-destructive' : ''
-                              }`}
-                            >
-                              {task.priority === 'urgent' ? 'Urgente' : task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'}
-                            </Badge>
+                              }`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low" className="text-[11px]">Baixa</SelectItem>
+                                <SelectItem value="medium" className="text-[11px]">Média</SelectItem>
+                                <SelectItem value="high" className="text-[11px] text-destructive">Alta</SelectItem>
+                                <SelectItem value="urgent" className="text-[11px] text-destructive font-bold">Urgente</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col">
@@ -1424,7 +1552,8 @@ const KanbanPage = () => {
                   kanban={kanban}
                 />
               )}
-            </>
+              <div className="flex-1 min-h-0 pointer-events-none" />
+            </div>
           )}
         </TabsContent>
       </Tabs>

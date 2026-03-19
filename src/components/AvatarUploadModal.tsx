@@ -121,7 +121,8 @@ export default function AvatarUploadModal({ open, onOpenChange, userId, currentU
       toast({ title: 'Foto atualizada!' });
       reset();
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("Error uploading avatar:", err);
       toast({ title: 'Erro ao enviar foto', variant: 'destructive' });
     } finally {
       setUploading(false);

@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -247,10 +248,23 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             )}
           </div>
 
-          {/* Avatar placeholder */}
-          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-[10px] font-bold text-primary">U</span>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Avatar className="w-6 h-6 hover:z-10 transition-transform hover:scale-110">
+                {task.profile?.avatar_url && (
+                  <AvatarImage src={task.profile.avatar_url} alt={task.profile?.name || 'Usuário'} className="object-cover" />
+                )}
+                <AvatarFallback className="bg-primary/20 text-[10px] font-bold text-primary">
+                  {task.profile?.name ? task.profile.name.substring(0, 2).toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </TooltipTrigger>
+            {task.profile?.name && (
+              <TooltipContent className="text-xs">
+                {task.profile.name}
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       </div>
 

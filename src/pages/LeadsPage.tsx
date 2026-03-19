@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle, X, Share2, User, Calendar, Percent, FolderOpen } from 'lucide-react';
+import { Plus, Settings2, Search, DollarSign, TrendingUp, Trophy, XCircle, X, Share2, User, Calendar, Percent, FolderOpen, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, isPast } from 'date-fns';
 import {
@@ -50,14 +51,17 @@ export default function LeadsPage() {
   const [sharedClients, setSharedClients] = useState<Record<string, string>>({});
   const [loadingShared, setLoadingShared] = useState(false);
 
+  const [sharedListSortField, setSharedListSortField] = useState<string>('expected_close_date');
+  const [sharedListSortDir, setSharedListSortDir] = useState<'asc' | 'desc'>('asc');
+
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   // Fetch shared leads
-  const fetchSharedLeads = useCallback(async () => {
+  const fetchSharedLeads = useCallback(async (showLoading = true) => {
     if (!user) return;
-    setLoadingShared(true);
+    if (showLoading) setLoadingShared(true);
 
     // Get shares where resource_type is 'pipeline' or 'lead'
     const { data: shares } = await supabase
@@ -103,10 +107,10 @@ export default function LeadsPage() {
 
     setSharedLeads(allLeads);
 
-    // Fetch stages for shared leads
-    const stageIds = [...new Set(allLeads.map(l => l.stage_id).filter(Boolean))] as string[];
-    if (stageIds.length > 0) {
-      const { data: stagesData } = await supabase.from('lead_stages').select('*').in('id', stageIds);
+    // Fetch stages for shared leads pipeline originators
+    const ownerIdsForStages = [...new Set(allLeads.map(l => l.user_id))];
+    if (ownerIdsForStages.length > 0) {
+      const { data: stagesData } = await supabase.from('lead_stages').select('*').in('user_id', ownerIdsForStages).order('position');
       if (stagesData) setSharedStages(stagesData as LeadStage[]);
     }
 
@@ -136,8 +140,23 @@ export default function LeadsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (activeTab === 'shared') fetchSharedLeads();
-  }, [activeTab, fetchSharedLeads]);
+    if (activeTab === 'shared') {
+      fetchSharedLeads(true);
+
+      const channel = supabase.channel(`shared_leads_realtime_${user?.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+          fetchSharedLeads(false);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_stages' }, () => {
+          fetchSharedLeads(false);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [activeTab, fetchSharedLeads, user?.id]);
 
   const openLeads = useMemo(() => leads.filter(l => l.status === 'open'), [leads]);
 
@@ -280,9 +299,9 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col min-h-0">
       {/* Header */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 shrink-0">
         {/* Title and subtitle */}
         <div>
           <h1 className="text-xl font-bold text-foreground">Pipeline de Leads</h1>
@@ -317,9 +336,9 @@ export default function LeadsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsContent value="my-leads" className="flex-1 flex flex-col min-h-0 mt-0 space-y-5">
+        <TabsContent value="my-leads" className="flex-1 flex flex-col min-h-0 mt-0 space-y-4 pb-2 data-[state=inactive]:hidden">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
             <div className="rounded-xl border border-border bg-card p-3.5">
               <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                 <DollarSign className="w-4 h-4 text-primary" /> Pipeline Total
@@ -347,7 +366,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Search & filter */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -386,8 +405,8 @@ export default function LeadsPage() {
           </div>
 
           {/* Kanban Board */}
-          <div className="flex-1 overflow-x-auto pb-4">
-            <div className="flex gap-3 min-h-[400px]" style={{ minWidth: stages.length * 290 }}>
+          <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden pb-2">
+            <div className="flex gap-3 h-full items-start" style={{ minWidth: stages.length * 290 }}>
               {stages.map(stage => {
                 const stageLeads = filtered.filter(l => l.stage_id === stage.id).sort((a, b) => a.position - b.position);
                 const stageValue = stageLeads.reduce((s, l) => s + l.value, 0);
@@ -395,29 +414,31 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className={`flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-xl border transition-all duration-200 ${
+                    className={`flex-shrink-0 w-72 flex flex-col max-h-full rounded-2xl transition-all duration-200 snap-start ${
                       dragOverStageId === stage.id
-                        ? 'bg-primary/5 border-primary/40 shadow-lg scale-[1.01]'
-                        : 'bg-muted/30 border-border'
+                        ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner'
+                        : 'bg-card/50'
                     }`}
                     onDragOver={(e) => handleDragOver(e, stage.id)}
                     onDragLeave={handleDragLeave}
                     onDrop={() => handleDrop(stage.id)}
                   >
                     {/* Stage header */}
-                    <div className="p-3 border-b border-border">
+                    <div className="flex items-center justify-between px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
-                        <h3 className="text-sm font-semibold text-foreground flex-1 truncate">{stage.name}</h3>
-                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground hover:text-primary transition-colors flex-1 truncate">
+                          {stage.name}
+                        </h3>
+                        <span className="text-[10px] font-semibold text-muted-foreground bg-secondary rounded-full w-5 h-5 flex items-center justify-center shrink-0">
                           {stageLeads.length}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">{formatCurrency(stageValue)}</p>
+                      <p className="text-[10px] font-medium text-muted-foreground">{formatCurrency(stageValue)}</p>
                     </div>
 
                     {/* Cards */}
-                    <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+                    <div className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-thin">
                       {stageLeads.map(lead => (
                         <div
                           key={lead.id}
@@ -443,12 +464,12 @@ export default function LeadsPage() {
                     </div>
 
                     {/* Add button */}
-                    <div className="p-2 pt-0">
+                    <div className="px-2 pb-3">
                       <button
                         onClick={() => handleOpenForm(stage.id)}
-                        className="w-full flex items-center justify-center gap-1.5 p-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+                        className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Adicionar
+                        <Plus className="w-3.5 h-3.5" /> Adicionar negócio
                       </button>
                     </div>
                   </div>
@@ -458,7 +479,7 @@ export default function LeadsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="shared" className="flex-1 flex flex-col min-h-0 mt-0">
+        <TabsContent value="shared" className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
           {loadingShared ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-pulse text-muted-foreground">Carregando leads compartilhados...</div>
@@ -471,27 +492,77 @@ export default function LeadsPage() {
             </div>
           ) : (
             <div className="flex-1 overflow-auto">
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Negócio</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Valor</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Probabilidade</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Fechamento Previsto</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Etapa</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Responsável</th>
-                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+              <div className="glass-card rounded-2xl w-full m-0 shrink-0">
+                <table className="w-full min-w-[900px]">
+                  <thead>
+                    <tr className="border-b border-border">
+                      {[
+                        { key: 'title', label: 'Negócio' },
+                        { key: 'value', label: 'Valor' },
+                        { key: 'probability', label: 'Probabilidade' },
+                        { key: 'expected_close_date', label: 'Fechamento Previsto' },
+                        { key: 'stage', label: 'Etapa' },
+                        { key: 'owner', label: 'Responsável' },
+                        { key: 'status', label: 'Status' },
+                      ].map(col => (
+                        <th
+                          key={col.key}
+                          onClick={() => {
+                            if (sharedListSortField === col.key) {
+                              setSharedListSortDir(sharedListSortDir === 'asc' ? 'desc' : 'asc');
+                            } else {
+                              setSharedListSortField(col.key);
+                              setSharedListSortDir('asc');
+                            }
+                          }}
+                          className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                        >
+                           <span className="flex items-center gap-1">
+                             {col.label}
+                             {sharedListSortField === col.key ? (
+                               sharedListSortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                             ) : (
+                               <ArrowUpDown className="w-3 h-3 opacity-30" />
+                             )}
+                           </span>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
-                    {sharedLeads.map(lead => {
+                  <tbody>
+                    {[...sharedLeads].sort((a, b) => {
+                      const dir = sharedListSortDir === 'asc' ? 1 : -1;
+                      
+                      const ownerA = sharedOwners[a.user_id];
+                      const nameA = ownerA?.name || ownerA?.email || 'Desconhecido';
+                      const ownerB = sharedOwners[b.user_id];
+                      const nameB = ownerB?.name || ownerB?.email || 'Desconhecido';
+
+                      const stageA = sharedStages.find(s => s.id === a.stage_id)?.name || '';
+                      const stageB = sharedStages.find(s => s.id === b.stage_id)?.name || '';
+
+                      switch (sharedListSortField) {
+                        case 'title': return dir * a.title.localeCompare(b.title);
+                        case 'value': return dir * ((a.value || 0) - (b.value || 0));
+                        case 'probability': return dir * ((a.probability || 0) - (b.probability || 0));
+                        case 'owner': return dir * nameA.localeCompare(nameB);
+                        case 'stage': return dir * stageA.localeCompare(stageB);
+                        case 'status': return dir * (a.status.localeCompare(b.status));
+                        case 'expected_close_date': {
+                          if (!a.expected_close_date && !b.expected_close_date) return 0;
+                          if (!a.expected_close_date) return dir;
+                          if (!b.expected_close_date) return -dir;
+                          return dir * (new Date(a.expected_close_date).getTime() - new Date(b.expected_close_date).getTime());
+                        }
+                        default: return 0;
+                      }
+                    }).map(lead => {
                       const stage = sharedStages.find(s => s.id === lead.stage_id);
                       const owner = sharedOwners[lead.user_id];
                       const clientName = lead.client_id ? sharedClients[lead.client_id] : null;
 
                       return (
-                        <tr key={lead.id} className="hover:bg-muted/30 transition-colors">
+                        <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage?.color || '#9ca3af' }} />
@@ -521,10 +592,22 @@ export default function LeadsPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: stage?.color || undefined, color: '#fff' }}>
-                              {stage?.name || 'Sem etapa'}
-                            </Badge>
+                          <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                            <Select value={lead.stage_id || 'unassigned'} onValueChange={async (v) => {
+                              const newStageId = v === 'unassigned' ? null : v;
+                              await supabase.from('leads').update({ stage_id: newStageId }).eq('id', lead.id);
+                              setSharedLeads(prev => prev.map(l => l.id === lead.id ? { ...l, stage_id: newStageId } : l));
+                            }}>
+                              <SelectTrigger className="h-6 min-h-0 py-0.5 px-2.5 text-[10px] border-none bg-secondary hover:bg-secondary/80 focus:ring-0 w-auto rounded-full font-semibold" style={{ backgroundColor: stage?.color || undefined, color: '#fff' }}>
+                                <SelectValue placeholder="Sem etapa" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unassigned" className="text-[11px]">Sem etapa</SelectItem>
+                                {sharedStages
+                                  .filter(s => s.user_id === lead.user_id)
+                                  .map(s => <SelectItem key={s.id} value={s.id} className="text-[11px]">{s.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1.5">
@@ -535,13 +618,22 @@ export default function LeadsPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <Badge
-                              variant={lead.status === 'won' ? 'default' : lead.status === 'lost' ? 'destructive' : 'secondary'}
-                              className="text-[10px]"
-                            >
-                              {lead.status === 'won' ? '🏆 Ganho' : lead.status === 'lost' ? 'Perdido' : 'Aberto'}
-                            </Badge>
+                          <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                            <Select value={lead.status || 'open'} onValueChange={async (v) => {
+                              await supabase.from('leads').update({ status: v as any }).eq('id', lead.id);
+                              setSharedLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: v as any } : l));
+                            }}>
+                              <SelectTrigger className={`h-6 min-h-0 py-0.5 px-2.5 text-[10px] font-semibold focus:ring-0 w-auto rounded-full border-none 
+                                ${lead.status === 'won' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 
+                                  lead.status === 'lost' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="open" className="text-[11px]">Aberto</SelectItem>
+                                <SelectItem value="won" className="text-[11px] font-medium text-primary">🏆 Ganho</SelectItem>
+                                <SelectItem value="lost" className="text-[11px] font-medium text-destructive">Perdido</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </td>
                         </tr>
                       );

@@ -53,29 +53,9 @@ const formatElapsed = (seconds: number) => {
 
 /* ─── Sidebar Notification Item ─── */
 const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
-  const { user } = useAuth();
   const { lang } = useI18n();
   const [unreadCount, setUnreadCount] = useState(0);
   const isPt = lang === 'pt-BR';
-
-  useEffect(() => {
-    if (!user) return;
-    const fetch = async () => {
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
-      setUnreadCount(count || 0);
-    };
-    fetch();
-
-    const channel = supabase
-      .channel('sidebar-notif-count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetch())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
 
   const label = isPt ? 'Notificações' : 'Notifications';
 
@@ -84,7 +64,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex justify-center">
-            <NotificationBell />
+            <NotificationBell onUnreadChange={setUnreadCount} />
           </div>
         </TooltipTrigger>
         <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
@@ -94,6 +74,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <NotificationBell
+      onUnreadChange={setUnreadCount}
       renderTrigger={(triggerProps) => (
         <button
           {...triggerProps}

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export interface KanbanBoard {
   id: string;
@@ -78,6 +79,7 @@ export interface TaskActivityLog {
   action: string;
   details: any;
   created_at: string;
+  profile?: { name: string | null; avatar_url: string | null } | null;
 }
 
 export interface TaskLabel {
@@ -102,6 +104,13 @@ export const useKanban = (activeBoardId?: string | null) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<TaskLabel[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Track task IDs modified locally to suppress own realtime notifications
+  const recentlyModifiedRef = useRef<Set<string>>(new Set());
+  const markLocallyModified = (taskId: string) => {
+    recentlyModifiedRef.current.add(taskId);
+    setTimeout(() => recentlyModifiedRef.current.delete(taskId), 5000);
+  };
 
   // Board operations
   const loadBoards = useCallback(async () => {
@@ -177,7 +186,7 @@ export const useKanban = (activeBoardId?: string | null) => {
     if (!user) return;
     const { data } = await supabase
       .from('tasks')
-      .select('*')
+      .select('*, profile:profiles!fk_tasks_user_profile(name, avatar_url)')
       .order('position', { ascending: true });
     if (data) setTasks(data);
   }, [user]);
@@ -198,6 +207,131 @@ export const useKanban = (activeBoardId?: string | null) => {
   }, [loadBoards, loadColumns, loadTasks, loadLabels]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Set up realtime subscriptions
+  useEffect(() => {
+    if (!user) return;
+
+    const channelName = `kanban-realtime-${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(channelName);
+
+    channel
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanban_boards' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setBoards((prev) => prev.find(b => b.id === payload.new.id) ? prev : [...prev, payload.new as KanbanBoard]);
+        } else if (payload.eventType === 'UPDATE') {
+          setBoards((prev) => prev.map(b => b.id === payload.new.id ? { ...b, ...payload.new as KanbanBoard } : b));
+        } else if (payload.eventType === 'DELETE') {
+          setBoards((prev) => prev.filter(b => b.id !== payload.old.id));
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kanban_columns' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setColumns((prev) => prev.find(c => c.id === payload.new.id) ? prev : [...prev, payload.new as KanbanColumn]);
+        } else if (payload.eventType === 'UPDATE') {
+          setColumns((prev) => prev.map(c => c.id === payload.new.id ? { ...c, ...payload.new as KanbanColumn } : c));
+        } else if (payload.eventType === 'DELETE') {
+          setColumns((prev) => prev.filter(c => c.id !== payload.old.id));
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, async (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setTasks((prev) => prev.filter(t => t.id !== (payload.old as any)?.id));
+          return;
+        }
+
+        const taskId = payload.new?.id;
+        if (!taskId) return;
+
+        // Skip notifications for the current user's own changes
+        const isOwnChange = recentlyModifiedRef.current.has(taskId);
+
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*, profile:profiles!fk_tasks_user_profile(name, avatar_url)')
+          .eq('id', taskId)
+          .single();
+
+        if (error || !data) return;
+
+        // Show notification only for other users' changes
+        if (!isOwnChange) {
+          // Find who made the change using updated_by field
+          let userName = 'Alguém';
+          const modifierId = (data as any)?.updated_by;
+          if (modifierId) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('user_id', modifierId)
+              .maybeSingle();
+            if (profile?.name) userName = profile.name;
+          }
+
+          const taskTitle = data.title || 'Tarefa';
+
+          if (payload.eventType === 'INSERT') {
+            // Replaced by global notification system
+          } else if (payload.eventType === 'UPDATE') {
+            // Detect what changed
+            const oldData = payload.old as any;
+            const newData = payload.new as any;
+            const changes: string[] = [];
+
+            if (oldData.column_id && newData.column_id && oldData.column_id !== newData.column_id) {
+              // Find column names from DB (not stale state)
+              const [oldColRes, newColRes] = await Promise.all([
+                supabase.from('kanban_columns').select('name').eq('id', oldData.column_id).maybeSingle(),
+                supabase.from('kanban_columns').select('name').eq('id', newData.column_id).maybeSingle(),
+              ]);
+              if (oldColRes.data?.name && newColRes.data?.name) {
+                changes.push(`moveu de "${oldColRes.data.name}" para "${newColRes.data.name}"`);
+              } else {
+                changes.push('moveu para outra coluna');
+              }
+            }
+            if (oldData.title !== undefined && newData.title !== undefined && oldData.title !== newData.title) {
+              changes.push('alterou o título');
+            }
+            if (oldData.priority !== undefined && newData.priority !== undefined && oldData.priority !== newData.priority) {
+              changes.push(`mudou prioridade para "${newData.priority}"`);
+            }
+            if (oldData.status !== undefined && newData.status !== undefined && oldData.status !== newData.status) {
+              changes.push(`mudou status para "${newData.status}"`);
+            }
+            if (oldData.description !== newData.description) {
+              changes.push('editou a descrição');
+            }
+            if (oldData.due_date !== newData.due_date) {
+              changes.push('alterou o prazo');
+            }
+            if (oldData.estimated_value !== newData.estimated_value) {
+              changes.push('alterou o valor estimado');
+            }
+            if (oldData.completed_at !== newData.completed_at && newData.completed_at) {
+              changes.push('marcou como concluída');
+            }
+
+            const changeDescription = changes.length > 0 ? changes.join(', ') : 'atualizou';
+            // Display moved to global notification system in NotificationBell.tsx
+          }
+        }
+
+        setTasks((prev) => {
+          const exists = prev.some(t => t.id === data.id);
+          if (exists) {
+            return prev.map(t => t.id === data.id ? data as Task : t);
+          } else {
+            return [...prev, data as Task];
+          }
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, loadBoards, loadColumns, loadTasks]);
 
   // Filtered columns and tasks for active board
   const boardColumns = activeBoardId
@@ -252,10 +386,13 @@ export const useKanban = (activeBoardId?: string | null) => {
     const position = colTasks.length;
     const { data } = await supabase
       .from('tasks')
-      .insert({ title, column_id: columnId, position, user_id: user.id })
+      .insert({ title, column_id: columnId, position, user_id: user.id, updated_by: user.id } as any)
       .select()
       .single();
-    if (data) setTasks((prev) => [...prev, data]);
+    if (data) {
+      markLocallyModified(data.id);
+      setTasks((prev) => [...prev, data]);
+    }
     return data;
   };
 
@@ -266,7 +403,8 @@ export const useKanban = (activeBoardId?: string | null) => {
         updates.completed_at = new Date().toISOString();
       }
     }
-    await supabase.from('tasks').update(updates).eq('id', id);
+    markLocallyModified(id);
+    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', id);
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
   };
 
@@ -287,6 +425,7 @@ export const useKanban = (activeBoardId?: string | null) => {
     // Delete shares for this task
     await supabase.from('shares').delete().eq('resource_id', id).eq('resource_type', 'task');
     // Finally delete the task
+    markLocallyModified(id);
     await supabase.from('tasks').delete().eq('id', id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
@@ -297,7 +436,8 @@ export const useKanban = (activeBoardId?: string | null) => {
     if (targetCol?.name === 'Concluído') {
       updates.completed_at = new Date().toISOString();
     }
-    await supabase.from('tasks').update(updates).eq('id', taskId);
+    markLocallyModified(taskId);
+    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', taskId);
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
     );
@@ -378,7 +518,10 @@ export const useKanban = (activeBoardId?: string | null) => {
     return data;
   };
 
-  // Activity logs
+  const deleteComment = async (commentId: string) => {
+    await supabase.from('task_comments').delete().eq('id', commentId);
+  };
+
   const getActivityLogs = async (taskId: string): Promise<TaskActivityLog[]> => {
     const { data } = await supabase
       .from('task_activity_logs')
@@ -432,12 +575,12 @@ export const useKanban = (activeBoardId?: string | null) => {
   };
 
   return {
-    boards, columns: boardColumns, tasks: boardTasks, labels, loading, reload: load,
+    boards, columns: boardColumns, tasks: boardTasks, allColumns: columns, allTasks: tasks, labels, loading, reload: load,
     addBoard, updateBoard, deleteBoard,
     addColumn, updateColumn, deleteColumn, reorderColumns,
     addTask, updateTask, deleteTask, moveTask,
     getChecklists, addChecklist, addChecklistItem, toggleChecklistItem, deleteChecklist, deleteChecklistItem,
-    getComments, addComment,
+    getComments, addComment, deleteComment,
     getActivityLogs, logActivity,
     addLabel, getTaskLabels, assignLabel, removeLabel,
   };

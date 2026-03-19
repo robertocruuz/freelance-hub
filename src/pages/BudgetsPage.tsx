@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderInput, FolderKanban, CalendarIcon, MoreVertical, Search, X } from 'lucide-react';
+import { Plus, Trash2, FileText, Download, Pencil, ChevronDown, ChevronRight, FolderInput, CalendarIcon, MoreVertical, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -23,12 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,18 +106,14 @@ const BudgetsPage = () => {
   const [editQty, setEditQty] = useState(1);
   const [editPrice, setEditPrice] = useState(0);
 
-  // Project import state
-  interface ProjectOption { id: string; name: string; client_id: string | null; }
-  const [projectPickerItem, setProjectPickerItem] = useState<{ item: BudgetItem | null; budget: Budget } | null>(null);
-  const [availableProjects, setAvailableProjects] = useState<ProjectOption[]>([]);
-  const [importedItemKeys, setImportedItemKeys] = useState<Set<string>>(new Set());
+
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const discountValue = subtotal * (discount / 100);
   const total = subtotal - discountValue;
 
-  const makeItemKey = (name: string, value: number) => `${name}|${value.toFixed(2)}`;
+
 
   const loadBudgets = useCallback(async () => {
     if (!user) return;
@@ -148,16 +139,9 @@ const BudgetsPage = () => {
     }
   }, [user, clients]);
 
-  const loadImportedItems = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase.from('project_items').select('name, value');
-    if (data) {
-      const keys = new Set(data.map(d => makeItemKey(d.name, Number(d.value))));
-      setImportedItemKeys(keys);
-    }
-  }, [user]);
 
-  useEffect(() => { loadBudgets(); loadImportedItems(); }, [loadBudgets, loadImportedItems]);
+
+  useEffect(() => { loadBudgets(); }, [loadBudgets]);
 
   // Pre-fill from Kanban integration
   useEffect(() => {
@@ -298,69 +282,28 @@ const BudgetsPage = () => {
     navigate(`/dashboard/kanban?${params.toString()}`);
   };
 
-  const openProjectPicker = async (item: BudgetItem | null, budget: Budget) => {
-    setProjectPickerItem({ item, budget });
-    const query = supabase.from('projects').select('id, name, client_id').order('name');
-    if (budget.client_id) query.eq('client_id', budget.client_id);
-    const { data } = await query;
-    setAvailableProjects((data || []) as ProjectOption[]);
-  };
-
-  const addItemToProject = async (projectId: string) => {
-    if (!projectPickerItem) return;
-    const { item, budget } = projectPickerItem;
-
-    // Load existing items in target project to check for duplicates
-    const { data: existingItems } = await supabase
-      .from('project_items')
-      .select('name, value')
-      .eq('project_id', projectId);
-    const existingKeys = new Set(
-      (existingItems || []).map(e => makeItemKey(e.name, Number(e.value)))
-    );
-
-    if (item) {
-      const key = makeItemKey(item.description, item.quantity * item.unitPrice);
-      if (existingKeys.has(key)) {
-        toast.warning(`"${item.description}" já existe neste projeto.`);
-        return;
-      }
-      const { error } = await supabase.from('project_items').insert({
-        project_id: projectId,
+  const createProjectFromBudget = async (budget: Budget) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('projects').insert({
+      user_id: user.id,
+      name: budget.name || budget.client_name || 'Projeto do Orçamento',
+      client_id: budget.client_id || null,
+      due_date: budget.delivery_date || null,
+      discount: budget.discount || 0,
+    }).select('id').single();
+    if (error) return toast.error(error.message);
+    if (data && budget.items.length > 0) {
+      const inserts = budget.items.map((item, idx) => ({
+        project_id: data.id,
         name: item.description,
         value: item.quantity * item.unitPrice,
-        position: 0,
-      });
-      if (error) return toast.error(error.message);
-      toast.success(`"${item.description}" adicionado ao projeto!`);
-    } else {
-      const allItems = budget.items.map((bi, idx) => ({
-        project_id: projectId,
-        name: bi.description,
-        value: bi.quantity * bi.unitPrice,
         position: idx,
       }));
-      const newItems = allItems.filter(
-        i => !existingKeys.has(makeItemKey(i.name, i.value))
-      );
-      const skipped = allItems.length - newItems.length;
-
-      if (newItems.length === 0) {
-        toast.warning('Todos os itens deste orçamento já existem no projeto.');
-        return;
-      }
-
-      const { error } = await supabase.from('project_items').insert(newItems);
-      if (error) return toast.error(error.message);
-
-      if (skipped > 0) {
-        toast.success(`${newItems.length} itens enviados! ${skipped} duplicado${skipped > 1 ? 's' : ''} ignorado${skipped > 1 ? 's' : ''}.`);
-      } else {
-        toast.success(`${newItems.length} itens enviados ao projeto!`);
-      }
+      const { error: itemsError } = await supabase.from('project_items').insert(inserts);
+      if (itemsError) toast.error(itemsError.message);
     }
-    setProjectPickerItem(null);
-    loadImportedItems();
+    toast.success('Projeto criado a partir do orçamento!');
+    navigate('/dashboard/projects');
   };
 
   const isFormOpen = creating || editingId;
@@ -816,7 +759,7 @@ const BudgetsPage = () => {
                               <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
                                 <Download className="w-3.5 h-3.5 text-muted-foreground" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => openProjectPicker(null, b)} title="Enviar para projeto">
+                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => createProjectFromBudget(b)} title="Criar projeto a partir do orçamento">
                                 <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
                               </Button>
                               <DropdownMenu>
@@ -883,32 +826,7 @@ const BudgetsPage = () => {
         </div>
       ) : null}
 
-      {/* Project picker modal */}
-      <Dialog open={!!projectPickerItem} onOpenChange={(open) => { if (!open) setProjectPickerItem(null); }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{projectPickerItem?.item ? 'Enviar item ao projeto' : 'Enviar orçamento ao projeto'}</DialogTitle>
-          </DialogHeader>
-          {availableProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">Nenhum projeto encontrado para este cliente.</p>
-          ) : (
-            <div className="space-y-2">
-              {availableProjects.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => addItemToProject(p.id)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-left transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <FolderKanban className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{p.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null); }}>

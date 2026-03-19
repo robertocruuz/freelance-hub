@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
@@ -52,11 +53,16 @@ const typeStyles: Record<string, { icon: string; accent: string; dot: string }> 
   },
 };
 
-interface NotificationBellProps {
-  renderTrigger?: (triggerProps: React.ComponentPropsWithoutRef<'button'>) => React.ReactNode;
-}
+// Global set to prevent duplicate toasts across multiple mounted Bell components
+const recentToasts = new Set<string>();
 
-const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
+export function NotificationBell({ 
+  renderTrigger,
+  onUnreadChange
+}: { 
+  renderTrigger?: (props: any) => React.ReactNode;
+  onUnreadChange?: (count: number) => void;
+}) {
   const { user } = useAuth();
   const { lang } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -64,6 +70,10 @@ const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
   const isPt = lang === 'pt-BR';
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    onUnreadChange?.(unreadCount);
+  }, [unreadCount, onUnreadChange]);
 
   useEffect(() => {
     if (!user) return;
@@ -80,8 +90,9 @@ const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
 
     fetchNotifications();
 
+    const channelName = `notifications-realtime-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('notifications-realtime')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -90,8 +101,20 @@ const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        () => {
+        (payload) => {
           fetchNotifications();
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const notif = payload.new as any;
+            if (notif.title && notif.id && !recentToasts.has(notif.id)) {
+              recentToasts.add(notif.id);
+              toast.info(notif.title, { 
+                description: notif.message,
+                id: notif.id // Prevents duplicate toasts if multiple bells are mounted
+              });
+              // Cleanup memory after 10s
+              setTimeout(() => recentToasts.delete(notif.id), 10000);
+            }
+          }
         }
       )
       .subscribe();
@@ -203,7 +226,7 @@ const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
         </div>
 
         {/* Notifications list */}
-        <ScrollArea className="max-h-[400px]">
+        <div className="overflow-y-auto max-h-[60vh] minimal-scrollbar border-b border-border/40">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14 px-6">
               <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
@@ -294,7 +317,7 @@ const NotificationBell = ({ renderTrigger }: NotificationBellProps = {}) => {
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Footer */}
         {notifications.length > 0 && (

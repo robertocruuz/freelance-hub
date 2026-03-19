@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ShareButton } from '@/components/kanban/ShareButton';
 import { X, Calendar, Clock, Tag, CheckSquare, MessageSquare, Activity, Plus, Trash2, ChevronDown, Play, Receipt, FileText, Timer, FolderKanban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskChecklist, TaskComment, TaskActivityLog, useKanban, KanbanColumn } from '@/hooks/useKanban';
 import { useClients, Client } from '@/hooks/useClients';
+import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -53,17 +55,20 @@ const taskTypes = [
 export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, kanban }: TaskDetailModalProps) => {
   const navigate = useNavigate();
   const { clients } = useClients();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<{ id: string; name: string; client_id: string | null }[]>([]);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [checklists, setChecklists] = useState<TaskChecklist[]>([]);
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [activityLogs, setActivityLogs] = useState<TaskActivityLog[]>([]);
+  const [userProfiles, setUserProfiles] = useState<Record<string, { name: string; avatar_url?: string }>>({});
   const [newComment, setNewComment] = useState('');
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTitles, setNewItemTitles] = useState<Record<string, string>>({});
   const [totalTrackedSeconds, setTotalTrackedSeconds] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [deleteImpact, setDeleteImpact] = useState<{
     timeEntries: number; totalSeconds: number; comments: number; checklists: number; projectName: string | null;
   } | null>(null);
@@ -99,6 +104,28 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
     loadDetails();
     loadTrackedTime();
     loadProjects();
+
+    // Subscribe to realtime changes for task details
+    const channel = supabase.channel(`task_details_${task.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_comments', filter: `task_id=eq.${task.id}` }, () => {
+        loadDetails();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_activity_logs', filter: `task_id=eq.${task.id}` }, () => {
+        loadDetails();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_checklists', filter: `task_id=eq.${task.id}` }, () => {
+        loadDetails();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_checklist_items' }, () => {
+        // For checklist_items we can't easily filter by task_id in the subscription 
+        // without an extra column, so we refresh on any item change (could be optimized)
+        loadDetails();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [task.id]);
 
   const loadProjects = async () => {
@@ -139,6 +166,24 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
     setChecklists(cl);
     setComments(cm);
     setActivityLogs(al);
+
+    // Fetch profiles for users in comments and activity logs
+    const userIds = new Set<string>();
+    cm.forEach(c => userIds.add(c.user_id));
+    al.forEach(l => userIds.add(l.user_id));
+    if (userIds.size > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, name, avatar_url')
+        .in('user_id', Array.from(userIds));
+      if (profiles) {
+        const map: Record<string, { name: string; avatar_url?: string }> = {};
+        profiles.forEach(p => {
+          map[p.user_id] = { name: p.name || 'Alguém', avatar_url: p.avatar_url };
+        });
+        setUserProfiles(map);
+      }
+    }
   };
 
   const saveTitle = () => {
@@ -196,8 +241,8 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
 
   const progress = totalChecklistProgress();
 
-  return (
-    <div className="fixed inset-0 top-14 z-50 flex justify-end" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-2xl h-full bg-card border-l border-border overflow-y-auto animate-fade-in"
@@ -432,19 +477,37 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             {/* Comments */}
             <TabsContent value="comments" className="mt-4 space-y-3">
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {comments.map((c) => (
-                  <div key={c.id} className="glass-card rounded-xl p-3">
+                {comments.map((c) => {
+                  const profile = userProfiles[c.user_id];
+                  const initial = profile?.name ? profile.name.charAt(0).toUpperCase() : 'U';
+                  const canDelete = user?.id === c.user_id; // Check kanban user
+                  return (
+                  <div key={c.id} className="glass-card rounded-xl p-3 group relative">
+                    {canDelete && (
+                      <button
+                        onClick={(e) => { e.preventDefault(); setCommentToDelete(c.id); }}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive p-1 rounded-md hover:bg-destructive/10 transition-colors"
+                        title="Excluir Comentário"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-primary">U</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-primary">{initial}</span>
+                        </div>
+                      )}
+                      <span className="text-[10px] font-medium text-foreground">{profile?.name || 'Alguém'}</span>
+                      <span className="text-[10px] text-muted-foreground mr-6">
                         {formatDistanceToNow(new Date(c.created_at), { locale: ptBR, addSuffix: true })}
                       </span>
                     </div>
                     <p className="text-sm">{c.content}</p>
                   </div>
-                ))}
+                )})}
               </div>
               <div className="flex gap-1.5">
                 <Input
@@ -464,6 +527,8 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 {activityLogs.map((log) => {
                   const details = log.details as Record<string, any> | null;
                   const isTimeTracked = log.action === 'time_tracked';
+                  const profile = userProfiles[log.user_id];
+                  const userName = profile?.name || 'Alguém';
                   return (
                     <div key={log.id} className="flex items-start gap-2 py-1.5 border-b border-border/50 last:border-0">
                       {isTimeTracked ? (
@@ -478,7 +543,23 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                             {details?.description && <span className="text-muted-foreground"> — {details.description}</span>}
                           </p>
                         ) : (
-                          <p className="text-xs text-foreground">{log.action.replace(/_/g, ' ')}</p>
+                          <p className="text-xs text-foreground">
+                            {log.action === 'moved_to_column' ? (
+                              <>
+                                <span className="font-semibold">{userName}</span> moveu de{' '}
+                                <span className="font-medium">'{details?.from || 'coluna anterior'}'</span> para{' '}
+                                <span className="font-medium">'{details?.to || details?.column}'</span>
+                              </>
+                            ) : log.action === 'description_changed' ? (
+                              <><span className="font-semibold">{userName}</span> alterou a descrição</>
+                            ) : log.action === 'title_changed' ? (
+                              <><span className="font-semibold">{userName}</span> alterou o título de '{details?.from}' para '{details?.to}'</>
+                            ) : log.action === 'priority_changed' ? (
+                              <><span className="font-semibold">{userName}</span> alterou a prioridade</>
+                            ) : (
+                              <><span className="font-semibold">{userName}</span>: {log.action.replace(/_/g, ' ')}</>
+                            )}
+                          </p>
                         )}
                         <span className="text-[10px] text-muted-foreground">
                           {formatDistanceToNow(new Date(log.created_at), { locale: ptBR, addSuffix: true })}
@@ -551,9 +632,8 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </Button>
           </div>
         </div>
-      </div>
 
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir tarefa</AlertDialogTitle>
@@ -602,6 +682,39 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+
+      {/* Comment delete warning */}
+      <AlertDialog open={!!commentToDelete} onOpenChange={(open) => !open && setCommentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              Excluir Comentário
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este comentário? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={async (e) => { 
+                e.preventDefault(); // Prevent automatic close
+                if (commentToDelete) {
+                  const idToDel = commentToDelete;
+                  await kanban.deleteComment(idToDel); 
+                  setCommentToDelete(null);
+                  loadDetails();
+                }
+              }} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </div>
+    </div>,
+    document.body
   );
 };
