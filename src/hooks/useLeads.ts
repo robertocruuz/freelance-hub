@@ -79,11 +79,29 @@ export function useLeads() {
     
     // Subscribe to realtime changes for leads and stages
     const channel = supabase.channel(`leads_realtime_${user.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
-        fetchData(false);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setLeads(prev => {
+            if (prev.some(l => l.id === payload.new.id)) return prev;
+            return [...prev, payload.new as Lead];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setLeads(prev => prev.map(l => l.id === payload.new.id ? payload.new as Lead : l));
+        } else if (payload.eventType === 'DELETE') {
+          setLeads(prev => prev.filter(l => l.id !== payload.old.id));
+        }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_stages' }, () => {
-        fetchData(false);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_stages' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setStages(prev => {
+            if (prev.some(s => s.id === payload.new.id)) return prev;
+            return [...prev, payload.new as LeadStage];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setStages(prev => prev.map(s => s.id === payload.new.id ? payload.new as LeadStage : s));
+        } else if (payload.eventType === 'DELETE') {
+          setStages(prev => prev.filter(s => s.id !== payload.old.id));
+        }
       })
       .subscribe();
 
@@ -95,28 +113,35 @@ export function useLeads() {
   const addStage = async (name: string, color: string) => {
     if (!user) return;
     const position = stages.length;
-    const { error } = await supabase.from('lead_stages').insert({ name, color, position, user_id: user.id });
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+    // Optimistic
+    const tempId = `temp-${Date.now()}`;
+    setStages(prev => [...prev, { id: tempId, name, color, position, user_id: user.id, created_at: new Date().toISOString() }]);
+    const { error, data } = await supabase.from('lead_stages').insert({ name, color, position, user_id: user.id }).select().single();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
+    if (data) {
+      setStages(prev => prev.map(s => s.id === tempId ? data as LeadStage : s));
+    }
   };
 
   const updateStage = async (id: string, updates: Partial<LeadStage>) => {
+    // Optimistic
+    setStages(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     const { error } = await supabase.from('lead_stages').update(updates).eq('id', id);
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
   };
 
   const deleteStage = async (id: string) => {
+    // Optimistic
+    setStages(prev => prev.filter(s => s.id !== id));
     const { error } = await supabase.from('lead_stages').delete().eq('id', id);
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
   };
 
   const addLead = async (lead: Partial<Lead>) => {
     if (!user) return;
     const stageLeads = leads.filter(l => l.stage_id === lead.stage_id);
     const position = stageLeads.length;
-    const { error } = await supabase.from('leads').insert({
+    const insertData = {
       title: lead.title || '',
       value: lead.value || 0,
       probability: lead.probability || 50,
@@ -129,28 +154,42 @@ export function useLeads() {
       client_id: lead.client_id,
       position,
       user_id: user.id,
-    });
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+      status: 'open',
+    };
+    
+    // Optimistic
+    const tempId = `temp-${Date.now()}`;
+    setLeads(prev => [...prev, { ...insertData, id: tempId, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), won_at: null, lost_at: null, lost_reason: null } as Lead]);
+
+    const { error, data } = await supabase.from('leads').insert(insertData).select().single();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
+    if (data) {
+      setLeads(prev => prev.map(l => l.id === tempId ? data as Lead : l));
+    }
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
     const { created_at, updated_at, id: _id, ...rest } = updates as any;
+    // Optimistic
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
     const { error } = await supabase.from('leads').update(rest).eq('id', id);
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
   };
 
   const deleteLead = async (id: string) => {
+    // Optimistic
+    setLeads(prev => prev.filter(l => l.id !== id));
     const { error } = await supabase.from('leads').delete().eq('id', id);
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    fetchData();
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
   };
 
   const moveLeadToStage = async (leadId: string, newStageId: string) => {
     const stageLeads = leads.filter(l => l.stage_id === newStageId);
     const position = stageLeads.length;
-    await updateLead(leadId, { stage_id: newStageId, position } as Partial<Lead>);
+    // Optimistic
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, stage_id: newStageId, position } : l));
+    const { error } = await supabase.from('leads').update({ stage_id: newStageId, position }).eq('id', leadId);
+    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); fetchData(false); return; }
   };
 
   return {

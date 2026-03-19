@@ -13,7 +13,7 @@ import {
   DragEndEvent,
   DragOverEvent,
 } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2 } from 'lucide-react';
 import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
@@ -71,7 +71,7 @@ const KanbanPage = () => {
   const kanban = useKanban(activeBoardId);
   const { clients } = useClients();
   const { user } = useAuth();
-  const { columns, tasks, allColumns, allTasks, boards, loading } = kanban;
+  const { columns, tasks, allColumns, allTasks, boards, loading, setTasks } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [view, setView] = useState<ViewMode>('kanban');
@@ -388,7 +388,38 @@ const KanbanPage = () => {
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    // Handled in dragEnd
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    if (activeId === overId) return;
+
+    const activeTask = tasks.find((t) => t.id === activeId);
+    const overTask = tasks.find((t) => t.id === overId);
+    const overColumn = columns.find(c => c.id === overId);
+
+    if (!activeTask) return;
+
+    const activeContainer = activeTask.column_id;
+    const overContainer = overColumn ? overColumn.id : overTask?.column_id;
+
+    if (!overContainer || activeContainer === overContainer) {
+      return;
+    }
+
+    if (setTasks) {
+      setTasks((prev) => {
+        return prev.map(t => {
+          if (t.id === activeId) {
+            // Place at the end of the new column temporarily
+            const targetTasks = prev.filter(pt => pt.column_id === overContainer);
+            return { ...t, column_id: overContainer, position: targetTasks.length };
+          }
+          return t;
+        });
+      });
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -396,38 +427,66 @@ const KanbanPage = () => {
     setActiveTask(null);
     if (!over) return;
 
-    const taskId = active.id as string;
+    const activeId = active.id as string;
     const overId = over.id as string;
 
-    const sourceColumn = columns.find(c => c.id === active.data.current?.sortable?.containerId) || 
-                         columns.find(c => c.id === tasks.find(t => t.id === taskId)?.column_id);
-                         
-    // Check if dropped on a column
-    const targetColumn = columns.find((c) => c.id === overId);
-    if (targetColumn) {
-      const colTasks = getColumnTasks(targetColumn.id);
-      kanban.moveTask(taskId, targetColumn.id, colTasks.length);
-      if (sourceColumn && sourceColumn.id !== targetColumn.id) {
-        kanban.logActivity(taskId, 'moved_to_column', { 
-          from: sourceColumn.name, 
-          to: targetColumn.name 
+    const activeTask = tasks.find(t => t.id === activeId);
+    if (!activeTask) return;
+
+    const overColumn = columns.find(c => c.id === overId);
+    const overTask = tasks.find(t => t.id === overId);
+
+    const overContainer = overColumn ? overColumn.id : overTask?.column_id;
+
+    if (!overContainer) return;
+
+    const originalColumnId = active.data.current?.sortable?.containerId;
+    if (originalColumnId && originalColumnId !== overContainer) {
+      const sourceCol = columns.find(c => c.id === originalColumnId);
+      const targetCol = columns.find(c => c.id === overContainer);
+      if (sourceCol && targetCol) {
+        kanban.logActivity(activeId, 'moved_to_column', {
+          from: sourceCol.name,
+          to: targetCol.name
         });
       }
-      return;
     }
 
-    // Dropped on another task
-    const overTask = tasks.find((t) => t.id === overId);
-    if (overTask && overTask.column_id) {
-      kanban.moveTask(taskId, overTask.column_id, overTask.position);
-      const targetColumn = columns.find(c => c.id === overTask.column_id);
-      if (sourceColumn && targetColumn && sourceColumn.id !== targetColumn.id) {
-        kanban.logActivity(taskId, 'moved_to_column', { 
-          from: sourceColumn.name, 
-          to: targetColumn.name 
-        });
-      }
+    const containerTasks = tasks.filter(t => t.column_id === overContainer).sort(sortTasks);
+    const oldIndex = containerTasks.findIndex(t => t.id === activeId);
+    let newIndex = overColumn ? containerTasks.length - 1 : containerTasks.findIndex(t => t.id === overId);
+    
+    const isBelowOverItem = over && active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height;
+    if (!overColumn && isBelowOverItem && oldIndex < newIndex) {
+      // no adjustment needed
+    } else if (!overColumn && isBelowOverItem && oldIndex > newIndex) {
+      newIndex += 1;
     }
+
+    let newTasks = [...containerTasks];
+    if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
+      newTasks = arrayMove(containerTasks, oldIndex, newIndex);
+    }
+    
+    if (setTasks) {
+      setTasks(prev => {
+        const map = new Map(newTasks.map((t, i) => [t.id, i]));
+        return prev.map(t => {
+          if (map.has(t.id)) {
+            return { ...t, column_id: overContainer, position: map.get(t.id)! };
+          }
+          return t;
+        });
+      });
+    }
+
+    newTasks.forEach((t, i) => {
+      if (t.id === activeId) {
+        kanban.updateTask(t.id, { position: i, column_id: overContainer });
+      } else if (t.position !== i) {
+        kanban.updateTask(t.id, { position: i });
+      }
+    });
   };
 
   const handleAddColumn = () => {
@@ -542,7 +601,7 @@ const KanbanPage = () => {
         <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
 
       {/* Board selector */}
-      <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-3 mb-4 overflow-x-auto pb-1 scrollbar-thin">
         {/* Own boards */}
         {boards.filter(b => b.user_id === user?.id).map((board) => {
           const isActive = activeBoardId === board.id;
@@ -553,7 +612,7 @@ const KanbanPage = () => {
             <button
               key={board.id}
               onClick={() => setActiveBoardId(board.id)}
-              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+              className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 w-[220px] h-[104px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                 isActive
                   ? 'shadow-sm ring-1'
                   : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
@@ -610,7 +669,7 @@ const KanbanPage = () => {
               {subtitle && (
                 <span className="text-[11px] text-muted-foreground truncate pl-9">{subtitle}</span>
               )}
-              <div className="flex items-center gap-2 pl-9 mt-0.5">
+              <div className="flex items-center gap-2 pl-9 mt-auto">
                 <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
                   {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
                 </span>
@@ -632,7 +691,7 @@ const KanbanPage = () => {
                 <button
                   key={board.id}
                   onClick={() => setActiveBoardId(board.id)}
-                  className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 min-w-[160px] max-w-[220px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+                  className={`group relative flex flex-col gap-1 rounded-xl border px-4 py-3 w-[220px] h-[104px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                     isActive
                       ? 'shadow-sm ring-1'
                       : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
@@ -667,7 +726,7 @@ const KanbanPage = () => {
                       <User className="w-3 h-3" /> {ownerName}
                     </span>
                   )}
-                  <div className="flex items-center gap-2 pl-9 mt-0.5">
+                  <div className="flex items-center gap-2 pl-9 mt-auto">
                     <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
                       {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
                     </span>
@@ -688,7 +747,7 @@ const KanbanPage = () => {
             setBoardColor(null);
             setShowBoardDialog(true);
           }}
-          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 min-w-[140px] min-h-[76px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
+          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 w-[140px] h-[104px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
         >
           <Plus className="w-5 h-5" />
           <span className="text-xs font-medium">Novo painel</span>

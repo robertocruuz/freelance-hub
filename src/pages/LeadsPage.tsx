@@ -562,7 +562,7 @@ export default function LeadsPage() {
                       const clientName = lead.client_id ? sharedClients[lead.client_id] : null;
 
                       return (
-                        <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
+                        <tr key={lead.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer" onClick={() => handleEditLead(lead)}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage?.color || '#9ca3af' }} />
@@ -577,7 +577,6 @@ export default function LeadsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1.5">
-                              <Percent className="w-3.5 h-3.5 text-muted-foreground" />
                               <span>{lead.probability}%</span>
                             </div>
                           </td>

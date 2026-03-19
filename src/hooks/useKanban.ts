@@ -404,11 +404,15 @@ export const useKanban = (activeBoardId?: string | null) => {
       }
     }
     markLocallyModified(id);
-    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', id);
+    // Optimistic update
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', id);
   };
 
   const deleteTask = async (id: string) => {
+    // Optimistic update
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    
     // Delete related data first (time entries, activity logs, comments, checklists)
     await Promise.all([
       supabase.from('time_entries').delete().eq('task_id', id),
@@ -427,7 +431,6 @@ export const useKanban = (activeBoardId?: string | null) => {
     // Finally delete the task
     markLocallyModified(id);
     await supabase.from('tasks').delete().eq('id', id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
   const moveTask = async (taskId: string, newColumnId: string, newPosition: number) => {
@@ -437,10 +440,11 @@ export const useKanban = (activeBoardId?: string | null) => {
       updates.completed_at = new Date().toISOString();
     }
     markLocallyModified(taskId);
-    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', taskId);
+    // Optimistic update
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
     );
+    await supabase.from('tasks').update({ ...updates, updated_by: user.id } as any).eq('id', taskId);
   };
 
   // Checklist operations
@@ -576,6 +580,7 @@ export const useKanban = (activeBoardId?: string | null) => {
 
   return {
     boards, columns: boardColumns, tasks: boardTasks, allColumns: columns, allTasks: tasks, labels, loading, reload: load,
+    setTasks,
     addBoard, updateBoard, deleteBoard,
     addColumn, updateColumn, deleteColumn, reorderColumns,
     addTask, updateTask, deleteTask, moveTask,
