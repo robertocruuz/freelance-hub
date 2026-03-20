@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
+import { useOrganization } from '@/hooks/useOrganization';
 import { useClients } from '@/hooks/useClients';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -48,6 +49,7 @@ interface ProjectItem {
 
 interface Project {
   id: string;
+  user_id: string;
   name: string;
   client_id: string | null;
   due_date: string | null;
@@ -76,6 +78,7 @@ interface Budget {
 const ProjectsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
+  const { isAdmin } = useOrganization();
   const { clients } = useClients();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -186,9 +189,11 @@ const ProjectsPage = () => {
   };
 
   const handleDeleteFile = async (file: ProjectFile) => {
-    const { error } = await supabase.from('project_files').delete().eq('id', file.id);
-    if (error) toast.error(error.message);
-    else {
+    const { error } = await supabase.from('project_files').delete().eq('id', file.id).select('id').single();
+    if (error) {
+      if (error.code === 'PGRST116') toast.error('Sem permissão para remover arquivo.');
+      else toast.error(error.message);
+    } else {
       toast.success('Arquivo removido!');
       loadFiles(file.project_id);
     }
@@ -308,6 +313,22 @@ const ProjectsPage = () => {
 
   const handleSave = async () => {
     if (!user || !name.trim()) return;
+
+    // Check for duplicate projects with same name for this client
+    const { data: existingProject, error: duplicateError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('name', name.trim())
+      .eq('client_id', clientId || null)
+      .neq('id', editingId || '00000000-0000-0000-0000-000000000000') // ignore current if editing
+      .limit(1)
+      .maybeSingle();
+
+    if (existingProject) {
+      toast.error('Já existe um projeto com este nome para este cliente.');
+      return;
+    }
+
     const selectedBudget = allBudgets.find(b => b.id === selectedBudgetId);
     const dueDateStr = dueDate ? format(dueDate, 'yyyy-MM-dd') : (selectedBudget?.delivery_date || null);
     const payload = {
@@ -350,15 +371,31 @@ const ProjectsPage = () => {
   };
 
   const handleDelete = async (id: string) => {
+    // Check if project exists and user has permission by trying to select it first,
+    // or by inspecting the returned data from delete().
+    const { data: deletedProject, error } = await supabase.from('projects')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Did not return exactly 1 row, meaning 0 rows deleted (RLS blocked)
+        toast.error('Você não tem permissão para excluir este projeto.');
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+
+    // Now safe to delete related items since project deletion succeeded
     await supabase.from('time_entries').delete().eq('project_id', id);
     await supabase.from('tasks').delete().eq('project_id', id);
     await supabase.from('project_items').delete().eq('project_id', id);
-    const { error } = await supabase.from('projects').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success('Projeto e dados relacionados excluídos!');
-      loadProjects();
-    }
+    
+    toast.success('Projeto e dados relacionados excluídos!');
+    loadProjects();
   };
 
   const handleSaveItem = async (projectId: string) => {
@@ -389,9 +426,11 @@ const ProjectsPage = () => {
   };
 
   const handleDeleteItem = async (item: ProjectItem) => {
-    const { error } = await supabase.from('project_items').delete().eq('id', item.id);
-    if (error) toast.error(error.message);
-    else loadItems(item.project_id);
+    const { error } = await supabase.from('project_items').delete().eq('id', item.id).select('id').single();
+    if (error) {
+      if (error.code === 'PGRST116') toast.error('Sem permissão para excluir item.');
+      else toast.error(error.message);
+    } else loadItems(item.project_id);
   };
 
   const toggleExpand = (id: string) => {

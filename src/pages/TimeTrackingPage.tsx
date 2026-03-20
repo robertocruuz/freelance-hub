@@ -166,6 +166,17 @@ const TimeTrackingPage = () => {
   const { clients } = useClients();
   const prefillApplied = useRef(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const calendarSettingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (calendarSettingsRef.current && !calendarSettingsRef.current.contains(e.target as Node)) {
+        setShowCalendarSettings(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
   const [showExportPanel, setShowExportPanel] = useState(false);
   const [exportFilter, setExportFilter] = useState<'all' | 'client' | 'project'>('all');
@@ -1011,7 +1022,7 @@ const TimeTrackingPage = () => {
             ))}
           </div>
           {/* Calendar settings gear */}
-          <div className="relative">
+          <div className="relative" ref={calendarSettingsRef}>
             <button
               onClick={() => setShowCalendarSettings(!showCalendarSettings)}
               className={`p-1.5 rounded-md transition-colors ${showCalendarSettings ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}

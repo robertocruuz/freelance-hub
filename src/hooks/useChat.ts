@@ -82,7 +82,7 @@ export function useChat() {
     // Get distinct channels I am part of or are team channels of my org
     const { data, error } = await supabase
       .from('channels')
-      .select('*, channel_members!inner(user_id, role, last_read_at, profiles:user_id(name, avatar_url)), messages(content, type, deleted_at, created_at, user_id)')
+      .select('*, channel_members!inner(user_id, role, last_read_at, hidden_at, profiles:user_id(name, avatar_url)), messages(content, type, deleted_at, created_at, user_id)')
       .order('created_at', { foreignTable: 'messages', ascending: false })
       .limit(1, { foreignTable: 'messages' })
       .order('updated_at', { ascending: false });
@@ -490,18 +490,35 @@ export function useChat() {
       return;
     }
     
-    // @ts-ignore
-    const { error } = await supabase.from('channel_members')
-      .update({ hidden_at: new Date().toISOString() } as any)
-      .eq('channel_id', channelId)
-      .eq('user_id', user.id);
-      
-    if (error) {
-      console.error('Error hiding chat:', error);
-      toast({ title: 'Erro', description: `Erro ao esconder conversa: ${error.message} (${error.code})`, variant: 'destructive' });
+    const channel = channels.find(c => c.id === channelId);
+    if (!channel) return;
+    
+    if (channel.type === 'team' || channel.type === 'project') {
+      const { error } = await supabase.from('channels')
+        .delete()
+        .eq('id', channelId);
+        
+      if (error) {
+        console.error('Error deleting channel:', error);
+        toast({ title: 'Erro', description: `Erro ao excluir conversa: ${error.message} (${error.code})`, variant: 'destructive' });
+      } else {
+        setChannels(prev => prev.filter(c => c.id !== channelId));
+        if (activeChannelId === channelId) setActiveChannelId(null);
+      }
     } else {
-      setChannels(prev => prev.filter(c => c.id !== channelId));
-      if (activeChannelId === channelId) setActiveChannelId(null);
+      // @ts-ignore
+      const { error } = await supabase.from('channel_members')
+        .update({ hidden_at: new Date().toISOString() } as any)
+        .eq('channel_id', channelId)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error hiding chat:', error);
+        toast({ title: 'Erro', description: `Erro ao esconder conversa: ${error.message} (${error.code})`, variant: 'destructive' });
+      } else {
+        setChannels(prev => prev.filter(c => c.id !== channelId));
+        if (activeChannelId === channelId) setActiveChannelId(null);
+      }
     }
   };
 

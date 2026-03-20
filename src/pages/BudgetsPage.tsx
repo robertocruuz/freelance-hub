@@ -284,9 +284,26 @@ const BudgetsPage = () => {
 
   const createProjectFromBudget = async (budget: Budget) => {
     if (!user) return;
+
+    const projectName = budget.name || budget.client_name || 'Projeto do Orçamento';
+
+    // Check for duplicate projects with same name for this client
+    const { data: existingProject } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('name', projectName)
+      .eq('client_id', budget.client_id || null)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingProject) {
+      toast.error('Já existe um projeto com este nome para este cliente.');
+      return;
+    }
+
     const { data, error } = await supabase.from('projects').insert({
       user_id: user.id,
-      name: budget.name || budget.client_name || 'Projeto do Orçamento',
+      name: projectName,
       client_id: budget.client_id || null,
       due_date: budget.delivery_date || null,
       discount: budget.discount || 0,
