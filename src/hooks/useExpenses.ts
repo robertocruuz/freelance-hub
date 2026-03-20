@@ -103,7 +103,7 @@ export function useExpenses() {
     // If updating a recurring sequence, cascade to future entries!
     if (updates.recurring_group_id && updates.is_recurring && updates.recurring_months && updates.due_date) {
       // 1. Delete all trailing future events in the group
-      await supabase.from('expenses').delete()
+      await (supabase.from('expenses') as any).delete()
         .eq('recurring_group_id', updates.recurring_group_id)
         .gt('due_date', updates.due_date);
 
@@ -115,13 +115,18 @@ export function useExpenses() {
       for (let i = 1; i < updates.recurring_months; i++) {
         expensesToInsert.push({
           ...safeUpdates,
+          user_id: user?.id,
           status: 'pending',
           paid_date: null,
           due_date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
         });
       }
       if (expensesToInsert.length > 0) {
-         await supabase.from('expenses').insert(expensesToInsert);
+         const { error: insertError } = await supabase.from('expenses').insert(expensesToInsert as any);
+         if (insertError) {
+           console.error('Cascading Insert Failed:', insertError);
+           toast.error('Ocorreu um erro gerando os meses seguintes.');
+         }
       }
     }
 
