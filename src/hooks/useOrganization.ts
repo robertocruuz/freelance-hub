@@ -23,12 +23,18 @@ export interface OrgInvite {
   expires_at: string;
 }
 
+export interface OrgProfile {
+  name: string | null;
+  logo: string | null;
+}
+
 export const useOrganization = () => {
   const { user } = useAuth();
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [invites, setInvites] = useState<OrgInvite[]>([]);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [ownerId, setOwnerId] = useState<string | null>(null);
+  const [orgProfile, setOrgProfile] = useState<OrgProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -39,7 +45,7 @@ export const useOrganization = () => {
     // Get user's organization
     const { data: orgData } = await supabase
       .from('organizations' as any)
-      .select('id, user_id')
+      .select('id, user_id, trade_name, company_name, logo_url')
       .eq('user_id', user.id)
       .single();
 
@@ -56,10 +62,16 @@ export const useOrganization = () => {
         setOrgId(memberOrgId);
         // Fetch owner of the org
         const { data: ownerOrg } = await (supabase.from('organizations' as any) as any)
-          .select('user_id')
+          .select('user_id, trade_name, company_name, logo_url')
           .eq('id', memberOrgId)
           .single();
-        if (ownerOrg) setOwnerId((ownerOrg as any).user_id);
+        if (ownerOrg) {
+          setOwnerId((ownerOrg as any).user_id);
+          setOrgProfile({
+            name: (ownerOrg as any).trade_name || (ownerOrg as any).company_name || 'Organização',
+            logo: (ownerOrg as any).logo_url
+          });
+        }
       } else {
         setLoading(false);
         return;
@@ -67,6 +79,10 @@ export const useOrganization = () => {
     } else {
       setOrgId((orgData as any).id);
       setOwnerId((orgData as any).user_id);
+      setOrgProfile({
+        name: (orgData as any).trade_name || (orgData as any).company_name || 'Organização',
+        logo: (orgData as any).logo_url
+      });
     }
 
     const currentOrgId = orgData ? (orgData as any).id : null;
@@ -274,6 +290,7 @@ export const useOrganization = () => {
   return {
     orgId,
     ownerId,
+    orgProfile,
     members,
     invites,
     loading,

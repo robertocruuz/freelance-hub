@@ -71,9 +71,10 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
   const [notes, setNotes] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringMonths, setRecurringMonths] = useState('12');
+  const [recurringGroupId, setRecurringGroupId] = useState<string | null>(null);
 
   const resetForm = () => {
-    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false); setRecurringMonths('12');
+    setDescription(''); setCategory('outros'); setAmount(''); setDueDate(undefined); setPaymentMethod(''); setNotes(''); setIsRecurring(false); setRecurringMonths('12'); setRecurringGroupId(null);
     setEditing(null);
   };
 
@@ -89,12 +90,14 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
     setNotes(e.notes || '');
     setIsRecurring(e.is_recurring);
     setRecurringMonths(String(e.recurring_months || 12));
+    setRecurringGroupId(e.recurring_group_id || null);
     setDialogOpen(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
   };
 
   const handleSave = async () => {
     if (!description || !amount) return;
+    const groupId = recurringGroupId || (isRecurring ? crypto.randomUUID() : null);
     const data = {
       description,
       category,
@@ -108,6 +111,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
       paid_date: null,
       is_recurring: isRecurring,
       recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,
+      recurring_group_id: isRecurring ? groupId : null,
     };
     let ok: boolean | undefined;
     if (editing) {

@@ -16,9 +16,9 @@ export interface Expense {
   paid_date: string | null;
   status: string;
   payment_method: string | null;
-  notes: string | null;
   is_recurring: boolean;
   recurring_months: number | null;
+  recurring_group_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -64,50 +64,34 @@ export function useExpenses() {
 
   useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
 
-  // Generate virtual recurring entries for future months (up to 12 months ahead)
-  const expensesWithRecurring = useMemo(() => {
-    const now = new Date();
-    const currentMonth = format(now, 'yyyy-MM');
-    const virtualEntries: Expense[] = [];
-
-    for (const expense of expenses) {
-      if (!expense.is_recurring || !expense.due_date) continue;
-      const baseDate = new Date(expense.due_date + 'T12:00:00');
-      
-      const months = expense.recurring_months || 12;
-      for (let i = 1; i <= months; i++) {
-        const futureDate = addMonths(baseDate, i);
-        const futureMonth = format(futureDate, 'yyyy-MM');
-        // Only generate if future month is after the original month
-        if (futureMonth <= format(baseDate, 'yyyy-MM')) continue;
-        
-        // Check if a real expense already exists for this month (same description, category, amount)
-        const alreadyExists = expenses.some(e => 
-          e.description === expense.description && 
-          e.category === expense.category && 
-          e.amount === expense.amount &&
-          e.due_date && e.due_date.startsWith(futureMonth)
-        );
-        if (alreadyExists) continue;
-
-        virtualEntries.push({
-          ...expense,
-          id: `${expense.id}_recurring_${i}`,
-          due_date: format(futureDate, 'yyyy-MM-dd'),
-          paid_date: null,
-          status: 'pending',
-        });
-      }
-    }
-
-    return [...expenses, ...virtualEntries];
-  }, [expenses]);
+  // Virtual entries removed to enforce true database persistence and editable states.
 
   const addExpense = async (expense: Omit<Expense, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
-    const { error } = await supabase.from('expenses').insert({ ...expense, user_id: user.id });
-    if (error) { toast.error('Erro ao adicionar despesa'); return false; }
-    toast.success('Despesa adicionada');
+    
+    if (expense.is_recurring && expense.recurring_months) {
+      const expensesToInsert: any[] = [];
+      const baseDate = expense.due_date ? new Date(expense.due_date + 'T12:00:00') : new Date();
+      const groupId = crypto.randomUUID();
+      
+      for (let i = 0; i < expense.recurring_months; i++) {
+        expensesToInsert.push({
+          ...expense,
+          user_id: user.id,
+          status: 'pending',
+          recurring_group_id: groupId,
+          due_date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
+        });
+      }
+      
+      const { error } = await supabase.from('expenses').insert(expensesToInsert);
+      if (error) { toast.error('Erro ao adicionar despesas'); return false; }
+    } else {
+      const { error } = await supabase.from('expenses').insert({ ...expense, user_id: user.id });
+      if (error) { toast.error('Erro ao adicionar despesa'); return false; }
+    }
+    
+    toast.success('Despesa adicionada com sucesso');
     fetchExpenses();
     return true;
   };
@@ -115,7 +99,33 @@ export function useExpenses() {
   const updateExpense = async (id: string, updates: Partial<Expense>) => {
     const { error } = await supabase.from('expenses').update(updates).eq('id', id);
     if (error) { toast.error('Erro ao atualizar despesa'); return false; }
-    toast.success('Despesa atualizada');
+
+    // If updating a recurring sequence, cascade to future entries!
+    if (updates.recurring_group_id && updates.is_recurring && updates.recurring_months && updates.due_date) {
+      // 1. Delete all trailing future events in the group
+      await supabase.from('expenses').delete()
+        .eq('recurring_group_id', updates.recurring_group_id)
+        .gt('due_date', updates.due_date);
+
+      // 2. Regenerate new trailing events based on edited payload
+      const expensesToInsert: any[] = [];
+      const baseDate = new Date(updates.due_date + 'T12:00:00');
+      
+      const { id: _id, created_at: _c, updated_at: _u, ...safeUpdates } = updates as any;
+      for (let i = 1; i < updates.recurring_months; i++) {
+        expensesToInsert.push({
+          ...safeUpdates,
+          status: 'pending',
+          paid_date: null,
+          due_date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
+        });
+      }
+      if (expensesToInsert.length > 0) {
+         await supabase.from('expenses').insert(expensesToInsert);
+      }
+    }
+
+    toast.success('Despesa atualizada com sucesso');
     fetchExpenses();
     return true;
   };
@@ -135,5 +145,5 @@ export function useExpenses() {
     });
   };
 
-  return { expenses: expensesWithRecurring, rawExpenses: expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
+  return { expenses, rawExpenses: expenses, loading, fetchExpenses, addExpense, updateExpense, deleteExpense, markAsPaid };
 }

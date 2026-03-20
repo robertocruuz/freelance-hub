@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle, Repeat } from 'lucide-react';
-import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
+import { format, isPast, isToday, addDays, isBefore, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -68,6 +68,7 @@ interface Invoice {
   created_at: string;
   is_recurring: boolean;
   recurring_months: number | null;
+  recurring_group_id?: string | null;
 }
 
 interface ProjectWithItems {
@@ -118,6 +119,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const [notes, setNotes] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringMonths, setRecurringMonths] = useState('12');
+  const [recurringGroupId, setRecurringGroupId] = useState<string | null>(null);
   const [organization, setOrganization] = useState<any>(null);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -276,6 +278,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setNewPrice(0);
     setIsRecurring(false);
     setRecurringMonths('12');
+    setRecurringGroupId(null);
   };
 
   const editInvoice = async (inv: Invoice) => {
@@ -294,12 +297,14 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
     setPaymentMethods(fullInv.payment_method ? fullInv.payment_method.split(', ') : []);
     setIsRecurring(fullInv.is_recurring || false);
     setRecurringMonths(String(fullInv.recurring_months || 12));
+    setRecurringGroupId((fullInv as any).recurring_group_id || null);
     setCreating(true);
   };
 
   const saveInvoice = async () => {
     if (!user) return;
     if (items.length === 0) return toast.error('Adicione pelo menos um item.');
+    const groupId = recurringGroupId || (isRecurring ? crypto.randomUUID() : null);
     const invoiceData = {
       name: invoiceName.trim() || null,
       client_id: clientId || null,
@@ -312,13 +317,48 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
       payment_method: [...paymentMethods, ...(paymentMethods.includes('Outro') && otherPaymentMethod.trim() ? [otherPaymentMethod.trim()] : [])].filter(m => m !== 'Outro').join(', ') || null,
       is_recurring: isRecurring,
       recurring_months: isRecurring ? parseInt(recurringMonths) || 12 : null,
+      recurring_group_id: isRecurring ? groupId : null,
     };
 
     let error;
     if (editingInvoiceId) {
       ({ error } = await supabase.from('invoices').update(invoiceData).eq('id', editingInvoiceId));
+      
+      if (!error && invoiceData.recurring_group_id && invoiceData.is_recurring && invoiceData.recurring_months && invoiceData.due_date) {
+        await supabase.from('invoices').delete()
+          .eq('recurring_group_id', invoiceData.recurring_group_id)
+          .gt('due_date', invoiceData.due_date);
+
+        const invoicesToInsert: any[] = [];
+        const baseDate = new Date(invoiceData.due_date + 'T12:00:00');
+        for (let i = 1; i < invoiceData.recurring_months; i++) {
+          invoicesToInsert.push({
+            ...invoiceData,
+            user_id: user.id,
+            status: 'pending',
+            due_date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
+          });
+        }
+        if (invoicesToInsert.length > 0) {
+          await supabase.from('invoices').insert(invoicesToInsert);
+        }
+      }
     } else {
-      ({ error } = await supabase.from('invoices').insert({ ...invoiceData, user_id: user.id, status: 'pending' }));
+      if (isRecurring && invoiceData.recurring_months) {
+        const invoicesToInsert: any[] = [];
+        const baseDate = dueDate || new Date();
+        for (let i = 0; i < invoiceData.recurring_months; i++) {
+          invoicesToInsert.push({
+            ...invoiceData,
+            user_id: user.id,
+            status: 'pending',
+            due_date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
+          });
+        }
+        ({ error } = await supabase.from('invoices').insert(invoicesToInsert));
+      } else {
+        ({ error } = await supabase.from('invoices').insert({ ...invoiceData, user_id: user.id, status: 'pending' }));
+      }
     }
     if (error) toast.error(error.message);
     else {

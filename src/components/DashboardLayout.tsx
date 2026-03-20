@@ -1,9 +1,10 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, Clock, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet, Target } from 'lucide-react';
+import { Home, FileText, Clock, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet, Target, MessageCircle } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { useTimer } from '@/hooks/useTimer';
+import { useUnreadChat } from '@/hooks/useUnreadChat';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -27,6 +28,7 @@ const navItems = [
   { key: 'time', icon: Clock, path: '/dashboard/time' },
   { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
   { key: 'team', icon: UsersRound, path: '/dashboard/team' },
+  { key: 'chat', icon: MessageCircle, path: '/dashboard/chat' },
 ] as const;
 
 const labelMap: Record<string, (t: any) => string> = {
@@ -39,6 +41,7 @@ const labelMap: Record<string, (t: any) => string> = {
   leads: () => 'Leads',
   finance: () => 'Financeiro',
   team: (t) => t.team || 'Equipe',
+  chat: (t) => t.chat || 'Chat',
 };
 
 /* ─── Helpers ─── */
@@ -153,6 +156,7 @@ interface SidebarNavProps {
   orgName: string;
   handleLogout: () => Promise<void>;
   isActive: (path: string) => boolean;
+  hasUnreadChat: boolean;
 }
 
 const SidebarNav = ({ 
@@ -171,7 +175,8 @@ const SidebarNav = ({
   setUserExpanded,
   orgName,
   handleLogout,
-  isActive
+  isActive,
+  hasUnreadChat
 }: SidebarNavProps) => (
   <div className="flex flex-col h-full">
     {/* Logo */}
@@ -198,10 +203,10 @@ const SidebarNav = ({
       {filteredNavItems.map((item) => {
         const active = isActive(item.path);
         const label = labelMap[item.key](t);
+        const isTeamSectionStart = item.key === 'team';
 
         const btn = (
           <button
-            key={item.key}
             onClick={() => {
               navigate(item.path);
               if (isMobile) setMobileOpen(false);
@@ -214,20 +219,33 @@ const SidebarNav = ({
                 : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
             )}
           >
-            <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={active ? 2.2 : 1.8} />
+            <div className="relative shrink-0 flex items-center justify-center">
+              <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
+              {item.key === 'chat' && hasUnreadChat && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-card" />
+              )}
+            </div>
             {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
           </button>
         );
 
         if (collapsed && !isMobile) {
           return (
-            <Tooltip key={item.key}>
-              <TooltipTrigger asChild>{btn}</TooltipTrigger>
-              <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
-            </Tooltip>
+            <div key={item.key} className="flex flex-col gap-1">
+              {isTeamSectionStart && <div className="mt-2 mb-1 border-t border-sidebar-border/50" />}
+              <Tooltip>
+                <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+              </Tooltip>
+            </div>
           );
         }
-        return <div key={item.key}>{btn}</div>;
+        return (
+          <div key={item.key} className="flex flex-col gap-1">
+             {isTeamSectionStart && <div className="mt-2 mb-1 border-t border-sidebar-border/50 mx-2" />}
+             {btn}
+          </div>
+        );
       })}
     </nav>
 
@@ -353,6 +371,7 @@ const DashboardLayout = () => {
   const [userName, setUserName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
+  const hasUnreadChat = useUnreadChat();
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -440,6 +459,7 @@ const DashboardLayout = () => {
           orgName={orgName}
           handleLogout={handleLogout}
           isActive={isActive}
+          hasUnreadChat={hasUnreadChat}
         />
 
         {/* Collapse toggle - subtle pill on border */}
@@ -482,6 +502,7 @@ const DashboardLayout = () => {
               orgName={orgName}
               handleLogout={handleLogout}
               isActive={isActive}
+              hasUnreadChat={hasUnreadChat}
             />
           </aside>
         </div>

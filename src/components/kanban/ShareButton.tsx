@@ -20,6 +20,7 @@ interface ShareButtonProps {
   resourceType: 'board' | 'task' | 'pipeline' | 'lead';
   resourceId: string;
   compact?: boolean;
+  className?: string;
 }
 
 interface ShareRecord {
@@ -29,7 +30,7 @@ interface ShareRecord {
   profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
-export const ShareButton = ({ resourceType, resourceId, compact = false }: ShareButtonProps) => {
+export const ShareButton = ({ resourceType, resourceId, compact = false, className }: ShareButtonProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -213,7 +214,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false }: Share
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {compact ? (
-          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition p-1 rounded">
+          <button className={className || "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition p-1 rounded"}>
             <Share2 className="w-3.5 h-3.5" />
             {shareCount > 0 && <span className="text-[10px]">{shareCount}</span>}
           </button>

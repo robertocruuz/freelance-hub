@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -569,6 +569,48 @@ const ProjectsPage = () => {
     loadExistingTasks();
   };
 
+  const handleOpenChat = async (project: Project) => {
+    if (!user) return;
+    try {
+      // Check if channel exists
+      const { data: existingChannel } = await supabase
+        .from('channels')
+        .select('id')
+        .eq('project_id', project.id)
+        .limit(1)
+        .single();
+
+      if (existingChannel) {
+        navigate(`/dashboard/chat?channel=${existingChannel.id}`);
+        return;
+      }
+
+      // Create channel
+      const { data: newChannel, error } = await supabase
+        .from('channels')
+        .insert({
+          type: 'project',
+          project_id: project.id,
+          name: project.name
+        })
+        .select('id')
+        .single();
+
+      if (error || !newChannel) throw error;
+      
+      // Add myself
+      await supabase.from('channel_members').insert({
+        channel_id: newChannel.id,
+        user_id: user.id,
+        role: 'admin'
+      });
+      
+      navigate(`/dashboard/chat?channel=${newChannel.id}`);
+    } catch (e: any) {
+      toast.error('Erro ao iniciar chat do projeto: ' + e.message);
+    }
+  };
+
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
@@ -837,6 +879,15 @@ const ProjectsPage = () => {
                               </div>
                             </div>
                             <div className="flex gap-1 ml-2" onClick={e => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-8 h-8 rounded-lg"
+                                onClick={() => handleOpenChat(p)}
+                                title="Chat do Projeto"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"

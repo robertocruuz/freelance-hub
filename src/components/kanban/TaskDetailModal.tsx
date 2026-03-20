@@ -289,7 +289,12 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   ))}
                 </SelectContent>
               </Select>
-              <ShareButton resourceType="task" resourceId={task.id} compact />
+              <ShareButton 
+                resourceType="task" 
+                resourceId={task.id} 
+                compact 
+                className="h-7 px-2.5 text-xs w-auto glass-input border border-input rounded-md flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors" 
+              />
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-secondary transition">

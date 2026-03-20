@@ -1,0 +1,7 @@
+ALTER TABLE public.invoices 
+ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS recurring_months INTEGER;
+
+ALTER TABLE public.expenses 
+ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS recurring_months INTEGER;
