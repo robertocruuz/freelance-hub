@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
-import { Search, Plus, Hash, Users, User, Clock } from 'lucide-react';
+import { Search, Plus, Hash, Users, User, Clock, ChevronDown, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -16,9 +22,13 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
   const isPt = lang === 'pt-BR';
   const { user } = useAuth();
   const { members, orgId, orgProfile } = useOrganization();
-  const { channels, activeChannelId, setActiveChannelId, createDirectChannel, createTeamChannel } = chatState;
+  const { channels, activeChannelId, setActiveChannelId, createDirectChannel, createTeamChannel, deleteChannel } = chatState;
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const currentUserMember = members.find((m: any) => m.user_id === user?.id);
+  const isAdmin = currentUserMember?.role === 'admin';
+  const hasTeamChannel = channels.some((c: any) => c.type === 'team');
 
   const filteredChannels = channels.filter((c: any) => {
     // If it's a team chat, filter by channel name
@@ -63,9 +73,9 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
 
   const selectableUsers = members.filter(m => m.user_id !== user?.id && m.profile);
 
-  const handleCreateDirectChat = async (otherUserId: string) => {
+  const handleCreateDirectChat = (otherUserId: string, profile: any) => {
     setIsDialogOpen(false);
-    await createDirectChannel(otherUserId);
+    chatState.initDirectChat(otherUserId, profile);
   };
 
   return (
@@ -90,16 +100,26 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
               <div className="flex flex-col gap-2 mt-4 pt-2">
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start gap-2 text-primary border-primary/20 bg-primary/5 hover:bg-primary/10"
+                  disabled={hasTeamChannel}
+                  className={`w-full justify-start gap-2 transition-colors ${
+                    hasTeamChannel 
+                      ? 'border-muted bg-muted/50 text-muted-foreground opacity-60' 
+                      : 'text-primary border-primary/20 bg-primary/5 hover:bg-primary/10'
+                  }`}
                   onClick={async () => {
+                    if (hasTeamChannel) return;
                     setIsDialogOpen(false);
                     if (orgId) {
                       await createTeamChannel(orgId, orgProfile?.name || 'Equipe Geral');
                     }
                   }}
                 >
-                  <Users className="h-4 w-4" />
-                  {isPt ? 'Criar Chat da Equipe (Geral)' : 'Create Team Chat (General)'}
+                  <Users className="h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {isPt 
+                      ? (hasTeamChannel ? 'Chat Geral Já Existente' : 'Criar Chat da Equipe (Geral)') 
+                      : (hasTeamChannel ? 'General Chat Exists' : 'Create Team Chat (General)')}
+                  </span>
                 </Button>
                 
                 <div className="relative my-3">
@@ -117,7 +137,7 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
                   selectableUsers.map(member => (
                     <button
                       key={member.user_id}
-                      onClick={() => handleCreateDirectChat(member.user_id)}
+                      onClick={() => handleCreateDirectChat(member.user_id, member.profile)}
                       className="flex items-center gap-3 p-2 rounded-md hover:bg-muted text-left transition-colors"
                     >
                       <Avatar className="h-9 w-9 shrink-0">
@@ -168,45 +188,83 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
               const unreadCount = channel.unread_count || 0;
 
               return (
-                <button
-                  key={channel.id}
-                  onClick={() => setActiveChannelId(channel.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                    isActive 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'hover:bg-muted/50 text-foreground'
-                  }`}
-                >
-                  <div className="relative shrink-0">
-                    <Avatar className="h-10 w-10 border border-border">
-                      <AvatarImage src={info.avatar || ''} />
-                      <AvatarFallback className={isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-muted text-muted-foreground font-medium'}>
-                        {info.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className={`text-sm truncate ${isActive || isUnread ? 'font-semibold' : 'font-medium'}`}>
-                        {info.name}
-                      </p>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(updatedDate, { addSuffix: true, locale: isPt ? ptBR : enUS })}
-                      </span>
+                <div key={channel.id} className="relative group">
+                  <button
+                    onClick={() => setActiveChannelId(channel.id)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'hover:bg-muted/50 text-foreground'
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      <Avatar className="h-10 w-10 border border-border">
+                        <AvatarImage src={info.avatar || ''} />
+                        <AvatarFallback className={isActive ? 'bg-primary/20 text-primary font-medium' : 'bg-muted text-muted-foreground font-medium'}>
+                          {info.initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </div>
-                    <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
-                      {channel.type === 'direct' 
-                        ? (isPt ? 'Mensagem direta' : 'Direct message') 
-                        : (channel.type === 'team' ? (isPt ? 'Canal da Equipe' : 'Team Channel') : (isPt ? 'Canal do Projeto' : 'Project Channel'))}
-                    </p>
-                  </div>
-                </button>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="flex items-center justify-between gap-1 leading-none mb-1">
+                        <p className={`text-[13px] truncate ${isActive || isUnread ? 'font-semibold' : 'font-medium'}`}>
+                          {info.name}
+                        </p>
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
+                          {formatDistanceToNow(updatedDate, { addSuffix: true, locale: isPt ? ptBR : enUS })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className={`text-[12px] truncate pr-5 ${isActive ? 'text-primary' : isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                          {(() => {
+                            const lastMsg = channel.messages?.[0];
+                            if (!lastMsg) {
+                              return channel.type === 'direct' ? (isPt ? 'Mensagem direta' : 'Direct message') : (channel.type === 'team' ? (isPt ? 'Canal da Equipe' : 'Team Channel') : (isPt ? 'Canal do Projeto' : 'Project Channel'));
+                            }
+                            if (lastMsg.deleted_at) {
+                              return isPt ? '🚫 Mensagem apagada' : '🚫 Message deleted';
+                            }
+                            if (lastMsg.type === 'file') {
+                              return isPt ? '📷 Arquivo anexado' : '📷 File attached';
+                            }
+                            const prefix = lastMsg.user_id === user?.id ? (isPt ? 'Você: ' : 'You: ') : '';
+                            return prefix + (lastMsg.content || '');
+                          })()}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  {/* Deletion Dropdown Menu: Block non-admins from deleting the Team Chat */}
+                  {(channel.type !== 'team' || isAdmin) && (
+                    <div className="absolute right-2 bottom-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full hover:bg-background/80 text-muted-foreground hover:text-foreground">
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 border-border shadow-md">
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive cursor-pointer font-medium" 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              deleteChannel(channel.id); 
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {isPt ? 'Excluir Chat' : 'Delete Chat'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
+                </div>
               );
             })
           )}

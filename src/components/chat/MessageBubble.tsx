@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { FileIcon, Download, MoreVertical, Pencil, Trash2, X, Check } from 'lucide-react';
+import { FileIcon, Download, MoreVertical, Pencil, Trash2, X, Check, Ban } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 export default function MessageBubble({ message, onToggleReaction, onEditMessage, onDeleteMessage }: any) {
@@ -34,6 +34,30 @@ export default function MessageBubble({ message, onToggleReaction, onEditMessage
 
   const isImage = message.type === 'file' && message.file_url && /\.(jpg|jpeg|png|gif|webp)(\?|#|$)/i.test(message.file_url);
   const hasCustomCaption = message.content && message.content !== 'Arquivo Anexado' && message.content !== 'Documento Anexado';
+
+  if (message.deleted_at) {
+    return (
+      <div className={`flex w-full mt-4 space-x-3 max-w-2xl ${isMine ? 'ml-auto justify-end' : ''}`}>
+        {!isMine && (
+          <Avatar className="h-8 w-8 shrink-0 border border-border mt-1 opacity-60 grayscale">
+            <AvatarImage src={avatar || ''} />
+            <AvatarFallback className="bg-muted text-xs font-medium">{initials}</AvatarFallback>
+          </Avatar>
+        )}
+        <div className={`flex flex-col flex-1 w-full min-w-0 ${isMine ? 'items-end' : 'items-start'}`}>
+          {!isMine && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-semibold text-muted-foreground">{name}</span>
+            </div>
+          )}
+          <div className={`px-4 py-2.5 rounded-2xl shadow-sm border border-border/50 bg-muted/30 text-muted-foreground flex items-center gap-2 italic ${isMine ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}>
+            <Ban className="h-3.5 w-3.5 opacity-50" />
+            <span className="text-[14px]">Esta mensagem foi apagada</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex w-full mt-4 space-x-3 max-w-2xl ${isMine ? 'ml-auto justify-end' : ''}`}>

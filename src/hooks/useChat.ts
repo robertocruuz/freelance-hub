@@ -29,6 +29,7 @@ export interface ChannelMember {
   role: string | null;
   joined_at: string;
   last_read_at: string | null;
+  hidden_at?: string | null;
   // Included profile
   profiles?: {
     name: string | null;
@@ -81,7 +82,9 @@ export function useChat() {
     // Get distinct channels I am part of or are team channels of my org
     const { data, error } = await supabase
       .from('channels')
-      .select('*, channel_members!inner(user_id, role, last_read_at, profiles:user_id(name, avatar_url))')
+      .select('*, channel_members!inner(user_id, role, last_read_at, profiles:user_id(name, avatar_url)), messages(content, type, deleted_at, created_at, user_id)')
+      .order('created_at', { foreignTable: 'messages', ascending: false })
+      .limit(1, { foreignTable: 'messages' })
       .order('updated_at', { ascending: false });
       
       if (error) {
@@ -102,8 +105,13 @@ export function useChat() {
 
         const channelsWithCounts = fetchedChannels.map(c => ({
           ...c,
-          unread_count: countsMap[c.id] || 0
-        }));
+          unread_count: c.id === activeChannelRef.current ? 0 : (countsMap[c.id] || 0)
+        })).filter(c => {
+          const me: any = c.channel_members?.find((m: any) => m.user_id === user.id);
+          if (!me || !me.hidden_at) return true;
+          // Hide if the last update (message) is older than or equal to when I hid it
+          return new Date(c.updated_at) > new Date(me.hidden_at);
+        });
 
         setChannels(channelsWithCounts);
       }
@@ -112,9 +120,23 @@ export function useChat() {
 
   // Fetch messages for active channel
   const fetchMessages = useCallback(async (channelId: string) => {
+    if (channelId.startsWith('temp_')) {
+      setMessages([]);
+      setLoadingMessages(false);
+      return;
+    }
+
     setLoadingMessages(true);
     
-    const { data: messagesData, error: messagesError } = await supabase
+    const { data } = await supabase
+      .from('channel_members')
+      .select('hidden_at')
+      .eq('channel_id', channelId)
+      .eq('user_id', user!.id)
+      .single();
+    const memberData: any = data;
+
+    let messagesQuery = supabase
       .from('messages')
       .select(`
         *,
@@ -123,6 +145,12 @@ export function useChat() {
       `)
       .eq('channel_id', channelId)
       .order('created_at', { ascending: true });
+
+    if (memberData?.hidden_at) {
+      messagesQuery = messagesQuery.gt('created_at', memberData.hidden_at);
+    }
+
+    const { data: messagesData, error: messagesError } = await messagesQuery;
       
     if (messagesError) {
       console.error('Error fetching messages', messagesError);
@@ -192,10 +220,18 @@ export function useChat() {
            setChannels(prev => prev.map(c => {
              if (c.id === newMsg.channel_id) {
                if (newMsg.channel_id !== activeChannelRef.current) {
-                 return { ...c, unread_count: (c.unread_count || 0) + 1, updated_at: newMsg.created_at };
+                 return { ...c, unread_count: (c.unread_count || 0) + 1, updated_at: newMsg.created_at, messages: [newMsg] };
                } else {
-                 return { ...c, updated_at: newMsg.created_at };
+                 return { ...c, updated_at: newMsg.created_at, messages: [newMsg] };
                }
+             }
+             return c;
+           }));
+        } else {
+           // Also update sidebar snippet if I send a message on another device
+           setChannels(prev => prev.map(c => {
+             if (c.id === newMsg.channel_id) {
+               return { ...c, updated_at: newMsg.created_at, messages: [newMsg] };
              }
              return c;
            }));
@@ -223,11 +259,20 @@ export function useChat() {
           if (prev.some(m => m.id === newMsg.id)) return prev;
           return [...prev, { ...newMsg, profiles: profile || undefined, reactions: [] }];
         });
+        
+        // Dynamically advance the read receipt if we are actively staring at the channel
+        if (newMsg.user_id !== user.id) {
+          supabase.from('channel_members')
+            .update({ last_read_at: new Date().toISOString() })
+            .eq('channel_id', activeChannelId)
+            .eq('user_id', user.id)
+            .then();
+        }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeChannelId}` }, (payload) => {
         setMessages(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
       })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeChannelId}` }, (payload) => {
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, (payload) => {
         setMessages(prev => prev.filter(m => m.id !== payload.old.id));
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, (payload) => {
@@ -257,10 +302,22 @@ export function useChat() {
   const sendMessage = async (content: string, type: 'text' | 'file' = 'text', file_url?: string) => {
     if (!user || !activeChannelId || (!content && !file_url)) return;
     
-    // temp id for optimistic UI could be added here
+    let targetChannelId = activeChannelId;
+
+    // Intercept Lazy DB Creation for temp direct chats
+    if (targetChannelId.startsWith('temp_')) {
+      const targetUserId = targetChannelId.replace('temp_', '');
+      const newRealId = await createDirectChannel(targetUserId);
+      if (!newRealId) return;
+      
+      targetChannelId = newRealId;
+      // Remove temp channel from UI as the realtime DB fetch will bring the new one
+      setChannels(prev => prev.filter(c => c.id !== activeChannelId));
+      setActiveChannelId(newRealId);
+    }
     
     const { error } = await supabase.from('messages').insert({
-      channel_id: activeChannelId,
+      channel_id: targetChannelId,
       user_id: user.id,
       content,
       type,
@@ -268,7 +325,7 @@ export function useChat() {
     });
     
     if (error) {
-      toast({ title: 'Erro', description: 'Erro ao enviar mensagem', variant: 'destructive' });
+      toast({ title: 'Erro', description: `Erro ao enviar mensagem: ${error.message} (${error.code})`, variant: 'destructive' });
     }
   };
 
@@ -280,7 +337,7 @@ export function useChat() {
       emoji
     });
     if (error && error.code !== '23505') { // ignore duplicate
-      toast({ title: 'Erro', description: 'Erro ao reagir', variant: 'destructive' });
+      toast({ title: 'Erro', description: `Erro ao reagir: ${error.message} (${error.code})`, variant: 'destructive' });
     }
   };
 
@@ -292,7 +349,7 @@ export function useChat() {
       .eq('emoji', emoji);
       
     if (error) {
-      toast({ title: 'Erro', description: 'Erro ao remover reação', variant: 'destructive' });
+      toast({ title: 'Erro', description: `Erro ao remover reação: ${error.message} (${error.code})`, variant: 'destructive' });
     }
   };
   
@@ -316,15 +373,16 @@ export function useChat() {
       updated_at: new Date().toISOString()
     }).eq('id', messageId).eq('user_id', user.id);
     if (error) {
-      toast({ title: 'Erro', description: 'Erro ao editar mensagem', variant: 'destructive' });
+      toast({ title: 'Erro', description: `Erro ao editar mensagem: ${error.message} (${error.code})`, variant: 'destructive' });
     }
   };
 
   const deleteMessage = async (messageId: string) => {
     if (!user) return;
-    const { error } = await supabase.from('messages').delete().eq('id', messageId).eq('user_id', user.id);
+    // @ts-ignore
+    const { error } = await supabase.from('messages').update({ deleted_at: new Date().toISOString() } as any).eq('id', messageId).eq('user_id', user.id);
     if (error) {
-      toast({ title: 'Erro', description: 'Erro ao excluir mensagem', variant: 'destructive' });
+      toast({ title: 'Erro', description: `Erro ao excluir mensagem: ${error.message} (${error.code})`, variant: 'destructive' });
     }
   };
   
@@ -353,9 +411,59 @@ export function useChat() {
     return newChannelId as string;
   };
   
+  const initDirectChat = (userId2: string, userProfile: any) => {
+    if (!user) return;
+    
+    // Check if it already exists locally
+    const existing = channels.find(c => c.type === 'direct' && c.channel_members?.some(m => m.user_id === userId2));
+    if (existing) {
+      setActiveChannelId(existing.id);
+      return;
+    }
+    
+    // Create lazy phantom channel for UI
+    const tempId = `temp_${userId2}`;
+    
+    if (channels.some(c => c.id === tempId)) {
+      setActiveChannelId(tempId);
+      return;
+    }
+    
+    const newTempChannel: any = {
+      id: tempId,
+      type: 'direct',
+      organization_id: null,
+      project_id: null,
+      name: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      unread_count: 0,
+      channel_members: [
+        { user_id: user.id, role: 'member', last_read_at: new Date().toISOString() },
+        { user_id: userId2, role: 'member', last_read_at: null, profiles: userProfile }
+      ]
+    };
+    
+    setChannels(prev => [newTempChannel, ...prev]);
+    setActiveChannelId(tempId);
+  };
+  
   const createTeamChannel = async (orgId: string, name: string = 'Equipe Geral') => {
     if (!user || !orgId) return null;
     
+    // Pre-flight check to block duplicate creation races
+    const { data: existing } = await supabase.from('channels')
+      .select('id')
+      .eq('organization_id', orgId)
+      .eq('type', 'team')
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      await fetchChannels();
+      setActiveChannelId(existing[0].id);
+      return existing[0].id;
+    }
+
     // Call the custom database function to securely create the team channel and sync all members
     const { data: newChannelId, error } = await supabase.rpc('create_team_channel' as any, {
       org_id: orgId,
@@ -373,6 +481,30 @@ export function useChat() {
     return newChannelId as string;
   };
 
+  const deleteChannel = async (channelId: string) => {
+    if (!user) return;
+    
+    if (channelId.startsWith('temp_')) {
+      setChannels(prev => prev.filter(c => c.id !== channelId));
+      if (activeChannelId === channelId) setActiveChannelId(null);
+      return;
+    }
+    
+    // @ts-ignore
+    const { error } = await supabase.from('channel_members')
+      .update({ hidden_at: new Date().toISOString() } as any)
+      .eq('channel_id', channelId)
+      .eq('user_id', user.id);
+      
+    if (error) {
+      console.error('Error hiding chat:', error);
+      toast({ title: 'Erro', description: `Erro ao esconder conversa: ${error.message} (${error.code})`, variant: 'destructive' });
+    } else {
+      setChannels(prev => prev.filter(c => c.id !== channelId));
+      if (activeChannelId === channelId) setActiveChannelId(null);
+    }
+  };
+
   return {
     channels,
     activeChannelId,
@@ -384,11 +516,13 @@ export function useChat() {
     sendMessage,
     editMessage,
     deleteMessage,
+    deleteChannel,
     addReaction,
     removeReaction,
     toggleReaction,
     createDirectChannel,
     createTeamChannel,
+    initDirectChat,
     refetchChannels: fetchChannels
   };
 }

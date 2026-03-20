@@ -21,10 +21,21 @@ export function useUnreadChat() {
     const sub = supabase.channel(`global_unread_chat_${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         if (payload.new.user_id !== user.id) {
-          setHasUnread(true);
+          setTimeout(() => {
+            checkUnread();
+          }, 800);
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'channel_members', filter: `user_id=eq.${user.id}` }, () => {
+        checkUnread();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'channel_members', filter: `user_id=eq.${user.id}` }, () => {
+        checkUnread();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'channels' }, () => {
+        checkUnread();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, () => {
         checkUnread();
       })
       .subscribe();
