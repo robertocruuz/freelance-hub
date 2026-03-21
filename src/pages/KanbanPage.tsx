@@ -14,7 +14,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2 } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, CheckSquare, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2 } from 'lucide-react';
 import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -194,7 +194,7 @@ const KanbanPage = () => {
           .order('updated_at', { ascending: false });
         
         if (tasksData && tasksData.length > 0) {
-          setSharedTasks(tasksData);
+          setSharedTasks(tasksData as any);
           
           const currentColIds = [...new Set(tasksData.map(t => t.column_id).filter(Boolean))] as string[];
           const ownerIds = [...new Set(tasksData.map(t => t.user_id))];
@@ -210,10 +210,10 @@ const KanbanPage = () => {
 
               const columnPromises: Promise<any>[] = [];
               if (boardIds.length > 0) {
-                columnPromises.push(supabase.from('kanban_columns').select('*').in('board_id', boardIds));
+                columnPromises.push(supabase.from('kanban_columns').select('*').in('board_id', boardIds).then(res => res));
               }
               if (ownerIdsWithNullBoard.length > 0) {
-                columnPromises.push(supabase.from('kanban_columns').select('*').in('user_id', ownerIdsWithNullBoard).is('board_id', null));
+                columnPromises.push(supabase.from('kanban_columns').select('*').in('user_id', ownerIdsWithNullBoard).is('board_id', null).then(res => res));
               }
 
               const results = await Promise.all(columnPromises);
@@ -777,6 +777,7 @@ const KanbanPage = () => {
       )}
 
       {activeBoardId && (<>
+
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap mb-3">
         <div className="relative flex-1 min-w-[140px] max-w-xs">
@@ -785,7 +786,7 @@ const KanbanPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar tarefas..."
-            className="pl-9 pr-8 h-9 text-sm glass-input"
+            className="pl-9 pr-8 h-9 text-sm bg-background border border-input shadow-sm"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
@@ -798,7 +799,7 @@ const KanbanPage = () => {
           variant={showFilters || activeFilterCount > 0 ? "default" : "outline"}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-9 gap-1.5 text-xs ${showFilters || activeFilterCount > 0 ? 'btn-glow' : 'glass-input'}`}
+          className={`h-9 gap-1.5 text-xs ${showFilters || activeFilterCount > 0 ? 'btn-glow' : 'bg-background border border-input shadow-sm'}`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           Filtros
@@ -894,7 +895,7 @@ const KanbanPage = () => {
           showFilters ? 'max-h-[600px] opacity-100 mb-4' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="glass-card rounded-2xl p-4">
+        <div className="bg-card border border-border/50 shadow-sm rounded-2xl p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-foreground">Filtros e ordenação</span>
@@ -1216,7 +1217,7 @@ const KanbanPage = () => {
                     onKeyDown={(e) => e.key === 'Enter' && handleAddColumn()}
                     placeholder="Nome da coluna..."
                     autoFocus
-                    className="text-sm glass-input"
+                    className="text-sm bg-background border border-input shadow-sm"
                   />
                   <div className="flex gap-1.5">
                     <Button size="sm" onClick={handleAddColumn} className="btn-glow text-xs h-7 flex-1">Criar</Button>
@@ -1249,7 +1250,7 @@ const KanbanPage = () => {
 
       {/* LIST VIEW */}
       {view === 'list' && (
-        <div className="glass-card rounded-2xl overflow-x-auto scrollbar-thin">
+        <div className="bg-card border border-border/50 shadow-sm rounded-2xl overflow-x-auto scrollbar-thin">
           <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-border">
@@ -1399,7 +1400,7 @@ const KanbanPage = () => {
             </div>
           ) : (
             <div className="flex-1 flex flex-col w-full">
-               <div className="glass-card rounded-2xl w-full m-0 shrink-0">
+               <div className="bg-card border border-border/50 shadow-sm rounded-2xl w-full m-0 shrink-0">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">
@@ -1631,7 +1632,7 @@ const KanbanPage = () => {
                 onChange={(e) => setBoardName(e.target.value)}
                 placeholder="Ex: Marketing, Projeto X..."
                 autoFocus
-                className="glass-input"
+                className="bg-background border border-input shadow-sm"
               />
             </div>
             <div className="space-y-2">
@@ -1646,7 +1647,7 @@ const KanbanPage = () => {
                 }
                 if (!clientId && !editingBoard) setBoardName('');
               }}>
-                <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectTrigger className="bg-background border border-input shadow-sm"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum (livre)</SelectItem>
                   {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -1667,7 +1668,7 @@ const KanbanPage = () => {
                     if (client) setBoardName(client.name);
                   }
                 }}>
-                  <SelectTrigger className="glass-input"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectTrigger className="bg-background border border-input shadow-sm"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhum</SelectItem>
                     {projects.filter(p => p.client_id === boardClientId).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
@@ -1759,3 +1760,4 @@ const KanbanPage = () => {
 };
 
 export default KanbanPage;
+

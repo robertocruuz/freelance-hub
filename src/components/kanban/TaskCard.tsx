@@ -9,6 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -129,128 +131,114 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         {...attributes}
         {...listeners}
         onClick={onClick}
-        className={`glass-card rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 group relative ${
-          isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60' : ''
-        } ${isOverdue ? 'border-l-4 border-l-destructive' : clientColor ? 'border-l-4' : ''}`}
+        className={`bg-card border border-border/50 shadow-sm rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative ${
+          isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60 opacity-80' : ''
+        } ${isOverdue ? 'border-l-[3px] border-l-destructive' : clientColor ? 'border-l-[3px]' : ''}`}
       >
-        {/* 3-dot menu */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                className="p-1 rounded-lg hover:bg-accent transition-colors"
-              >
-                <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fetchDeleteImpact();
-                }}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="w-4 h-4 mr-2" /> Excluir tarefa
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <Checkbox
+              checked={isCompleted}
+              onCheckedChange={(checked) => {
+                if (onToggleComplete) {
+                  onToggleComplete(task.id, !!checked);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="mt-0.5 shrink-0"
+            />
+            <h4 className={`text-sm font-semibold truncate flex-1 ${
+              isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'
+            }`}>
+              {task.title}
+            </h4>
+          </div>
+          <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted transition-all"
+                >
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchDeleteImpact();
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Excluir tarefa
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Labels row */}
-        {task.task_type && (
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-xs">{taskTypeConfig[task.task_type] || '📌'}</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {task.task_type}
-            </span>
+        {(task.task_type || isSharedByMe) && (
+          <div className="flex items-center gap-1.5 mt-1">
+            {task.task_type && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-muted/50 border-border/50 gap-1 text-muted-foreground">
+                <span className="text-xs mr-0.5">{taskTypeConfig[task.task_type] || '📌'}</span>
+                {task.task_type}
+              </Badge>
+            )}
+            {isSharedByMe && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 shrink-0">
+                    <Share2 className="w-2.5 h-2.5" />
+                    Compartilhada
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>Você compartilhou esta tarefa</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         )}
 
-        {/* Title with checkbox */}
-        <div className="flex items-start gap-2 mb-2">
-          <Checkbox
-            checked={isCompleted}
-            onCheckedChange={(checked) => {
-              if (onToggleComplete) {
-                onToggleComplete(task.id, !!checked);
-              }
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="mt-0.5 shrink-0"
-          />
-          <p className={`text-sm font-semibold leading-snug group-hover:text-primary transition-colors ${
-            isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'
-          }`}>
-            {task.title}
-          </p>
-        </div>
-
-        {/* Priority badge */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 h-5 ${priority.color} border-none`}>
-            {priority.label}
-          </Badge>
-          {task.complexity > 1 && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
-              {'⭐'.repeat(Math.min(task.complexity, 5))}
-            </Badge>
-          )}
-          {isSharedByMe && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-primary/30 gap-1">
-                  <Share2 className="w-2.5 h-2.5" />
-                  Compartilhada
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>Você compartilhou esta tarefa</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-
-        {/* Checklist progress */}
-        {checklistProgress && checklistProgress.total > 0 && (
-          <div className="flex items-center gap-2 mb-2">
-            <CheckSquare className="w-3.5 h-3.5 text-muted-foreground" />
-            <div className="flex-1 h-1.5 rounded-full bg-secondary">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${(checklistProgress.done / checklistProgress.total) * 100}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-muted-foreground font-medium">
-              {checklistProgress.done}/{checklistProgress.total}
+        {/* Bottom stats row matching LeadCard visual */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={cn('flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-sm', priority.color)}>
+              {priority.label}
+              {task.complexity > 1 && (
+                <span className="ml-0.5">{'⭐'.repeat(Math.min(task.complexity, 5))}</span>
+              )}
             </span>
-          </div>
-        )}
-
-        {/* Footer info */}
-        <div className="flex items-center justify-between mt-1">
-          <div className="flex items-center gap-2">
+            
             {task.due_date && (
-              <span className={`flex items-center gap-1 text-[10px] font-medium ${
-                isOverdue ? 'text-destructive' : isDueToday ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+              <span className={`flex items-center gap-1 text-xs ${
+                isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'
               }`}>
-                {isOverdue && <AlertTriangle className="w-3 h-3" />}
-                <Calendar className="w-3 h-3" />
-                {format(new Date(task.due_date), 'dd/MM')}
+                {isOverdue && <AlertTriangle className="w-3.5 h-3.5" />}
+                <Calendar className="w-3.5 h-3.5" />
+                {format(new Date(task.due_date), 'dd MMM', { locale: ptBR })}
               </span>
             )}
+            
+            {checklistProgress && checklistProgress.total > 0 && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CheckSquare className="w-3.5 h-3.5" />
+                {checklistProgress.done}/{checklistProgress.total}
+              </span>
+            )}
+            
             {task.estimated_time && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Clock className="w-3 h-3" />
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" />
                 {task.estimated_time}h
               </span>
             )}
           </div>
-
           <Tooltip>
             <TooltipTrigger asChild>
-              <Avatar className="w-6 h-6 hover:z-10 transition-transform hover:scale-110">
+              <Avatar className="w-6 h-6 hover:z-10 transition-transform hover:scale-110 ml-2">
                 {task.profile?.avatar_url && (
                   <AvatarImage src={task.profile.avatar_url} alt={task.profile?.name || 'Usuário'} className="object-cover" />
                 )}

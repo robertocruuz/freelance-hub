@@ -177,8 +177,8 @@ export const KanbanColumnComponent = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-72 flex flex-col rounded-2xl transition-all duration-200 snap-start ${
-        isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-card/50'
+      className={`flex-shrink-0 w-[300px] flex flex-col rounded-[1.25rem] transition-all duration-200 snap-start ${
+        isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-muted/40 border border-border/50'
       }`}
     >
       {/* Column Header */}
@@ -191,7 +191,7 @@ export const KanbanColumnComponent = ({
               onBlur={handleRename}
               onKeyDown={(e) => e.key === 'Enter' && handleRename()}
               autoFocus
-              className="h-7 text-xs font-bold glass-input"
+              className="h-7 text-xs font-bold bg-background border border-input shadow-sm"
             />
             <button
               onMouseDown={(e) => { e.preventDefault(); handleRename(); }}
@@ -224,7 +224,7 @@ export const KanbanColumnComponent = ({
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="glass border-none">
+          <DropdownMenuContent align="end" className="bg-popover border border-border shadow-md">
             <DropdownMenuItem onClick={() => { setEditName(column.name); setIsEditing(true); }}>
               <Pencil className="w-3.5 h-3.5 mr-2" /> Renomear
             </DropdownMenuItem>
@@ -255,7 +255,7 @@ export const KanbanColumnComponent = ({
                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                 placeholder="Título da tarefa..."
                 autoFocus
-                className="text-sm glass-input"
+                className="text-sm bg-background border border-input shadow-sm"
               />
               {newTitle.trim() && (
                 <Button size="sm" onClick={handleAdd} className="btn-glow text-xs h-7 w-full">
@@ -413,3 +413,4 @@ export const KanbanColumnComponent = ({
     </div>
   );
 };
+

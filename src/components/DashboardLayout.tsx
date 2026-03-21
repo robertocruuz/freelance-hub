@@ -18,18 +18,28 @@ import NotificationBell from '@/components/NotificationBell';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { key: 'home', icon: Home, path: '/dashboard' },
-  { key: 'leads', icon: Target, path: '/dashboard/leads' },
-  { key: 'clients', icon: Users, path: '/dashboard/clients' },
-  { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
-  { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
-  { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
-  { key: 'time', icon: Clock, path: '/dashboard/time' },
-  { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
-  { key: 'team', icon: UsersRound, path: '/dashboard/team' },
-  { key: 'chat', icon: MessageCircle, path: '/dashboard/chat' },
-] as const;
+const navGroups = [
+  {
+    group: 'MAIN',
+    items: [
+      { key: 'home', icon: Home, path: '/dashboard' },
+      { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
+      { key: 'kanban', icon: SquareKanban, path: '/dashboard/kanban' },
+      { key: 'time', icon: Clock, path: '/dashboard/time' },
+      { key: 'chat', icon: MessageCircle, path: '/dashboard/chat' },
+    ]
+  },
+  {
+    group: 'BUSINESS',
+    items: [
+      { key: 'leads', icon: Target, path: '/dashboard/leads' },
+      { key: 'clients', icon: Users, path: '/dashboard/clients' },
+      { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
+      { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
+      { key: 'team', icon: UsersRound, path: '/dashboard/team' },
+    ]
+  }
+];
 
 const labelMap: Record<string, (t: any) => string> = {
   home: () => 'Home',
@@ -146,7 +156,7 @@ interface SidebarNavProps {
   navigate: (path: string) => void;
   location: any;
   t: any;
-  filteredNavItems: any[];
+  filteredNavGroups: any[];
   user: any;
   userName: string;
   avatarUrl: string | null;
@@ -166,7 +176,7 @@ const SidebarNav = ({
   navigate, 
   location, 
   t, 
-  filteredNavItems,
+  filteredNavGroups,
   user,
   userName,
   avatarUrl,
@@ -199,54 +209,57 @@ const SidebarNav = ({
     </div>
 
     {/* Nav items */}
-    <nav className={cn('flex-1 px-3 pt-4 py-1 space-y-1 overflow-y-auto scrollbar-thin', collapsed && !isMobile && 'px-2')}>
-      {filteredNavItems.map((item) => {
-        const active = isActive(item.path);
-        const label = labelMap[item.key](t);
-        const isTeamSectionStart = item.key === 'team';
-
-        const btn = (
-          <button
-            onClick={() => {
-              navigate(item.path);
-              if (isMobile) setMobileOpen(false);
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
-              collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-              active
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
-                : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-            )}
-          >
-            <div className="relative shrink-0 flex items-center justify-center">
-              <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
-              {item.key === 'chat' && hasUnreadChat && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-card" />
-              )}
+    <nav className={cn('flex-1 px-3 pt-6 pb-2 space-y-6 overflow-y-auto scrollbar-thin minimal-scrollbar', collapsed && !isMobile && 'px-2 pt-4')}>
+      {filteredNavGroups.map((group, groupIdx) => (
+        <div key={group.group} className="flex flex-col gap-1">
+          {(!collapsed || isMobile) && (
+            <div className="px-3 mb-1 text-[10px] font-bold tracking-widest text-sidebar-foreground/40 uppercase">
+              {group.group}
             </div>
-            {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
-          </button>
-        );
+          )}
+          {group.items.map((item: any) => {
+            const active = isActive(item.path);
+            const label = labelMap[item.key](t);
 
-        if (collapsed && !isMobile) {
-          return (
-            <div key={item.key} className="flex flex-col gap-1">
-              {isTeamSectionStart && <div className="mt-2 mb-1 border-t border-sidebar-border/50" />}
-              <Tooltip>
-                <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
-              </Tooltip>
-            </div>
-          );
-        }
-        return (
-          <div key={item.key} className="flex flex-col gap-1">
-             {isTeamSectionStart && <div className="mt-2 mb-1 border-t border-sidebar-border/50 mx-2" />}
-             {btn}
-          </div>
-        );
-      })}
+            const btn = (
+              <button
+                onClick={() => {
+                  navigate(item.path);
+                  if (isMobile) setMobileOpen(false);
+                }}
+                className={cn(
+                  'w-full flex items-center gap-3 rounded-xl transition-all duration-150',
+                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
+                  active
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium'
+                )}
+              >
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
+                  {item.key === 'chat' && hasUnreadChat && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-card" />
+                  )}
+                </div>
+                {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
+              </button>
+            );
+
+            if (collapsed && !isMobile) {
+              return (
+                <Tooltip key={item.key}>
+                  <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+                </Tooltip>
+              );
+            }
+            return <div key={item.key}>{btn}</div>;
+          })}
+          {groupIdx < filteredNavGroups.length - 1 && collapsed && !isMobile && (
+            <div className="mt-3 mb-2 border-t border-sidebar-border/50 mx-2" />
+          )}
+        </div>
+      ))}
     </nav>
 
     {/* Timer */}
@@ -429,10 +442,13 @@ const DashboardLayout = () => {
     path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname === path;
 
   const isAdminUser = userOrgRole === 'admin' || userOrgRole === null; // null = no org, show all
-  const filteredNavItems = navItems.filter(item => {
-    if (item.key === 'finance' && !isAdminUser) return false;
-    return true;
-  });
+  const filteredNavGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      if (item.key === 'finance' && !isAdminUser) return false;
+      return true;
+    })
+  })).filter(group => group.items.length > 0);
 
   return (
     <div className="h-screen flex bg-background overflow-hidden">
@@ -449,7 +465,7 @@ const DashboardLayout = () => {
           navigate={navigate}
           location={location}
           t={t}
-          filteredNavItems={filteredNavItems}
+          filteredNavGroups={filteredNavGroups}
           user={user}
           userName={userName}
           avatarUrl={avatarUrl}
@@ -492,7 +508,7 @@ const DashboardLayout = () => {
               navigate={navigate}
               location={location}
               t={t}
-              filteredNavItems={filteredNavItems}
+              filteredNavGroups={filteredNavGroups}
               user={user}
               userName={userName}
               avatarUrl={avatarUrl}

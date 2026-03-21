@@ -414,10 +414,10 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className={`flex-shrink-0 w-72 flex flex-col max-h-full rounded-2xl transition-all duration-200 snap-start ${
+                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-[1.25rem] transition-all duration-200 snap-start ${
                       dragOverStageId === stage.id
                         ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner'
-                        : 'bg-card/50'
+                        : 'bg-muted/40 border border-border/50'
                     }`}
                     onDragOver={(e) => handleDragOver(e, stage.id)}
                     onDragLeave={handleDragLeave}
@@ -492,7 +492,7 @@ export default function LeadsPage() {
             </div>
           ) : (
             <div className="flex-1 overflow-auto">
-              <div className="glass-card rounded-2xl w-full m-0 shrink-0">
+              <div className="bg-card border border-border shadow-sm rounded-2xl w-full m-0 shrink-0 overflow-hidden">
                 <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="border-b border-border">

@@ -725,8 +725,8 @@ const TimeTrackingPage = () => {
     if (!pid) return 'hsl(var(--primary))';
     const idx = projects.findIndex(p => p.id === pid);
     const colors = [
-      'hsl(280 70% 60%)', 'hsl(200 80% 55%)', 'hsl(150 60% 45%)',
-      'hsl(35 90% 55%)', 'hsl(340 75% 55%)', 'hsl(180 60% 45%)',
+      'hsl(var(--primary))', 'hsl(142, 71%, 45%)', 'hsl(346, 87%, 60%)',
+      'hsl(43, 96%, 56%)', 'hsl(283, 39%, 53%)', 'hsl(199, 89%, 48%)',
     ];
     return colors[idx % colors.length];
   };
@@ -1513,7 +1513,15 @@ const TimeTrackingPage = () => {
 
         {/* Report View */}
         {viewMode === 'report' && (() => {
-          const CHART_COLORS = ['hsl(280, 70%, 60%)', 'hsl(200, 80%, 55%)', 'hsl(150, 60%, 45%)', 'hsl(35, 90%, 55%)', 'hsl(340, 75%, 55%)', 'hsl(180, 60%, 45%)', 'hsl(60, 70%, 50%)', 'hsl(310, 60%, 55%)'];
+          const CHART_COLORS = [
+            'hsl(var(--primary))', 
+            'hsl(142, 71%, 45%)', 
+            'hsl(346, 87%, 60%)',
+            'hsl(43, 96%, 56%)', 
+            'hsl(283, 39%, 53%)', 
+            'hsl(199, 89%, 48%)', 
+            'hsl(var(--muted-foreground))'
+          ];
 
           const reportUsers = Array.from(new Set(filteredEntries.map(e => e.user_id))).map(uid => ({
             id: uid,

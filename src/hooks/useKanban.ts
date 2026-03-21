@@ -45,6 +45,7 @@ export interface Task {
   estimated_time: number | null;
   created_at: string;
   updated_at: string;
+  profile?: { name: string | null; avatar_url: string | null } | null;
 }
 
 export interface TaskChecklist {
@@ -188,7 +189,7 @@ export const useKanban = (activeBoardId?: string | null) => {
       .from('tasks')
       .select('*, profile:profiles!fk_tasks_user_profile(name, avatar_url)')
       .order('position', { ascending: true });
-    if (data) setTasks(data);
+    if (data) setTasks(data as unknown as Task[]);
   }, [user]);
 
   const loadLabels = useCallback(async () => {
@@ -320,9 +321,9 @@ export const useKanban = (activeBoardId?: string | null) => {
         setTasks((prev) => {
           const exists = prev.some(t => t.id === data.id);
           if (exists) {
-            return prev.map(t => t.id === data.id ? data as Task : t);
+            return prev.map(t => t.id === data.id ? data as unknown as Task : t);
           } else {
-            return [...prev, data as Task];
+            return [...prev, data as unknown as Task];
           }
         });
       })

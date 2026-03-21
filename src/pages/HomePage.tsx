@@ -235,8 +235,8 @@ const HomePage = () => {
   const fmtTime = (min: number) => `${Math.floor(min / 60)}h ${(min % 60).toString().padStart(2, '0')}m`;
   const fmtCurrency = (v: number) => new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(v);
 
-  const cardBase = "group rounded-xl border border-border/50 bg-card text-left transition-all duration-300 ease-out hover:shadow-md hover:border-border/80 flex flex-col h-full overflow-hidden animate-fade-in opacity-0 fill-mode-forwards";
-  const cardHeader = "flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/10";
+  const cardBase = "group rounded-[1.25rem] border border-border bg-card text-left transition-all duration-300 ease-out shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] flex flex-col h-full overflow-hidden animate-fade-in opacity-0 fill-mode-forwards";
+  const cardHeader = "flex items-center justify-between pt-5 px-5 pb-2";
   const clickableItem = "cursor-pointer rounded-lg transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]";
 
   // Stagger animation delays for cards
@@ -283,7 +283,7 @@ const HomePage = () => {
               <span className="font-semibold text-sm text-foreground">{isPt ? 'Tarefas' : 'Tasks'}</span>
             </div>
           </div>
-          <div className="p-4 flex-1 flex flex-col justify-between">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col justify-between">
             <div className="mb-2">
               <span className="text-[11px] text-muted-foreground font-medium mb-1 block">{isPt ? 'Total de tarefas' : 'Total tasks'}</span>
               <span className="text-2xl font-bold tracking-tight text-foreground">{taskStats.total}</span>
@@ -402,7 +402,7 @@ const HomePage = () => {
                 <span className="font-semibold text-sm text-foreground">{isPt ? 'Financeiro' : 'Finance'}</span>
               </div>
             </div>
-            <div className="p-4 flex-1 flex flex-col justify-between">
+            <div className="px-5 pb-5 pt-2 flex-1 flex flex-col justify-between">
               <div>
                 <span className="text-[11px] text-muted-foreground font-medium mb-1 block">{isPt ? 'Saldo Atual' : 'Current Balance'}</span>
                 <div className={`text-3xl font-bold tracking-tight ${financeStats.balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
@@ -441,7 +441,7 @@ const HomePage = () => {
               <span className="font-semibold text-sm text-foreground">Leads</span>
             </div>
           </div>
-          <div className="p-4 flex-1 flex flex-col justify-between">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col justify-between">
             {leadStats.total > 0 ? (
               <>
                 <div>
@@ -485,7 +485,7 @@ const HomePage = () => {
               <span className="font-semibold text-sm text-foreground">{isPt ? 'Clientes' : 'Clients'}</span>
             </div>
           </div>
-          <div className="p-4 flex-1 flex flex-col">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col">
             <div className="mb-4">
               <span className="text-3xl font-bold tracking-tight text-foreground">{data.clients.length}</span>
               <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{isPt ? 'Clientes cadastrados' : 'Registered clients'}</p>
@@ -514,7 +514,7 @@ const HomePage = () => {
               <span className="font-semibold text-sm text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</span>
             </div>
            </div>
-           <div className="p-4 flex-1 flex flex-col justify-between">
+           <div className="px-5 pb-5 pt-2 flex-1 flex flex-col justify-between">
               <div>
                  <span className="text-3xl font-bold tracking-tight text-foreground">{budgetStats.total}</span>
                  <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{fmtCurrency(budgetStats.totalValue)} {isPt ? 'gerados' : 'generated'}</p>
@@ -547,7 +547,7 @@ const HomePage = () => {
               <span className="font-semibold text-sm text-foreground">{isPt ? 'Projetos' : 'Projects'}</span>
             </div>
           </div>
-          <div className="p-4 flex-1 flex flex-col">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col">
             <div className="mb-4">
               <span className="text-3xl font-bold tracking-tight text-foreground">{data.projects.length}</span>
               <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{isPt ? 'Projetos ativos' : 'Active projects'}</p>
@@ -616,7 +616,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-          <div className="p-4 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-muted/5">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col justify-between bg-gradient-to-b from-transparent to-muted/5">
              <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 rounded-lg border border-border/40 bg-card">
                    <span className="text-[10px] text-muted-foreground font-medium mb-1 block uppercase tracking-wide">{isPt ? 'Hoje' : 'Today'}</span>
@@ -645,7 +645,7 @@ const HomePage = () => {
              </div>
              <div className="px-2 py-0.5 rounded bg-muted/50 text-[10px] text-muted-foreground font-medium">{teamStats.total} {isPt ? 'membros' : 'members'}</div>
           </div>
-          <div className="p-4 flex-1 flex flex-col">
+          <div className="px-5 pb-5 pt-2 flex-1 flex flex-col">
              <div className="space-y-3">
                 {teamStats.members.slice(0, 5).map((m: any, i: number) => {
                    const profile = m.profile;

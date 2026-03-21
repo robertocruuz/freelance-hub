@@ -25,8 +25,13 @@ import {
 } from 'lucide-react';
 
 const PIE_COLORS = [
-  'hsl(225, 100%, 50%)', 'hsl(80, 85%, 45%)', 'hsl(0, 72%, 51%)',
-  'hsl(45, 93%, 47%)', 'hsl(280, 60%, 55%)', 'hsl(170, 60%, 45%)', 'hsl(220, 15%, 60%)',
+  'hsl(var(--primary))', 
+  'hsl(142, 71%, 45%)', 
+  'hsl(346, 87%, 60%)',
+  'hsl(43, 96%, 56%)', 
+  'hsl(283, 39%, 53%)', 
+  'hsl(199, 89%, 48%)', 
+  'hsl(var(--muted-foreground))',
 ];
 
 type PeriodFilter = 'year' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'S1' | 'S2' | 'custom';
@@ -523,8 +528,8 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} className="capitalize" />
                 <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={40} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Entradas" fill="hsl(225, 100%, 50%)" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="Saídas" fill="hsl(0, 72%, 51%)" radius={[6, 6, 0, 0]} maxBarSize={28} opacity={0.75} />
+                <Bar dataKey="Entradas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={28} opacity={0.9} />
+                <Bar dataKey="Saídas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} maxBarSize={28} opacity={0.4} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -571,15 +576,15 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
               <AreaChart data={cumulativeData}>
                 <defs>
                   <linearGradient id="overviewGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(225, 100%, 50%)" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="hsl(225, 100%, 50%)" stopOpacity={0} />
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={45} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="Acumulado" stroke="hsl(225, 100%, 50%)" fill="url(#overviewGrad)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(225, 100%, 50%)', strokeWidth: 2, stroke: 'hsl(var(--card))' }} />
+                <Area type="monotone" dataKey="Acumulado" stroke="hsl(var(--primary))" fill="url(#overviewGrad)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -597,9 +602,9 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} width={45} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Saldo" radius={[6, 6, 0, 0]} maxBarSize={28}>
+                <Bar dataKey="Saldo" radius={[4, 4, 0, 0]} maxBarSize={28}>
                   {monthlyData.map((entry, i) => (
-                    <Cell key={i} fill={entry.Saldo >= 0 ? 'hsl(142, 71%, 45%)' : 'hsl(0, 72%, 51%)'} />
+                    <Cell key={i} fill={entry.Saldo >= 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'} opacity={entry.Saldo >= 0 ? 0.9 : 0.4} />
                   ))}
                 </Bar>
               </BarChart>

@@ -31,7 +31,7 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
   return (
     <div
       onClick={() => onEdit(lead)}
-      className="glass-card rounded-xl p-3.5 cursor-pointer hover:shadow-lg transition-all duration-200 group relative"
+      className="bg-card border border-border/50 shadow-sm rounded-2xl p-4 cursor-pointer hover:shadow-md hover:border-border transition-all duration-200 group relative"
     >
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground truncate flex-1">{lead.title}</h4>
