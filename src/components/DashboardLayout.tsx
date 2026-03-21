@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 const navGroups = [
   {
-    group: 'MAIN',
+    group: '',
     items: [
       { key: 'home', icon: Home, path: '/dashboard' },
       { key: 'projects', icon: FolderKanban, path: '/dashboard/projects' },
@@ -30,7 +30,7 @@ const navGroups = [
     ]
   },
   {
-    group: 'BUSINESS',
+    group: 'Meu negócio',
     items: [
       { key: 'leads', icon: Target, path: '/dashboard/leads' },
       { key: 'clients', icon: Users, path: '/dashboard/clients' },
@@ -211,9 +211,9 @@ const SidebarNav = ({
     {/* Nav items */}
     <nav className={cn('flex-1 px-3 pt-6 pb-2 space-y-6 overflow-y-auto scrollbar-thin minimal-scrollbar', collapsed && !isMobile && 'px-2 pt-4')}>
       {filteredNavGroups.map((group, groupIdx) => (
-        <div key={group.group} className="flex flex-col gap-1">
-          {(!collapsed || isMobile) && (
-            <div className="px-3 mb-1 text-[10px] font-bold tracking-widest text-sidebar-foreground/40 uppercase">
+        <div key={group.group || groupIdx} className="flex flex-col gap-1">
+          {(!collapsed || isMobile) && group.group && (
+            <div className="px-3 mb-1 text-[10px] font-bold tracking-widest text-sidebar-foreground/40 uppercase whitespace-nowrap overflow-hidden text-ellipsis">
               {group.group}
             </div>
           )}
@@ -481,7 +481,7 @@ const DashboardLayout = () => {
         {/* Collapse toggle - subtle pill on border */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-[72px] w-6 h-6 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-30"
+          className="absolute -right-3 top-[64px] w-6 h-6 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-30"
           title={collapsed ? 'Expandir' : 'Recolher'}
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={cn('transition-transform duration-300', collapsed && 'rotate-180')}>
