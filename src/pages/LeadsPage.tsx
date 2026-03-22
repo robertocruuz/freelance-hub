@@ -311,7 +311,7 @@ export default function LeadsPage() {
         {/* Tabs and action buttons in one row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
-            <TabsList>
+            <TabsList className="bg-card border border-border/50 shadow-sm p-1 rounded-full">
               <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
                 <DollarSign className="w-3.5 h-3.5" />
                 Meus Leads
@@ -324,8 +324,8 @@ export default function LeadsPage() {
           </Tabs>
 
           <div className="flex items-center gap-2">
-            {user && <ShareButton resourceType="pipeline" resourceId={user.id} />}
-            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)}>
+            {user && <ShareButton resourceType="pipeline" resourceId={user.id} className="bg-card border-border/50 shadow-sm" />}
+            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)} className="bg-card border-border/50 shadow-sm">
               <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
             </Button>
             <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
@@ -373,7 +373,7 @@ export default function LeadsPage() {
                 placeholder="Buscar negócios..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="pl-9 pr-8 h-9"
+                className="pl-9 pr-8 h-9 bg-card border-border/50 shadow-sm"
               />
               {search && (
                 <button
@@ -387,7 +387,7 @@ export default function LeadsPage() {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setStageFilter(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!stageFilter ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!stageFilter ? 'bg-primary text-primary-foreground' : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80 shadow-sm'}`}
               >
                 Todas
               </button>
@@ -395,8 +395,8 @@ export default function LeadsPage() {
                 <button
                   key={s.id}
                   onClick={() => setStageFilter(s.id === stageFilter ? null : s.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${stageFilter === s.id ? 'text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                  style={stageFilter === s.id ? { backgroundColor: s.color } : undefined}
+                  className={`px-3 py-1.5 rounded-full border border-border/50 shadow-sm text-xs font-medium transition-colors ${stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'}`}
+                  style={stageFilter === s.id ? { backgroundColor: s.color, borderColor: s.color } : undefined}
                 >
                   {s.name}
                 </button>
@@ -414,11 +414,12 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-[1.25rem] transition-all duration-200 snap-start ${
+                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-[1.25rem] border border-border/50 transition-all duration-200 snap-start ${
                       dragOverStageId === stage.id
-                        ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner'
-                        : 'bg-muted/40 border border-border/50'
+                        ? 'ring-2 ring-primary/30 ring-inset shadow-inner'
+                        : ''
                     }`}
+                    style={{ backgroundColor: stage.color ? `${stage.color}15` : 'hsl(var(--muted)/0.4)' }}
                     onDragOver={(e) => handleDragOver(e, stage.id)}
                     onDragLeave={handleDragLeave}
                     onDrop={() => handleDrop(stage.id)}
@@ -426,8 +427,7 @@ export default function LeadsPage() {
                     {/* Stage header */}
                     <div className="flex items-center justify-between px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground hover:text-primary transition-colors flex-1 truncate">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground hover:opacity-80 transition-colors flex-1 truncate" style={{ color: stage.color }}>
                           {stage.name}
                         </h3>
                       </div>

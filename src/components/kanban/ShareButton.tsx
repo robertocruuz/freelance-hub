@@ -219,7 +219,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
             {shareCount > 0 && <span className="text-[10px]">{shareCount}</span>}
           </button>
         ) : (
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className={`gap-1.5 text-xs ${className || ''}`}>
             <Share2 className="w-3.5 h-3.5" />
             Compartilhar
             {shareCount > 0 && (
