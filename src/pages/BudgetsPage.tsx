@@ -203,7 +203,70 @@ const BudgetsPage = () => {
     if (editingId) {
       const { error } = await supabase.from('budgets').update(payload).eq('id', editingId);
       if (error) toast.error(error.message);
-      else { toast.success(t.save + '!'); resetForm(); loadBudgets(); }
+      else { 
+        toast.success(t.save + '!'); 
+        
+        // Sync the linked project if it exists
+        const cName = clients.find(c => c.id === payload.client_id)?.name;
+        const projectName = payload.name || cName || 'Projeto do Orçamento';
+
+        let projId = null;
+        const { data: projByBudget } = await supabase.from('projects').select('id').eq('budget_id', editingId).maybeSingle();
+        if (projByBudget) {
+          projId = projByBudget.id;
+        } else {
+          const query = supabase.from('projects').select('id').eq('name', projectName);
+          if (payload.client_id) query.eq('client_id', payload.client_id);
+          else query.is('client_id', null);
+          const { data: projByName } = await query.maybeSingle();
+          if (projByName) projId = projByName.id;
+        }
+
+        if (projId) {
+          await supabase.from('projects')
+            .update({ 
+              due_date: payload.delivery_date,
+              discount: payload.discount 
+            })
+            .eq('id', projId);
+
+          // Sincronizar Itens: detectar renomeações antes de deletar
+          const { data: oldItems } = await supabase.from('project_items')
+            .select('name')
+            .eq('project_id', projId)
+            .order('position');
+          
+          if (oldItems && oldItems.length > 0) {
+            // Compara itens pela posição com a nova lista e atualiza as Tasks
+            for (let i = 0; i < Math.min(oldItems.length, items.length); i++) {
+              const oldName = oldItems[i].name;
+              const newName = items[i].description;
+              
+              if (oldName !== newName && oldName.trim() !== '' && newName.trim() !== '') {
+                await supabase.from('tasks')
+                  .update({ title: newName })
+                  .eq('project_id', projId)
+                  .eq('title', oldName);
+              }
+            }
+          }
+
+          // Sincronizar itens: deletar antigos e recriar
+          await supabase.from('project_items').delete().eq('project_id', projId);
+          if (items.length > 0) {
+            const inserts = items.map((item, idx) => ({
+              project_id: projId,
+              name: item.description,
+              value: item.quantity * item.unitPrice,
+              position: idx,
+            }));
+            await supabase.from('project_items').insert(inserts);
+          }
+        }
+
+        resetForm(); 
+        loadBudgets(); 
+      }
     } else {
       const { error } = await supabase.from('budgets').insert({
         ...payload,
@@ -307,6 +370,7 @@ const BudgetsPage = () => {
       client_id: budget.client_id || null,
       due_date: budget.delivery_date || null,
       discount: budget.discount || 0,
+      budget_id: budget.id,
     }).select('id').single();
     if (error) return toast.error(error.message);
     if (data && budget.items.length > 0) {

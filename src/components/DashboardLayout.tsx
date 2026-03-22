@@ -451,7 +451,7 @@ const DashboardLayout = () => {
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
+    <div className="h-screen flex bg-[#f8f7f9] dark:bg-background overflow-hidden">
       {/* Desktop sidebar */}
       <aside
         className={cn(
@@ -545,7 +545,7 @@ const DashboardLayout = () => {
           <NotificationBell />
         </header>
 
-        <main className="flex-1 p-5 md:p-6 overflow-y-auto scrollbar-thin hero-gradient">
+        <main className="flex-1 p-5 md:p-6 overflow-y-auto scrollbar-thin">
           <Outlet />
         </main>
       </div>

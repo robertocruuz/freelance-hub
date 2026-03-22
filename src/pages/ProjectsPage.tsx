@@ -75,6 +75,19 @@ interface Budget {
   created_at: string;
 }
 
+export const getContrastYIQ = (hexcolor: string | null) => {
+  if (!hexcolor) return 'dark';
+  hexcolor = hexcolor.replace("#", "");
+  if (hexcolor.length === 3) {
+    hexcolor = hexcolor.split("").map(h => h + h).join("");
+  }
+  const r = parseInt(hexcolor.substr(0, 2), 16) || 0;
+  const g = parseInt(hexcolor.substr(2, 2), 16) || 0;
+  const b = parseInt(hexcolor.substr(4, 2), 16) || 0;
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? 'dark' : 'light';
+};
+
 const ProjectsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -504,7 +517,10 @@ const ProjectsPage = () => {
   };
 
   const clientName = (id: string | null) => clients.find(c => c.id === id)?.name || '-';
-  const clientColor = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
+  const clientColor = (id: string | null) => {
+    const client = clients.find(c => c.id === id) as unknown as { color?: string | null };
+    return client?.color || null;
+  };
 
   const getProjectTotal = (projectId: string) => {
     const items = projectItems[projectId] || [];
@@ -645,8 +661,10 @@ const ProjectsPage = () => {
       });
       
       navigate(`/dashboard/chat?channel=${newChannel.id}`);
-    } catch (e: any) {
-      toast.error('Erro ao iniciar chat do projeto: ' + e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error('Erro ao iniciar chat do projeto: ' + e.message);
+      }
     }
   };
 
@@ -822,428 +840,113 @@ const ProjectsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {(() => {
-            const grouped: Record<string, Project[]> = {};
-            filtered.forEach(p => {
-              const key = p.client_id || '__no_client__';
-              if (!grouped[key]) grouped[key] = [];
-              grouped[key].push(p);
-            });
-            const sortedKeys = Object.keys(grouped).sort((a, b) => {
-              if (a === '__no_client__') return 1;
-              if (b === '__no_client__') return -1;
-              return clientName(a).localeCompare(clientName(b));
-            });
-
-            return sortedKeys.map(key => {
-              const color = key !== '__no_client__' ? clientColor(key) : null;
-              return (
-                <div key={key} className="space-y-2.5">
-                  {/* Client group header */}
-                  <div className="flex items-center gap-2 px-1">
-                    {color && (
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                    )}
-                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {key === '__no_client__' ? 'Sem cliente' : clientName(key)}
-                    </h2>
-                    <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
-                      {grouped[key].length}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {grouped[key].map(p => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+          {filtered.map(p => {
                       const isExpanded = expandedIds.has(p.id);
                       const items = projectItems[p.id] || [];
                       const total = getProjectTotal(p.id);
+                      const finalTotal = total * (1 - (p.discount || 0) / 100);
                       const color = clientColor(p.client_id);
+                      
+                      const contrast = getContrastYIQ(color);
+                      const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+                      const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-700') : 'text-muted-foreground';
+                      const bColor = color ? (contrast === 'light' ? 'text-white/80 hover:text-white hover:bg-white/20' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:text-foreground';
+                      const badgeBg = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
+                      const badgeBgMuted = color ? (contrast === 'light' ? 'bg-white/10 text-white/90' : 'bg-slate-900/5 text-slate-800') : 'bg-muted text-muted-foreground';
+                      const iconBox = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'text-slate-600 bg-slate-900/5 group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'bg-muted/60 text-muted-foreground group-hover:bg-muted group-hover:text-foreground';
+                      const iconBoxActive = color ? (contrast === 'light' ? 'bg-white/30 text-white' : 'bg-slate-900/15 text-slate-900') : 'bg-primary/10 text-primary';
 
                       return (
                         <div
                           key={p.id}
                           className={cn(
-                            "rounded-xl border overflow-hidden transition-all duration-200",
-                            isExpanded ? "shadow-md" : "hover:shadow-sm"
+                            "rounded-2xl border flex flex-col overflow-hidden transition-all duration-300 relative",
+                            isExpanded ? "shadow-md ring-1 ring-primary/10" : "hover:shadow-md hover:-translate-y-0.5 hover:border-border/80"
                           )}
                           style={color
-                            ? { backgroundColor: `${color}08`, borderColor: `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
+                            ? { backgroundColor: color, borderColor: color }
                             : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
                           }
                         >
                           {/* Project header */}
                           <div
-                            className="flex items-center justify-between p-4 cursor-pointer group"
-                            onClick={() => toggleExpand(p.id)}
+                            className="flex flex-col p-5 cursor-pointer group gap-4 relative"
+                            onClick={() => navigate(`/dashboard/projects/${p.id}`)}
                           >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
-                              )}>
-                                {isExpanded ? (
-                                  <ChevronDown className="w-4 h-4 text-primary" />
-                                ) : (
-                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-foreground truncate">{p.name}</p>
-                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                  {p.due_date && (
-                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <CalendarIcon className="w-3 h-3" />
-                                      {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
-                                    </span>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                <div className="min-w-0 flex-1 pt-0.5">
+                                  {p.client_id && clientName(p.client_id) !== '-' && (
+                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5", mColor)}>
+                                      {clientName(p.client_id)}
+                                    </p>
                                   )}
-                                  {isExpanded && items.length > 0 && (
-                                    <>
-                                      <span className="text-xs text-muted-foreground">·</span>
-                                      <span className="text-xs font-medium text-foreground/80">
+                                  <p className={cn("font-bold text-base line-clamp-2 leading-tight pr-2", tColor)}>{p.name}</p>
+                                  {(items.length > 0 || total > 0) && (
+                                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                                      <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-md", badgeBg)}>
+                                        {formatCurrency(finalTotal)}
+                                      </span>
+                                      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md", badgeBgMuted)}>
                                         {items.length} {items.length === 1 ? 'item' : 'itens'}
                                       </span>
-                                      <span className="text-xs text-muted-foreground">·</span>
-                                      <span className="text-xs font-semibold text-primary">
-                                        {formatCurrency(total)}
-                                      </span>
-                                      {p.discount > 0 && (
-                                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent/20 text-accent-foreground font-medium">
-                                          -{p.discount}%
-                                        </span>
-                                      )}
-                                    </>
+                                    </div>
                                   )}
                                 </div>
                               </div>
+                              <div className="flex gap-1 shrink-0 -mt-1 -mr-2" onClick={e => e.stopPropagation()}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className={cn("w-8 h-8 rounded-lg", bColor)}
+                                  onClick={() => handleOpenChat(p)}
+                                  title="Chat do Projeto"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", bColor)}>
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEdit(p)}>
+                                      <Pencil className="w-4 h-4 mr-2" /> Editar projeto
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                                      <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
                             </div>
-                            <div className="flex gap-1 ml-2" onClick={e => e.stopPropagation()}>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-8 h-8 rounded-lg"
-                                onClick={() => handleOpenChat(p)}
-                                title="Chat do Projeto"
-                              >
-                                <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-8 h-8 rounded-lg"
-                                onClick={() => handleEdit(p)}
-                              >
-                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
-                                    <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                            
+                            <div className="flex items-center justify-between mt-1 pt-4 border-t border-black/10 dark:border-white/10">
+                              <div className={cn("flex items-center gap-2 text-xs", mColor)}>
+                                {p.due_date ? (
+                                  <>
+                                    <CalendarIcon className="w-3.5 h-3.5" />
+                                    <span className="font-medium">Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
+                                  </>
+                                ) : (
+                                  <span className="italic opacity-60">Sem prazo definido</span>
+                                )}
+                              </div>
+                              
+                              <div className={cn(
+                                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                isExpanded ? iconBoxActive : iconBox
+                              )}>
+                                <FolderKanban className="w-3.5 h-3.5" />
+                              </div>
                             </div>
                           </div>
 
-                          {/* Expanded content with tabs */}
-                          {isExpanded && (
-                            <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
-                              <Tabs defaultValue="items">
-                                <TabsList className="mb-3 h-9">
-                                  <TabsTrigger value="items" className="text-xs gap-1.5 rounded-lg">
-                                    <ListChecks className="w-3.5 h-3.5" /> Itens
-                                  </TabsTrigger>
-                                  <TabsTrigger value="files" className="text-xs gap-1.5 rounded-lg">
-                                    <Link2 className="w-3.5 h-3.5" /> Arquivos
-                                  </TabsTrigger>
-                                </TabsList>
-
-                                {/* ITEMS TAB */}
-                                <TabsContent value="items" className="space-y-2 mt-0">
-                                  {items.length === 0 && !showItemForm && (
-                                    <div className="text-center py-6">
-                                      <ListChecks className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
-                                      <p className="text-xs text-muted-foreground">Nenhum item neste projeto.</p>
-                                    </div>
-                                  )}
-                                  {items.map(item => {
-                                    const isItemExpanded = expandedItemId === item.id;
-                                    return (
-                                      <div key={item.id} className="rounded-lg border border-border bg-background/50 overflow-hidden transition-all">
-                                        <button
-                                          onClick={() => setExpandedItemId(isItemExpanded ? null : item.id)}
-                                          className="w-full flex items-center gap-2.5 p-3 text-left hover:bg-muted/50 transition-colors"
-                                        >
-                                          <div className="w-5 h-5 rounded flex items-center justify-center shrink-0">
-                                            {isItemExpanded ? (
-                                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                                            ) : (
-                                              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                                            )}
-                                          </div>
-                                          <ListChecks className="w-3.5 h-3.5 text-primary/60 shrink-0" />
-                                          <span className="text-sm font-medium text-foreground flex-1 truncate">{item.name}</span>
-                                          <span className="text-xs font-semibold text-muted-foreground tabular-nums mr-1">
-                                            {formatCurrency(item.value)}
-                                          </span>
-                                          <span
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              if (!isTaskCreated(item)) openBoardPicker(item);
-                                            }}
-                                            className={cn(
-                                              "flex items-center gap-1 px-2 py-1 rounded-md border shrink-0 text-[11px] font-medium transition-colors",
-                                              isTaskCreated(item)
-                                                ? 'bg-muted/50 border-border text-muted-foreground opacity-60 cursor-default'
-                                                : 'bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary cursor-pointer'
-                                            )}
-                                          >
-                                            <Sparkles className="w-3 h-3" />
-                                            {isTaskCreated(item) ? 'Criada' : 'Tarefa'}
-                                          </span>
-                                        </button>
-
-                                        {isItemExpanded && (
-                                          <div className="px-3 pb-3 pt-2 border-t border-border/50 space-y-3 animate-fade-in">
-                                            <div className="space-y-1">
-                                              <label className="text-xs font-medium text-muted-foreground">Nome</label>
-                                              {inlineEditItemId === item.id ? (
-                                                <div className="flex gap-2">
-                                                  <Input
-                                                    value={inlineEditName}
-                                                    onChange={e => setInlineEditName(e.target.value)}
-                                                    className="flex-1 h-8 text-sm rounded-lg"
-                                                    autoFocus
-                                                  />
-                                                  <Button
-                                                    size="sm"
-                                                    className="h-8 rounded-lg text-xs"
-                                                    onClick={async () => {
-                                                      if (!inlineEditName.trim()) return;
-                                                      await supabase.from('project_items').update({ name: inlineEditName.trim() }).eq('id', item.id);
-                                                      setInlineEditItemId(null);
-                                                      loadItems(item.project_id);
-                                                    }}
-                                                  >
-                                                    {t.save}
-                                                  </Button>
-                                                  <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-8 rounded-lg text-xs"
-                                                    onClick={() => setInlineEditItemId(null)}
-                                                  >
-                                                    {t.cancel}
-                                                  </Button>
-                                                </div>
-                                              ) : (
-                                                <button
-                                                  onClick={() => { setInlineEditItemId(item.id); setInlineEditName(item.name); }}
-                                                  className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors group"
-                                                >
-                                                  {item.name}
-                                                  <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </button>
-                                              )}
-                                            </div>
-                                            <div className="space-y-1">
-                                              <label className="text-xs font-medium text-muted-foreground">Valor</label>
-                                              <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
-                                            </div>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-7 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg text-xs"
-                                              onClick={() => handleDeleteItem(item)}
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" /> Excluir
-                                            </Button>
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-
-                                  {showItemForm === p.id ? (
-                                    <div className="flex gap-2 items-end pt-1">
-                                      <Input
-                                        placeholder="Nome do item"
-                                        value={itemName}
-                                        onChange={e => setItemName(e.target.value)}
-                                        className="flex-1 h-9 rounded-lg text-sm"
-                                      />
-                                      <Input
-                                        placeholder="Valor (R$)"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={itemValue}
-                                        onChange={e => setItemValue(e.target.value)}
-                                        className="w-28 h-9 rounded-lg text-sm"
-                                      />
-                                      <Button
-                                        size="sm"
-                                        className="h-9 rounded-lg text-xs"
-                                        onClick={() => handleSaveItem(p.id)}
-                                      >
-                                        {t.save}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-9 rounded-lg text-xs"
-                                        onClick={resetItemForm}
-                                      >
-                                        {t.cancel}
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-3 pt-1">
-                                      <button
-                                        onClick={() => { resetItemForm(); setShowItemForm(p.id); }}
-                                        className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
-                                      >
-                                        <Plus className="w-3.5 h-3.5" /> {t.addItem}
-                                      </button>
-                                      <button
-                                        onClick={() => openImportModal(p)}
-                                        className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
-                                      >
-                                        <FileText className="w-3.5 h-3.5" /> Importar do orçamento
-                                      </button>
-                                    </div>
-                                  )}
-                                </TabsContent>
-
-                                {/* FILES TAB */}
-                                <TabsContent value="files" className="space-y-2 mt-0">
-                                  {(() => {
-                                    const files = projectFiles[p.id] || [];
-                                    return (
-                                      <>
-                                        {files.length === 0 && showFileForm !== p.id && (
-                                          <div className="text-center py-6">
-                                            <Link2 className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1.5" />
-                                            <p className="text-xs text-muted-foreground">Nenhum arquivo cadastrado.</p>
-                                          </div>
-                                        )}
-                                        {files.map(file => (
-                                          <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background/50 group hover:bg-muted/30 transition-colors">
-                                            <div className={cn(
-                                              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                                              file.file_type === 'folder' ? "bg-amber-500/10" : "bg-primary/10"
-                                            )}>
-                                              {file.file_type === 'folder' ? (
-                                                <FolderOpen className="w-4 h-4 text-amber-500" />
-                                              ) : (
-                                                <FileText className="w-4 h-4 text-primary" />
-                                              )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                              <a
-                                                href={file.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-1"
-                                              >
-                                                {file.name}
-                                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                              </a>
-                                              {file.description && (
-                                                <p className="text-xs text-muted-foreground truncate">{file.description}</p>
-                                              )}
-                                            </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg" onClick={() => handleEditFile(file)}>
-                                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                                              </Button>
-                                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg hover:bg-destructive/10" onClick={() => handleDeleteFile(file)}>
-                                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        ))}
-
-                                        {showFileForm === p.id ? (
-                                          <div className="p-3 rounded-xl border border-border bg-muted/30 space-y-3 animate-fade-in">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                              <div className="space-y-1.5">
-                                                <label className="text-xs font-medium text-muted-foreground">Nome</label>
-                                                <Input
-                                                  placeholder="Ex: Briefing do projeto"
-                                                  value={fileName}
-                                                  onChange={e => setFileName(e.target.value)}
-                                                  className="rounded-lg h-9 text-sm"
-                                                  autoFocus
-                                                />
-                                              </div>
-                                              <div className="space-y-1.5">
-                                                <label className="text-xs font-medium text-muted-foreground">Tipo</label>
-                                                <select
-                                                  value={fileType}
-                                                  onChange={e => setFileType(e.target.value as 'file' | 'folder')}
-                                                  className="w-full h-9 px-3 rounded-lg bg-background border border-input text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                                >
-                                                  <option value="file">Arquivo</option>
-                                                  <option value="folder">Pasta</option>
-                                                </select>
-                                              </div>
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-xs font-medium text-muted-foreground">URL</label>
-                                              <Input
-                                                placeholder="https://drive.google.com/..."
-                                                value={fileUrl}
-                                                onChange={e => setFileUrl(e.target.value)}
-                                                className="rounded-lg h-9 text-sm"
-                                              />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                              <label className="text-xs font-medium text-muted-foreground">Descrição (opcional)</label>
-                                              <Input
-                                                placeholder="Breve descrição do arquivo"
-                                                value={fileDescription}
-                                                onChange={e => setFileDescription(e.target.value)}
-                                                className="rounded-lg h-9 text-sm"
-                                              />
-                                            </div>
-                                            <div className="flex gap-2 pt-0.5">
-                                              <Button size="sm" className="rounded-lg text-xs" onClick={() => handleSaveFile(p.id)}>
-                                                {t.save}
-                                              </Button>
-                                              <Button size="sm" variant="ghost" className="rounded-lg text-xs" onClick={resetFileForm}>
-                                                {t.cancel}
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        ) : (
-                                          <button
-                                            onClick={() => { resetFileForm(); setShowFileForm(p.id); }}
-                                            className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline pt-1"
-                                          >
-                                            <Plus className="w-3.5 h-3.5" /> Adicionar link
-                                          </button>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </TabsContent>
-                              </Tabs>
-                            </div>
-                          )}
                         </div>
                       );
-                    })}
-                  </div>
-                </div>
-              );
-            });
-          })()}
+            })}
         </div>
       )}
 

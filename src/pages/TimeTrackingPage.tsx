@@ -147,7 +147,7 @@ const TimeTrackingPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
   const timer = useTimer();
-  const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer } = timer;
+  const { running, startTime, elapsed, description, clientId, projectId, taskId, setDescription, setClientId, setProjectId, setTaskId, startTimer, stopTimer: globalStopTimer, lastSavedTime } = timer;
   const [searchParams, setSearchParams] = useSearchParams();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [profiles, setProfiles] = useState<ProfileInfo[]>([]);
@@ -440,16 +440,12 @@ const TimeTrackingPage = () => {
   }, [user, timeRange, selectedDate]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
-  // Reload entries when timer stops (from any source, including sidebar)
-  const prevRunningRef = useRef(running);
+  // Reload entries when the timer finishes saving to the DB
   useEffect(() => {
-    if (prevRunningRef.current && !running) {
-      // Timer just stopped — reload after short delay to let DB write complete
-      const timeout = setTimeout(() => loadEntries(), 500);
-      return () => clearTimeout(timeout);
+    if (lastSavedTime > 0) {
+      loadEntries();
     }
-    prevRunningRef.current = running;
-  }, [running, loadEntries]);
+  }, [lastSavedTime, loadEntries]);
   useEffect(() => { loadProjects(); }, [loadProjects]);
   useEffect(() => { loadKanbanTasks(); }, [loadKanbanTasks]);
   useEffect(() => { loadProfiles(); }, [loadProfiles]);

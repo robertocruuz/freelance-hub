@@ -781,6 +781,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          budget_id: string | null
           client_id: string | null
           contract_url: string | null
           created_at: string
@@ -792,6 +793,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          budget_id?: string | null
           client_id?: string | null
           contract_url?: string | null
           created_at?: string
@@ -803,6 +805,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          budget_id?: string | null
           client_id?: string | null
           contract_url?: string | null
           created_at?: string

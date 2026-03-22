@@ -17,6 +17,7 @@ interface TimerContextType {
   setTaskId: (v: string) => void;
   startTimer: () => void;
   stopTimer: (onSuccess?: () => void) => Promise<void>;
+  lastSavedTime: number;
 }
 
 const TimerContext = createContext<TimerContextType>({
@@ -33,6 +34,7 @@ const TimerContext = createContext<TimerContextType>({
   setTaskId: () => {},
   startTimer: () => {},
   stopTimer: async () => {},
+  lastSavedTime: 0,
 });
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -52,6 +54,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [clientId, setClientId] = useState(() => localStorage.getItem('timer_clientId') || '');
   const [projectId, setProjectId] = useState(() => localStorage.getItem('timer_projectId') || '');
   const [taskId, setTaskId] = useState(() => localStorage.getItem('timer_taskId') || '');
+  const [lastSavedTime, setLastSavedTime] = useState(0);
 
   // Persist to localStorage
   useEffect(() => {
@@ -123,6 +126,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setClientId('');
       setProjectId('');
       setTaskId('');
+      setLastSavedTime(Date.now());
       onSuccess?.();
     }
   }, [user, startTime, clientId, projectId, taskId, description]);
@@ -132,7 +136,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       running, startTime, elapsed,
       description, clientId, projectId, taskId,
       setDescription, setClientId, setProjectId, setTaskId,
-      startTimer, stopTimer,
+      startTimer, stopTimer, lastSavedTime,
     }}>
       {children}
     </TimerContext.Provider>

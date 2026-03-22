@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 220 14% 96%; /* Very light gray */
+    --background: 270 14% 97%; /* #f8f7f9 */
     --foreground: 225 50% 10%;
 
     --card: 0 0% 100%;
@@ -65,7 +65,7 @@
     --mesh-3: hsl(252 80% 60% / 0.03);
 
     --surface-elevated: 0 0% 100%;
-    --surface-overlay: 220 14% 96%;
+    --surface-overlay: 270 14% 97%;
   }
 
   .dark {

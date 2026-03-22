@@ -16,6 +16,7 @@ import BudgetsPage from "./pages/BudgetsPage";
 import TimeTrackingPage from "./pages/TimeTrackingPage";
 import ClientsPage from "./pages/ClientsPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDashboardPage from "./pages/ProjectDashboardPage";
 import HomePage from "./pages/HomePage";
 import KanbanPage from "./pages/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -49,6 +50,7 @@ const App = () => (
                   
                   <Route path="clients" element={<ClientsPage />} />
                   <Route path="projects" element={<ProjectsPage />} />
+                  <Route path="projects/:id" element={<ProjectDashboardPage />} />
                   <Route path="budgets" element={<BudgetsPage />} />
                   <Route path="time" element={<TimeTrackingPage />} />
                   <Route path="invoices" element={<Navigate to="/dashboard/finance" replace />} />

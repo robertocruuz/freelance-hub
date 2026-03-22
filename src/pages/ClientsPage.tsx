@@ -6,10 +6,12 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { HexColorPicker } from 'react-colorful';
 
 interface Client {
   id: string;
@@ -111,20 +113,70 @@ const ClientFormDialog = ({
           <Input placeholder="000.000.000-00" value={document} onChange={(e) => setDocument(maskDocument(e.target.value))} className="rounded-xl" />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Cor do cliente</label>
-          <div className="flex items-center gap-2 flex-wrap">
+          <label className="text-xs font-medium text-muted-foreground pb-1 block">Cor do cliente</label>
+          <div className="flex items-center gap-2 flex-wrap pb-1">
             {CLIENT_COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(color === c ? null : c)}
                 className={cn(
-                  "w-7 h-7 rounded-full border-2 transition-all",
+                  "w-7 h-7 rounded-full border-2 transition-all shrink-0",
                   color === c ? 'border-foreground scale-110 shadow-sm' : 'border-transparent hover:scale-105'
                 )}
                 style={{ backgroundColor: c }}
               />
             ))}
+            
+            <div className="w-[1px] h-4 bg-border/60 mx-1 shrink-0" />
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "w-7 h-7 rounded-full shrink-0 border-2 transition-all shadow-sm ring-1 ring-inset ring-black/10 dark:ring-white/10 hover:scale-105 overflow-hidden relative",
+                    color && !CLIENT_COLORS.includes(color.toUpperCase()) && !CLIENT_COLORS.includes(color)
+                      ? 'border-foreground scale-110' 
+                      : 'border-transparent'
+                  )}
+                  style={(color && !CLIENT_COLORS.includes(color.toUpperCase()) && !CLIENT_COLORS.includes(color)) ? { backgroundColor: color } : {}}
+                  title="Cor Personalizada"
+                >
+                  {(!color || CLIENT_COLORS.includes(color) || CLIENT_COLORS.includes(color.toUpperCase())) && (
+                    <div className="absolute inset-0 bg-[conic-gradient(from_90deg,red,yellow,lime,aqua,blue,magenta,red)]" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3" align="start">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold text-foreground">Cor Personalizada</span>
+                    <div className="flex items-center gap-1.5 bg-muted/60 rounded-md px-1.5 py-1 border border-border/50 focus-within:ring-1 focus-within:ring-ring focus-within:border-primary transition-all">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase select-none">Hex</span>
+                      <Input 
+                        value={color || ''} 
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (!val.startsWith('#') && val.length > 0) val = '#' + val;
+                          setColor(val);
+                        }}
+                        placeholder="#000000" 
+                        className="w-[60px] h-5 text-xs px-0 py-0 font-mono uppercase border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50" 
+                        maxLength={7}
+                      />
+                    </div>
+                  </div>
+                  <div className="relative w-full rounded-lg overflow-hidden shrink-0 shadow-sm custom-color-picker">
+                    <HexColorPicker 
+                      color={color || '#000000'} 
+                      onChange={setColor}
+                      style={{ width: '100%', height: '160px' }}
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         <div className="flex gap-2 pt-2">
@@ -190,16 +242,23 @@ const ClientsPage = () => {
   const handleSave = async () => {
     if (!user || !name.trim()) return;
     if (editing) {
-      const { error } = await supabase.from('clients').update({
+      const updatedData = {
         name: name.trim(),
         email: email || null,
         phone: phone || null,
         document: document || null,
         responsible: responsible || null,
         color: color || null,
-      } as any).eq('id', editing.id);
-      if (error) toast.error(error.message);
-      else toast.success(t.save + '!');
+      };
+      const { error } = await supabase.from('clients').update(updatedData as any).eq('id', editing.id);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success(t.save + '!');
+        if (selectedClient?.id === editing.id) {
+          setSelectedClient(prev => prev ? { ...prev, ...updatedData } : null);
+        }
+      }
     } else {
       const { error } = await supabase.from('clients').insert({
         user_id: user.id,
@@ -282,7 +341,7 @@ const ClientsPage = () => {
 
         {/* Client header card */}
         <div
-          className="p-5 rounded-2xl border overflow-hidden"
+          className="p-5 rounded-2xl border overflow-hidden group"
           style={selectedClient.color
             ? { backgroundColor: `${selectedClient.color}08`, borderColor: `${selectedClient.color}30`, borderLeftWidth: '4px', borderLeftColor: selectedClient.color }
             : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
@@ -322,7 +381,7 @@ const ClientsPage = () => {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl gap-1.5 font-semibold border-border" onClick={() => openEdit(selectedClient)}>
+            <Button variant="outline" size="sm" className="rounded-xl gap-1.5 font-semibold border-border opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openEdit(selectedClient)}>
               <Pencil className="w-3.5 h-3.5" /> Editar
             </Button>
           </div>
