@@ -414,7 +414,7 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-[1.25rem] border border-border/50 transition-all duration-200 snap-start ${
+                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-xl border border-border/50 transition-all duration-200 snap-start ${
                       dragOverStageId === stage.id
                         ? 'ring-2 ring-primary/30 ring-inset shadow-inner'
                         : ''
