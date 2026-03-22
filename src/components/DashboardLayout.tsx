@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, Clock, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet, Target, MessageCircle } from 'lucide-react';
+import { Home, FileText, Clock, Users, FolderKanban, SquareKanban, UsersRound, User, LogOut, Settings, Moon, Sun, Square, Menu, X, Bell, ChevronsUpDown, Globe, Wallet, Target, MessageCircle, Star } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -149,6 +149,15 @@ const TimerIndicator = ({ navigate, collapsed }: { navigate: (path: string) => v
   );
 };
 
+const getContrastYIQ = (hexcolor: string) => {
+  if (!hexcolor) return 'dark';
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? 'dark' : 'light';
+};
+
 interface SidebarNavProps {
   isMobile?: boolean;
   collapsed: boolean;
@@ -211,7 +220,7 @@ const SidebarNav = ({
     {/* Nav items */}
     <nav className={cn('flex-1 px-3 pt-6 pb-2 space-y-6 overflow-y-auto scrollbar-thin minimal-scrollbar', collapsed && !isMobile && 'px-2 pt-4')}>
       {filteredNavGroups.map((group, groupIdx) => (
-        <div key={group.group || groupIdx} className="flex flex-col gap-1">
+        <div key={group.group || groupIdx} className={cn("flex flex-col gap-1", group.group === 'Favoritos' && "pb-2")}>
           {(!collapsed || isMobile) && group.group && (
             <div className="px-3 mb-1 text-[10px] font-bold tracking-widest text-sidebar-foreground/40 uppercase whitespace-nowrap overflow-hidden text-ellipsis">
               {group.group}
@@ -219,7 +228,9 @@ const SidebarNav = ({
           )}
           {group.items.map((item: any) => {
             const active = isActive(item.path);
-            const label = labelMap[item.key](t);
+            const label = item.label || (labelMap[item.key] ? labelMap[item.key](t) : '');
+            const isFav = item.bgColor !== undefined;
+            const contrast = isFav && item.bgColor ? getContrastYIQ(item.bgColor) : null;
 
             const btn = (
               <button
@@ -230,10 +241,16 @@ const SidebarNav = ({
                 className={cn(
                   'w-full flex items-center gap-3 rounded-xl transition-all duration-150',
                   collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-                  active
+                  isFav ? (
+                    item.bgColor ? 'font-bold shadow-sm' : 'bg-sidebar-accent/50 text-sidebar-foreground border border-sidebar-border/50 font-medium'
+                  ) : active
                     ? 'bg-primary/10 text-primary font-bold'
                     : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium'
                 )}
+                style={isFav && item.bgColor ? { 
+                  backgroundColor: item.bgColor,
+                  color: contrast === 'light' ? '#ffffff' : '#0f172a'
+                } : {}}
               >
                 <div className="relative shrink-0 flex items-center justify-center">
                   <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
@@ -384,6 +401,7 @@ const DashboardLayout = () => {
   const [userName, setUserName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [userOrgRole, setUserOrgRole] = useState<string | null>(null);
+  const [favoriteProjects, setFavoriteProjects] = useState<any[]>([]);
   const hasUnreadChat = useUnreadChat();
 
   const fetchProfile = async () => {
@@ -397,9 +415,24 @@ const DashboardLayout = () => {
     }
   };
 
+  const fetchFavorites = async () => {
+    if (!user) return;
+    const { data } = await (supabase.from('projects') as any)
+        .select(`
+          id, 
+          name, 
+          clients ( color )
+        `)
+        .eq('is_favorite', true)
+        .eq('user_id', user.id)
+        .order('name');
+    if (data) setFavoriteProjects(data);
+  };
+
   useEffect(() => {
     if (!user) return;
     fetchProfile();
+    fetchFavorites();
 
     const fetchOrg = async () => {
       const { data: member } = await supabase.from('organization_members').select('organization_id, role').eq('user_id', user.id).eq('status', 'accepted').single();
@@ -417,9 +450,12 @@ const DashboardLayout = () => {
 
     // Listen for profile changes to update avatar in real-time
     const channel = supabase
-      .channel('sidebar-profile')
+      .channel('sidebar-events')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, () => {
         fetchProfile();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${user.id}` }, () => {
+        fetchFavorites();
       })
       .subscribe();
 
@@ -449,6 +485,19 @@ const DashboardLayout = () => {
       return true;
     })
   })).filter(group => group.items.length > 0);
+
+  if (favoriteProjects.length > 0) {
+    filteredNavGroups.splice(1, 0, {
+      group: 'Favoritos',
+      items: favoriteProjects.map((p: any) => ({
+        key: `fav-${p.id}`,
+        icon: FolderKanban,
+        path: `/dashboard/projects/${p.id}`,
+        label: p.name,
+        bgColor: p.clients?.color
+      }))
+    });
+  }
 
   return (
     <div className="h-screen flex bg-[#f8f7f9] dark:bg-background overflow-hidden">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle, Star } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -55,6 +55,7 @@ interface Project {
   due_date: string | null;
   discount: number;
   created_at: string;
+  is_favorite?: boolean;
 }
 
 interface BudgetItem {
@@ -85,7 +86,10 @@ export const getContrastYIQ = (hexcolor: string | null) => {
   const g = parseInt(hexcolor.substr(2, 2), 16) || 0;
   const b = parseInt(hexcolor.substr(4, 2), 16) || 0;
   const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-  return (yiq >= 128) ? 'dark' : 'light';
+  
+  // Aumentamos o threshold (padrão 128) para 160 para favorecer textos claros (brancos)
+  // em cores de tom médio vibrante como o laranja, mantendo o contraste visual moderno.
+  return (yiq >= 160) ? 'dark' : 'light';
 };
 
 const ProjectsPage = () => {
@@ -372,6 +376,25 @@ const ProjectsPage = () => {
     }
     resetForm();
     loadProjects();
+  };
+
+  const toggleFavorite = async (projectId: string, currentStatus: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { error } = await supabase
+        .from('projects')
+        // @ts-ignore - is_favorite is added via migration
+        .update({ is_favorite: !currentStatus })
+        .eq('id', projectId);
+        
+      if (error) throw error;
+      
+      setProjects(projects.map(p => p.id === projectId ? { ...p, is_favorite: !currentStatus } : p));
+      toast.success(!currentStatus ? 'Projeto favoritado!' : 'Removido dos favoritos');
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Erro ao favoritar projeto');
+    }
   };
 
   const handleEdit = (p: Project) => {
@@ -877,9 +900,13 @@ const ProjectsPage = () => {
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex items-start gap-3 flex-1 min-w-0">
                                 <div className="min-w-0 flex-1 pt-0.5">
-                                  {p.client_id && clientName(p.client_id) !== '-' && (
+                                  {p.client_id && clientName(p.client_id) !== '-' ? (
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5", mColor)}>
                                       {clientName(p.client_id)}
+                                    </p>
+                                  ) : (
+                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5 opacity-60", mColor)}>
+                                      Sem cliente
                                     </p>
                                   )}
                                   <p className={cn("font-bold text-base line-clamp-2 leading-tight pr-2", tColor)}>{p.name}</p>
@@ -900,10 +927,10 @@ const ProjectsPage = () => {
                                   variant="ghost"
                                   size="icon"
                                   className={cn("w-8 h-8 rounded-lg", bColor)}
-                                  onClick={() => handleOpenChat(p)}
-                                  title="Chat do Projeto"
+                                  onClick={(e) => toggleFavorite(p.id, p.is_favorite || false, e)}
+                                  title={p.is_favorite ? "Remover dos favoritos" : "Favoritar projeto"}
                                 >
-                                  <MessageCircle className="w-4 h-4" />
+                                  <Star className="w-4 h-4" fill={p.is_favorite ? "currentColor" : "none"} />
                                 </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import {
   ArrowLeft, Plus, Pencil, Trash2, FolderKanban,
   ListChecks, Link2, FileText, CalendarIcon,
-  Clock, Play, Square, MessageCircle, Bell, ExternalLink
+  Clock, Play, Square, MessageCircle, Bell, ExternalLink, Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { useClients } from '@/hooks/useClients';
 import { useTimer } from '@/hooks/useTimer';
 import { toast } from 'sonner';
 import { cn, formatCurrency } from '@/lib/utils';
+import { getContrastYIQ } from '@/pages/ProjectsPage';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -23,6 +24,28 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+
+const hexToHSL = (hex: string | null) => {
+  if (!hex) return null;
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(h => h + h).join('');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+};
 
 interface Project {
   id: string;
@@ -515,47 +538,63 @@ export default function ProjectDashboardPage() {
   }
 
   const cColor = clientColor(project.client_id);
+  const contrast = getContrastYIQ(cColor);
+  const cPrimaryHSL = hexToHSL(cColor);
+  
+  const tColor = cColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+  const mColor = cColor ? (contrast === 'light' ? 'text-white/80' : 'text-slate-700') : 'text-muted-foreground';
+  const bColor = cColor ? (contrast === 'light' ? 'text-white/80 hover:text-white hover:bg-white/20' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:text-foreground';
+  const badgeBg = cColor ? (contrast === 'light' ? 'bg-white/20 text-white border-white/20' : 'bg-slate-900/10 text-slate-900 border-slate-900/10') : 'bg-primary/10 text-primary border-primary/20';
+  const badgeBgMuted = cColor ? (contrast === 'light' ? 'bg-white/10 text-white/90 border-white/10' : 'bg-slate-900/5 text-slate-800 border-slate-900/5') : 'bg-muted/50 text-muted-foreground border-border/50';
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in pb-20">
+    <div 
+      className="max-w-6xl mx-auto space-y-6 animate-fade-in pb-20"
+      style={cPrimaryHSL ? { '--primary': cPrimaryHSL } as React.CSSProperties : undefined}
+    >
       {/* Header */}
-      <div className="flex items-start gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/projects')} className="mt-1 shrink-0">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1">
-            {project.client_id && clientName(project.client_id) !== '-' && (
-              <span 
-                className="text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md"
-                style={cColor ? { backgroundColor: `${cColor}20`, color: cColor } : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-              >
-                {clientName(project.client_id)}
-              </span>
-            )}
-            {project.due_date && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
-                <CalendarIcon className="w-3 h-3" />
-                {format(new Date(project.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
-              </span>
-            )}
-            {project.budget_id && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md cursor-help" title={`ID Completo: ${project.budget_id}`}>
-                <FileText className="w-3 h-3" />
-                Orçamento: {project.budget_id.substring(0, 8)}
-              </span>
-            )}
-          </div>
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{project.name}</h1>
-          <div className="flex items-center gap-3 mt-3">
-            <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-bold text-sm">
-              Total: {formatCurrency(finalTotal)}
+      <div 
+        className={cn(
+          "mb-8 rounded-2xl border overflow-hidden shadow-sm relative isolate transition-colors",
+          cColor ? "" : "bg-card border-border"
+        )}
+        style={cColor ? { backgroundColor: cColor, borderColor: cColor } : {}}
+      >
+        {/* Decorative Background Icon */}
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:flex items-center justify-center">
+          <FolderKanban className={cn("w-28 h-28 opacity-25", contrast === 'light' ? 'text-white' : 'text-slate-900')} />
+        </div>
+
+        <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-start gap-4 sm:gap-6 relative z-10">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/projects')} className={cn("shrink-0 rounded-full -ml-2 sm:ml-0", bColor)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {project.client_id && clientName(project.client_id) !== '-' && (
+                <span className={cn("text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md flex items-center gap-1.5 border", badgeBg)}>
+                  {cColor && <Briefcase className={cn("w-3 h-3", contrast === 'light' ? 'text-white' : 'text-slate-900')} />}
+                  {clientName(project.client_id)}
+                </span>
+              )}
+              {project.due_date && (
+                <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md shadow-sm border", badgeBgMuted)}>
+                  <CalendarIcon className="w-3.5 h-3.5" />
+                  {format(new Date(project.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                </span>
+              )}
+              {project.budget_id && (
+                <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md shadow-sm cursor-help border", badgeBgMuted)} title={`ID Completo: ${project.budget_id}`}>
+                  <FileText className="w-3.5 h-3.5" />
+                  Orçamento: {project.budget_id.substring(0, 8)}
+                </span>
+              )}
             </div>
-            {project.discount > 0 && (
-              <div className="text-xs text-muted-foreground line-through opacity-70">
-                {formatCurrency(totalValue)}
-              </div>
-            )}
+            
+            <h1 className={cn("text-3xl sm:text-4xl font-extrabold tracking-tight", tColor)}>
+              {project.name}
+            </h1>
           </div>
         </div>
       </div>
