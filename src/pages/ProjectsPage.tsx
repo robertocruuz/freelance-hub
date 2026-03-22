@@ -38,6 +38,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { HexColorPicker } from 'react-colorful';
+
+const PROJECT_COLORS = [
+  '#EF4444', '#F97316', '#F59E0B', '#84CC16', '#22C55E',
+  '#14B8A6', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6',
+  '#A855F7', '#EC4899', '#F43F5E', '#78716C',
+];
 
 interface ProjectItem {
   id: string;
@@ -56,6 +63,7 @@ interface Project {
   discount: number;
   created_at: string;
   is_favorite?: boolean;
+  color?: string | null;
 }
 
 interface BudgetItem {
@@ -104,6 +112,7 @@ const ProjectsPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [clientId, setClientId] = useState('');
+  const [color, setColor] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -276,6 +285,7 @@ const ProjectsPage = () => {
   const resetForm = () => {
     setName('');
     setClientId('');
+    setColor(null);
     setDueDate(undefined);
     setEditingId(null);
     setShowForm(false);
@@ -352,6 +362,7 @@ const ProjectsPage = () => {
       user_id: user.id,
       name: name.trim(),
       client_id: clientId || null,
+      color: !clientId ? (color || null) : null,
       due_date: dueDateStr,
       discount: projectDiscount,
     };
@@ -401,6 +412,7 @@ const ProjectsPage = () => {
     setEditingId(p.id);
     setName(p.name);
     setClientId(p.client_id || '');
+    setColor(p.color || null);
     setDueDate(p.due_date ? new Date(p.due_date + 'T12:00:00') : undefined);
     setProjectDiscount(p.discount || 0);
     setShowForm(true);
@@ -778,12 +790,82 @@ const ProjectsPage = () => {
             <label className="text-xs font-medium text-muted-foreground">Cliente</label>
             {editingId ? (
               <div className="h-10 px-3 rounded-xl bg-muted/50 border border-border text-sm text-muted-foreground flex items-center">
-                Cliente: <span className="font-medium text-foreground ml-1">{clientName(clientId || null)}</span>
+                Cliente: <span className="font-medium text-foreground ml-1">{clientName(clientId || null) || 'Sem cliente'}</span>
               </div>
             ) : (
               <ClientSelect value={clientId} onChange={setClientId} />
             )}
           </div>
+
+          {!clientId && (
+            <div className="space-y-1.5 animate-fade-in">
+              <label className="text-xs font-medium text-muted-foreground pb-1 block">Cor do projeto</label>
+              <div className="flex items-center gap-2 flex-wrap pb-1">
+                {PROJECT_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(color === c ? null : c)}
+                    className={cn(
+                      "w-7 h-7 rounded-full border-2 transition-all shrink-0",
+                      color === c ? 'border-foreground scale-110 shadow-sm' : 'border-transparent hover:scale-105'
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+                
+                <div className="w-[1px] h-4 bg-border/60 mx-1 shrink-0" />
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "w-7 h-7 rounded-full shrink-0 border-2 transition-all shadow-sm ring-1 ring-inset ring-black/10 dark:ring-white/10 hover:scale-105 overflow-hidden relative",
+                        color && !PROJECT_COLORS.includes(color.toUpperCase()) && !PROJECT_COLORS.includes(color)
+                          ? 'border-foreground scale-110' 
+                          : 'border-transparent'
+                      )}
+                      style={(color && !PROJECT_COLORS.includes(color.toUpperCase()) && !PROJECT_COLORS.includes(color)) ? { backgroundColor: color } : {}}
+                      title="Cor Personalizada"
+                    >
+                      {(!color || PROJECT_COLORS.includes(color) || PROJECT_COLORS.includes(color.toUpperCase())) && (
+                        <div className="absolute inset-0 bg-[conic-gradient(from_90deg,red,yellow,lime,aqua,blue,magenta,red)]" />
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="start">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold text-foreground">Cor Personalizada</span>
+                        <div className="flex items-center gap-1.5 bg-muted/60 rounded-md px-1.5 py-1 border border-border/50 focus-within:ring-1 focus-within:ring-ring focus-within:border-primary transition-all">
+                          <span className="text-[10px] text-muted-foreground font-bold uppercase select-none">Hex</span>
+                          <Input 
+                            value={color || ''} 
+                            onChange={(e) => {
+                              let val = e.target.value;
+                              if (!val.startsWith('#') && val.length > 0) val = '#' + val;
+                              setColor(val);
+                            }}
+                            placeholder="#000000" 
+                            className="w-[60px] h-5 text-xs px-0 py-0 font-mono uppercase border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50" 
+                            maxLength={7}
+                          />
+                        </div>
+                      </div>
+                      <div className="relative w-full rounded-lg overflow-hidden shrink-0 shadow-sm custom-color-picker">
+                        <HexColorPicker 
+                          color={color || '#000000'} 
+                          onChange={setColor}
+                          style={{ width: '100%', height: '160px' }}
+                        />
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
 
           {/* Due date picker */}
           <div className="space-y-1.5">
@@ -869,7 +951,7 @@ const ProjectsPage = () => {
                       const items = projectItems[p.id] || [];
                       const total = getProjectTotal(p.id);
                       const finalTotal = total * (1 - (p.discount || 0) / 100);
-                      const color = clientColor(p.client_id);
+                      const color = clientColor(p.client_id) || p.color;
                       
                       const contrast = getContrastYIQ(color);
                       const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';

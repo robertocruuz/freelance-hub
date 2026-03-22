@@ -54,6 +54,7 @@ interface Project {
   due_date: string | null;
   discount: number;
   budget_id: string | null;
+  color?: string | null;
 }
 
 interface ProjectItem {
@@ -536,8 +537,10 @@ export default function ProjectDashboardPage() {
   if (loading && !project) {
     return <div className="p-8 text-center text-muted-foreground animate-pulse">Carregando projeto...</div>;
   }
+  
+  if (!project) return null;
 
-  const cColor = clientColor(project.client_id);
+  const cColor = clientColor(project.client_id) || project.color;
   const contrast = getContrastYIQ(cColor);
   const cPrimaryHSL = hexToHSL(cColor);
   

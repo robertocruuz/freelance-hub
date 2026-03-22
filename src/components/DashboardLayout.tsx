@@ -421,6 +421,7 @@ const DashboardLayout = () => {
         .select(`
           id, 
           name, 
+          color,
           clients ( color )
         `)
         .eq('is_favorite', true)
@@ -494,7 +495,7 @@ const DashboardLayout = () => {
         icon: FolderKanban,
         path: `/dashboard/projects/${p.id}`,
         label: p.name,
-        bgColor: p.clients?.color
+        bgColor: p.clients?.color || p.color
       }))
     });
   }
