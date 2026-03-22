@@ -862,7 +862,17 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto animate-fade-in flex flex-col gap-3 p-3">
+    <div className="max-w-full mx-auto animate-fade-in flex flex-col gap-3">
+      {/* Page Header */}
+      <div className="flex flex-col gap-3 mb-1">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Cronômetro</h1>
+            <p className="text-sm text-muted-foreground">Gerencie seu tempo gasto em tarefas, projetos e clientes. Gere relatórios e exporte em pdf.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Header section */}
       <div className="rounded-xl border border-border bg-card shadow-sm flex-shrink-0 relative z-10">
         {/* Timer bar - Toggl style */}

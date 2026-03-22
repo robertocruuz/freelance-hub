@@ -122,7 +122,7 @@ export default function FinancePage() {
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Financeiro</h1>
+          <h1 className="text-xl font-bold text-foreground">Financeiro</h1>
         </div>
         <div className="flex items-center gap-3">
           {/* View mode toggle */}

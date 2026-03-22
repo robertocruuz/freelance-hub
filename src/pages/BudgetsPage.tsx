@@ -414,8 +414,8 @@ const BudgetsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.budgets}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">{t.budgets}</h1>
+          <p className="text-sm text-muted-foreground">
             {budgets.length} {budgets.length === 1 ? 'orçamento' : 'orçamentos'}
           </p>
         </div>

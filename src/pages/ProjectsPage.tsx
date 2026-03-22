@@ -713,8 +713,8 @@ const ProjectsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.projects}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">{t.projects}</h1>
+          <p className="text-sm text-muted-foreground">
             {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
           </p>
         </div>

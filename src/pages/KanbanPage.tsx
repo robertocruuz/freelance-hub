@@ -592,8 +592,8 @@ const KanbanPage = () => {
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">Tarefas</h1>
-            <p className="text-xs md:text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
+            <h1 className="text-xl font-bold text-foreground">Tarefas</h1>
+            <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
           </div>
 
         </div>

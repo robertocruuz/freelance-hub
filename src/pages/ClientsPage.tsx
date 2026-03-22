@@ -747,8 +747,8 @@ const ClientsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.clients}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">{t.clients}</h1>
+          <p className="text-sm text-muted-foreground">
             {clients.length} {clients.length === 1 ? 'cliente' : 'clientes'}
           </p>
         </div>

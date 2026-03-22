@@ -38,10 +38,10 @@ export default function ChatPage() {
     <div className="flex flex-col h-[calc(100vh-theme(spacing.28))] md:h-[calc(100vh-theme(spacing.12))]">
       <div className="flex items-center justify-between mb-4 shrink-0">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl font-bold text-foreground">
             {isPt ? 'Mensagens' : 'Messages'}
           </h1>
-          <p className="text-muted-foreground text-sm lg:text-base mt-1">
+          <p className="text-sm text-muted-foreground">
             {isPt ? 'Comunicação direta com equipe e clientes' : 'Direct communication with team and clients'}
           </p>
         </div>

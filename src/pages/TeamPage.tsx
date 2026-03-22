@@ -10,10 +10,10 @@ const TeamPage = () => {
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+        <h1 className="text-xl font-bold text-foreground">
           {isPt ? 'Equipe' : 'Team'}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground">
           {isPt ? 'Gerencie os membros da sua organização' : 'Manage your organization members'}
         </p>
       </div>
