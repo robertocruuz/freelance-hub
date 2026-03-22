@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn, getContrastYIQ } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -14,7 +14,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, CheckSquare, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2 } from 'lucide-react';
+import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, CheckSquare, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2, Briefcase } from 'lucide-react';
 import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
 import { KanbanColumnComponent } from '@/components/kanban/KanbanColumn';
@@ -208,7 +208,7 @@ const KanbanPage = () => {
               const boardIds = [...new Set(initialCols.map(c => c.board_id).filter(Boolean))] as string[];
               const ownerIdsWithNullBoard = [...new Set(initialCols.filter(c => !c.board_id).map(c => c.user_id))] as string[];
 
-              const columnPromises: Promise<any>[] = [];
+              const columnPromises: PromiseLike<any>[] = [];
               if (boardIds.length > 0) {
                 columnPromises.push(supabase.from('kanban_columns').select('*').in('board_id', boardIds).then(res => res));
               }
@@ -553,16 +553,24 @@ const KanbanPage = () => {
     }
   };
 
-  const getBoardSubtitle = (board: KanbanBoard) => {
+  const getBoardSubtitle = (board: KanbanBoard): React.ReactNode => {
     if (board.project_id) {
       const project = projects.find(p => p.id === board.project_id);
-      return project ? `📂 ${project.name}` : '';
+      return project ? (
+        <>
+          <FolderOpen className="w-3 h-3" /> {project.name}
+        </>
+      ) : null;
     }
     if (board.client_id) {
       const client = clients.find(c => c.id === board.client_id);
-      return client ? `👤 ${client.name}` : '';
+      return client ? (
+        <>
+          <User className="w-3 h-3" /> {client.name}
+        </>
+      ) : null;
     }
-    return '';
+    return null;
   };
 
   if (loading) {
@@ -587,7 +595,7 @@ const KanbanPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-fit mb-3">
+        <TabsList className="w-fit mb-3 bg-card shadow-sm border border-border">
           <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
             <Kanban className="w-3.5 h-3.5" />
             Meus Painéis
@@ -608,6 +616,11 @@ const KanbanPage = () => {
           const subtitle = getBoardSubtitle(board);
           const boardTasksForCount = (allTasks || []).filter((t: any) => (allColumns || []).some((c: any) => c.board_id === board.id && c.id === t.column_id));
           const taskCount = boardTasksForCount.length;
+          const color = getBoardColor(board);
+          const contrast = color ? getContrastYIQ(color) : 'dark';
+          const tColor = isActive && color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : (isActive ? 'text-primary' : 'text-foreground');
+          const mColor = isActive && color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : (isActive ? 'text-primary/70' : 'text-muted-foreground');
+          
           return (
             <button
               key={board.id}
@@ -618,28 +631,31 @@ const KanbanPage = () => {
                   : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
               }`}
               style={isActive ? {
-                borderColor: getBoardColor(board) || 'hsl(var(--primary))',
-                backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
-                '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+                borderColor: color || 'hsl(var(--primary))',
+                backgroundColor: color || 'hsl(var(--primary) / 0.05)',
+                '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
               } as React.CSSProperties : undefined}
             >
               {(() => {
-                const color = getBoardColor(board);
-                return color ? (
-                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                const topBarColor = getBoardColor(board);
+                return topBarColor && !isActive ? (
+                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: topBarColor }} />
                 ) : null;
               })()}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
-                    style={{
-                      backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
-                      color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                    style={isActive && color ? {
+                      backgroundColor: contrast === 'light' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                      color: contrast === 'light' ? '#fff' : '#0f172a'
+                    } : {
+                      backgroundColor: color || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                      color: color ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
                     }}
                   >
-                    <FolderKanban className="w-3.5 h-3.5" />
+                    <Briefcase className="w-3.5 h-3.5" />
                   </div>
-                  <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                  <span className={cn("text-sm font-semibold truncate", tColor)}>
                     {board.name}
                   </span>
                 </div>
@@ -652,7 +668,7 @@ const KanbanPage = () => {
                         onClick={(e) => e.stopPropagation()}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-muted cursor-pointer"
                       >
-                        <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+                        <MoreHorizontal className={cn("w-3.5 h-3.5", mColor)} />
                       </span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
@@ -667,10 +683,10 @@ const KanbanPage = () => {
                 )}
               </div>
               {subtitle && (
-                <span className="text-[11px] text-muted-foreground truncate pl-9">{subtitle}</span>
+                <span className={cn("text-[11px] truncate pl-9 flex items-center gap-1", mColor)}>{subtitle}</span>
               )}
               <div className="flex items-center gap-2 pl-9 mt-auto">
-                <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                <span className={cn("text-[11px] font-medium", mColor)}>
                   {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
                 </span>
               </div>
@@ -687,6 +703,11 @@ const KanbanPage = () => {
               const boardTasksForCount = (allTasks || []).filter((t: any) => (allColumns || []).some((c: any) => c.board_id === board.id && c.id === t.column_id));
               const taskCount = boardTasksForCount.length;
               const ownerName = sharedOwners[board.user_id]?.name || sharedOwners[board.user_id]?.email || '';
+              const color = getBoardColor(board);
+              const contrast = color ? getContrastYIQ(color) : 'dark';
+              const tColor = isActive && color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : (isActive ? 'text-primary' : 'text-foreground');
+              const mColor = isActive && color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : (isActive ? 'text-primary/70' : 'text-muted-foreground');
+              
               return (
                 <button
                   key={board.id}
@@ -697,37 +718,40 @@ const KanbanPage = () => {
                       : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
                   }`}
                   style={isActive ? {
-                    borderColor: getBoardColor(board) || 'hsl(var(--primary))',
-                    backgroundColor: getBoardColor(board) ? `${getBoardColor(board)}10` : 'hsl(var(--primary) / 0.05)',
-                    '--tw-ring-color': getBoardColor(board) ? `${getBoardColor(board)}33` : 'hsl(var(--primary) / 0.2)',
+                    borderColor: color || 'hsl(var(--primary))',
+                    backgroundColor: color || 'hsl(var(--primary) / 0.05)',
+                    '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
                   } as React.CSSProperties : undefined}
                 >
                   {(() => {
-                    const color = getBoardColor(board);
-                    return color ? (
-                      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: color }} />
+                    const topBarColor = getBoardColor(board);
+                    return topBarColor && !isActive ? (
+                      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ backgroundColor: topBarColor }} />
                     ) : null;
                   })()}
                   <div className="flex items-center gap-2 min-w-0">
                     <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0`}
-                      style={{
-                        backgroundColor: getBoardColor(board) || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
-                        color: getBoardColor(board) ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
+                      style={isActive && color ? {
+                        backgroundColor: contrast === 'light' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                        color: contrast === 'light' ? '#fff' : '#0f172a'
+                      } : {
+                        backgroundColor: color || (isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'),
+                        color: color ? '#fff' : (isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'),
                       }}
                     >
                       <Share2 className="w-3.5 h-3.5" />
                     </div>
-                    <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                    <span className={cn("text-sm font-semibold truncate", tColor)}>
                       {board.name}
                     </span>
                   </div>
                   {ownerName && (
-                    <span className="text-[11px] text-muted-foreground truncate pl-9 flex items-center gap-1">
+                    <span className={cn("text-[11px] truncate pl-9 flex items-center gap-1", mColor)}>
                       <User className="w-3 h-3" /> {ownerName}
                     </span>
                   )}
                   <div className="flex items-center gap-2 pl-9 mt-auto">
-                    <span className={`text-[11px] font-medium ${isActive ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                    <span className={cn("text-[11px] font-medium", mColor)}>
                       {taskCount} {taskCount === 1 ? 'tarefa' : 'tarefas'}
                     </span>
                   </div>
@@ -747,7 +771,7 @@ const KanbanPage = () => {
             setBoardColor(null);
             setShowBoardDialog(true);
           }}
-          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border px-4 py-3 w-[140px] h-[104px] text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all duration-200 shrink-0 cursor-pointer"
+          className="flex flex-col items-center justify-center gap-1.5 bg-card shadow-sm rounded-xl border-2 border-dashed border-border px-4 py-3 w-[140px] h-[104px] text-muted-foreground hover:border-primary/40 hover:text-primary transition-all duration-200 shrink-0 cursor-pointer"
         >
           <Plus className="w-5 h-5" />
           <span className="text-xs font-medium">Novo painel</span>
@@ -786,7 +810,7 @@ const KanbanPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar tarefas..."
-            className="pl-9 pr-8 h-9 text-sm bg-background border border-input shadow-sm"
+            className="pl-9 pr-8 h-9 text-sm bg-card border border-border shadow-sm"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
@@ -799,7 +823,7 @@ const KanbanPage = () => {
           variant={showFilters || activeFilterCount > 0 ? "default" : "outline"}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-9 gap-1.5 text-xs ${showFilters || activeFilterCount > 0 ? 'btn-glow' : 'bg-background border border-input shadow-sm'}`}
+          className={`h-9 gap-1.5 text-xs ${showFilters || activeFilterCount > 0 ? 'btn-glow' : 'bg-card border border-border shadow-sm'}`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           Filtros
@@ -1174,7 +1198,10 @@ const KanbanPage = () => {
         >
           <div className="flex gap-3 md:gap-4 overflow-x-auto overflow-y-auto pb-4 flex-1 scrollbar-thin scroll-smooth snap-x snap-mandatory md:snap-none items-start">
             <SortableContext items={columns.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
-              {columns.map((col) => (
+              {columns.map((col) => {
+                const boardForCol = boards.find(b => b.id === col.board_id) || boards.find(b => b.id === activeBoardId);
+                const colBoardColor = boardForCol ? getBoardColor(boardForCol) : undefined;
+                return (
                 <KanbanColumnComponent
                   key={col.id}
                   column={col}
@@ -1203,8 +1230,9 @@ const KanbanPage = () => {
                   onDeleteColumn={(id) => kanban.deleteColumn(id)}
                   clientColorMap={clientColorMap}
                   sharedByMeTaskIds={sharedByMeTaskIds}
+                  boardColor={colBoardColor}
                 />
-              ))}
+              )})}
             </SortableContext>
 
             {/* Add column */}

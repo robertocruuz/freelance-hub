@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { formatCurrency, cn } from '@/lib/utils';
-import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink, X, Search } from 'lucide-react';
+import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink, X, Search, Camera } from 'lucide-react';
+import ClientLogoUploadModal from '@/components/ClientLogoUploadModal';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +13,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { HexColorPicker } from 'react-colorful';
+import { getContrastYIQ } from '@/pages/ProjectsPage';
+
+const hexToHSL = (hex: string | null) => {
+  if (!hex) return null;
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(h => h + h).join('');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+};
 
 interface Client {
   id: string;
@@ -21,6 +45,7 @@ interface Client {
   document: string | null;
   responsible: string | null;
   color: string | null;
+  logo_url?: string | null;
   created_at: string;
 }
 
@@ -210,6 +235,7 @@ const ClientsPage = () => {
   const [details, setDetails] = useState<ClientDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [logoModalOpen, setLogoModalOpen] = useState(false);
 
   const loadClients = useCallback(async () => {
     if (!user) return;
@@ -330,8 +356,20 @@ const ClientsPage = () => {
     const totalInvoiced = details ? details.invoices.reduce((s, i) => s + i.total, 0) : 0;
     const totalBudgeted = details ? details.budgets.reduce((s, b) => s + b.total, 0) : 0;
 
+    const cColor = selectedClient.color;
+    const contrast = getContrastYIQ(cColor);
+    const cPrimaryHSL = hexToHSL(cColor);
+    
+    const tColor = cColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+    const mColor = cColor ? (contrast === 'light' ? 'text-white/80' : 'text-slate-700') : 'text-muted-foreground';
+    const bColor = cColor ? (contrast === 'light' ? 'border-white/20 text-white hover:bg-white/20' : 'border-slate-900/20 text-slate-900 hover:bg-slate-900/10') : 'border-border text-foreground hover:bg-muted';
+    const badgeBgMuted = cColor ? (contrast === 'light' ? 'bg-white/10 text-white/90 border-white/10' : 'bg-slate-900/5 text-slate-800 border-slate-900/5') : 'bg-muted/60 hover:bg-primary/10 hover:text-primary border-transparent';
+
     return (
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div 
+        className="max-w-4xl mx-auto space-y-6 animate-fade-in"
+        style={cPrimaryHSL ? { '--primary': cPrimaryHSL } as React.CSSProperties : undefined}
+      >
         <button
           onClick={() => { setSelectedClient(null); setDetails(null); }}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
@@ -341,49 +379,84 @@ const ClientsPage = () => {
 
         {/* Client header card */}
         <div
-          className="p-5 rounded-2xl border overflow-hidden group"
-          style={selectedClient.color
-            ? { backgroundColor: `${selectedClient.color}08`, borderColor: `${selectedClient.color}30`, borderLeftWidth: '4px', borderLeftColor: selectedClient.color }
-            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
-          }
+          className={cn(
+            "p-6 sm:p-8 rounded-2xl border overflow-hidden shadow-sm relative isolate transition-colors group",
+            cColor ? "" : "bg-card border-border"
+          )}
+          style={cColor ? { backgroundColor: cColor, borderColor: cColor } : {}}
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 relative z-10 w-full">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 w-full text-center sm:text-left">
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-lg"
-                style={{ backgroundColor: selectedClient.color || 'hsl(var(--muted-foreground))' }}
+                className={cn(
+                  "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 font-bold text-2xl shadow-sm border cursor-pointer group/avatar relative overflow-hidden",
+                  cColor ? "bg-white border-transparent" : "bg-muted text-muted-foreground border-border"
+                )}
+                style={cColor ? { color: cColor } : {}}
+                onClick={() => setLogoModalOpen(true)}
               >
-                {selectedClient.name.charAt(0).toUpperCase()}
+                {selectedClient.logo_url ? (
+                  <img src={selectedClient.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  selectedClient.name.charAt(0).toUpperCase()
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{selectedClient.name}</h1>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+
+              <ClientLogoUploadModal
+                open={logoModalOpen}
+                onOpenChange={setLogoModalOpen}
+                clientId={selectedClient.id}
+                currentUrl={selectedClient.logo_url || null}
+                initials={selectedClient.name.charAt(0).toUpperCase()}
+                onUploaded={(url) => {
+                  setSelectedClient(prev => prev ? { ...prev, logo_url: url } : null);
+                  setClients(prev => prev.map(c => c.id === selectedClient.id ? { ...c, logo_url: url } : c));
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <h1 className={cn("text-3xl sm:text-4xl font-extrabold tracking-tight", tColor)}>{selectedClient.name}</h1>
+                <div className={cn("flex items-center justify-center sm:justify-start gap-4 sm:gap-5 mt-4 text-xs flex-wrap", mColor)}>
                   {selectedClient.responsible && (
-                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
-                      <User className="w-3 h-3" />{selectedClient.responsible}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <User className="w-4 h-4" />{selectedClient.responsible}
                     </span>
                   )}
                   {selectedClient.email && (
-                    <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
-                      <Mail className="w-3 h-3" />{selectedClient.email}
+                    <a href={`mailto:${selectedClient.email}`} className="flex items-center gap-1.5 font-medium hover:underline transition-all">
+                      <Mail className="w-4 h-4" />{selectedClient.email}
                     </a>
                   )}
                   {selectedClient.phone && (
-                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
-                      <Phone className="w-3 h-3" />{maskPhone(selectedClient.phone)}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Phone className="w-4 h-4" />{maskPhone(selectedClient.phone)}
                     </span>
                   )}
                   {selectedClient.document && (
-                    <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
-                      <DocIcon className="w-3 h-3" />{maskDocument(selectedClient.document)}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <DocIcon className="w-4 h-4" />{maskDocument(selectedClient.document)}
                     </span>
                   )}
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl gap-1.5 font-semibold border-border opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openEdit(selectedClient)}>
-              <Pencil className="w-3.5 h-3.5" /> Editar
-            </Button>
+            
+            <div className="absolute top-0 right-0 sm:relative sm:top-auto sm:right-auto opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={cn(
+                  "rounded-xl gap-1.5 font-semibold transition-all shadow-sm",
+                  cColor ? "bg-white border-transparent hover:bg-white/90" : "bg-card border-border hover:bg-muted text-foreground"
+                )}
+                style={cColor ? { color: cColor } : {}}
+                onClick={() => openEdit(selectedClient)}
+              >
+                <Pencil className="w-3.5 h-3.5" /> Editar
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -713,60 +786,73 @@ const ClientsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Adicione um cliente para começar.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((c) => (
-            <div
-              key={c.id}
-              className={cn(
-                "rounded-xl border overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-sm group"
-              )}
-              style={c.color
-                ? { backgroundColor: `${c.color}08`, borderColor: `${c.color}30`, borderLeftWidth: '3px', borderLeftColor: c.color }
-                : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
-              }
-              onClick={() => openClient360(c)}
-            >
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  {c.color && (
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-sm"
-                      style={{ backgroundColor: c.color }}
-                    >
-                      {c.name.charAt(0).toUpperCase()}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((c) => {
+            const contrast = c.color ? getContrastYIQ(c.color) : 'dark';
+            const tColor = c.color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+            const mColor = c.color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
+            const btnColor = c.color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
+            const btnDestructive = btnColor;
+
+            return (
+              <div
+                key={c.id}
+                className={cn(
+                  "rounded-xl border overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-sm group box-border",
+                  !c.color && "bg-card border-border"
+                )}
+                style={c.color ? { backgroundColor: c.color, borderColor: c.color } : {}}
+                onClick={() => openClient360(c)}
+              >
+                <div className="flex flex-col p-4 h-full relative">
+                  <div className="flex items-start justify-between gap-3 min-w-0 mb-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {c.logo_url ? (
+                        <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden border border-transparent">
+                          <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-contain p-1" />
+                        </div>
+                      ) : (
+                        <div
+                          className={cn(
+                            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-lg shadow-sm border border-transparent",
+                            c.color ? "bg-white" : "bg-muted text-muted-foreground"
+                          )}
+                          style={c.color ? { color: c.color } : {}}
+                        >
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      
+                      <div className="min-w-0">
+                        <p className={cn("font-bold truncate text-base", tColor)}>{c.name}</p>
+                      </div>
                     </div>
-                  )}
-                  {!c.color && (
-                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-semibold text-foreground truncate">{c.name}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                      {c.responsible && (
-                        <span className="flex items-center gap-1"><User className="w-3 h-3" />{c.responsible}</span>
-                      )}
-                      {c.email && (
-                        <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{c.email}</span>
-                      )}
-                      {c.phone && (
-                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{maskPhone(c.phone)}</span>
-                      )}
+                    
+                    <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnColor)} onClick={() => openEdit(c)}>
+                        <Pencil className="w-3 h-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnDestructive)} onClick={() => deleteClient(c.id)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => openEdit(c)}>
-                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg hover:bg-destructive/10" onClick={() => deleteClient(c.id)}>
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                  </Button>
+                  
+                  <div className={cn("flex flex-col gap-1.5 text-[11px] mt-auto", mColor)}>
+                    {c.responsible && (
+                      <span className="flex items-center gap-1.5 font-medium truncate"><User className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{c.responsible}</span></span>
+                    )}
+                    {c.email && (
+                      <span className="flex items-center gap-1.5 font-medium truncate"><Mail className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{c.email}</span></span>
+                    )}
+                    {c.phone && (
+                      <span className="flex items-center gap-1.5 font-medium truncate"><Phone className="w-3.5 h-3.5 shrink-0" />{maskPhone(c.phone)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

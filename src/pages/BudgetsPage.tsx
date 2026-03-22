@@ -66,6 +66,15 @@ const statusColors: Record<string, string> = {
   rejected: 'bg-destructive/10 text-destructive',
 };
 
+const getContrastYIQ = (hexcolor: string) => {
+  if (!hexcolor) return 'dark';
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? 'dark' : 'light';
+};
+
 const BudgetsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -734,22 +743,21 @@ const BudgetsPage = () => {
               return (
                 <div key={key} className="space-y-2.5">
                   {/* Client group header */}
-                  <div className="flex items-center gap-2 px-1">
-                    {color && (
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                    )}
+                  <div className="flex items-center gap-2 px-1 mb-2">
                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                       {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
                     </h2>
-                    <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
-                      {grouped[key].length}
-                    </span>
                   </div>
 
                   <div className="space-y-2">
                     {grouped[key].map((b) => {
                       const isExpanded = expandedBudget === b.id;
                       const color = clientColorFn(b.client_id);
+                      const contrast = color ? getContrastYIQ(color) : 'dark';
+                      const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+                      const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
+                      const btnColor = color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
+                      const highlightColor = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
 
                       return (
                         <div
@@ -759,63 +767,67 @@ const BudgetsPage = () => {
                             isExpanded ? "shadow-md" : "hover:shadow-sm"
                           )}
                           style={color
-                            ? { backgroundColor: `${color}08`, borderColor: `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
+                            ? { backgroundColor: isExpanded ? 'hsl(var(--card))' : color, borderColor: color }
                             : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
                           }
                         >
                           {/* Budget header */}
                           <div
-                            className="flex items-center justify-between p-4 cursor-pointer group"
+                            className={cn(
+                              "flex items-center justify-between p-4 cursor-pointer group",
+                              isExpanded && color && "border-b border-white/20 dark:border-black/10"
+                            )}
+                            style={isExpanded && color ? { backgroundColor: color } : {}}
                             onClick={() => setExpandedBudget(isExpanded ? null : b.id)}
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className={cn(
                                 "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                isExpanded ? "bg-primary/10" : "bg-muted group-hover:bg-primary/5"
+                                isExpanded ? highlightColor : (color ? (contrast === 'light' ? 'bg-white/10 text-white' : 'bg-black/5 text-slate-900') : 'bg-muted group-hover:bg-primary/5 text-muted-foreground group-hover:text-primary')
                               )}>
                                 {isExpanded ? (
-                                  <ChevronDown className="w-4 h-4 text-primary" />
+                                  <ChevronDown className="w-4 h-4" />
                                 ) : (
-                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                  <ChevronRight className="w-4 h-4" />
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-foreground truncate">
+                                <p className={cn("font-semibold truncate", tColor)}>
                                   {b.name || b.client_name || 'Sem nome'}
                                 </p>
-                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <div className={cn("flex items-center gap-2 mt-0.5 flex-wrap", mColor)}>
                                   {b.client_name && b.name && (
-                                    <span className="text-xs text-muted-foreground">{b.client_name}</span>
+                                    <span className="text-xs">{b.client_name}</span>
                                   )}
-                                  {(b.client_name && b.name) && <span className="text-xs text-muted-foreground">·</span>}
-                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  {(b.client_name && b.name) && <span className="text-xs">·</span>}
+                                  <span className="text-xs flex items-center gap-1">
                                     <CalendarIcon className="w-3 h-3" />
                                     {b.budget_date ? format(new Date(b.budget_date + 'T12:00:00'), 'dd/MM/yyyy') : new Date(b.created_at).toLocaleDateString()}
                                   </span>
                                   {b.validity_date && (
                                     <>
-                                      <span className="text-xs text-muted-foreground">·</span>
-                                      <span className="text-xs text-muted-foreground">
+                                      <span className="text-xs">·</span>
+                                      <span className="text-xs">
                                         Val: {format(new Date(b.validity_date + 'T12:00:00'), 'dd/MM/yyyy')}
                                       </span>
                                     </>
                                   )}
-                                  <span className="text-xs text-muted-foreground">·</span>
-                                  <span className="text-xs font-medium text-foreground/80">
+                                  <span className="text-xs">·</span>
+                                  <span className={cn("text-xs font-medium", color ? mColor : "text-foreground/80")}>
                                     {b.items.length} {b.items.length === 1 ? 'item' : 'itens'}
                                   </span>
                                 </div>
                               </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
-                              <span className="font-semibold text-primary tabular-nums text-sm">
+                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : "text-primary")}>
                                 {formatCurrency(b.total)}
                               </span>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button className={cn(
                                     "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                                    statusColors[b.status]
+                                    color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : statusColors[b.status]
                                   )}>
                                     {statusLabel(b.status)}
                                     <ChevronDown className="w-3 h-3" />
@@ -834,19 +846,19 @@ const BudgetsPage = () => {
                                   ))}
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => startEditing(b)} title="Editar">
-                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
+                                <Download className="w-3.5 h-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
-                                <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => startEditing(b)} title="Editar">
+                                <Pencil className="w-3.5 h-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => createProjectFromBudget(b)} title="Criar projeto a partir do orçamento">
-                                <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
+                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => createProjectFromBudget(b)} title="Criar projeto a partir do orçamento">
+                                <FolderInput className="w-3.5 h-3.5" />
                               </Button>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
-                                    <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)}>
+                                    <MoreVertical className="w-3.5 h-3.5" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -880,12 +892,13 @@ const BudgetsPage = () => {
                               {(b.discount > 0 || b.notes) && (
                                 <div className="mt-3 space-y-1.5">
                                   {b.discount > 0 && (
-                                    <p className="text-xs text-muted-foreground flex items-center justify-between">
-                                      <span>Desconto: {b.discount}%</span>
-                                      <span className="text-destructive font-medium tabular-nums">
+                                    <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 items-center text-xs px-3">
+                                      <div className="col-span-2"></div>
+                                      <span className="text-right text-muted-foreground tabular-nums">Desconto {b.discount}%</span>
+                                      <span className="text-right text-destructive font-medium tabular-nums">
                                         - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)}
                                       </span>
-                                    </p>
+                                    </div>
                                   )}
                                   {b.notes && (
                                     <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">

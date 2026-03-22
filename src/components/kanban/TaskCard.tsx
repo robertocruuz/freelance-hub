@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, getContrastYIQ } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -120,20 +120,33 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
     return `${m}min`;
   };
 
+  const contrast = (!isOverdue && clientColor) ? getContrastYIQ(clientColor) : 'dark';
+  const tColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+  const mColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
+  const btnColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white hover:bg-white/20' : 'text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:bg-muted';
+  const cbClass = (!isOverdue && clientColor)
+    ? (contrast === 'light'
+       ? 'border-white/40 data-[state=checked]:bg-white data-[state=checked]:text-slate-900'
+       : 'border-slate-900/40 data-[state=checked]:bg-slate-900 data-[state=checked]:text-white')
+    : 'border-primary/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground';
+
   return (
     <>
       <div
         ref={setNodeRef}
         style={{
           ...style,
-          ...(!isOverdue && clientColor ? { borderLeftColor: clientColor, backgroundColor: `${clientColor}15` } : {}),
+          ...(!isOverdue && clientColor ? { backgroundColor: clientColor, borderColor: clientColor } : {}),
         }}
         {...attributes}
         {...listeners}
         onClick={onClick}
-        className={`bg-card border border-border/50 shadow-sm rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative ${
-          isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60 opacity-80' : ''
-        } ${isOverdue ? 'border-l-[3px] border-l-destructive' : clientColor ? 'border-l-[3px]' : ''}`}
+        className={cn(
+          "border border-border/50 shadow-sm rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative",
+          (!isOverdue && clientColor) ? "" : "bg-card",
+          isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60 opacity-80' : '',
+          isOverdue ? 'border-l-[3px] border-l-destructive' : ''
+        )}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -146,11 +159,9 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               }}
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="mt-0.5 shrink-0"
+              className={cn("mt-0.5 shrink-0 rounded-full", cbClass)}
             />
-            <h4 className={`text-sm font-semibold truncate flex-1 ${
-              isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'
-            }`}>
+            <h4 className={cn("text-sm font-semibold truncate flex-1", isCompleted ? "line-through opacity-60" : "", tColor)}>
               {task.title}
             </h4>
           </div>
@@ -159,9 +170,9 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               <DropdownMenuTrigger asChild>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted transition-all"
+                  className={cn("opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all", btnColor)}
                 >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                  <MoreVertical className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -213,9 +224,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             </span>
             
             {task.due_date && (
-              <span className={`flex items-center gap-1 text-xs ${
-                isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'
-              }`}>
+              <span className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-amber-600 dark:text-amber-400 font-medium' : mColor)}>
                 {isOverdue && <AlertTriangle className="w-3.5 h-3.5" />}
                 <Calendar className="w-3.5 h-3.5" />
                 {format(new Date(task.due_date), 'dd MMM', { locale: ptBR })}
@@ -223,14 +232,14 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             )}
             
             {checklistProgress && checklistProgress.total > 0 && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className={cn("flex items-center gap-1 text-xs", mColor)}>
                 <CheckSquare className="w-3.5 h-3.5" />
                 {checklistProgress.done}/{checklistProgress.total}
               </span>
             )}
             
             {task.estimated_time && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className={cn("flex items-center gap-1 text-xs", mColor)}>
                 <Clock className="w-3.5 h-3.5" />
                 {task.estimated_time}h
               </span>

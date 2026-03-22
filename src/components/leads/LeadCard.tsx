@@ -36,7 +36,7 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground truncate flex-1">{lead.title}</h4>
         <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
-          <ShareButton resourceType="lead" resourceId={lead.id} compact />
+          <ShareButton resourceType="lead" resourceId={lead.id} compact className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition p-1 rounded" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-muted transition-all">
@@ -91,7 +91,6 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
 
       <div className="mt-3 flex items-center gap-3 flex-wrap">
         <span className="flex items-center gap-1 text-xs font-semibold text-foreground">
-          <DollarSign className="w-3.5 h-3.5 text-primary" />
           {formatCurrency(lead.value)}
         </span>
         <span className={cn('flex items-center gap-1 text-xs font-medium', probColor)}>

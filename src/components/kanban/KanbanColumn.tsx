@@ -48,6 +48,7 @@ interface KanbanColumnProps {
   onDeleteColumn: (id: string) => void;
   clientColorMap?: Record<string, string>;
   sharedByMeTaskIds?: Set<string>;
+  boardColor?: string;
 }
 
 type AddMode = 'choice' | 'project' | 'project-items';
@@ -64,6 +65,7 @@ export const KanbanColumnComponent = ({
   onDeleteColumn,
   clientColorMap = {},
   sharedByMeTaskIds,
+  boardColor,
 }: KanbanColumnProps) => {
   const [addMode, setAddMode] = useState<AddMode | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -178,7 +180,7 @@ export const KanbanColumnComponent = ({
   return (
     <div
       className={`flex-shrink-0 w-[300px] flex flex-col rounded-[1.25rem] transition-all duration-200 snap-start ${
-        isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-muted/40 border border-border/50'
+        isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-card border border-border shadow-sm'
       }`}
     >
       {/* Column Header */}
@@ -209,9 +211,6 @@ export const KanbanColumnComponent = ({
             >
               {column.name}
             </h3>
-            <span className="text-[10px] font-semibold text-muted-foreground bg-secondary rounded-full w-5 h-5 flex items-center justify-center">
-              {tasks.length}
-            </span>
             {column.wip_limit && tasks.length >= column.wip_limit && (
               <span className="text-[10px] text-destructive font-semibold">WIP!</span>
             )}
@@ -238,9 +237,12 @@ export const KanbanColumnComponent = ({
       {/* Tasks */}
       <div ref={setNodeRef} className="flex-1 px-2 pb-2 space-y-2 min-h-[60px]">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} onToggleComplete={onToggleComplete} onDelete={onDeleteTask} clientColor={task.client_id ? clientColorMap[task.client_id] || null : null} isSharedByMe={sharedByMeTaskIds?.has(task.id)} />
-          ))}
+          {tasks.map((task) => {
+            const taskColor = (task.client_id && clientColorMap?.[task.client_id]) || boardColor || null;
+            return (
+              <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} onToggleComplete={onToggleComplete} onDelete={onDeleteTask} clientColor={taskColor} isSharedByMe={sharedByMeTaskIds?.has(task.id)} />
+            );
+          })}
         </SortableContext>
       </div>
 
@@ -356,7 +358,7 @@ export const KanbanColumnComponent = ({
         {addMode === null && (
           <button
             onClick={() => setAddMode('choice')}
-            className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition"
+            className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent hover:border-border hover:bg-secondary hover:text-foreground transition shadow-sm"
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar um cartão
           </button>

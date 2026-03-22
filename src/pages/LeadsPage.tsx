@@ -430,9 +430,6 @@ export default function LeadsPage() {
                         <h3 className="text-xs font-bold uppercase tracking-wider text-foreground hover:text-primary transition-colors flex-1 truncate">
                           {stage.name}
                         </h3>
-                        <span className="text-[10px] font-semibold text-muted-foreground bg-secondary rounded-full w-5 h-5 flex items-center justify-center shrink-0">
-                          {stageLeads.length}
-                        </span>
                       </div>
                       <p className="text-[10px] font-medium text-muted-foreground">{formatCurrency(stageValue)}</p>
                     </div>

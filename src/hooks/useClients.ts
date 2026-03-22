@@ -10,6 +10,7 @@ export interface Client {
   document: string | null;
   responsible: string | null;
   color: string | null;
+  logo_url?: string | null;
   created_at: string;
 }
 

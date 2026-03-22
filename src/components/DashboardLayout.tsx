@@ -244,7 +244,7 @@ const SidebarNav = ({
                   isFav ? (
                     item.bgColor ? 'font-bold shadow-sm' : 'bg-sidebar-accent/50 text-sidebar-foreground border border-sidebar-border/50 font-medium'
                   ) : active
-                    ? 'bg-primary/10 text-primary font-bold'
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-bold'
                     : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium'
                 )}
                 style={isFav && item.bgColor ? { 
