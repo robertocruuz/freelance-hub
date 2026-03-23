@@ -80,7 +80,7 @@ const SettingsPage = () => {
     <div className="max-w-2xl mx-auto pb-12">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t.settings}</h1>
+        <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.settings}</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {isPt ? 'Personalize sua experiência' : 'Customize your experience'}
         </p>

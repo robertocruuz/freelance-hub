@@ -240,7 +240,7 @@ const HomePage = () => {
       {/* 1. Dashboard Header Strip */}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/40">
         <div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-foreground leading-tight tracking-tight">
+          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">
             {isPt ? 'Olá, ' : 'Hello, '}
             <span className="text-primary">{firstName || (isPt ? 'Usuário' : 'User')}</span> 👋
           </h1>

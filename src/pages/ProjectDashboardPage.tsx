@@ -595,7 +595,7 @@ export default function ProjectDashboardPage() {
               )}
             </div>
             
-            <h1 className={cn("text-3xl sm:text-4xl font-extrabold tracking-tight", tColor)}>
+            <h1 className={cn("text-[2.3rem] font-extrabold tracking-tight leading-none", tColor)}>
               {project.name}
             </h1>
           </div>

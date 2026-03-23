@@ -867,7 +867,7 @@ const TimeTrackingPage = () => {
       <div className="flex flex-col gap-3 mb-1">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Cronômetro</h1>
+            <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Cronômetro</h1>
             <p className="text-sm text-muted-foreground">Gerencie seu tempo gasto em tarefas, projetos e clientes. Gere relatórios e exporte em pdf.</p>
           </div>
         </div>

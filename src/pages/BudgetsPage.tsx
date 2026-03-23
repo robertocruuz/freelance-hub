@@ -23,6 +23,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import {
   AlertDialog,
@@ -117,6 +124,7 @@ const BudgetsPage = () => {
 
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [filterClientId, setFilterClientId] = useState<string>('all');
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const discountValue = subtotal * (discount / 100);
@@ -403,52 +411,62 @@ const BudgetsPage = () => {
 
   const filteredBudgets = budgets.filter(b => {
     const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+    const matchClient = filterClientId === 'all' || b.client_id === filterClientId;
     const matchSearch = !search || 
       (b.name || '').toLowerCase().includes(search.toLowerCase()) ||
       (b.client_name || '').toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
+    return matchStatus && matchClient && matchSearch;
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="w-full max-w-[1800px] mx-auto space-y-6 animate-fade-in">
+      {/* Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">{t.budgets}</h1>
+          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.budgets}</h1>
           <p className="text-sm text-muted-foreground">
             {budgets.length} {budgets.length === 1 ? 'orçamento' : 'orçamentos'}
           </p>
         </div>
         {!isFormOpen && (
-          <Button
-            onClick={() => setCreating(true)}
-            className="gap-2 rounded-xl font-semibold shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> {t.newBudget}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Expandable Search w/ Default Label */}
+            <div className="relative group flex items-center h-10">
+              <Search className="absolute left-3 w-4 h-4 z-10 pointer-events-none transition-all duration-300 text-muted-foreground group-focus-within:text-primary" />
+              <Input
+                placeholder={t.search}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={cn(
+                  "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                  search 
+                    ? "w-[180px] sm:w-[250px]" 
+                    : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
+                )}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-2.5 p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors z-10"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            
+            <Button
+              onClick={() => setCreating(true)}
+              className="gap-2 rounded-full font-semibold shadow-sm shrink-0 h-10 px-4"
+            >
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newBudget}</span>
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Search & Filters */}
+      {/* Filters */}
       {!isFormOpen && (
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder={t.search}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-8 rounded-xl"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-1.5 flex-wrap">
             {['all', ...statuses].map(s => (
               <button
@@ -465,12 +483,26 @@ const BudgetsPage = () => {
               </button>
             ))}
           </div>
+
+          <div className="w-full sm:w-[220px]">
+            <Select value={filterClientId} onValueChange={setFilterClientId}>
+              <SelectTrigger className="h-9 px-3 text-xs rounded-xl font-medium border-border/50 bg-card/60 shadow-sm">
+                <SelectValue placeholder="Filtrar por cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs font-semibold">Todos os clientes</SelectItem>
+                {clients.map(c => (
+                  <SelectItem key={c.id} value={c.id} className="text-xs font-medium">{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       )}
 
       {/* Create/Edit Form */}
       {isFormOpen && (
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-5 shadow-sm animate-fade-in">
+        <div className="max-w-4xl rounded-2xl border border-border bg-card p-6 space-y-5 shadow-sm animate-fade-in mx-auto sm:mx-0">
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? 'Editar Orçamento' : t.newBudget}
           </h2>
@@ -726,41 +758,25 @@ const BudgetsPage = () => {
       ) : !isFormOpen ? (
         <div className="space-y-8">
           {(() => {
-            const grouped: Record<string, Budget[]> = {};
-            filteredBudgets.forEach(b => {
-              const key = b.client_id || '__no_client__';
-              if (!grouped[key]) grouped[key] = [];
-              grouped[key].push(b);
-            });
-            const sortedKeys = Object.keys(grouped).sort((a, b) => {
-              if (a === '__no_client__') return 1;
-              if (b === '__no_client__') return -1;
-              return clientNameFn(a).localeCompare(clientNameFn(b));
+            const sortedBudgets = [...filteredBudgets].sort((a, b) => {
+              const nameA = a.client_id ? clientNameFn(a.client_id) : 'Z';
+              const nameB = b.client_id ? clientNameFn(b.client_id) : 'Z';
+              return nameA.localeCompare(nameB);
             });
 
-            return sortedKeys.map(key => {
-              const color = key !== '__no_client__' ? clientColorFn(key) : null;
-              return (
-                <div key={key} className="space-y-2.5">
-                  {/* Client group header */}
-                  <div className="flex items-center gap-2 px-1 mb-2">
-                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
-                    </h2>
-                  </div>
+            return (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+                {sortedBudgets.map((b) => {
+                  const isExpanded = expandedBudget === b.id;
+                  const color = clientColorFn(b.client_id);
+                  const contrast = color ? getContrastYIQ(color) : 'dark';
+                  const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+                  const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
+                  const btnColor = color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
+                  const highlightColor = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
 
-                  <div className="space-y-2">
-                    {grouped[key].map((b) => {
-                      const isExpanded = expandedBudget === b.id;
-                      const color = clientColorFn(b.client_id);
-                      const contrast = color ? getContrastYIQ(color) : 'dark';
-                      const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-                      const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
-                      const btnColor = color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
-                      const highlightColor = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
-
-                      return (
-                        <div
+                  return (
+                    <div
                           key={b.id}
                           className={cn(
                             "rounded-xl border overflow-hidden transition-all duration-200",
@@ -812,10 +828,6 @@ const BudgetsPage = () => {
                                       </span>
                                     </>
                                   )}
-                                  <span className="text-xs">·</span>
-                                  <span className={cn("text-xs font-medium", color ? mColor : "text-foreground/80")}>
-                                    {b.items.length} {b.items.length === 1 ? 'item' : 'itens'}
-                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -849,9 +861,6 @@ const BudgetsPage = () => {
                               <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
                                 <Download className="w-3.5 h-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => startEditing(b)} title="Editar">
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
                               <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => createProjectFromBudget(b)} title="Criar projeto a partir do orçamento">
                                 <FolderInput className="w-3.5 h-3.5" />
                               </Button>
@@ -862,6 +871,9 @@ const BudgetsPage = () => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => startEditing(b)}>
+                                    <Pencil className="w-4 h-4 mr-2" /> Editar
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="text-destructive focus:text-destructive">
                                     <Trash2 className="w-4 h-4 mr-2" /> Excluir
                                   </DropdownMenuItem>
@@ -911,11 +923,9 @@ const BudgetsPage = () => {
                           )}
                         </div>
                       );
-                    })}
-                  </div>
-                </div>
-              );
-            });
+                })}
+              </div>
+            );
           })()}
         </div>
       ) : null}

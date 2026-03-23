@@ -12,7 +12,7 @@ import ExpensesTab from '@/components/finance/ExpensesTab';
 import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
-import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter } from 'lucide-react';
+import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter, CalendarIcon } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export interface FinanceInvoice {
@@ -118,81 +118,86 @@ export default function FinancePage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto relative z-10">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Financeiro</h1>
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
+      {/* Header Strip */}
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/40">
+        <div>
+          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">
+            Financeiro
+          </h1>
+          <p className="text-muted-foreground text-sm font-medium mt-2">
+            {viewMode === 'month' ? monthLabel : `Ano: ${selectedMonth.getFullYear()}`}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4 xl:gap-6">
           {/* View mode toggle */}
-          <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border">
+          <div className="flex items-center p-1 rounded-full bg-muted/50 border border-border/50 shadow-sm">
             <button
               onClick={() => setViewMode('overview')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
                 viewMode === 'overview'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-card text-foreground shadow-md'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
-              <LayoutDashboard className="w-3 h-3" />
+              <LayoutDashboard className="w-4 h-4" />
               Visão Geral
             </button>
             <button
               onClick={() => setViewMode('month')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+              className={`px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
                 viewMode === 'month'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-card text-foreground shadow-md'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >
-              Mensal
+              <CalendarIcon className="w-4 h-4" />
+              Visão Mensal
             </button>
           </div>
           {/* Date navigation */}
           {viewMode === 'month' && (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
+            <div className="flex items-center gap-1 p-1 rounded-full bg-muted/30 border border-border/50">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <button
                 onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium capitalize px-2 py-0.5 rounded-md transition-colors ${isCurrentMonth ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                className={`text-sm font-bold capitalize px-4 py-1.5 rounded-full transition-colors ${isCurrentMonth ? 'text-foreground hover:bg-muted/50' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
                 title={isCurrentMonth ? monthLabel : 'Voltar ao mês atual'}
               >
                 {monthLabel}
               </button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}
           {viewMode === 'overview' && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 p-1 rounded-full bg-muted/30 border border-border/50">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <button
                   onClick={() => setSelectedMonth(new Date())}
-                  className={`text-sm font-medium px-2 py-0.5 rounded-md transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                  className={`text-sm font-bold px-4 py-1.5 rounded-full transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground hover:bg-muted/50' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
                 >
                   {selectedMonth.getFullYear()}
                 </button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               <Button
                 variant={overviewFiltersOpen ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs gap-1.5 relative"
+                className="h-10 px-5 rounded-full text-xs font-bold gap-2 shadow-sm border-border/50 transition-all hover:bg-muted"
                 onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
-                <Filter className="w-3 h-3" />
+                <Filter className="w-4 h-4" />
                 Filtros
                 {overviewFilterCount > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold -mr-1">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black shadow-sm">
                     {overviewFilterCount}
                   </span>
                 )}
@@ -225,21 +230,21 @@ export default function FinancePage() {
           {/* Tabs */}
           <div ref={tabsRef}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full h-auto p-1 bg-muted/60 backdrop-blur-sm rounded-xl gap-1" aria-label="Seções financeiras">
+              <TabsList className="w-full h-auto p-1.5 bg-card/60 backdrop-blur-md border border-border/50 shadow-sm rounded-2xl gap-2" aria-label="Seções financeiras">
                 {tabItems.map(tab => (
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex-1 gap-1.5 py-2.5 rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all"
+                    className="flex-1 gap-2 py-3.5 rounded-xl text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all hover:bg-muted/50 data-[state=active]:hover:bg-primary"
                     aria-label={tab.label}
                   >
-                    <tab.icon className="w-3.5 h-3.5" aria-hidden="true" />
+                    <tab.icon className="w-4 h-4" aria-hidden="true" />
                     <span className="sm:hidden">{tab.shortLabel}</span>
                     <span className="hidden sm:inline">{tab.label}</span>
                   </TabsTrigger>
                 ))}
               </TabsList>
-              <TabsContent value="cashflow" className="mt-5"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
+              <TabsContent value="cashflow" className="mt-6"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
               <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
               <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
             </Tabs>

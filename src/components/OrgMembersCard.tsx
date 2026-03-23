@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization, OrgMember, OrgInvite } from '@/hooks/useOrganization';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -144,25 +143,25 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       );
     }
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-            <Users className="w-8 h-8 text-primary" />
+      <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col">
+        <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5 shadow-sm">
+            <Users className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="text-xl font-bold mb-2 text-foreground">
+          <h3 className="text-2xl font-extrabold mb-2 text-foreground">
             {isPt ? 'Você não possui uma equipe' : 'You do not have a team'}
           </h3>
-          <p className="text-sm text-muted-foreground max-w-sm mb-6">
+          <p className="text-sm font-medium text-muted-foreground max-w-sm mb-8">
             {isPt 
               ? 'Cadastre as informações da sua organização para poder convidar e gerenciar novos membros.' 
               : 'Register your organization info to invite and manage new members.'}
           </p>
-          <Button onClick={() => navigate('/dashboard/profile?openOrg=true')} className="gap-2">
-            <Building2 className="w-4 h-4" />
+          <Button onClick={() => navigate('/dashboard/profile?openOrg=true')} className="gap-2 h-11 px-6 rounded-full font-bold shadow-md">
+            <Building2 className="w-5 h-5" />
             {isPt ? 'Criar Equipe' : 'Create Team'}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -222,19 +221,19 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             return (
               <div
                 key={member.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-sm hover:bg-muted/40 transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:-translate-y-0.5"
               >
-                <Avatar className="w-9 h-9 shrink-0">
+                <Avatar className="w-12 h-12 shrink-0 border border-border/50 shadow-sm">
                   {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover" />}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-extrabold">
                     {getInitials(member.profile?.name, member.profile?.email)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
+                  <p className="text-base font-extrabold text-foreground truncate flex items-center gap-2">
                     {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
-                    {isOwner && <span className="text-xs text-primary ml-1.5">({isPt ? 'proprietário' : 'owner'})</span>}
-                    {isCurrentUser && !isOwner && <span className="text-xs text-muted-foreground ml-1.5">({isPt ? 'você' : 'you'})</span>}
+                    {isOwner && <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-primary/10 text-primary">proprietário</span>}
+                    {isCurrentUser && !isOwner && <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-muted text-muted-foreground">você</span>}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
                     {member.profile?.email || ''}
@@ -249,18 +248,18 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                   )}
                   {canManage ? (
                     <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
-                      <SelectTrigger className="h-7 text-xs w-auto gap-1 px-2">
-                        <RoleIcon className="w-3 h-3" />
+                      <SelectTrigger className="h-9 text-xs w-auto gap-1.5 px-3 rounded-full font-semibold border-border/50 bg-card/60 shadow-sm">
+                        <RoleIcon className="w-3.5 h-3.5" />
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="collaborator">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
+                        <SelectItem value="admin" className="font-semibold">Admin</SelectItem>
+                        <SelectItem value="collaborator" className="font-semibold">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant="outline" className={`text-[10px] gap-1 ${roleColors[member.role]}`}>
-                      <RoleIcon className="w-3 h-3" />
+                    <Badge variant="outline" className={`text-xs px-2.5 py-1 rounded-full border border-border/50 shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
+                      <RoleIcon className="w-3.5 h-3.5" />
                       {roleLabel(member.role)}
                     </Badge>
                   )}
@@ -322,27 +321,27 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                 <Mail className="w-3.5 h-3.5" />
                 {isPt ? 'Convites pendentes' : 'Pending invites'}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {invites.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-muted/20 border border-dashed border-border/50"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/20 border border-dashed border-border/60 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground truncate">
+                      <p className="text-sm font-bold text-foreground truncate">
                         {invite.email || (isPt ? 'Link de convite' : 'Invite link')}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">
                         {roleLabel(invite.role)} · {isPt ? 'Expira em' : 'Expires'} {new Date(invite.expires_at).toLocaleDateString()}
                       </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0"
+                      className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 shrink-0 transition-colors"
                       onClick={() => handleCancelInvite(invite.id)}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
@@ -377,25 +376,25 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5 text-primary" />
+    <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 pb-5 border-b border-border/40">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 shadow-sm">
+            <Users className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-lg">{isPt ? 'Equipe' : 'Team'}</CardTitle>
-            <CardDescription className="mt-0.5">
-              {isPt ? 'Gerencie os membros da sua organização' : 'Manage your organization members'}
-            </CardDescription>
+            <h3 className="text-xl font-extrabold text-foreground">{isPt ? 'Membros da Organização' : 'Organization Members'}</h3>
+            <p className="text-sm font-medium text-muted-foreground mt-0.5">
+              {isPt ? 'Gerencie os acessos de quem compõe o seu time' : 'Manage accesses for your team members'}
+            </p>
           </div>
         </div>
         {isAdmin && (
           <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 shrink-0">
-                <UserPlus className="w-3.5 h-3.5" />
-                {isPt ? 'Convidar' : 'Invite'}
+              <Button className="gap-2 h-10 px-5 rounded-full font-bold shadow-md shrink-0">
+                <UserPlus className="w-4 h-4" />
+                {isPt ? 'Convidar Membro' : 'Invite Member'}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -404,33 +403,32 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="space-y-1.5">
-                  <Label className="text-sm">{isPt ? 'Permissão' : 'Role'}</Label>
+                  <Label className="text-sm font-semibold">{isPt ? 'Permissão' : 'Role'}</Label>
                   <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin"><span className="flex items-center gap-2"><Crown className="w-3.5 h-3.5" /> Admin</span></SelectItem>
-                      <SelectItem value="collaborator"><span className="flex items-center gap-2"><Pencil className="w-3.5 h-3.5" /> {isPt ? 'Colaborador' : 'Collaborator'}</span></SelectItem>
+                      <SelectItem value="admin"><span className="flex items-center gap-2 font-semibold"><Crown className="w-4 h-4 text-amber-500" /> Admin</span></SelectItem>
+                      <SelectItem value="collaborator"><span className="flex items-center gap-2 font-semibold"><Pencil className="w-4 h-4 text-blue-500" /> {isPt ? 'Colaborador' : 'Collaborator'}</span></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />{isPt ? 'Convidar por e-mail' : 'Invite by email'}</Label>
+                  <Label className="text-sm font-semibold flex items-center gap-1.5"><Mail className="w-4 h-4 text-muted-foreground" />{isPt ? 'Convidar por e-mail' : 'Invite by email'}</Label>
                   <div className="flex gap-2">
-                    <Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@example.com" onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()} />
-                    <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} size="sm">{isPt ? 'Enviar' : 'Send'}</Button>
+                    <Input className="h-10 rounded-xl" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@example.com" onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()} />
+                    <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} className="h-10 px-5 rounded-xl font-bold">{isPt ? 'Enviar' : 'Send'}</Button>
                   </div>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
         )}
-      </CardHeader>
-      <Separator />
-      <CardContent className="pt-5 pb-6 space-y-4">
+      </div>
+      <div className="p-6 pt-5 space-y-4">
         {teamContent}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

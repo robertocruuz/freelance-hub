@@ -125,13 +125,13 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
 
   return (
     <>
-      <div className="space-y-3">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-          <Mail className="w-3.5 h-3.5" />
-          {isPt ? 'Convites recebidos' : 'Received invites'}
-        </p>
+      <div className="space-y-4">
+        <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+          <Mail className="w-5 h-5 text-primary" />
+          {isPt ? 'Convites Recebidos' : 'Received Invites'}
+        </h3>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {invites.map((invite) => {
             const RoleIcon = roleIcons[invite.role] || Eye;
             const isExpired = new Date(invite.expires_at) < new Date();
@@ -140,13 +140,13 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
             return (
               <div
                 key={invite.id}
-                className="flex items-center gap-3 p-4 rounded-xl border border-primary/20 bg-primary/[0.03]"
+                className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all shadow-sm hover:-translate-y-0.5"
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-primary" />
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-base font-extrabold text-foreground truncate">
                     {invite.org_name}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-0.5">
@@ -171,26 +171,24 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   {!isExpired && (
                     <Button
-                      size="sm"
                       onClick={() => handleAccept(invite)}
                       disabled={isLoading}
-                      className="gap-1.5 h-8"
+                      className="gap-2 h-10 px-5 rounded-full font-bold shadow-md"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-4 h-4" />
                       {isPt ? 'Aceitar' : 'Accept'}
                     </Button>
                   )}
                   <Button
                     variant="ghost"
-                    size="sm"
                     onClick={() => handleDecline(invite)}
                     disabled={isLoading}
-                    className="gap-1.5 h-8 text-muted-foreground hover:text-destructive"
+                    className="gap-2 h-10 px-4 rounded-full font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                     {isPt ? 'Recusar' : 'Decline'}
                   </Button>
                 </div>

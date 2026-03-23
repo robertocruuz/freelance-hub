@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -168,75 +167,71 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5">
-        <Card className="overflow-hidden">
-          <CardContent className="p-4">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              locale={ptBR}
-              className="p-3 pointer-events-auto"
-              modifiers={{
-                receivable: receivableDates,
-                payable: payableDates,
-                mixed: mixedDates,
-              }}
-              modifiersClassNames={{
-                receivable: 'finance-dot finance-dot--receivable',
-                payable: 'finance-dot finance-dot--payable',
-                mixed: 'finance-dot finance-dot--mixed',
-              }}
-            />
-            <div className="flex items-center gap-4 mt-3 px-1 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                A receber
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                A pagar
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-destructive" />
-                Ambos
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6">
+        <div className="overflow-hidden bg-card/40 border border-border/50 shadow-sm rounded-2xl p-5 hover:bg-card/60 transition-colors">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            locale={ptBR}
+            className="p-1 pointer-events-auto"
+            modifiers={{
+              receivable: receivableDates,
+              payable: payableDates,
+              mixed: mixedDates,
+            }}
+            modifiersClassNames={{
+              receivable: 'finance-dot finance-dot--receivable',
+              payable: 'finance-dot finance-dot--payable',
+              mixed: 'finance-dot finance-dot--mixed',
+            }}
+          />
+          <div className="flex items-center gap-4 mt-4 px-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-full justify-center">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              A receber
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+              A pagar
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-destructive" />
+              Ambos
+            </span>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-bold">
-                {selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                {hasEvents && (
-                  <div className="flex items-center gap-3 text-xs">
-                    {totalReceivables > 0 && (
-                      <span className="text-primary font-semibold">+{formatCurrency(totalReceivables)}</span>
-                    )}
-                    {totalPayables > 0 && (
-                      <span className="text-destructive font-semibold">-{formatCurrency(totalPayables)}</span>
-                    )}
-                  </div>
-                )}
-                {selectedDate && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"
-                    onClick={() => setChooserOpen(true)}
-                    title="Adicionar evento"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
+        <div className="overflow-hidden bg-card/40 border border-border/50 shadow-sm rounded-2xl flex flex-col">
+          <div className="flex items-center justify-between p-6 pb-4 border-b border-border/40">
+            <h3 className="text-base font-extrabold text-foreground">
+              {selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}
+            </h3>
+            <div className="flex items-center gap-3">
+              {hasEvents && (
+                <div className="flex items-center gap-3 text-xs bg-background/50 backdrop-blur-md border border-border/50 px-3 py-1.5 rounded-full">
+                  {totalReceivables > 0 && (
+                    <span className="text-primary font-bold">+{formatCurrency(totalReceivables)}</span>
+                  )}
+                  {totalPayables > 0 && (
+                    <span className="text-destructive font-bold">-{formatCurrency(totalPayables)}</span>
+                  )}
+                </div>
+              )}
+              {selectedDate && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-primary/5 text-primary hover:bg-primary/20 transition-all border border-primary/20"
+                  onClick={() => setChooserOpen(true)}
+                  title="Adicionar evento"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-6 pt-4 flex-1">
             {!hasEvents ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
@@ -296,8 +291,8 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Type chooser dialog */}

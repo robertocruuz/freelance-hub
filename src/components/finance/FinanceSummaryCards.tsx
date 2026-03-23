@@ -71,14 +71,14 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
       {cards.map((c) => (
         <div
           key={c.label}
-          className={`relative overflow-hidden rounded-xl border bg-gradient-to-br p-4 sm:p-5 transition-all hover:shadow-md hover:-translate-y-0.5 ${c.gradient} ${c.borderColor}`}
+          className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 hover:bg-card/60 p-5 sm:p-6 transition-all hover:shadow-md hover:-translate-y-1 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]"
         >
           {/* Decorative circle */}
-          <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-current opacity-[0.03]" />
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-current opacity-[0.015]" />
 
           <div className="flex items-start justify-between mb-3">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.iconBg}`}>
@@ -86,12 +86,12 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
             </div>
             {c.trend && <c.trend className={`w-4 h-4 ${c.iconColor} opacity-60`} />}
           </div>
-          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{c.label}</p>
-          <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${c.valueColor}`}>
-            {'prefix' in c && (c as any).prefix ? `${(c as any).prefix} ` : ''}{c.subtitle ? c.subtitle : c.value}
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{c.label}</p>
+          <p className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${c.valueColor}`}>
+            {'prefix' in c && (c as any).prefix ? `${(c as any).prefix}` : ''}{c.subtitle ? c.subtitle : c.value}
           </p>
           {!c.subtitle && (
-            <p className="text-[10px] text-muted-foreground mt-0.5 opacity-0 sm:opacity-100">este mês</p>
+            <p className="text-[10px] font-semibold text-muted-foreground mt-1 opacity-0 sm:opacity-100">este mês</p>
           )}
         </div>
       ))}

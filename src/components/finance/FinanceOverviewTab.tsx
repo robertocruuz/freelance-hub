@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { format, eachMonthOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -270,7 +269,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     <div className="space-y-5">
       {/* Collapsible Filter panel */}
       {filtersOpen && (
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="rounded-2xl border border-border/50 bg-card/40 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
           <div className="px-4 py-4 space-y-4">
             {/* PERÍODO - full width row */}
             <div className="space-y-2.5">
@@ -482,32 +481,32 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
 
       {/* Annual summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {summaryItems.map(item => (
-          <div key={item.label} className="flex items-center gap-3 rounded-xl border bg-card p-3.5 transition-all hover:shadow-sm">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.bgColor}`}>
+          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/40 p-5 transition-all hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
-              <p className={`text-sm font-bold truncate ${item.color}`}>{formatCurrency(item.value)}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{item.label}</p>
+              <p className={`text-lg font-black truncate leading-none ${item.color}`}>{formatCurrency(item.value)}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {kpiItems.map(item => (
-          <div key={item.label} className="flex items-center gap-3 rounded-xl border bg-card p-3.5 transition-all hover:shadow-sm">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.bgColor}`}>
+          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/40 p-5 transition-all hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
-              <p className={`text-sm font-bold truncate ${item.color}`}>{item.value}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{item.label}</p>
+              <p className={`text-lg font-black truncate leading-none mb-0.5 ${item.color}`}>{item.value}</p>
               {'subValue' in item && item.subValue && (
-                <p className="text-[10px] text-muted-foreground">{item.subValue}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground">{item.subValue}</p>
               )}
             </div>
           </div>
@@ -515,13 +514,13 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       </div>
 
       {/* Monthly comparison chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Card className="lg:col-span-2 overflow-hidden">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-sm font-bold">Comparativo Mensal</CardTitle>
-            <CardDescription className="text-xs">Entradas vs Saídas — {periodLabel} {yearStr}</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+          <div className="p-6 pb-2">
+            <h3 className="text-base font-extrabold text-foreground">Comparativo Mensal</h3>
+            <p className="text-xs font-medium text-muted-foreground mt-1">Entradas vs Saídas — {periodLabel} {yearStr}</p>
+          </div>
+          <div className="p-6 pt-4 flex-1">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={monthlyData} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -532,16 +531,16 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 <Bar dataKey="Saídas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} maxBarSize={28} opacity={0.4} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pie chart */}
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-sm font-bold">Despesas por Categoria</CardTitle>
-            <CardDescription className="text-xs">Distribuição do período</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2">
+        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+          <div className="p-6 pb-0">
+            <h3 className="text-base font-extrabold text-foreground">Despesas por Categoria</h3>
+            <p className="text-xs font-medium text-muted-foreground mt-1">Distribuição do período</p>
+          </div>
+          <div className="p-6 pt-2 flex-1">
             {categoryData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
@@ -560,18 +559,18 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 </PieChart>
               </ResponsiveContainer>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Cumulative balance + Monthly balance bars */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-sm font-bold">Evolução Acumulada</CardTitle>
-            <CardDescription className="text-xs">Saldo acumulado — {periodLabel} {yearStr}</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+          <div className="p-6 pb-2">
+            <h3 className="text-base font-extrabold text-foreground">Evolução Acumulada</h3>
+            <p className="text-xs font-medium text-muted-foreground mt-1">Saldo acumulado — {periodLabel} {yearStr}</p>
+          </div>
+          <div className="p-6 pt-4 flex-1">
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={cumulativeData}>
                 <defs>
@@ -587,15 +586,15 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 <Area type="monotone" dataKey="Acumulado" stroke="hsl(var(--primary))" fill="url(#overviewGrad)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }} />
               </AreaChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-sm font-bold">Saldo Mensal</CardTitle>
-            <CardDescription className="text-xs">Resultado de cada mês — {periodLabel} {yearStr}</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
+        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+          <div className="p-6 pb-2">
+            <h3 className="text-base font-extrabold text-foreground">Saldo Mensal</h3>
+            <p className="text-xs font-medium text-muted-foreground mt-1">Resultado de cada mês — {periodLabel} {yearStr}</p>
+          </div>
+          <div className="p-6 pt-4 flex-1">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -609,8 +608,8 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

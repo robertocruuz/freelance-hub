@@ -304,7 +304,7 @@ export default function LeadsPage() {
       <div className="flex flex-col gap-3 shrink-0">
         {/* Title and subtitle */}
         <div>
-          <h1 className="text-xl font-bold text-foreground">Pipeline de Leads</h1>
+          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
 

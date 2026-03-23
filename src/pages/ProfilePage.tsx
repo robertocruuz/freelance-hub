@@ -305,7 +305,7 @@ const ProfilePage = () => {
     <div className="max-w-3xl mx-auto space-y-6 pb-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{t.profile}</h1>
+        <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.profile}</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {lang === 'pt-BR' ? 'Gerencie suas informações pessoais e da sua empresa' : 'Manage your personal and company information'}
         </p>

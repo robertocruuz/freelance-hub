@@ -367,7 +367,7 @@ const ClientsPage = () => {
 
     return (
       <div 
-        className="max-w-4xl mx-auto space-y-6 animate-fade-in"
+        className="w-full max-w-[1800px] mx-auto space-y-6 animate-fade-in"
         style={cPrimaryHSL ? { '--primary': cPrimaryHSL } as React.CSSProperties : undefined}
       >
         <button
@@ -417,7 +417,7 @@ const ClientsPage = () => {
                 }}
               />
               <div className="flex-1 min-w-0">
-                <h1 className={cn("text-3xl sm:text-4xl font-extrabold tracking-tight", tColor)}>{selectedClient.name}</h1>
+                <h1 className={cn("text-[2.3rem] font-extrabold tracking-tight leading-none", tColor)}>{selectedClient.name}</h1>
                 <div className={cn("flex items-center justify-center sm:justify-start gap-4 sm:gap-5 mt-4 text-xs flex-wrap", mColor)}>
                   {selectedClient.responsible && (
                     <span className="flex items-center gap-1.5 font-medium">
@@ -743,37 +743,44 @@ const ClientsPage = () => {
 
   // Client list view
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
+    <div className="w-full max-w-[1800px] mx-auto space-y-6 animate-fade-in">
+      {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">{t.clients}</h1>
+          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.clients}</h1>
           <p className="text-sm text-muted-foreground">
             {clients.length} {clients.length === 1 ? 'cliente' : 'clientes'}
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-2 rounded-xl font-semibold shadow-sm">
-          <Plus className="w-4 h-4" /> {t.newClient}
-        </Button>
-      </div>
-
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder={t.search}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-8 rounded-xl"
-        />
-        {search && (
-          <button
-            onClick={() => setSearch('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Expandable Search w/ Default Label */}
+          <div className="relative group flex items-center h-10">
+            <Search className="absolute left-3 w-4 h-4 z-10 pointer-events-none transition-all duration-300 text-muted-foreground group-focus-within:text-primary" />
+            <Input
+              placeholder={t.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={cn(
+                "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                search 
+                  ? "w-[180px] sm:w-[250px]" 
+                  : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
+              )}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors z-10"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          
+          <Button onClick={openCreate} className="gap-2 rounded-full font-semibold shadow-sm shrink-0 h-10 px-4">
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newClient}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Client list */}
@@ -786,7 +793,7 @@ const ClientsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Adicione um cliente para começar.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {filtered.map((c) => {
             const contrast = c.color ? getContrastYIQ(c.color) : 'dark';
             const tColor = c.color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
