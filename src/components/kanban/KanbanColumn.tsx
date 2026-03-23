@@ -260,7 +260,7 @@ export const KanbanColumnComponent = ({
                 className="text-sm bg-background border border-input shadow-sm"
               />
               {newTitle.trim() && (
-                <Button size="sm" onClick={handleAdd} className="btn-glow text-xs h-7 w-full">
+                <Button size="sm" onClick={handleAdd} className="text-xs h-7 w-full shadow-sm">
                   Criar tarefa
                 </Button>
               )}

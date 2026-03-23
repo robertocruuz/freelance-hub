@@ -247,8 +247,8 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
       {/* Balance summary strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {summaryItems.map(item => (
-          <div key={item.label} className="flex items-center gap-3 rounded-xl border bg-card p-3.5 transition-all hover:shadow-sm">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${item.bgColor}`}>
+          <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-all">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
             <div className="min-w-0">
@@ -262,7 +262,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Main bar chart */}
-        <Card className="lg:col-span-2 overflow-hidden">
+        <Card className="lg:col-span-2 overflow-hidden border border-border bg-card shadow-none rounded-2xl">
           <CardHeader className="pb-0">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -287,7 +287,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
         </Card>
 
         {/* Pie chart */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border border-border bg-card shadow-none rounded-2xl">
           <CardHeader className="pb-0">
             <CardTitle className="text-sm font-bold">Despesas por Categoria</CardTitle>
             <CardDescription className="text-xs">Distribuição do mês</CardDescription>
@@ -317,7 +317,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
       </div>
 
       {/* Trend line */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border border-border bg-card shadow-none rounded-2xl">
         <CardHeader className="pb-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>

@@ -224,7 +224,7 @@ const HomePage = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 animate-pulse">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 animate-pulse">
         <div className="h-12 bg-muted/50 rounded-xl w-64" />
         <div className="h-20 bg-muted/40 rounded-2xl w-full" />
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
@@ -236,9 +236,9 @@ const HomePage = () => {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1800px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
       {/* 1. Dashboard Header Strip */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/40">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/80">
         <div>
           <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">
             {isPt ? 'Olá, ' : 'Hello, '}
@@ -289,15 +289,17 @@ const HomePage = () => {
           
           {/* A. Business Overview Panels */}
           <section className="col-span-1 md:col-span-3">
-             <div className="flex items-center gap-2.5 mb-5">
-               <TrendingUp className="w-5 h-5 text-primary" />
+             <div className="flex items-center gap-2.5 mb-6">
+               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                 <TrendingUp className="w-4 h-4 text-primary" />
+               </div>
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Visão de Negócios' : 'Business Insights'}</h2>
              </div>
              
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Finance Panel */}
                 {isAdminUser && (
-                  <div className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card/40 hover:bg-card/80 transition-shadow hover:shadow-md cursor-pointer" onClick={() => navigate('/dashboard/finance')}>
+                  <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow  cursor-pointer" onClick={() => navigate('/dashboard/finance')}>
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><Wallet className="w-4 h-4 text-emerald-500" /></div>
                       <h3 className="font-semibold text-sm text-foreground">{isPt ? 'Financeiro' : 'Finance'}</h3>
@@ -316,7 +318,7 @@ const HomePage = () => {
                 )}
                 
                 {/* Leads Panel */}
-                <div className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card/40 hover:bg-card/80 transition-shadow hover:shadow-md cursor-pointer" onClick={() => navigate('/dashboard/leads')}>
+                <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow  cursor-pointer" onClick={() => navigate('/dashboard/leads')}>
                    <div className="flex items-center gap-3 mb-6">
                      <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center"><Target className="w-4 h-4 text-rose-500" /></div>
                      <h3 className="font-semibold text-sm text-foreground">Leads</h3>
@@ -331,14 +333,14 @@ const HomePage = () => {
                          <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Perdidos' : 'Lost'}</span>
                       </div>
                    </div>
-                   <div className="mt-auto pt-3 border-t border-border/40 flex justify-between items-center text-xs">
+                   <div className="mt-auto pt-3 border-t border-border/80 flex justify-between items-center text-xs">
                       <span className="text-muted-foreground font-medium">{isPt ? 'Em aberto' : 'Open'}</span>
                       <span className="font-bold px-2 py-0.5 rounded bg-muted/50">{leadStats.open}</span>
                    </div>
                 </div>
 
                 {/* Budgets Panel */}
-                <div className="flex flex-col p-6 rounded-2xl border border-border/50 bg-card/40 hover:bg-card/80 transition-shadow hover:shadow-md cursor-pointer" onClick={() => navigate('/dashboard/budgets')}>
+                <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow  cursor-pointer" onClick={() => navigate('/dashboard/budgets')}>
                    <div className="flex items-center gap-3 mb-6">
                      <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center"><FileText className="w-4 h-4 text-amber-500" /></div>
                      <h3 className="font-semibold text-sm text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</h3>
@@ -353,7 +355,7 @@ const HomePage = () => {
                          <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Aprovados' : 'Approved'}</span>
                       </div>
                    </div>
-                   <div className="mt-auto pt-3 border-t border-border/40 flex justify-between items-center text-xs">
+                   <div className="mt-auto pt-3 border-t border-border/80 flex justify-between items-center text-xs">
                       <span className="text-muted-foreground font-medium">Conversão</span>
                       <span className="font-bold text-amber-500">
                         {budgetStats.sent > 0 ? Math.round((budgetStats.approved / budgetStats.sent) * 100) : 0}%
@@ -367,7 +369,7 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              {/* My Tasks */}
              <section className="flex flex-col h-full">
-               <div className="flex items-center justify-between mb-5">
+               <div className="flex items-center justify-between mb-6">
                  <div className="flex items-center gap-2.5">
                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                      <ListTodo className="w-4 h-4 text-primary" />
@@ -378,7 +380,7 @@ const HomePage = () => {
                     {isPt ? 'Ver todas' : 'View all'} <ArrowUpRight className="w-3 h-3" />
                  </button>
                </div>
-               <div className="flex flex-col bg-card/30 border border-border/50 rounded-2xl flex-1 justify-between p-2 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+               <div className="flex flex-col bg-card/30 border border-border rounded-2xl flex-1 justify-between p-2 ">
                   {myTasks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-10 text-center opacity-60 m-auto">
                        <CheckCheck className="w-6 h-6 text-emerald-500 mb-3" />
@@ -395,7 +397,7 @@ const HomePage = () => {
                          return (
                           <div 
                             key={t.id} 
-                            className="group flex items-center gap-3 p-3.5 border-b border-border/30 last:border-0 cursor-pointer rounded-xl transition-all hover:-translate-y-0.5 hover:bg-[var(--hover-bg)] hover:border-transparent hover:shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]" 
+                            className="group flex items-center gap-3 p-3.5 border-b border-border/60 last:border-0 cursor-pointer rounded-xl transition-all hover:-translate-y-0.5 hover:bg-[var(--hover-bg)] hover:border-transparent hover:" 
                             style={{ '--hover-bg': solidCol } as React.CSSProperties}
                             onClick={() => navigate('/dashboard/kanban')}
                           >
@@ -406,7 +408,7 @@ const HomePage = () => {
                              <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors ${
                                isLate 
                                ? 'bg-destructive/10 text-destructive group-hover:bg-black/20 group-hover:text-white' 
-                               : 'bg-background border border-border/50 text-muted-foreground group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent'
+                               : 'bg-background border border-border text-muted-foreground group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent'
                              }`}>
                                {t.due_date ? format(parseISO(t.due_date), 'dd/MM') : '-'}
                              </span>
@@ -420,7 +422,7 @@ const HomePage = () => {
 
              {/* Time Tracking Section */}
              <section className="flex flex-col h-full">
-               <div className="flex items-center gap-2.5 mb-5">
+               <div className="flex items-center gap-2.5 mb-6">
                  <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center">
                    <Clock className="w-4 h-4 text-cyan-500" />
                  </div>
@@ -428,7 +430,7 @@ const HomePage = () => {
                  {timeStats.activeTimer && <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ml-2 ring-4 ring-green-500/20" />}
                </div>
                
-               <div className="flex flex-col bg-card/30 border border-border/50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card/60 transition-colors" onClick={() => navigate('/dashboard/time')}>
+               <div className="flex flex-col bg-card/30 border border-border  rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card/60 transition-colors" onClick={() => navigate('/dashboard/time')}>
                  <div className="flex justify-between items-start">
                     <div className="flex gap-10">
                       <div>
@@ -446,7 +448,7 @@ const HomePage = () => {
                       </div>
                     )}
                  </div>
-                 <div className="w-full pt-4 border-t border-border/30">
+                 <div className="w-full pt-4 border-t border-border/60">
                     <MiniBarChart data={timeStats.last7} />
                  </div>
                </div>
@@ -459,14 +461,18 @@ const HomePage = () => {
                
                {/* Latest Projects */}
                <div className="md:col-span-7 flex flex-col">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2">
-                       <FolderKanban className="w-4 h-4 text-muted-foreground" />
-                       <h3 className="font-semibold text-foreground">{isPt ? 'Últimos Projetos' : 'Latest Projects'}</h3>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2.5">
+                       <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                         <FolderKanban className="w-4 h-4 text-amber-500" />
+                       </div>
+                       <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Últimos Projetos' : 'Latest Projects'}</h2>
                     </div>
-                    <button onClick={() => navigate('/dashboard/projects')} className="text-xs text-muted-foreground hover:text-primary transition-colors">{isPt ? 'Ver todos' : 'View all'}</button>
+                    <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                      {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
+                    </button>
                   </div>
-                  <div className="flex flex-col bg-card/30 border border-border/50 rounded-2xl shadow-sm p-3">
+                  <div className="flex flex-col bg-card/30 border border-border rounded-2xl  p-3">
                      <div className="flex flex-col gap-2.5">
                        {data.projects.slice(0, 5).map(p => {
                          const client = data.clients.find(c => c.id === p.client_id);
@@ -475,7 +481,7 @@ const HomePage = () => {
                          return (
                          <div 
                            key={p.id} 
-                           className="group flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-card border border-border/50 hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
+                           className="group flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5  bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
                            style={{ '--hover-bg': solidCol } as React.CSSProperties} 
                            onClick={() => navigate('/dashboard/projects')}
                          >
@@ -487,7 +493,7 @@ const HomePage = () => {
                                  {client?.name || ''}
                                </span>
                                {p.due_date && (
-                                  <span className="text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center backdrop-blur-sm transition-colors group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent bg-background border border-border/50 text-muted-foreground">
+                                  <span className="text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center backdrop-blur-sm transition-colors group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent bg-background border border-border text-muted-foreground">
                                     {format(parseISO(p.due_date), 'dd/MM')}
                                   </span>
                                )}
@@ -502,21 +508,25 @@ const HomePage = () => {
 
                {/* Active Clients */}
                <div className="md:col-span-5 flex flex-col">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2">
-                       <Users className="w-4 h-4 text-muted-foreground" />
-                       <h3 className="font-semibold text-foreground">{isPt ? 'Clientes Ativos' : 'Active Clients'}</h3>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2.5">
+                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                         <Users className="w-4 h-4 text-emerald-500" />
+                       </div>
+                       <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Clientes Ativos' : 'Active Clients'}</h2>
                     </div>
-                    <button onClick={() => navigate('/dashboard/clients')} className="text-xs text-muted-foreground hover:text-primary transition-colors">{isPt ? 'Ver todos' : 'View all'}</button>
+                    <button onClick={() => navigate('/dashboard/clients')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                      {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
+                    </button>
                   </div>
-                  <div className="flex flex-col bg-card/30 border border-border/50 rounded-2xl shadow-sm overflow-hidden p-2">
+                  <div className="flex flex-col bg-card/30 border border-border rounded-2xl  overflow-hidden p-2">
                      <div className="flex flex-col">
                         {data.clients.slice(0, 5).map(c => {
                            const clientProjectsCount = data.projects.filter(p => p.client_id === c.id).length;
                            const clientBudgetsCount = data.budgets.filter(b => b.client_id === c.id).length;
                            return (
                              <div key={c.id} className="group flex items-center gap-3 p-3.5 hover:bg-muted/40 rounded-xl cursor-pointer transition-colors" onClick={() => navigate('/dashboard/clients')}>
-                               <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm ring-2 ring-background shrink-0 transition-transform group-hover:scale-105 overflow-hidden" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
+                               <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white  ring-2 ring-background shrink-0 transition-transform group-hover:scale-105 overflow-hidden" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
                                  {c.logo_url ? (
                                    <img src={c.logo_url} alt={c.name} className="w-full h-full object-cover" />
                                  ) : (
@@ -551,12 +561,12 @@ const HomePage = () => {
         <div className="xl:col-span-4 flex flex-col gap-10">
           
           {/* Calendar Panel */}
-          <section className="bg-card/40 p-6 rounded-2xl border border-border/50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+          <section className="bg-card/40 p-6 rounded-2xl border border-border ">
             <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
           </section>
 
           {/* Notifications Panel */}
-          <section className="flex flex-col min-h-[300px] bg-card/40 p-6 rounded-2xl border border-border/50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+          <section className="flex flex-col min-h-[300px] bg-card/40 p-6 rounded-2xl border border-border ">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -588,7 +598,7 @@ const HomePage = () => {
                     <div 
                       key={n.id} 
                       className={`group relative flex flex-col gap-1.5 p-3.5 rounded-xl transition-all duration-200 cursor-pointer border
-                        ${!n.read ? 'bg-background border-primary/20 shadow-md shadow-primary/5' : 'bg-transparent border-transparent hover:bg-muted/40'}
+                        ${!n.read ? 'bg-background border-primary/20  ' : 'bg-transparent border-transparent hover:bg-muted/40'}
                       `}
                       onClick={() => { 
                         if (!n.read) markAsRead(n.id);
@@ -616,7 +626,7 @@ const HomePage = () => {
               )}
             </div>
             {data.notifications.length > 0 && (
-              <button onClick={deleteAllNotifications} className="mt-4 pt-4 border-t border-border/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive flex items-center justify-center gap-1.5 transition-colors">
+              <button onClick={deleteAllNotifications} className="mt-4 pt-4 border-t border-border/80 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive flex items-center justify-center gap-1.5 transition-colors">
                 <Trash2 className="w-3 h-3" />
                 {isPt ? 'Limpar todas' : 'Clear all'}
               </button>
@@ -624,7 +634,7 @@ const HomePage = () => {
           </section>
 
           {/* Team Panel */}
-          <section className="bg-card/40 p-6 rounded-2xl border border-border/50 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] mt-auto">
+          <section className="bg-card/40 p-6 rounded-2xl border border-border  mt-auto">
             <div className="flex items-center justify-between mb-6">
                <div className="flex items-center gap-2.5">
                  <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center">
@@ -632,7 +642,7 @@ const HomePage = () => {
                  </div>
                  <h2 className="font-semibold text-lg text-foreground truncate max-w-[160px]">{orgName || (isPt ? 'Equipe' : 'Team')}</h2>
                </div>
-               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide bg-background border border-border/50 px-2 py-1 rounded-md">{teamStats.total} {isPt ? 'membros' : 'members'}</span>
+               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide bg-background border border-border px-2 py-1 rounded-md">{teamStats.total} {isPt ? 'membros' : 'members'}</span>
             </div>
             
             <div className="flex flex-col gap-2">
@@ -642,7 +652,7 @@ const HomePage = () => {
                  const role = m.role === 'admin' ? 'Admin' : 'Member';
                  return (
                    <div key={m.id || i} className="flex items-center gap-3 cursor-pointer group hover:bg-muted/40 p-2 -mx-2 rounded-xl transition-colors" onClick={() => navigate('/dashboard/team')}>
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shadow-sm shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary overflow-hidden  shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
                         {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" /> : name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -675,7 +685,7 @@ const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours:
         <div key={i} className="flex-1 flex flex-col items-center gap-2">
           <div className="w-full relative flex items-end justify-center" style={{ height: '54px' }}>
             <div
-              className={`w-full max-w-[14px] rounded-lg transition-all duration-300 ${d.isToday ? 'bg-primary shadow-sm shadow-primary/20' : 'bg-muted-foreground/20 hover:bg-primary/40'}`}
+              className={`w-full max-w-[14px] rounded-lg transition-all duration-300 ${d.isToday ? 'bg-primary  ' : 'bg-muted-foreground/20 hover:bg-primary/40'}`}
               style={{ height: `${Math.max((d.minutes / maxMin) * 54, d.minutes > 0 ? 6 : 4)}px` }}
               title={`${d.hours}h`}
             />
@@ -725,19 +735,19 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
 
   return (
     <div className="space-y-4 w-full">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <CalendarDays className="w-4 h-4 text-primary" />
           </div>
-          <div>
-            <span className="font-semibold text-foreground text-sm">{isPt ? 'Calendário' : 'Calendar'}</span>
-            <p className="text-[10px] font-medium text-muted-foreground capitalize mt-0.5">
+          <div className="flex flex-col">
+            <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
+            <p className="text-[10px] font-medium text-muted-foreground capitalize mt-1">
               {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-background border border-border/50 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-1">
           <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -771,7 +781,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
               key={dateStr}
               onClick={() => setSelectedDay(isSelected ? null : dateStr)}
               className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
-                ${today ? 'bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
+                ${today ? 'bg-primary text-primary-foreground font-bold  ' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
                 ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
               `}
             >
@@ -789,7 +799,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
       </div>
 
       {selectedDay && selectedTasks.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-border/40 animate-fade-in fill-mode-forwards">
+        <div className="mt-4 pt-4 border-t border-border/80 animate-fade-in fill-mode-forwards">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
             {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
@@ -799,7 +809,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
               <button
                 key={task.id}
                 onClick={() => navigate('/dashboard/kanban')}
-                className="w-full flex items-center gap-3 rounded-xl bg-background hover:bg-muted/50 p-3 transition-colors text-left border border-border/50 shadow-sm"
+                className="w-full flex items-center gap-3 rounded-xl bg-background hover:bg-muted/50 p-3 transition-colors text-left border border-border "
               >
                 <span className={`w-2 h-2 rounded-full shrink-0 ${priorityColor[task.priority] || 'bg-primary'}`} />
                 <span className="text-xs font-semibold text-foreground/90 truncate flex-1">{task.title}</span>

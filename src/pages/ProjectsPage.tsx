@@ -60,6 +60,7 @@ interface Project {
   name: string;
   client_id: string | null;
   due_date: string | null;
+  due_text: string | null;
   discount: number;
   created_at: string;
   is_favorite?: boolean;
@@ -77,6 +78,7 @@ interface Budget {
   name: string | null;
   client_id: string | null;
   delivery_date: string | null;
+  delivery_text: string | null;
   items: BudgetItem[];
   discount: number;
   total: number;
@@ -115,6 +117,7 @@ const ProjectsPage = () => {
   const [color, setColor] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [dueText, setDueText] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
@@ -287,6 +290,7 @@ const ProjectsPage = () => {
     setClientId('');
     setColor(null);
     setDueDate(undefined);
+    setDueText('');
     setEditingId(null);
     setShowForm(false);
     setSelectedBudgetId(null);
@@ -328,6 +332,7 @@ const ProjectsPage = () => {
       if (budget.delivery_date) {
         setDueDate(new Date(budget.delivery_date + 'T12:00:00'));
       }
+      setDueText(budget.delivery_text || '');
     }
   };
 
@@ -364,6 +369,7 @@ const ProjectsPage = () => {
       client_id: clientId || null,
       color: !clientId ? (color || null) : null,
       due_date: dueDateStr,
+      due_text: dueText || (selectedBudget?.delivery_text || null),
       discount: projectDiscount,
     };
 
@@ -414,6 +420,7 @@ const ProjectsPage = () => {
     setClientId(p.client_id || '');
     setColor(p.color || null);
     setDueDate(p.due_date ? new Date(p.due_date + 'T12:00:00') : undefined);
+    setDueText(p.due_text || '');
     setProjectDiscount(p.discount || 0);
     setShowForm(true);
   };
@@ -875,8 +882,9 @@ const ProjectsPage = () => {
           )}
 
           {/* Due date picker */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Prazo de entrega</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Prazo (Data)</label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -899,6 +907,16 @@ const ProjectsPage = () => {
                 />
               </PopoverContent>
             </Popover>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Prazo (Texto Livre)</label>
+            <Input
+              placeholder="Ex: A combinar, 15 dias"
+              value={dueText}
+              onChange={(e) => setDueText(e.target.value)}
+              className="rounded-xl h-10 text-sm"
+            />
+          </div>
           </div>
 
           {/* Preview of items to import */}
@@ -952,117 +970,132 @@ const ProjectsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 items-stretch">
           {filtered.map(p => {
-                      const isExpanded = expandedIds.has(p.id);
-                      const items = projectItems[p.id] || [];
-                      const total = getProjectTotal(p.id);
-                      const finalTotal = total * (1 - (p.discount || 0) / 100);
-                      const color = clientColor(p.client_id) || p.color;
-                      
-                      const contrast = getContrastYIQ(color);
-                      const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-                      const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-700') : 'text-muted-foreground';
-                      const bColor = color ? (contrast === 'light' ? 'text-white/80 hover:text-white hover:bg-white/20' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:text-foreground';
-                      const badgeBg = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
-                      const badgeBgMuted = color ? (contrast === 'light' ? 'bg-white/10 text-white/90' : 'bg-slate-900/5 text-slate-800') : 'bg-muted text-muted-foreground';
-                      const iconBox = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'text-slate-600 bg-slate-900/5 group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'bg-muted/60 text-muted-foreground group-hover:bg-muted group-hover:text-foreground';
-                      const iconBoxActive = color ? (contrast === 'light' ? 'bg-white/30 text-white' : 'bg-slate-900/15 text-slate-900') : 'bg-primary/10 text-primary';
+            const isExpanded = expandedIds.has(p.id);
+            const items = projectItems[p.id] || [];
+            const total = getProjectTotal(p.id);
+            const finalTotal = total * (1 - (p.discount || 0) / 100);
+            const color = clientColor(p.client_id) || p.color;
+            
+            const contrast = color ? getContrastYIQ(color) : 'dark';
+            const isLight = contrast === 'light';
 
-                      return (
-                        <div
-                          key={p.id}
-                          className={cn(
-                            "rounded-2xl border flex flex-col overflow-hidden transition-all duration-300 relative",
-                            isExpanded ? "shadow-md ring-1 ring-primary/10" : "hover:shadow-md hover:-translate-y-0.5 hover:border-border/80"
-                          )}
-                          style={color
-                            ? { backgroundColor: color, borderColor: color }
-                            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
-                          }
-                        >
-                          {/* Project header */}
-                          <div
-                            className="flex flex-col p-5 cursor-pointer group gap-4 relative"
-                            onClick={() => navigate(`/dashboard/projects/${p.id}`)}
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex items-start gap-3 flex-1 min-w-0">
-                                <div className="min-w-0 flex-1 pt-0.5">
-                                  {p.client_id && clientName(p.client_id) !== '-' ? (
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5", mColor)}>
-                                      {clientName(p.client_id)}
-                                    </p>
-                                  ) : (
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5 opacity-60", mColor)}>
-                                      Sem cliente
-                                    </p>
-                                  )}
-                                  <p className={cn("font-bold text-base line-clamp-2 leading-tight pr-2", tColor)}>{p.name}</p>
-                                  {(items.length > 0 || total > 0) && (
-                                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                                      <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-md", badgeBg)}>
-                                        {formatCurrency(finalTotal)}
-                                      </span>
-                                      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md", badgeBgMuted)}>
-                                        {items.length} {items.length === 1 ? 'item' : 'itens'}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex gap-1 shrink-0 -mt-1 -mr-2" onClick={e => e.stopPropagation()}>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className={cn("w-8 h-8 rounded-lg", bColor)}
-                                  onClick={(e) => toggleFavorite(p.id, p.is_favorite || false, e)}
-                                  title={p.is_favorite ? "Remover dos favoritos" : "Favoritar projeto"}
-                                >
-                                  <Star className="w-4 h-4" fill={p.is_favorite ? "currentColor" : "none"} />
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", bColor)}>
-                                      <MoreVertical className="w-4 h-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEdit(p)}>
-                                      <Pencil className="w-4 h-4 mr-2" /> Editar projeto
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
-                                      <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between mt-1 pt-4 border-t border-black/10 dark:border-white/10">
-                              <div className={cn("flex items-center gap-2 text-xs", mColor)}>
-                                {p.due_date ? (
-                                  <>
-                                    <CalendarIcon className="w-3.5 h-3.5" />
-                                    <span className="font-medium">Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
-                                  </>
-                                ) : (
-                                  <span className="italic opacity-60">Sem prazo definido</span>
-                                )}
-                              </div>
-                              
-                              <div className={cn(
-                                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                isExpanded ? iconBoxActive : iconBox
-                              )}>
-                                <FolderKanban className="w-3.5 h-3.5" />
-                              </div>
-                            </div>
+            const tColor = `text-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : ''}`;
+            const mColor = `text-muted-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-700') : ''}`;
+            const bColor = `text-muted-foreground hover:text-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:text-white/80 hover:group-hover:text-white hover:group-hover:bg-white/20' : 'group-hover:text-slate-700 hover:group-hover:text-slate-900 hover:group-hover:bg-slate-900/10') : ''}`;
+            
+            const badgeBg = `bg-primary/10 text-primary transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : ''}`;
+            const badgeBgMuted = `bg-muted text-muted-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/10 group-hover:text-white/90' : 'group-hover:bg-slate-900/5 group-hover:text-slate-800') : ''}`;
+            
+            const iconBox = `bg-muted/60 text-muted-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'group-hover:bg-muted group-hover:text-foreground'}`;
+            const iconBoxActive = `bg-primary/10 text-primary transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/30 group-hover:text-white' : 'group-hover:bg-slate-900/15 group-hover:text-slate-900') : ''}`;
+
+            return (
+              <div
+                key={p.id}
+                className={cn(
+                  "group rounded-2xl border flex flex-col overflow-hidden transition-all duration-300 relative h-full",
+                  "bg-card z-0",
+                  isExpanded ? "shadow-md ring-1 ring-primary/10" : "hover:shadow-lg hover:-translate-y-1 hover:border-transparent",
+                  !color && "hover:border-border/80"
+                )}
+              >
+                {/* Smooth Background Transition */}
+                {color && (
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none -z-10"
+                    style={{ backgroundColor: color }}
+                  />
+                )}
+                
+                {/* Project header */}
+                <div
+                  className="flex flex-col p-5 cursor-pointer gap-4 relative flex-1 z-10"
+                  onClick={() => navigate(`/dashboard/projects/${p.id}`)}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        {p.client_id && clientName(p.client_id) !== '-' ? (
+                          <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5", mColor)}>
+                            {clientName(p.client_id)}
+                          </p>
+                        ) : (
+                          <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5 opacity-60", mColor)}>
+                            Sem cliente
+                          </p>
+                        )}
+                        <p className={cn("font-bold text-base line-clamp-2 leading-tight pr-2", tColor)}>{p.name}</p>
+                        {(items.length > 0 || total > 0) && (
+                          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                            <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-md", badgeBg)}>
+                              {formatCurrency(finalTotal)}
+                            </span>
+                            <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-md", badgeBgMuted)}>
+                              {items.length} {items.length === 1 ? 'item' : 'itens'}
+                            </span>
                           </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0 -mt-1 -mr-2" onClick={e => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("w-8 h-8 rounded-lg", bColor)}
+                        onClick={(e) => toggleFavorite(p.id, p.is_favorite || false, e)}
+                        title={p.is_favorite ? "Remover dos favoritos" : "Favoritar projeto"}
+                      >
+                        <Star className="w-4 h-4" fill={p.is_favorite ? "currentColor" : "none"} />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", bColor)}>
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(p)}>
+                            <Pencil className="w-4 h-4 mr-2" /> Editar projeto
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/80 group-hover:border-black/10 dark:group-hover:border-white/10 shrink-0 transition-colors">
+                    <div className={cn("flex items-center gap-2 text-xs", mColor)}>
+                      {p.due_text ? (
+                        <>
+                          <CalendarIcon className="w-3.5 h-3.5" />
+                          <span className="font-medium">Prazo: {p.due_text}</span>
+                        </>
+                      ) : p.due_date ? (
+                        <>
+                          <CalendarIcon className="w-3.5 h-3.5" />
+                          <span className="font-medium">Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
+                        </>
+                      ) : (
+                        <span className="italic opacity-60">Sem prazo definido</span>
+                      )}
+                    </div>
+                    
+                    <div className={cn(
+                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                      isExpanded ? iconBoxActive : iconBox
+                    )}>
+                      <FolderKanban className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
 
-                        </div>
-                      );
-            })}
+              </div>
+            );
+          })}
         </div>
       )}
 

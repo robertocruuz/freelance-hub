@@ -796,35 +796,47 @@ const ClientsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {filtered.map((c) => {
             const contrast = c.color ? getContrastYIQ(c.color) : 'dark';
-            const tColor = c.color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-            const mColor = c.color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
-            const btnColor = c.color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
+            const isLight = contrast === 'light';
+            
+            const tColor = `text-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : ''}`;
+            const mColor = `text-muted-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800') : ''}`;
+            const btnColor = `text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900') : ''}`;
             const btnDestructive = btnColor;
+            
+            const initialsBg = `bg-muted text-muted-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:bg-white/30 group-hover:text-white' : 'group-hover:bg-slate-900/15 group-hover:text-slate-900') : ''}`;
 
             return (
               <div
                 key={c.id}
                 className={cn(
-                  "rounded-xl border overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-sm group box-border",
-                  !c.color && "bg-card border-border"
+                  "group rounded-xl border flex flex-col overflow-hidden transition-all duration-300 cursor-pointer relative box-border",
+                  "bg-card z-0",
+                  "hover:shadow-md hover:-translate-y-0.5",
+                  !c.color && "hover:border-border/80"
                 )}
-                style={c.color ? { backgroundColor: c.color, borderColor: c.color } : {}}
                 onClick={() => openClient360(c)}
               >
-                <div className="flex flex-col p-4 h-full relative">
+                {/* Smooth Background Transition */}
+                {c.color && (
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none -z-10"
+                    style={{ backgroundColor: c.color }}
+                  />
+                )}
+                
+                <div className="flex flex-col p-4 h-full relative z-10">
                   <div className="flex items-start justify-between gap-3 min-w-0 mb-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {c.logo_url ? (
-                        <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden border border-transparent">
+                        <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden border border-border group-hover:border-transparent transition-colors duration-300">
                           <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-contain p-1" />
                         </div>
                       ) : (
                         <div
                           className={cn(
                             "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-lg shadow-sm border border-transparent",
-                            c.color ? "bg-white" : "bg-muted text-muted-foreground"
+                            initialsBg
                           )}
-                          style={c.color ? { color: c.color } : {}}
                         >
                           {c.name.charAt(0).toUpperCase()}
                         </div>

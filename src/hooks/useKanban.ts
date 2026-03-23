@@ -383,11 +383,27 @@ export const useKanban = (activeBoardId?: string | null) => {
   // Task operations
   const addTask = async (columnId: string, title: string) => {
     if (!user) return;
+    
+    const targetColumn = columns.find((c) => c.id === columnId);
+    const targetBoardId = targetColumn?.board_id || activeBoardId;
+    const targetBoard = boards.find((b) => b.id === targetBoardId);
+    
+    const client_id = targetBoard?.client_id || null;
+    const project_id = targetBoard?.project_id || null;
+
     const colTasks = tasks.filter((t) => t.column_id === columnId);
     const position = colTasks.length;
     const { data } = await supabase
       .from('tasks')
-      .insert({ title, column_id: columnId, position, user_id: user.id, updated_by: user.id } as any)
+      .insert({ 
+        title, 
+        column_id: columnId, 
+        position, 
+        user_id: user.id, 
+        updated_by: user.id,
+        client_id,
+        project_id
+      } as any)
       .select()
       .single();
     if (data) {

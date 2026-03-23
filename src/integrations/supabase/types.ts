@@ -20,6 +20,7 @@ export type Database = {
           client_id: string | null
           created_at: string
           delivery_date: string | null
+          delivery_text: string | null
           discount: number
           id: string
           items: Json
@@ -36,6 +37,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           delivery_date?: string | null
+          delivery_text?: string | null
           discount?: number
           id?: string
           items?: Json
@@ -52,6 +54,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           delivery_date?: string | null
+          delivery_text?: string | null
           discount?: number
           id?: string
           items?: Json
@@ -787,6 +790,7 @@ export type Database = {
           created_at: string
           discount: number
           due_date: string | null
+          due_text: string | null
           id: string
           name: string
           updated_at: string
@@ -799,6 +803,7 @@ export type Database = {
           created_at?: string
           discount?: number
           due_date?: string | null
+          due_text?: string | null
           id?: string
           name: string
           updated_at?: string
@@ -811,6 +816,7 @@ export type Database = {
           created_at?: string
           discount?: number
           due_date?: string | null
+          due_text?: string | null
           id?: string
           name?: string
           updated_at?: string

@@ -581,10 +581,12 @@ export default function ProjectDashboardPage() {
                   {clientName(project.client_id)}
                 </span>
               )}
-              {project.due_date && (
+              {(project.due_text || project.due_date) && (
                 <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md shadow-sm border", badgeBgMuted)}>
                   <CalendarIcon className="w-3.5 h-3.5" />
-                  {format(new Date(project.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
+                  {project.due_text 
+                    ? project.due_text 
+                    : format(new Date(project.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
                 </span>
               )}
               {project.budget_id && (

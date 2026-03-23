@@ -60,7 +60,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const navigate = useNavigate();
   
   const internalOrgHook = useOrganization();
-  const { orgId, ownerId, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
+  const { orgId, ownerId, orgProfile, members, invites, loading, isAdmin, inviteByEmail, generateInviteLink, updateMemberRole, removeMember, cancelInvite, leaveOrganization } = externalOrgHook || internalOrgHook;
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -173,45 +173,10 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   const teamContent = (
     <>
       {/* Invite link section */}
-      {isAdmin && (
-        <div className="space-y-3">
-          {/* Invite by email */}
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" />
-              {isPt ? 'Convidar por e-mail' : 'Invite by email'}
-            </Label>
-            <div className="flex gap-2">
-              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="collaborator">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="email@example.com"
-                onKeyDown={(e) => e.key === 'Enter' && handleInviteByEmail()}
-                className="flex-1"
-              />
-              <Button onClick={handleInviteByEmail} disabled={inviteLoading || !inviteEmail.trim()} size="sm" className="gap-1.5 shrink-0">
-                <UserPlus className="w-3.5 h-3.5" />
-                {isPt ? 'Enviar' : 'Send'}
-              </Button>
-            </div>
-          </div>
-
-          <Separator className="opacity-50" />
-        </div>
-      )}
+      {/* Excluded: the inline invite form was removed to avoid redundancy with the "Invite Member" modal. */}
 
       {/* Members list */}
-        <div className="space-y-2">
+        <div className="flex flex-col">
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
             const isCurrentUser = member.user_id === user?.id;
@@ -221,11 +186,11 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             return (
               <div
                 key={member.id}
-                className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-sm hover:bg-muted/40 transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:-translate-y-0.5"
+                className="group flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 rounded-xl hover:bg-muted/40 transition-colors"
               >
-                <Avatar className="w-12 h-12 shrink-0 border border-border/50 shadow-sm">
-                  {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover" />}
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-extrabold">
+                <Avatar className="w-10 h-10 shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden bg-primary/10">
+                  {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover w-full h-full" />}
+                  <AvatarFallback className="bg-transparent text-primary text-sm font-extrabold flex items-center justify-center">
                     {getInitials(member.profile?.name, member.profile?.email)}
                   </AvatarFallback>
                 </Avatar>
@@ -315,17 +280,17 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
         {/* Pending invites */}
         {isAdmin && invites.length > 0 && (
           <>
-            <Separator className="opacity-50" />
-            <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1.5">
+            <Separator className="opacity-50 my-2 mx-4" />
+            <div className="px-2 pb-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2 px-2 flex items-center gap-1.5 mt-2">
                 <Mail className="w-3.5 h-3.5" />
                 {isPt ? 'Convites pendentes' : 'Pending invites'}
               </p>
-              <div className="space-y-3">
+              <div className="flex flex-col">
                 {invites.map((invite) => (
                   <div
                     key={invite.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/20 border border-dashed border-border/60 hover:bg-muted/30 transition-colors"
+                    className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-xl hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-foreground truncate">
@@ -376,24 +341,25 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 pb-5 border-b border-border/40">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 shadow-sm">
-            <Users className="w-6 h-6 text-primary" />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4 text-primary" />
           </div>
-          <div>
-            <h3 className="text-xl font-extrabold text-foreground">{isPt ? 'Membros da Organização' : 'Organization Members'}</h3>
-            <p className="text-sm font-medium text-muted-foreground mt-0.5">
-              {isPt ? 'Gerencie os acessos de quem compõe o seu time' : 'Manage accesses for your team members'}
-            </p>
-          </div>
+          <h2 className="text-lg font-semibold text-foreground">
+            {orgProfile?.name || (isPt ? 'Membros da Organização' : 'Organization Members')}
+          </h2>
         </div>
-        {isAdmin && (
+        <div className="flex items-center gap-4">
+          {orgProfile?.logo && (
+            <img src={orgProfile.logo} alt="Logo" className="h-8 max-w-[120px] object-contain shrink-0 drop-shadow-sm" />
+          )}
+          {isAdmin && (
           <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
             <DialogTrigger asChild>
-              <Button className="gap-2 h-10 px-5 rounded-full font-bold shadow-md shrink-0">
-                <UserPlus className="w-4 h-4" />
+              <Button className="gap-1.5 h-8 px-3 rounded-full font-semibold shadow-sm text-xs shrink-0">
+                <UserPlus className="w-3.5 h-3.5" />
                 {isPt ? 'Convidar Membro' : 'Invite Member'}
               </Button>
             </DialogTrigger>
@@ -423,9 +389,10 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
               </div>
             </DialogContent>
           </Dialog>
-        )}
+          )}
+        </div>
       </div>
-      <div className="p-6 pt-5 space-y-4">
+      <div className="flex flex-col bg-card/30 border border-border rounded-2xl p-2">
         {teamContent}
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { startOfMonth, endOfMonth, addMonths, subMonths, addDays, isPast, isBefore, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,7 +35,6 @@ export default function FinancePage() {
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [activeTab, setActiveTab] = useState('cashflow');
   const [autoEditId, setAutoEditId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -45,7 +43,6 @@ export default function FinancePage() {
 
   const handleEventClick = (type: 'receivable' | 'expense', id: string) => {
     setAutoEditId(id);
-    setActiveTab(type === 'receivable' ? 'receivables' : 'payables');
     setTimeout(() => {
       tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -111,14 +108,8 @@ export default function FinancePage() {
 
   const balance = receivedThisMonth - paidThisMonth;
 
-  const tabItems = [
-    { value: 'cashflow', label: 'Fluxo de Caixa', shortLabel: 'Fluxo', icon: BarChart3 },
-    { value: 'receivables', label: 'A Receber', shortLabel: 'Receber', icon: ArrowDownToLine },
-    { value: 'payables', label: 'A Pagar', shortLabel: 'Pagar', icon: ArrowUpFromLine },
-  ];
-
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1800px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
       {/* Header Strip */}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/40">
         <div>
@@ -227,27 +218,40 @@ export default function FinancePage() {
           {/* Calendar - always visible below cards */}
           <FinanceCalendarTab invoices={invoices} onRefresh={fetchInvoices} onEventClick={handleEventClick} />
 
-          {/* Tabs */}
-          <div ref={tabsRef}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full h-auto p-1.5 bg-card/60 backdrop-blur-md border border-border/50 shadow-sm rounded-2xl gap-2" aria-label="Seções financeiras">
-                {tabItems.map(tab => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="flex-1 gap-2 py-3.5 rounded-xl text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all hover:bg-muted/50 data-[state=active]:hover:bg-primary"
-                    aria-label={tab.label}
-                  >
-                    <tab.icon className="w-4 h-4" aria-hidden="true" />
-                    <span className="sm:hidden">{tab.shortLabel}</span>
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <TabsContent value="cashflow" className="mt-6"><CashFlowTab invoices={invoices} monthFilter={monthStr} /></TabsContent>
-              <TabsContent value="receivables" className="mt-5"><ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
-              <TabsContent value="payables" className="mt-5"><ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} /></TabsContent>
-            </Tabs>
+          {/* 2 Columns: Receivables & Payables */}
+          <div ref={tabsRef} className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
+            {/* Receivables Column */}
+            <div className="flex flex-col gap-5 border border-border bg-card rounded-2xl p-4 sm:p-6">
+              <div className="flex items-center gap-2 border-b border-border/40 pb-4">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <ArrowDownToLine className="w-4 h-4 text-emerald-500" />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">A Receber</h2>
+              </div>
+              <ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+            </div>
+            
+            {/* Payables Column */}
+            <div className="flex flex-col gap-5 border border-border bg-card rounded-2xl p-4 sm:p-6">
+              <div className="flex items-center gap-2 border-b border-border/40 pb-4">
+                <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                  <ArrowUpFromLine className="w-4 h-4 text-red-500" />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">A Pagar</h2>
+              </div>
+              <ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+            </div>
+          </div>
+
+          {/* Cash Flow */}
+          <div className="flex flex-col gap-5 mt-8">
+             <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">Fluxo de Caixa</h2>
+             </div>
+             <CashFlowTab invoices={invoices} monthFilter={monthStr} />
           </div>
         </>
       )}

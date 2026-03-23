@@ -184,7 +184,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
       )}
 
       {dialogOpen && (
-        <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in shadow-sm">
+        <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-foreground">{editing ? 'Editar Despesa' : 'Nova Despesa'}</h3>
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setDialogOpen(false); resetForm(); }}>
@@ -334,7 +334,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           {grouped.map(e => {
             const config = statusConfig[e.status] || statusConfig.pending;
             return (
-              <div key={e.id} className="group rounded-xl border border-border bg-card hover:shadow-sm transition-all">
+              <div key={e.id} className="group rounded-xl border border-border bg-card transition-all">
                 <div className="flex items-center gap-3 p-3.5">
                   <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center text-lg shrink-0">
                     {categoryIcons[e.category] || '📦'}

@@ -505,7 +505,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="h-screen flex bg-[#f8f7f9] dark:bg-background overflow-hidden">
+    <div className="h-screen flex bg-background overflow-hidden">
       {/* Desktop sidebar */}
       <aside
         className={cn(

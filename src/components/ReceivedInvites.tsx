@@ -126,12 +126,16 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
   return (
     <>
       <div className="space-y-4">
-        <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
-          <Mail className="w-5 h-5 text-primary" />
-          {isPt ? 'Convites Recebidos' : 'Received Invites'}
-        </h3>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Mail className="w-4 h-4 text-primary" />
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">
+            {isPt ? 'Convites Recebidos' : 'Received Invites'}
+          </h2>
+        </div>
 
-        <div className="space-y-3">
+        <div className="flex flex-col bg-card/30 border border-border rounded-2xl p-2">
           {invites.map((invite) => {
             const RoleIcon = roleIcons[invite.role] || Eye;
             const isExpired = new Date(invite.expires_at) < new Date();
@@ -140,10 +144,10 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
             return (
               <div
                 key={invite.id}
-                className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all shadow-sm hover:-translate-y-0.5"
+                className="group flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 rounded-xl hover:bg-muted/40 transition-colors"
               >
-                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0 shadow-sm">
-                  <Building2 className="w-6 h-6 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden text-primary">
+                  <Building2 className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-extrabold text-foreground truncate">

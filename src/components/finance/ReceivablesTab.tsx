@@ -516,7 +516,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
 
       {/* Create/Edit Form */}
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-5 animate-fade-in shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-5 animate-fade-in">
           {/* Name */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Nome da Fatura</label>
@@ -823,7 +823,7 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                   statusFilter === s
-                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    ? 'bg-primary text-primary-foreground border-primary shadow-none'
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
                 )}
               >
@@ -880,12 +880,12 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
                           <div
                             key={inv.id}
                             className={cn(
-                              "rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-sm group",
+                              "rounded-xl border overflow-hidden transition-all duration-200 group",
                               isOverdue && "border-destructive/20"
                             )}
                             style={color
                               ? { backgroundColor: `${color}08`, borderColor: isOverdue ? undefined : `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
-                              : { backgroundColor: 'hsl(var(--card))', borderColor: isOverdue ? undefined : 'hsl(var(--border))' }
+                              : { backgroundColor: 'hsl(var(--card) / 0.4)', borderColor: isOverdue ? undefined : 'hsl(var(--border))' }
                             }
                           >
                             <div className="flex items-center justify-between p-4">

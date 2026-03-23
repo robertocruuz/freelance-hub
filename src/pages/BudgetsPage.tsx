@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
 import { useClients } from '@/hooks/useClients';
+import { useIsDesktop } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,7 @@ interface Budget {
   budget_date: string | null;
   validity_date: string | null;
   delivery_date: string | null;
+  delivery_text: string | null;
   items: BudgetItem[];
   total: number;
   discount: number;
@@ -83,6 +85,7 @@ const getContrastYIQ = (hexcolor: string) => {
 };
 
 const BudgetsPage = () => {
+  const isDesktop = useIsDesktop();
   const { t } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -97,6 +100,7 @@ const BudgetsPage = () => {
   const [budgetDate, setBudgetDate] = useState<Date | undefined>(new Date());
   const [validityDate, setValidityDate] = useState<Date | undefined>(undefined);
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
+  const [deliveryText, setDeliveryText] = useState('');
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
@@ -148,6 +152,7 @@ const BudgetsPage = () => {
           budget_date: (b as any).budget_date ?? null,
           validity_date: (b as any).validity_date ?? null,
           delivery_date: (b as any).delivery_date ?? null,
+          delivery_text: (b as any).delivery_text ?? null,
           discount: (b as any).discount ?? 0,
           notes: (b as any).notes ?? null,
           items: (Array.isArray(b.items) ? b.items : []) as unknown as BudgetItem[],
@@ -211,6 +216,7 @@ const BudgetsPage = () => {
       budget_date: budgetDate ? format(budgetDate, 'yyyy-MM-dd') : null,
       validity_date: validityDate ? format(validityDate, 'yyyy-MM-dd') : null,
       delivery_date: deliveryDate ? format(deliveryDate, 'yyyy-MM-dd') : null,
+      delivery_text: deliveryText || null,
       items: items as unknown as Json,
       total,
       discount,
@@ -243,6 +249,7 @@ const BudgetsPage = () => {
           await supabase.from('projects')
             .update({ 
               due_date: payload.delivery_date,
+              due_text: payload.delivery_text,
               discount: payload.discount 
             })
             .eq('id', projId);
@@ -303,6 +310,7 @@ const BudgetsPage = () => {
     setBudgetDate(new Date());
     setValidityDate(undefined);
     setDeliveryDate(undefined);
+    setDeliveryText('');
     setItems([]);
     setDiscount(0);
     setNotes('');
@@ -316,6 +324,7 @@ const BudgetsPage = () => {
     setBudgetDate(b.budget_date ? new Date(b.budget_date + 'T12:00:00') : new Date());
     setValidityDate(b.validity_date ? new Date(b.validity_date + 'T12:00:00') : undefined);
     setDeliveryDate(b.delivery_date ? new Date(b.delivery_date + 'T12:00:00') : undefined);
+    setDeliveryText(b.delivery_text || '');
     setItems(b.items.length > 0 ? b.items : []);
     setDiscount(b.discount || 0);
     setNotes(b.notes || '');
@@ -386,6 +395,7 @@ const BudgetsPage = () => {
       name: projectName,
       client_id: budget.client_id || null,
       due_date: budget.delivery_date || null,
+      due_text: budget.delivery_text || null,
       discount: budget.discount || 0,
       budget_id: budget.id,
     }).select('id').single();
@@ -438,7 +448,7 @@ const BudgetsPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className={cn(
-                  "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                  "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border  focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
                   search 
                     ? "w-[180px] sm:w-[250px]" 
                     : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
@@ -456,7 +466,7 @@ const BudgetsPage = () => {
             
             <Button
               onClick={() => setCreating(true)}
-              className="gap-2 rounded-full font-semibold shadow-sm shrink-0 h-10 px-4"
+              className="gap-2 rounded-full font-semibold  shrink-0 h-10 px-4"
             >
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newBudget}</span>
             </Button>
@@ -475,7 +485,7 @@ const BudgetsPage = () => {
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                   statusFilter === s
-                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    ? 'bg-primary text-primary-foreground border-primary '
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
                 )}
               >
@@ -486,7 +496,7 @@ const BudgetsPage = () => {
 
           <div className="w-full sm:w-[220px]">
             <Select value={filterClientId} onValueChange={setFilterClientId}>
-              <SelectTrigger className="h-9 px-3 text-xs rounded-xl font-medium border-border/50 bg-card/60 shadow-sm">
+              <SelectTrigger className="h-9 px-3 text-xs rounded-xl font-medium border-border/50 bg-card/60 ">
                 <SelectValue placeholder="Filtrar por cliente" />
               </SelectTrigger>
               <SelectContent>
@@ -502,7 +512,7 @@ const BudgetsPage = () => {
 
       {/* Create/Edit Form */}
       {isFormOpen && (
-        <div className="max-w-4xl rounded-2xl border border-border bg-card p-6 space-y-5 shadow-sm animate-fade-in mx-auto sm:mx-0">
+        <div className="max-w-4xl rounded-2xl border border-border bg-card p-6 space-y-5  animate-fade-in mx-auto sm:mx-0">
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? 'Editar Orçamento' : t.newBudget}
           </h2>
@@ -525,7 +535,7 @@ const BudgetsPage = () => {
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Data</label>
               <Popover>
@@ -565,7 +575,7 @@ const BudgetsPage = () => {
               </Popover>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Prazo de Entrega</label>
+              <label className="text-xs font-medium text-muted-foreground">Prazo (Data)</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -582,6 +592,15 @@ const BudgetsPage = () => {
                   <Calendar mode="single" selected={deliveryDate} onSelect={setDeliveryDate} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Prazo (Texto Livre)</label>
+              <Input
+                placeholder="Ex: A combinar, 15 dias"
+                value={deliveryText}
+                onChange={(e) => setDeliveryText(e.target.value)}
+                className="rounded-xl h-10 text-sm"
+              />
             </div>
           </div>
 
@@ -764,42 +783,70 @@ const BudgetsPage = () => {
               return nameA.localeCompare(nameB);
             });
 
-            return (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-                {sortedBudgets.map((b) => {
-                  const isExpanded = expandedBudget === b.id;
+            
+            const renderCard = (b: any) => {
+const isExpanded = expandedBudget === b.id;
                   const color = clientColorFn(b.client_id);
                   const contrast = color ? getContrastYIQ(color) : 'dark';
-                  const tColor = color ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-                  const mColor = color ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
-                  const btnColor = color ? (contrast === 'light' ? 'text-white hover:bg-white hover:text-slate-900' : 'text-slate-900 hover:bg-slate-900 hover:text-white') : 'text-muted-foreground hover:bg-muted hover:text-foreground';
-                  const highlightColor = color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
+                  const isLight = contrast === 'light';
+                  
+                  const activeColorStyle = isExpanded && color ? { backgroundColor: color } : {};
+                  
+                  const tColorNormal = 'text-foreground';
+                  const tColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
+                  const tColorActive = color && isExpanded ? (isLight ? 'text-white' : 'text-slate-900') : '';
+                  const tColor = `${color && isExpanded ? '' : tColorNormal} ${tColorHover} ${tColorActive} transition-colors duration-300`;
+                  
+                  const mColorNormal = 'text-muted-foreground';
+                  const mColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800') : '';
+                  const mColorActive = color && isExpanded ? (isLight ? 'text-white/80' : 'text-slate-800') : '';
+                  const mColor = `${color && isExpanded ? '' : mColorNormal} ${mColorHover} ${mColorActive} transition-colors duration-300`;
+                  
+                  const btnColorNormal = 'text-muted-foreground hover:bg-muted hover:text-foreground';
+                  const btnColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900') : '';
+                  const btnColorActive = color && isExpanded ? (isLight ? 'text-white/80 hover:bg-white/20 hover:text-white' : 'text-slate-700 hover:bg-slate-900/10 hover:text-slate-900') : '';
+                  const btnColor = `${color && isExpanded ? '' : btnColorNormal} ${btnColorHover} ${btnColorActive} transition-colors duration-300`;
+                  
+                  const hlColorNormal = 'bg-muted text-muted-foreground';
+                  const hlColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'group-hover:bg-primary/10 group-hover:text-primary';
+                  const hlColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
+                  const highlightColor = `${isExpanded ? hlColorActive : hlColorNormal} ${!isExpanded ? hlColorHover : ''} transition-colors duration-300`;
+                  
+                  const stColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : '';
+                  const stColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : '';
 
                   return (
-                    <div
+                      <div
                           key={b.id}
                           className={cn(
-                            "rounded-xl border overflow-hidden transition-all duration-200",
-                            isExpanded ? "shadow-md" : "hover:shadow-sm"
+                            "group rounded-xl border flex flex-col overflow-hidden transition-all duration-300 relative box-border bg-card z-0",
+                            isExpanded ? " border-border/80" : " hover:-translate-y-0.5",
+                            !color && "hover:border-border/80"
                           )}
-                          style={color
-                            ? { backgroundColor: isExpanded ? 'hsl(var(--card))' : color, borderColor: color }
-                            : { backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }
-                          }
                         >
+                          {/* Smooth Background Transition */}
+                          {color && !isExpanded && (
+                            <div 
+                              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none -z-10"
+                              style={{ backgroundColor: color }}
+                            />
+                          )}
+                          
                           {/* Budget header */}
                           <div
                             className={cn(
-                              "flex items-center justify-between p-4 cursor-pointer group",
-                              isExpanded && color && "border-b border-white/20 dark:border-black/10"
+                              "flex items-center justify-between p-4 cursor-pointer relative z-10",
+                              !isExpanded && "transition-colors duration-300",
+                              isExpanded && "border-b border-border/50",
+                              isExpanded && !color && "bg-muted/20"
                             )}
-                            style={isExpanded && color ? { backgroundColor: color } : {}}
+                            style={activeColorStyle}
                             onClick={() => setExpandedBudget(isExpanded ? null : b.id)}
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className={cn(
                                 "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                isExpanded ? highlightColor : (color ? (contrast === 'light' ? 'bg-white/10 text-white' : 'bg-black/5 text-slate-900') : 'bg-muted group-hover:bg-primary/5 text-muted-foreground group-hover:text-primary')
+                                highlightColor
                               )}>
                                 {isExpanded ? (
                                   <ChevronDown className="w-4 h-4" />
@@ -838,8 +885,11 @@ const BudgetsPage = () => {
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button className={cn(
-                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                                    color ? (contrast === 'light' ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : statusColors[b.status]
+                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 z-20 relative",
+                                    !color ? `focus-visible:ring-ring ${statusColors[b.status]}` : '',
+                                    stColorHover,
+                                    stColorActive,
+                                    color && (isLight ? 'focus-visible:ring-white/50' : 'focus-visible:ring-slate-900/50')
                                   )}>
                                     {statusLabel(b.status)}
                                     <ChevronDown className="w-3 h-3" />
@@ -884,7 +934,7 @@ const BudgetsPage = () => {
 
                           {/* Expanded content */}
                           {isExpanded && b.items.length > 0 && (
-                            <div className="border-t border-border/50 px-4 pb-4 pt-3 animate-fade-in">
+                            <div className="border-t border-border/50 px-4 pb-4 pt-3">
                               <div className="rounded-xl border border-border overflow-hidden">
                                 <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 text-[11px] font-semibold text-muted-foreground px-3 py-2 bg-muted/50">
                                   <span>{t.description}</span>
@@ -908,7 +958,7 @@ const BudgetsPage = () => {
                                       <div className="col-span-2"></div>
                                       <span className="text-right text-muted-foreground tabular-nums">Desconto {b.discount}%</span>
                                       <span className="text-right text-destructive font-medium tabular-nums">
-                                        - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * b.discount / 100)}
+                                        - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (b.discount / 100))}
                                       </span>
                                     </div>
                                   )}
@@ -922,8 +972,28 @@ const BudgetsPage = () => {
                             </div>
                           )}
                         </div>
-                      );
-                })}
+                    );
+            };
+            
+            if (!isDesktop) {
+              return (
+                <div className="flex flex-col gap-5">
+                  {sortedBudgets.map(renderCard)}
+                </div>
+              );
+            }
+            
+            const col1 = sortedBudgets.filter((_, i) => i % 2 === 0);
+            const col2 = sortedBudgets.filter((_, i) => i % 2 === 1);
+            
+            return (
+              <div className="grid grid-cols-2 gap-5 items-start">
+                <div className="flex flex-col gap-5">
+                  {col1.map(renderCard)}
+                </div>
+                <div className="flex flex-col gap-5">
+                  {col2.map(renderCard)}
+                </div>
               </div>
             );
           })()}
