@@ -709,8 +709,8 @@ const ProjectsPage = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
+    <div className="w-full max-w-[1800px] mx-auto space-y-6 animate-fade-in">
+      {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">{t.projects}</h1>
@@ -718,36 +718,43 @@ const ProjectsPage = () => {
             {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
           </p>
         </div>
-        <Button
-          onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
-          className="gap-2 rounded-xl font-semibold shadow-sm"
-        >
-          <Plus className="w-4 h-4" /> {t.newProject}
-        </Button>
-      </div>
-
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder={t.search}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-8 rounded-xl"
-        />
-        {search && (
-          <button
-            onClick={() => setSearch('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        <div className="flex items-center gap-2">
+          {/* Expandable Search w/ Default Label */}
+          <div className="relative group flex items-center h-10">
+            <Search className="absolute left-3 w-4 h-4 z-10 pointer-events-none transition-all duration-300 text-muted-foreground group-focus-within:text-primary" />
+            <Input
+              placeholder={t.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={cn(
+                "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                search 
+                  ? "w-[180px] sm:w-[250px]" 
+                  : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
+              )}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors z-10"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          
+          <Button
+            onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
+            className="gap-2 rounded-full font-semibold shadow-sm shrink-0 h-10 px-4"
           >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newProject}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Create/Edit Form */}
       {showForm && (
-        <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-fade-in">
+        <div className="max-w-3xl p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-fade-in">
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? t.editProject : t.newProject}
           </h2>
@@ -937,7 +944,7 @@ const ProjectsPage = () => {
 
       {/* Empty state */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground w-full">
           <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
             <FolderKanban className="w-8 h-8 opacity-50" />
           </div>
@@ -945,7 +952,7 @@ const ProjectsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 items-start">
           {filtered.map(p => {
                       const isExpanded = expandedIds.has(p.id);
                       const items = projectItems[p.id] || [];
