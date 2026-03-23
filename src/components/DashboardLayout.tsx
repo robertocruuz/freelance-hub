@@ -231,6 +231,7 @@ const SidebarNav = ({
             const label = item.label || (labelMap[item.key] ? labelMap[item.key](t) : '');
             const isFav = item.bgColor !== undefined;
             const contrast = isFav && item.bgColor ? getContrastYIQ(item.bgColor) : null;
+            const favHoverColor = contrast === 'light' ? '#ffffff' : '#0f172a';
 
             const btn = (
               <button
@@ -239,18 +240,21 @@ const SidebarNav = ({
                   if (isMobile) setMobileOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-3 rounded-xl transition-all duration-150',
+                  'w-full flex items-center gap-3 rounded-xl transition-all duration-150 hover:shadow-sm',
                   collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-                  isFav ? (
-                    item.bgColor ? 'font-bold shadow-sm' : 'bg-sidebar-accent/50 text-sidebar-foreground border border-sidebar-border/50 font-medium'
-                  ) : active
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-bold'
-                    : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium'
+                  isFav && item.bgColor 
+                    ? (active 
+                        ? 'font-bold shadow-sm' 
+                        : 'text-sidebar-foreground/75 hover:bg-[var(--fav-bg)] hover:text-[var(--fav-color)] font-medium')
+                    : (active
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-bold'
+                        : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium')
                 )}
                 style={isFav && item.bgColor ? { 
-                  backgroundColor: item.bgColor,
-                  color: contrast === 'light' ? '#ffffff' : '#0f172a'
-                } : {}}
+                  '--fav-bg': item.bgColor,
+                  '--fav-color': favHoverColor,
+                  ...(active ? { backgroundColor: item.bgColor, color: favHoverColor } : {})
+                } as React.CSSProperties : {}}
               >
                 <div className="relative shrink-0 flex items-center justify-center">
                   <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
