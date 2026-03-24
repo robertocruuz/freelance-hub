@@ -862,7 +862,7 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto animate-fade-in flex flex-col gap-3">
+    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-3 h-full min-h-0 animate-fade-in">
       {/* Page Header */}
       <div className="flex flex-col gap-3 mb-1">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

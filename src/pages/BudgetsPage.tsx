@@ -429,7 +429,7 @@ const BudgetsPage = () => {
   });
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto space-y-6 animate-fade-in">
+    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in">
       {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

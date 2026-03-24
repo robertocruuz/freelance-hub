@@ -299,7 +299,7 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="space-y-4 h-full flex flex-col min-h-0">
+    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4 h-full flex flex-col min-h-0 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-3 shrink-0">
         {/* Title and subtitle */}
