@@ -21,4 +21,17 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: ["react", "react-dom", "@tanstack/react-query"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-pdf': ['jspdf', 'html2canvas'],
+          'vendor-utils': ['@supabase/supabase-js', '@tanstack/react-query', 'date-fns'],
+          'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          'vendor-ui': ['lucide-react', 'recharts']
+        }
+      }
+    }
+  }
 }));
