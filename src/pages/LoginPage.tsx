@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
@@ -16,6 +16,40 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Slider State
+  const tips = [
+    {
+      tags: ["Dashboard Interativo", "Visão 360º"],
+      quote: "Centralize todas as métricas, clientes e finanças em uma interface premium e clara.",
+      author: "Freelance Hub",
+      role: "Plataforma Executiva"
+    },
+    {
+      tags: ["Kanban Dinâmico", "Produtividade"],
+      quote: "Eu consegui reduzir o tempo perdido na gestão arrastando e soltando tarefas no painel visual.",
+      author: "Módulo de Tarefas",
+      role: "Workflow Otimizado"
+    },
+    {
+      tags: ["Faturamento", "Automação"],
+      quote: "Gere orçamentos em PDF com um clique e os converta automaticamente em novos projetos.",
+      author: "Módulo Financeiro",
+      role: "Emissão de Orçamentos"
+    }
+  ];
+  const [currentTip, setCurrentTip] = useState(0);
+
+  const nextTip = () => setCurrentTip((prev) => (prev + 1) % tips.length);
+  const prevTip = () => setCurrentTip((prev) => (prev - 1 + tips.length) % tips.length);
+
+  // Auto-play the slider
+  useEffect(() => {
+    const timer = setInterval(() => {
+      nextTip();
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +67,6 @@ const LoginPage = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          // Auto-login after signup
           const { error: loginError } = await signIn(email, password);
           if (loginError) {
             toast.success('Conta criada! Faça login para continuar.');
@@ -68,21 +101,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Left side — Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-28 relative bg-background">
-        {/* Back button */}
+    <div className="min-h-screen flex lg:flex-row-reverse bg-background">
+      {/* Right side (Visually) — Form */}
+      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-32 relative bg-background">
         <button
           onClick={() => isForgotPassword ? setIsForgotPassword(false) : isRegister ? setIsRegister(false) : navigate('/')}
           className="absolute top-6 left-6 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        {/* Logo / Brand */}
         <div className="mb-10">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-6">
-            <span className="text-primary-foreground font-black text-lg">F</span>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             {getTitle()}
           </h1>
@@ -94,9 +122,7 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
           {isRegister && !isForgotPassword && (
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
-                Nome
-              </label>
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">Nome</label>
               <input
                 type="text"
                 placeholder="Seu nome"
@@ -108,9 +134,7 @@ const LoginPage = () => {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
-              Email
-            </label>
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">Email</label>
             <input
               type="email"
               placeholder="seu@email.com"
@@ -123,9 +147,7 @@ const LoginPage = () => {
 
           {!isForgotPassword && (
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">
-                Senha
-              </label>
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5 tracking-wide uppercase">Senha</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -163,7 +185,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:brightness-110 transition-all"
+              className="w-full py-3 rounded-[0.85rem] bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-all"
             >
               {loading ? '...' : isForgotPassword ? 'Enviar link' : isRegister ? 'Criar conta' : 'Entrar'}
             </button>
@@ -183,20 +205,60 @@ const LoginPage = () => {
         )}
       </div>
 
-      {/* Right side — Gradient visual */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-[hsl(225,30%,8%)]">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 80% 60% at 50% 40%, hsl(225, 100%, 55%) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 50% at 30% 70%, hsl(320, 80%, 50%) 0%, transparent 55%),
-              radial-gradient(ellipse 50% 40% at 70% 80%, hsl(20, 90%, 55%) 0%, transparent 50%),
-              radial-gradient(ellipse 40% 30% at 60% 30%, hsl(270, 70%, 45%) 0%, transparent 50%)
-            `,
-          }}
-        />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+      {/* Card Slider Section (Visually on Left side) */}
+      <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] p-4 lg:p-4 shrink-0">
+        {/* The Boxed Gradient Container */}
+        <div className="w-full h-full relative rounded-3xl overflow-hidden flex flex-col justify-end shadow-2xl">
+        
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes fluidGradient {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .animate-fluid-background {
+              background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+              background-size: 400% 400%;
+              animation: fluidGradient 15s ease infinite;
+            }
+            
+            .glass-slider-enter { animation: sliderFadeIn 0.5s ease-out forwards; }
+            @keyframes sliderFadeIn {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}} />
+          
+          {/* Animated Fluid Background */}
+          <div className="absolute inset-0 animate-fluid-background" />
+
+          {/* Noise overlay for texture */}
+          <div className="absolute inset-0 opacity-[0.035] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+
+          {/* Tips Slider Overlay (Foreground) */}
+          <div className="relative z-20 w-full p-10 md:p-14 mt-auto">
+            <div key={currentTip} className="glass-slider-enter text-white">
+              
+              <div className="flex flex-wrap gap-3 mb-8">
+                {tips[currentTip].tags.map((tag, i) => (
+                  <span key={i} className="px-5 py-2 rounded-full border border-white/30 text-[13px] font-medium bg-white/10 tracking-wide backdrop-blur-md">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <p className="text-3xl md:text-[2.2rem] font-medium leading-[1.3] tracking-tight mb-12 drop-shadow-lg">
+                {tips[currentTip].quote}
+              </p>
+
+              <div className="mb-2">
+                <h4 className="font-bold text-lg mb-0.5">{tips[currentTip].author}</h4>
+                <p className="text-white/80 text-sm font-medium">{tips[currentTip].role}</p>
+              </div>
+            </div>
+          </div>
+        
+        </div>
       </div>
     </div>
   );
