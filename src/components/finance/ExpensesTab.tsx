@@ -170,18 +170,30 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
   const totalFiltered = filtered.reduce((s, e) => s + e.amount, 0);
 
   return (
-    <div className="space-y-4">
-      {nearDue.length > 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50/80 dark:bg-red-950/30 p-4">
-          <div className="w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-red-800 dark:text-red-300">{nearDue.length} despesa(s) vencem em breve</p>
-            <p className="text-xs text-red-600/80 dark:text-red-400/60">Nos próximos 3 dias</p>
-          </div>
+    <div className="relative h-full flex flex-col">
+      {/* Action Button (Absolute Top Right) */}
+      {!dialogOpen && (
+        <div className="absolute -top-12 right-0 flex items-center z-10">
+          <Button onClick={openNew} size="sm" className="rounded-xl gap-1.5 font-semibold shadow-sm">
+            <Plus className="w-4 h-4" /> Nova Despesa
+          </Button>
         </div>
       )}
+
+      {/* Main Card Content */}
+      <div className="border border-border bg-card rounded-2xl p-4 sm:p-6 flex-1 flex flex-col">
+        <div className="space-y-4">
+          {nearDue.length > 0 && (
+            <div className="flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50/80 dark:bg-red-950/30 p-4">
+              <div className="w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-red-800 dark:text-red-300">{nearDue.length} despesa(s) vencem em breve</p>
+                <p className="text-xs text-red-600/80 dark:text-red-400/60">Nos próximos 3 dias</p>
+              </div>
+            </div>
+          )}
 
       {dialogOpen && (
         <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in">
@@ -312,9 +324,6 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
             </div>
           )}
         </div>
-        <Button onClick={openNew} size="sm" className="rounded-lg gap-1.5">
-          <Plus className="w-4 h-4" /> Nova Despesa
-        </Button>
       </div>
 
       {loading ? (
@@ -393,6 +402,8 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           })}
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

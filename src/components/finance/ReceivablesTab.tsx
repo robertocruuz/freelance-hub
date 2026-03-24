@@ -419,100 +419,108 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
   const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
 
   return (
-    <div className="space-y-5">
-      {/* Near due warning */}
-      {nearDue.length > 0 && !creating && (
-        <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4" role="alert">
-          <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-              {nearDue.length} fatura{nearDue.length > 1 ? 's' : ''} vence{nearDue.length > 1 ? 'm' : ''} em breve
-            </p>
-            <p className="text-xs text-amber-600/80 dark:text-amber-400/60">Nos próximos 3 dias</p>
-          </div>
+    <div className="relative h-full flex flex-col">
+      {/* Action Buttons (Absolute Top Right) */}
+      {!creating && (
+        <div className="absolute -top-12 right-0 flex items-center gap-2 z-10">
+          <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 rounded-xl bg-background hover:bg-muted">
+                <FolderKanban className="w-4 h-4" />
+                <span className="hidden sm:inline">Importar</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              {/* Form Import content kept exactly the same */}
+              <DialogHeader>
+                <DialogTitle>Importar de Projeto</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground mb-3">
+                Selecione um projeto para importar os dados na fatura.
+              </p>
+              {projects.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                    <FolderKanban className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Nenhum projeto encontrado</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  {projects.map((p) => {
+                    const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
+                    const alreadyImported = mappedInvoices.some(inv => inv.project_id === p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => alreadyImported ? toast.error('Este projeto já foi importado como fatura.') : importProject(p)}
+                        disabled={alreadyImported}
+                        className={cn(
+                          "w-full text-left p-3.5 rounded-xl border border-border transition-all",
+                          alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-card hover:bg-muted/50 hover:shadow-sm"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <FolderKanban className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm text-foreground flex items-center gap-2">
+                                {p.name}
+                                {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Já importado</Badge>}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {p.client_name || 'Sem cliente'}
+                                {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-sm text-foreground tabular-nums">{formatCurrency(totalValue)}</p>
+                            {p.due_date && <p className="text-[11px] text-muted-foreground">{format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</p>}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5 rounded-xl font-semibold shadow-sm">
+            <Plus className="w-4 h-4" /> Nova Fatura
+          </Button>
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">
-          {creating ? (editingInvoiceId ? 'Editar Fatura' : 'Nova Fatura') : 'Faturas'}
-        </h2>
-        {!creating && (
-          <div className="flex items-center gap-2">
-            <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5 rounded-xl">
-                  <FolderKanban className="w-4 h-4" />
-                  <span className="hidden sm:inline">Importar</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Importar de Projeto</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Selecione um projeto para importar os dados na fatura.
+      {/* Main Card Content */}
+      <div className="border border-border bg-card rounded-2xl p-4 sm:p-6 flex-1 flex flex-col">
+        <div className="space-y-5">
+          {/* Near due warning */}
+          {nearDue.length > 0 && !creating && (
+            <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4" role="alert">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                  {nearDue.length} fatura{nearDue.length > 1 ? 's' : ''} vence{nearDue.length > 1 ? 'm' : ''} em breve
                 </p>
-                {projects.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                      <FolderKanban className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm font-medium text-muted-foreground">Nenhum projeto encontrado</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                    {projects.map((p) => {
-                      const totalValue = p.items.reduce((sum, i) => sum + i.value, 0);
-                      const alreadyImported = mappedInvoices.some(inv => inv.project_id === p.id);
-                      return (
-                        <button
-                          key={p.id}
-                          onClick={() => alreadyImported ? toast.error('Este projeto já foi importado como fatura.') : importProject(p)}
-                          disabled={alreadyImported}
-                          className={cn(
-                            "w-full text-left p-3.5 rounded-xl border border-border transition-all",
-                            alreadyImported ? "opacity-50 cursor-not-allowed bg-muted/10" : "bg-card hover:bg-muted/50 hover:shadow-sm"
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                <FolderKanban className="w-4 h-4 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-sm text-foreground flex items-center gap-2">
-                                  {p.name}
-                                  {alreadyImported && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Já importado</Badge>}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {p.client_name || 'Sem cliente'}
-                                  {p.items.length > 0 && ` · ${p.items.length} ${p.items.length === 1 ? 'item' : 'itens'}`}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-sm text-foreground tabular-nums">{formatCurrency(totalValue)}</p>
-                              {p.due_date && <p className="text-[11px] text-muted-foreground">{format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</p>}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
+                <p className="text-xs text-amber-600/80 dark:text-amber-400/60">Nos próximos 3 dias</p>
+              </div>
+            </div>
+          )}
 
-            <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5 rounded-xl font-semibold shadow-sm">
-              <Plus className="w-4 h-4" /> Nova Fatura
-            </Button>
-          </div>
-        )}
-      </div>
+          {/* Form Header (only when creating) */}
+          {creating && (
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-foreground">
+                {editingInvoiceId ? 'Editar Fatura' : 'Nova Fatura'}
+              </h2>
+            </div>
+          )}
 
       {/* Create/Edit Form */}
       {creating && (
@@ -1006,6 +1014,8 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
           </div>
         </>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }

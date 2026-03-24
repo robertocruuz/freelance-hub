@@ -221,25 +221,29 @@ export default function FinancePage() {
           {/* 2 Columns: Receivables & Payables */}
           <div ref={tabsRef} className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
             {/* Receivables Column */}
-            <div className="flex flex-col gap-5 border border-border bg-card rounded-2xl p-4 sm:p-6">
-              <div className="flex items-center gap-2 border-b border-border/40 pb-4">
+            <div className="relative flex flex-col">
+              <div className="flex items-center gap-2 mb-4 h-8">
                 <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <ArrowDownToLine className="w-4 h-4 text-emerald-500" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">A Receber</h2>
               </div>
-              <ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+              <div className="h-full flex flex-col">
+                <ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+              </div>
             </div>
             
             {/* Payables Column */}
-            <div className="flex flex-col gap-5 border border-border bg-card rounded-2xl p-4 sm:p-6">
-              <div className="flex items-center gap-2 border-b border-border/40 pb-4">
+            <div className="relative flex flex-col">
+              <div className="flex items-center gap-2 mb-4 h-8">
                 <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
                   <ArrowUpFromLine className="w-4 h-4 text-red-500" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">A Pagar</h2>
               </div>
-              <ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+              <div className="h-full flex flex-col">
+                <ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+              </div>
             </div>
           </div>
 
