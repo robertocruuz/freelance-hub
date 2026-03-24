@@ -1,73 +1,59 @@
-# Welcome to your Lovable project
+# Freelance Hub
 
-## Project info
+Freelance Hub is a comprehensive B2B SaaS platform focused on complete management for freelancers and small agencies. The system centralizes essential business operations, from lead capture and pipeline control to service delivery, time management, and invoicing.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+The platform relies on a "Premium" visual interface, guided by *Flat Design* principles and a modern *Bento Grid Layout*, offering an immersive, responsive, and efficient experience.
 
-## How can I edit this code?
+## ✨ Key Features
 
-There are several ways of editing your application.
+- **Bento Grid Dashboard**: An executive overview condensing financial indicators, CRM status, budget summaries, active chronometers, daily/weekly tasks in an interactive calendar, and an active team block without information overload.
+- **CRM & Client Management (Leads)**: Pipeline-structured internal CRM managing contacts, opportunities, values, and negotiation stages. Supports client logo uploads and **Custom Color per Client** dynamically applied throughout the platform's UI elements via YIQ contrast calculations.
+- **Project & Task Management (Kanban)**: Supports project creation inheriting client logos/colors or using independent custom colors. Drag-and-drop Kanban interface for task tracking with priority tags, deadlines, and multi-user assignments.
+- **Time Tracking**: Strict control of billable hours using a continuous global timer (Chronometer) or retroactive logging. Beautifully designed Timesheet reports easily exported to PDF.
+- **Budgets & Invoicing**: High-fidelity commercial proposals converted directly to corporate PDFs and seamlessly turned into active projects upon approval (preventing duplicates). Clear tracking of payables/receivables with filtered visibility based on user roles (Admin/Collaborator).
+- **Realtime Collaboration, Chat & Notifications**: Tasks, chat messages (Channels/DMs), and notifications update instantly across all team members without refreshing, thanks to Supabase Realtime integration.
 
-**Use Lovable**
+## 🛠️ Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Frontend**: React.js, TypeScript, Vite
+- **UI & Animation**: Tailwind CSS, Shadcn UI (Radix UI) highly customized, Lucide React, Recharts, Framer Motion, Tailwind Animate
+- **Backend (BaaS)**: Supabase (PostgreSQL, Authentication, Realtime Database, Edge Storage)
+- **State & Data Fetching**: React Query
+- **Utilities**: jsPDF (Report generation), date-fns, dnd-kit (Drag and Drop)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Local Installation
 
-Follow these steps:
+1. Clone the repository:
+   ```bash
+   git clone <YOUR_GIT_URL>
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Navigate to the project directory:
+   ```bash
+   cd freelance-hub
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. Install the necessary dependencies:
+   ```bash
+   npm i
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. Configure environment variables (you will need a Supabase project instance):
+   Create a `.env` file in the root directory and add the necessary `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` variables.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-**Edit a file directly in GitHub**
+## 📝 Editing Code
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+You can make changes to this code in any IDE. Pushed changes will immediately be visible on your local server.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+The project utilizes Vite for Fast Refresh, delivering an instant iteration loop.

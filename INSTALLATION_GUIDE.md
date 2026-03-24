@@ -1,47 +1,40 @@
-# Manual de Instalação e Guia Técnico - Plataforma Freelance
+# Manual de Instalação e Guia Técnico - Freelance Hub
 
 Este documento fornece uma análise técnica detalhada da plataforma e um guia passo a passo para sua instalação e hospedagem.
 
 ## 1. Análise da Plataforma
-A plataforma é uma aplicação de alta performance do tipo **SPA (Single Page Application)**, projetada para gestão de freelancers e agências. Ela utiliza uma estética **Neo-Brutalista** com alto contraste e foco em usabilidade.
+O **Freelance Hub** é uma aplicação de alta performance do tipo **SPA (Single Page Application)**, projetada para gestão de freelancers e pequenas agências. Ela foca em usabilidade fluida, utilizando uma interface "Premium" baseada em **Flat Design** e um layout **Bento Grid**.
 
-### Stack Tecnológica:
+### Stack Tecnológica e Arquitetura:
 - **Frontend**:
-  - **React 18**: Base para construção de interfaces reativas.
-  - **Vite**: Build tool de última geração para performance otimizada.
-  - **TypeScript**: Tipagem estática para maior robustez.
-  - **Tailwind CSS & shadcn/ui**: Design system moderno e componentes acessíveis.
-  - **Framer Motion**: Animações fluidas e transições de página.
-  - **Recharts**: Visualização de dados e métricas financeiras.
-  - **TanStack Query**: Gerenciamento eficiente de cache e estado do servidor.
+  - **React 18 & TypeScript**: Base tipada para alta robustez corporativa.
+  - **Vite**: Build tool otimizada para performance local e em produção.
+  - **Tailwind CSS & Shadcn UI**: Design system customizável (suporta *Custom Colors* dinâmicos por cliente usando cálculo automáticos de contraste em tempo real YIQ).
+  - **Bibliotecas Auxiliares**: Framer Motion (Animações), dnd-kit (Kanban), Recharts (Gráficos), jsPDF (Exportação de relatórios).
 - **Backend (BaaS)**:
-  - **Supabase**: Solução completa para Banco de Dados (PostgreSQL), Autenticação e Segurança (RLS).
-- **Funcionalidades**:
-  - Dashboard Analítico com gráficos de receita.
-  - Gestão de Clientes e Projetos com Kanban.
-  - Emissão de Orçamentos (PDF) e Faturas.
-  - Registro de Horas (Time Tracking) com timer em tempo real.
-  - Cofre de Senhas integrado.
-  - Suporte Multi-idioma e Temas (Light/Dark).
+  - **Supabase**: Solução centralizada para Banco de Dados (PostgreSQL), Autenticação integrada, Segurança (Row Level Security - RLS), Storage e WebSockets (Realtime).
+- **Destaques**:
+  - Ecossistema *Refresh-less*: Tarefas, CRM, Chat e Notificações atualizam em tempo real para toda a equipe.
+  - Controle granular de acesso baseado em Roles (Admins vs Collaborators) direto nas queries RLS.
 
 ---
 
 ## 2. Requisitos de Hospedagem
 
-Para colocar a plataforma no ar, você precisará de dois serviços principais:
+Para colocar a plataforma no ar, você precisará de dois serviços interligados:
 
 ### A. Hospedagem do Frontend (Estática)
-Como a aplicação é compilada em arquivos estáticos (HTML, JS, CSS), você não precisa de um servidor Node.js robusto para o runtime.
+Sendo uma SPA compilada de forma pura, o frontend necessita apenas de um ambiente estático capaz de gerenciar roteamento de URL fallback.
 - **Serviços Recomendados**:
-  - **Vercel** (Recomendado pela integração fácil).
+  - **Vercel** (Altamente Recomendado pela integração fluida com Vite).
   - **Netlify**.
   - **Cloudflare Pages**.
-  - **Hospedagem Compartilhada**: Possível, desde que suporte configuração de redirecionamento (através de `.htaccess` no Apache ou configuração no Nginx).
+  - **Hospedagem Compartilhada Avançada (Hostinger, cPanel, etc)**: Possível via manipulação de rotas web servidor (`.htaccess` ou `nginx.conf`).
 
 ### B. Banco de Dados e Backend (Supabase)
-A aplicação depende diretamente de uma instância do **Supabase**.
-- Você pode usar o plano gratuito do [Supabase.com](https://supabase.com/).
-- **Requisitos**: Acesso ao painel do Supabase para criar o projeto e configurar as tabelas via SQL.
+O coração e a "central lógia e stateful" plataforma operam sobre uma nuvem gerenciada PostgreSQL.
+- Utilize projetos em nuvem no [Supabase.com](https://supabase.com/).
+- Responsável por Triggers cruciais, Views, Realtime Engine e Logs transacionais.
 
 ---
 
@@ -50,113 +43,78 @@ A aplicação depende diretamente de uma instância do **Supabase**.
 ### Passo 1: Configuração do Supabase
 1. **Criação do Projeto**:
    - Acesse [Supabase](https://supabase.com/) e crie um novo projeto.
-   - Guarde a senha do banco de dados em um local seguro.
+   - Salve a senha do banco de dados (Database Password) em local seguro.
 
-2. **Configuração do Banco de Dados (Migrations)**:
-   - No painel do Supabase, vá em **SQL Editor**.
-   - Você deve executar os scripts SQL localizados na pasta `supabase/migrations/` em ordem cronológica (pela data no nome do arquivo).
-   - *Dica*: Se você tiver o Supabase CLI instalado, pode usar `supabase db push` após configurar o link com `supabase link`.
+2. **Configuração do Banco de Dados (Migrations/Schemas)**:
+   - No painel do Supabase, vá na aba lateral **SQL Editor**.
+   - Para aplicar a estrutura, execute os scripts SQL localizados na pasta `supabase/migrations/` ordenados de forma crescente pelas suas datas de prefixo numérico.
+   - *Alternativa rápida CLI*: Caso utilize o `supabase-cli`, conecte-se com `supabase link --project-ref XXXX` seguido e depois execute push com `supabase db push`.
 
-3. **Autenticação**:
-   - Vá em **Authentication > Providers** e certifique-se de que "Email" está habilitado.
-   - (Opcional) Configure os "URL Configuration" em **Authentication > URL Configuration**:
-     - **Site URL**: O endereço final da sua aplicação (ex: `https://seu-app.vercel.app`).
-     - **Redirect URLs**: Adicione `https://seu-app.vercel.app/**`.
+3. **Storage (Buckets para Arquivos e Mídias)**:
+   - Vá na seção lateral **Storage**.
+   - As migrations já devem criar a infraestrutura básica, mas confira ativamente e assegure que os *Buckets* a seguir existem na lista:
+     - `avatars` (Público): Armazena fotos de perfil dos membros do workspace.
+     - `client_logos` (Público): Armazena e expõe logotipos renderizados no CRM/Dashboards. 
 
-4. **Credenciais API**:
-   - Vá em **Project Settings > API**.
-   - Copie a `Project URL` e a `anon public key`. Você precisará delas no próximo passo.
+4. **Autenticação (Auth Rules)**:
+   - Navegue por **Authentication > Providers** e certifique-se de que "Email/Senha" está devidamente ativado.
+   - Ajuste o roteamento final navegando para **Authentication > URL Configuration**:
+     - **Site URL**: Insira o endereço final estático de produção (ex: `https://app.sua-agencia.com`).
+     - **Redirect URLs**: Adicione curingas baseados nela: `https://app.sua-agencia.com/**` e se for atuar na máquina também ponha `http://localhost:5173/**`.
 
-### Passo 2: Configuração do Ambiente Local
-1. Certifique-se de ter o **Node.js** (versão 18 ou superior) instalado.
-2. Clone este repositório para sua máquina local.
-3. Na raiz do projeto, crie um arquivo chamado `.env`:
+5. **Credenciais da API do Sistema**:
+   - Resgate o "segredo de proxy" navegando para **Project Settings > API**.
+   - Copie o endereçamento web de `Project URL` e o hash encriptado de `anon public key`.
+
+### Passo 2: Configuração de Variáveis (Ambiente Local)
+1. Certifique a presença do **Node.js** instaldo (versão 18+ padrão TLS).
+2. Tendo copiado o repositório (`git clone`).
+3. Crie um arquivo com exato nome `.env` no subdiretorio absoluto principal:
    ```env
-   VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-   VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
+   VITE_SUPABASE_URL=https://<SUA-URL-PROJETO-SUPABASE>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<SUA-CHAVE-ANON-PUBLIC>
    ```
-4. Instale as dependências:
+4. Baixe módulos Node associados e faça bootstrap inicial para preview local:
    ```bash
    npm install
-   ```
-5. Inicie o servidor de desenvolvimento para testar:
-   ```bash
    npm run dev
    ```
 
-### Passo 3: Build e Deploy para Produção
+### Passo 3: Build Final e Deploy Frontend
 
-#### Opção 1: Vercel (Recomendado)
-1. **Importação**: No painel da Vercel, clique em "Add New > Project" e importe seu repositório do GitHub.
-2. **Configuração de Build**:
-   - **Framework Preset**: Vite.
-   - **Build Command**: `npm run build`.
-   - **Output Directory**: `dist`.
-3. **Variáveis de Ambiente**:
-   - Expanda a seção "Environment Variables" e adicione:
-     - `VITE_SUPABASE_URL`: (Sua URL do Supabase).
-     - `VITE_SUPABASE_ANON_KEY`: (Sua chave Anon do Supabase).
-4. **Deploy**: Clique em "Deploy". A Vercel cuidará do roteamento SPA automaticamente se o preset do Vite for detectado, mas se necessário, você pode adicionar um arquivo `vercel.json` na raiz:
-   ```json
-   {
-     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-   }
-   ```
+#### Trabalhando com Vercel (Recomendado)
+1. Instancie e valide seu repositório no hub da Vercel.
+2. Defina os parâmetros de pipeline em default do Vite (`Build cmd: npm run build`, Output Folder `dist`).
+3. Cadastre as duas variáveis de chave secreta (.env) nas **Environment Variables**.
+4. Dispare deploy via clique ou "commit to origin".
 
-#### Opção 2: Hostinger / Hospedagem Compartilhada (Apache)
-1. **Build Local**: No seu terminal local, execute `npm run build`. Isso criará a pasta `dist`.
-2. **Upload via FTP**:
-   - Use um cliente FTP (como FileZilla) ou o Gerenciador de Arquivos da Hostinger.
-   - Envie todo o conteúdo de dentro da pasta `dist/` para a pasta `public_html` do seu domínio.
-3. **Configuração do `.htaccess`**:
-   - Para que as rotas do React (como `/dashboard`) funcionem sem dar erro 404, crie um arquivo chamado `.htaccess` na raiz do seu `public_html` com o seguinte conteúdo:
-     ```apache
-     <IfModule mod_rewrite.c>
-       RewriteEngine On
-       RewriteBase /
-       RewriteRule ^index\.html$ - [L]
-       RewriteCond %{REQUEST_FILENAME} !-f
-       RewriteCond %{REQUEST_FILENAME} !-d
-       RewriteCond %{REQUEST_FILENAME} !-l
-       RewriteRule . /index.html [L]
-     </IfModule>
-     ```
-
-#### Opção 3: Servidor Próprio (Nginx)
-1. Execute `npm run build`.
-2. Envie o conteúdo de `dist/` para o servidor (ex: `/var/www/html`).
-3. Configure o bloco de servidor do Nginx:
-   ```nginx
-   location / {
-       try_files $uri $uri/ /index.html;
-   }
+#### Trabalhando com Servidor Compartilhado (Apache/NGINX)
+1. Realize empacotamento transpilado web rodando: `npm run build` console local.
+2. Dispare um rsync / FTP da recenemente recriada pasta `dist/` para a ponta do domínio (`public_html`).
+3. Forçe um override de 404 de Apache para o App React gerando script `.htaccess` na raiz:
+   ```apache
+   <IfModule mod_rewrite.c>
+     RewriteEngine On
+     RewriteBase /
+     RewriteRule ^index\.html$ - [L]
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteRule . /index.html [L]
+   </IfModule>
    ```
 
 ---
 
-## 4. Recursos Necessários para Manutenção
-- **Domínio**: Um domínio (ex: www.suaplataforma.com.br) apontando para o seu host de frontend.
-- **Certificado SSL**: Essencial para o funcionamento do Supabase Auth (HTTPS).
-- **Node.js**: Apenas no ambiente de desenvolvimento ou build.
+## 4. Dicas Avançadas e Troubleshooting (Soluções Comuns)
 
-Se precisar de ajustes no banco de dados futuramente, utilize a pasta `supabase/migrations/` para manter o controle de versão dos seus esquemas de dados.
+### O Painel Kanban/Chat parou de processar mensagens ou blocos movidos ativamente
+- **Sintoma Exato**: Colegas só enxergam uma task trocando de coluna ou sumindo se der reload (F5) na página no exato momento.
+- **Resolução via Supabase Dashboard**: Siga caminho **Database > Publications**. Inspecione a Publicação master "supabase_realtime". Lá haverá seletores checkbox indicando tabelas "Listened" via websockets (As migrations rodam query `alter publication...` para isso, mas caso ocorra fallback e reset manual é mandatório). Assegure check verdinho em Tabelas base: `tasks`, `projects`, `messages`, `channels` e `leads`. 
 
----
+### Variáveis "ReferenceError Undefined" no Browser (React Quebra total ao dar load inicial)
+- **Sintoma Exato**: Ao abrir painel, ao ínves do load do Login page, quegra um erro numérico fatal "Uncaught TypeError".
+- **Resolução de Ambiente**: O Vite *proíbe e ignora* toda váriavel de sistema injetada durante o build que **não** contenha o prefixo de sintaxe `VITE_`. Verifique a interface ENV no seu servidor (Netlify, Vercel) confinando que o naming style de `REACT_APP_` não foi mesclado por falhas humanas. 
 
-## 5. Troubleshooting (Solução de Problemas)
-
-### Erro: Variáveis de Ambiente não encontradas
-- **Sintoma**: O app carrega mas não consegue buscar dados ou fazer login.
-- **Solução**: Verifique se as variáveis no Vercel/Hostinger começam com `VITE_`. No Vite, apenas variáveis com esse prefixo são expostas ao código frontend.
-
-### Erro 404 ao atualizar a página (Refresh)
-- **Sintoma**: Você está em `/dashboard`, dá um F5 e a página mostra "Not Found" do servidor (Apache/Nginx).
-- **Solução**: Certifique-se de que o arquivo `.htaccess` (Apache) ou a configuração `try_files` (Nginx) está aplicada corretamente. O servidor precisa redirecionar todas as rotas para o `index.html`.
-
-### Erro de CORS no Supabase
-- **Sintoma**: Erros de rede no console do navegador ao tentar conectar ao Supabase.
-- **Solução**: No painel do Supabase, vá em **API > Settings** e adicione o domínio do seu site (ex: `https://meuapp.com`) à lista de domínios permitidos em **CORS Origin**.
-
-### Erros de Autenticação/Redirect
-- **Sintoma**: Após fazer login ou reset de senha, você é levado para uma página errada.
-- **Solução**: Verifique as "Redirect URLs" no painel do Supabase (Authentication > URL Configuration). Elas devem coincidir com a URL onde seu app está hospedado.
+### Renderização falha para Avatares ou Logos do Cliente de cor Custom
+- **Sintoma Exato**: Erros Red (403 Forbidden Access) tentado puxar URL publicas CDN vindas do backend.
+- **Resolução Storage RLS**: Ocasionalmente durante deleções de teste de Bucket, as regras Row-Level perdem o tracking reference. Confirme na seção **Storage > Policies** que Buckets sensoriais do layout (`avatars`, `client_logos`) se mantêm classificados com tag `Public` e detém uma Police RLS de Select Action rotulada explicitamente permitindo leitura desvinculada (Guest-Level).
