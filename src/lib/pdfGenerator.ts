@@ -50,6 +50,7 @@ interface BudgetPdfOptions {
   budgetDate?: string | null;
   validityDate?: string | null;
   deliveryDate?: string | null;
+  deliveryText?: string | null;
   items: PdfItem[];
   total: number;
   discount: number;
@@ -90,6 +91,17 @@ export const buildOrgAddress = (org: OrganizationInfo): string => {
   else if (org.state) parts.push(org.state);
   if (org.zip_code) parts.push(`CEP: ${org.zip_code}`);
   return parts.join(', ');
+};
+
+export const sanitizeText = (text: string | null | undefined): string => {
+  if (!text) return '';
+  return text
+    .replace(/[\u2022\u25CF\u25E6\u2023\u2043\u2219]/g, '-') // Bullets
+    .replace(/[\u2018\u2019\u00B4\u0060]/g, "'") // Single quotes
+    .replace(/[\u201C\u201D]/g, '"') // Double quotes
+    .replace(/[\u2013\u2014]/g, '-') // Dashes
+    .replace(/\u2026/g, '...') // Ellipsis
+    .replace(/\u00A0/g, ' '); // Non-breaking space
 };
 
 export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
@@ -233,8 +245,12 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
     drawRow('Validade:', new Date(options.validityDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY);
     detY += 5.5;
   }
-  if (options.deliveryDate) {
+  if (options.deliveryDate && options.deliveryText) {
+    drawRow('Entrega:', `${new Date(options.deliveryDate + 'T12:00:00').toLocaleDateString('pt-BR')} (${options.deliveryText})`, detY);
+  } else if (options.deliveryDate) {
     drawRow('Entrega:', new Date(options.deliveryDate + 'T12:00:00').toLocaleDateString('pt-BR'), detY);
+  } else if (options.deliveryText) {
+    drawRow('Entrega:', options.deliveryText, detY);
   }
 
   y += blockH + 12; // Tighter gap after blocks
@@ -265,7 +281,7 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
   doc.setFontSize(9);
   options.items.forEach((item, idx) => {
     const descW = c3 - c2 - 10;
-    const wrappedDesc = doc.splitTextToSize(item.description || '-', descW);
+    const wrappedDesc = doc.splitTextToSize(sanitizeText(item.description) || '-', descW);
     const rowH = Math.max(10, wrappedDesc.length * 5 + 4);
 
     if (y + rowH > pageH - 30) {
@@ -362,8 +378,17 @@ export const generateBudgetPdf = async (options: BudgetPdfOptions) => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...GRAY);
-    const noteLines = doc.splitTextToSize(options.notes, contentW);
-    doc.text(noteLines, margin, y);
+    const noteLines = doc.splitTextToSize(sanitizeText(options.notes), contentW);
+    
+    // Pagination logic for notes
+    noteLines.forEach((line: string) => {
+      if (y > pageH - 25) { 
+        doc.addPage(); 
+        y = 20; 
+      }
+      doc.text(line, margin, y);
+      y += 4.5;
+    });
   }
 
   // ── Footer ──
@@ -561,7 +586,7 @@ export const generateInvoicePdf = async (options: InvoicePdfOptions) => {
 
   options.items.forEach((item, idx) => {
     const descW = c3 - c2 - 10;
-    const wrappedDesc = doc.splitTextToSize(item.description || '-', descW);
+    const wrappedDesc = doc.splitTextToSize(sanitizeText(item.description) || '-', descW);
     const rowH = Math.max(10, wrappedDesc.length * 5 + 4);
 
     if (y + rowH > pageH - 30) { doc.addPage(); y = 20; }

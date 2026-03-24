@@ -12,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles, ChevronDown } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles, ChevronDown, Target, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -29,7 +29,42 @@ const SettingsPage = () => {
     email: true,
     tasks: true,
     invites: true,
+    leads: true,
+    finance: true,
   });
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data } = await (supabase.from('profiles') as any)
+        .select('notifications')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && data.notifications) {
+        setNotifications({
+          email: true, tasks: true, invites: true, leads: true, finance: true,
+          ...(data.notifications as any)
+        });
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
+  const updateNotification = async (key: keyof typeof notifications, value: boolean) => {
+    const newNotifications = { ...notifications, [key]: value };
+    setNotifications(newNotifications);
+    if (!user) return;
+    
+    const { error } = await (supabase.from('profiles') as any)
+      .update({ notifications: newNotifications as any })
+      .eq('user_id', user.id);
+      
+    if (error) {
+      toast({ title: isPt ? 'Erro ao salvar configuração' : 'Error saving setting', variant: 'destructive' });
+      // Revert on error
+      setNotifications(notifications);
+    }
+  };
 
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -93,29 +128,29 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
         {/* ── Aparência ── */}
         <SettingsCard
           icon={Palette}
           title={isPt ? 'Aparência' : 'Appearance'}
           description={isPt ? 'Escolha como o Freelaz se parece' : 'Choose how Freelaz looks'}
-          className="md:col-span-4"
         >
-          <div className="inline-flex items-center gap-1 p-1.5 rounded-full bg-muted/50 border border-border/40">
-            {themeOptions.map((opt) => {
+          <div className="grid grid-cols-2 gap-2 p-2 rounded-[24px] bg-muted/40 border border-border/50">
+            {themeOptions.map((opt, idx) => {
               const isSelected = theme === opt.value;
               return (
                 <button
                   key={opt.value}
                   onClick={() => setTheme(opt.value as any)}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-200
+                  className={`flex justify-center items-center gap-2 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-300
+                    ${idx === 2 ? 'col-span-2' : ''}
                     ${isSelected
-                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/60'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
+                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                     }`}
                 >
-                  <opt.icon className={`w-4 h-4 ${isSelected ? 'text-primary' : ''}`} />
+                  <opt.icon className={`w-4 h-4 transition-colors ${isSelected ? 'text-primary' : ''}`} />
                   {opt.label}
                 </button>
               );
@@ -128,9 +163,8 @@ const SettingsPage = () => {
           icon={Languages}
           title={isPt ? 'Idioma' : 'Language'}
           description={isPt ? 'Defina o idioma da interface' : 'Set the interface language'}
-          className="md:col-span-4"
         >
-          <div className="inline-flex items-center gap-1 p-1.5 rounded-full bg-muted/50 border border-border/40">
+          <div className="grid grid-cols-2 gap-2 p-2 rounded-[24px] bg-muted/40 border border-border/50">
             {[
               { value: 'pt-BR', flag: '🇧🇷', label: 'Português' },
               { value: 'en', flag: '🇺🇸', label: 'English' },
@@ -140,10 +174,10 @@ const SettingsPage = () => {
                 <button
                   key={opt.value}
                   onClick={() => setLang(opt.value as any)}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all duration-200
+                  className={`flex justify-center items-center gap-2 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-300
                     ${isSelected
-                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/60'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
+                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                     }`}
                 >
                   <span className="text-base">{opt.flag}</span>
@@ -159,7 +193,7 @@ const SettingsPage = () => {
           icon={Database}
           title={isPt ? 'Dados e Exportação' : 'Data & Export'}
           description={isPt ? 'Exporte ou limpe dados locais' : 'Export or clear local data'}
-          className="md:col-span-4"
+          className="md:col-span-2 xl:col-span-1"
         >
           <div className="flex flex-col gap-3 mt-auto">
             <Button variant="outline" onClick={handleExportData} disabled={exportLoading} className="w-full justify-between rounded-xl h-11 px-4">
@@ -182,26 +216,38 @@ const SettingsPage = () => {
           icon={Bell}
           title={isPt ? 'Notificações' : 'Notifications'}
           description={isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
-          className="md:col-span-12"
+          className="md:col-span-2 xl:col-span-3"
         >
           <div className="space-y-4 pt-1">
             <NotificationRow
               icon={BellRing}
               title={isPt ? 'Notificações por e-mail' : 'Email notifications'}
               checked={notifications.email}
-              onChange={(v) => setNotifications(prev => ({ ...prev, email: v }))}
+              onChange={(v) => updateNotification('email', v)}
             />
             <NotificationRow
               icon={CalendarClock}
               title={isPt ? 'Tarefas e prazos' : 'Tasks and deadlines'}
               checked={notifications.tasks}
-              onChange={(v) => setNotifications(prev => ({ ...prev, tasks: v }))}
+              onChange={(v) => updateNotification('tasks', v)}
             />
             <NotificationRow
               icon={UserPlus}
               title={isPt ? 'Convites de organização' : 'Organization invites'}
               checked={notifications.invites}
-              onChange={(v) => setNotifications(prev => ({ ...prev, invites: v }))}
+              onChange={(v) => updateNotification('invites', v)}
+            />
+            <NotificationRow
+              icon={Target}
+              title={isPt ? 'Novos leads e conversões' : 'New leads and conversions'}
+              checked={notifications.leads}
+              onChange={(v) => updateNotification('leads', v)}
+            />
+            <NotificationRow
+              icon={DollarSign}
+              title={isPt ? 'Alertas financeiros' : 'Financial alerts'}
+              checked={notifications.finance}
+              onChange={(v) => updateNotification('finance', v)}
             />
           </div>
         </SettingsCard>
@@ -213,7 +259,7 @@ const SettingsPage = () => {
 
 /* ─── Settings Card ─── */
 const SettingsCard = ({ icon: Icon, title, description, className = '', children }: { icon: any; title: string; description: string; className?: string; children: React.ReactNode }) => (
-  <div className={`flex flex-col p-6 rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm ${className}`}>
+  <div className={`flex flex-col p-6 rounded-2xl border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm ${className}`}>
     <div className="flex items-center gap-4 mb-5">
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
         <Icon className="w-5 h-5 text-primary" />

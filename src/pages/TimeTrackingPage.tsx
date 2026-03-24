@@ -8,7 +8,13 @@ import { useTimer } from '@/hooks/useTimer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useClients } from '@/hooks/useClients';
-import { loadImageAsBase64, buildOrgAddress } from '@/lib/pdfGenerator';
+import { loadImageAsBase64, buildOrgAddress, sanitizeText } from '@/lib/pdfGenerator';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, isValid, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -862,7 +868,10 @@ const TimeTrackingPage = () => {
   };
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-3 h-full min-h-0 animate-fade-in">
+    <div className={cn(
+      "w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-3 animate-fade-in",
+      viewMode === 'report' ? "min-h-full" : "h-full min-h-0"
+    )}>
       {/* Page Header */}
       <div className="flex flex-col gap-3 mb-1">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -874,7 +883,7 @@ const TimeTrackingPage = () => {
       </div>
 
       {/* Header section */}
-      <div className="rounded-xl border border-border bg-card shadow-sm flex-shrink-0 relative z-10">
+      <div className="rounded-xl border border-border bg-card shadow-sm flex-shrink-0 relative z-40">
         {/* Timer bar - Toggl style */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
         <div className="relative flex-1 min-w-[150px]">
@@ -1079,7 +1088,10 @@ const TimeTrackingPage = () => {
       </div>
 
       {/* Main content area */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className={cn(
+        "transition-all flex-1 min-h-0",
+        viewMode === 'report' ? "" : "rounded-xl border border-border bg-card shadow-sm overflow-hidden"
+      )}>
         {/* Calendar View (Weekly) */}
         {viewMode === 'calendar' && timeRange === 'weekly' && (
           <div className="h-full flex flex-col">
@@ -1636,305 +1648,249 @@ const TimeTrackingPage = () => {
             let y = 14;
 
             // ── Colors ──
-            const BLACK: [number, number, number] = [30, 30, 30];
-            const DARK: [number, number, number] = [60, 60, 60];
-            const GRAY: [number, number, number] = [110, 110, 110];
-            const LIGHT_GRAY: [number, number, number] = [210, 210, 210];
-            const BG_LIGHT: [number, number, number] = [248, 248, 250];
-            const ACCENT: [number, number, number] = [0, 71, 255];
+            const BLACK: [number, number, number] = [20, 20, 25];
+            const DARK: [number, number, number] = [50, 50, 60];
+            const GRAY: [number, number, number] = [100, 100, 115];
+            const LIGHT_GRAY: [number, number, number] = [225, 225, 235];
+            const BG_LIGHT: [number, number, number] = [250, 251, 254];
+            const ACCENT: [number, number, number] = [0, 82, 255];
 
             const addPageFooter = () => {
               const footerY = pageH - 10;
-              doc.setFontSize(7);
+              doc.setDrawColor(...LIGHT_GRAY);
+              doc.setLineWidth(0.2);
+              doc.line(margin, footerY - 4, pw - margin, footerY - 4);
+              doc.setFontSize(7.5);
               doc.setTextColor(...GRAY);
-              doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, margin, footerY);
-              doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pw - margin, footerY, { align: 'right' });
+              doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, margin, footerY + 2);
+              doc.text(`Parte ${doc.getCurrentPageInfo().pageNumber}`, pw - margin, footerY + 2, { align: 'right' });
             };
 
             const checkPageBreak = (needed: number) => {
-              if (y + needed > pageH - 20) {
+              if (y + needed > pageH - 25) {
                 addPageFooter();
                 doc.addPage();
                 y = 20;
               }
             };
 
-            // ── Thin top accent line ──
-            doc.setFillColor(...ACCENT);
-            doc.rect(0, 0, pw, 2.5, 'F');
-            y = 14;
-
-            // ── Header: Logo + Org info ──
+            // ── Header: Org info (Left) + Logo (Right) ──
+            y = 20;
             if (exportOrg) {
+              const prevY = y;
+              
+              // Esquerda: Dados da Empresa
+              let iy = y;
+              
+              const companyTitle = exportOrg.company_name || exportOrg.trade_name || '';
+              if (companyTitle) {
+                doc.setFontSize(8.5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...BLACK);
+                doc.text(companyTitle.toUpperCase(), margin, iy);
+                iy += 4.5;
+              }
+
+              doc.setFontSize(8.5);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(...GRAY);
+              if (exportOrg.cnpj) { doc.text(`CNPJ: ${exportOrg.cnpj}`, margin, iy); iy += 4.5; }
+              if (exportOrg.business_email) { doc.text(exportOrg.business_email, margin, iy); iy += 4.5; }
+              if (exportOrg.business_phone) { doc.text(exportOrg.business_phone, margin, iy); iy += 4.5; }
+              if (exportOrg.website) { doc.text(exportOrg.website, margin, iy); iy += 4.5; }
+
+              // Direita: Logo
               if (exportOrg.logo_url) {
                 const logoResult = await loadImageAsBase64(exportOrg.logo_url);
                 if (logoResult) {
-                  const maxLogoH = 16;
-                  const maxLogoW = contentW * 0.28;
+                  const maxLogoH = 12;
+                  const maxLogoW = contentW * 0.3;
                   const ratio = logoResult.width / logoResult.height;
                   let logoW = maxLogoH * ratio;
                   let logoH = maxLogoH;
                   if (logoW > maxLogoW) { logoW = maxLogoW; logoH = logoW / ratio; }
-                  doc.addImage(logoResult.data, 'PNG', margin, y, logoW, logoH);
-                  y = Math.max(y, y + logoH + 3);
+                  doc.addImage(logoResult.data, 'PNG', pw - margin - logoW, prevY, logoW, logoH);
                 }
               }
 
-              if (!exportOrg.logo_url) {
-                doc.setFontSize(15);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(...BLACK);
-                doc.text(exportOrg.trade_name || exportOrg.company_name || 'Empresa', margin, y + 5);
-                y += 10;
-              }
-
-              const orgInfoX = pw - margin;
-              let iy = 14;
-              doc.setFontSize(8);
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(...GRAY);
-
-              if (exportOrg.cnpj) { const t = `CNPJ ${exportOrg.cnpj}`; doc.text(t, orgInfoX - doc.getTextWidth(t), iy); iy += 4; }
-              if (exportOrg.business_email) { doc.text(exportOrg.business_email, orgInfoX - doc.getTextWidth(exportOrg.business_email), iy); iy += 4; }
-              if (exportOrg.business_phone) { doc.text(exportOrg.business_phone, orgInfoX - doc.getTextWidth(exportOrg.business_phone), iy); iy += 4; }
-              if (exportOrg.website) { doc.text(exportOrg.website, orgInfoX - doc.getTextWidth(exportOrg.website), iy); }
-
-              y = Math.max(y, iy + 4);
+              y = Math.max(iy + 2, prevY + 14);
+            } else {
+              doc.setFontSize(15);
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(...BLACK);
+              doc.text('Empresa', margin, y);
+              y += 10;
             }
 
-            y += 4;
-
-            // ── Thin separator ──
-            doc.setDrawColor(...LIGHT_GRAY);
-            doc.setLineWidth(0.4);
-            doc.line(margin, y, pw - margin, y);
-            y += 10;
+            y += 8;
 
             // ── Title ──
-            doc.setFontSize(20);
+            const pageTitle = 'RELATÓRIO DE ATIVIDADES';
+            doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...BLACK);
-            doc.text('RELATÓRIO DE TEMPO', margin, y);
+            doc.text(pageTitle, pw / 2, y, { align: 'center' });
+            y += 10;
 
-            if (userName) {
-              doc.setFontSize(10);
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(...GRAY);
-              const nameW = doc.getTextWidth(userName);
-              doc.text(userName, pw - margin - nameW, y);
-            }
-            y += 12;
-
-            // ── Two-column: Período | Filtros ──
-            const colLeftX = margin;
-            const colRightX = margin + contentW / 2 + 8;
-            const metaStartY = y;
-
-            const detailBlockW = contentW / 2 - 4;
-            let detailBlockH = 26;
+            // ── Two-column blocks ──
+            const blockW = contentW / 2 - 4;
+            const blockH = 34; // matching budget height
             
-            // Build lines for the Right Side (Client / Project) first to know the height
-            const rightLines: string[] = [];
-            if (exportFilter === 'client' && exportClientId) {
-              const client = clients.find(c => c.id === exportClientId);
-              if (client) {
-                rightLines.push(client.name);
-                if (client.document) rightLines.push(`Doc: ${client.document}`);
-              }
-            } else if (exportFilter === 'project' && exportProjectId) {
-              const proj = projects.find(p => p.id === exportProjectId);
-              if (proj) {
-                const projClient = proj.client_id ? clients.find(c => c.id === proj.client_id) : null;
-                rightLines.push(proj.name);
-                if (projClient) rightLines.push(`Cliente: ${projClient.name}`);
-              }
-            } else if (exportFilter === 'project' && exportClientId) {
-              const client = clients.find(c => c.id === exportClientId);
-              if (client) {
-                rightLines.push(client.name);
-                rightLines.push('Todos os projetos');
-              }
-            } else {
-              rightLines.push('Todos os clientes e projetos');
-            }
-            
-            detailBlockH = Math.max(detailBlockH, 14 + rightLines.length * 6);
+            const resolvedClient = exportClientId ? clients.find(c => c.id === exportClientId) : 
+                                  (exportProjectId ? clients.find(c => c.id === projects.find(p => p.id === exportProjectId)?.client_id) : null);
+            const resolvedProject = exportProjectId ? projects.find(p => p.id === exportProjectId) : null;
 
-            // Left — Details (light background, no border)
-            doc.setFillColor(...BG_LIGHT);
-            doc.roundedRect(colLeftX, y - 4, detailBlockW, detailBlockH, 2, 2, 'F');
+            // Left Block — Client
+            doc.setDrawColor(...LIGHT_GRAY);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(margin, y, blockW, blockH, 2, 2, 'S');
 
             doc.setFontSize(7);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...ACCENT);
-            doc.text('DETALHES', colLeftX + 5, y + 2);
-            y += 8;
+            doc.setTextColor(...GRAY);
+            doc.text('CLIENTE', margin + 5, y + 6);
 
-            doc.setFontSize(9.5);
-            const addMetaRow = (label: string, value: string) => {
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(...DARK);
-              doc.text(label, colLeftX + 5, y);
+            let by = y + 12;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...DARK);
+            if (resolvedClient) {
+              const cliNameTrunc = resolvedClient.name.length > 25 ? resolvedClient.name.substring(0, 23) + '...' : resolvedClient.name;
+              doc.text(cliNameTrunc, margin + 5, by);
+              by += 6;
+              doc.setFontSize(8.5);
               doc.setFont('helvetica', 'normal');
               doc.setTextColor(...GRAY);
-              doc.text(value, colLeftX + 28, y);
-              y += 6;
+              if (resolvedClient.document) { 
+                const docLabel = (resolvedClient.document || '').replace(/\D/g, '').length > 11 ? 'CNPJ: ' : 'CPF: ';
+                doc.text(`${docLabel}${resolvedClient.document}`, margin + 5, by); 
+                by += 5; 
+              }
+              if (resolvedClient.email) { doc.text(resolvedClient.email, margin + 5, by); by += 5; }
+              if (resolvedClient.phone) { doc.text(resolvedClient.phone, margin + 5, by); }
+            } else {
+              doc.text('Todos os clientes', margin + 5, by);
+            }
+
+            // Right Block — Detalhes
+            const rightX = margin + contentW / 2 + 4;
+            doc.roundedRect(rightX, y, blockW, blockH, 2, 2, 'S');
+
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...GRAY);
+            doc.text('DETALHAMENTO DO RELATÓRIO', rightX + 5, y + 6);
+
+            let cy = y + 12;
+            doc.setFontSize(8.5);
+            const drawRowRight = (label: string, val: string, rowY: number) => {
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(...DARK);
+              doc.text(label, rightX + 5, rowY);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(...GRAY);
+              const valTrunc = val.length > 25 ? val.substring(0, 23) + '...' : val;
+              doc.text(valTrunc, rightX + 25, rowY);
             };
 
             const periodLabel = exportStartDate && exportEndDate
-              ? `${new Date(exportStartDate).toLocaleDateString('pt-BR')} a ${new Date(exportEndDate).toLocaleDateString('pt-BR')}`
+              ? `${exportStartDate.split('-').reverse().join('/')} a ${exportEndDate.split('-').reverse().join('/')}`
               : dateLabel();
             
-            addMetaRow('Período', periodLabel);
-            addMetaRow('Filtro', reportUserFilter === 'me' ? 'Somente eu' : 'Todos os membros');
-            addMetaRow('Registros', String(exportEntries.length));
+            drawRowRight('Período:', periodLabel, cy); cy += 5.5;
+            drawRowRight('Filtro:', reportUserFilter === 'me' ? 'Somente eu' : 'Todos os membros', cy); cy += 5.5;
+            drawRowRight('Projeto:', resolvedProject ? resolvedProject.name : 'Todos', cy); cy += 5.5;
+            drawRowRight('Registros:', String(exportEntries.length), cy);
 
-            // Right — Client / Project
-            let cy = metaStartY;
-            doc.setFillColor(...BG_LIGHT);
-            doc.roundedRect(colRightX, cy - 4, detailBlockW, detailBlockH, 2, 2, 'F');
-
-            doc.setFontSize(7);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...ACCENT);
-            doc.text('CLIENTE / PROJETO', colRightX + 5, cy + 2);
-            cy += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...BLACK);
-            doc.text(rightLines[0] || '', colRightX + 5, cy);
-            cy += 6;
-            
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(...GRAY);
-            for (let i = 1; i < rightLines.length; i++) {
-              doc.text(rightLines[i], colRightX + 5, cy);
-              cy += 5;
-            }
-
-            y = metaStartY + detailBlockH + 6;
+            y += blockH + 12;
 
             // ── Items Table ──
-            // Header — accent background
-            doc.setFillColor(...ACCENT);
-            doc.roundedRect(margin, y, contentW, 9, 1, 1, 'F');
+            doc.setFillColor(...DARK);
+            doc.roundedRect(margin, y, contentW, 10, 1.5, 1.5, 'F');
+            
             doc.setFontSize(8);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(255, 255, 255);
 
-            const col1 = margin + 4;
-            const col2 = col1 + 50;
-            const col3 = col2 + 50;
-            const col4 = col3 + 45;
+            const col1 = margin + 5;
+            const col2 = col1 + contentW * 0.35;
+            const col3 = col2 + contentW * 0.25;
+            const col4 = margin + contentW - 5; // Duração right alignment
 
             doc.text('DESCRIÇÃO', col1, y + 6.5);
             doc.text('PROJETO', col2, y + 6.5);
-            doc.text('MEMBRO', col3, y + 6.5);
+            doc.text('MEMBRO / DATA', col3, y + 6.5);
             const durText = 'DURAÇÃO';
-            doc.text(durText, pw - margin - 4 - doc.getTextWidth(durText), y + 6.5);
-            y += 12;
+            doc.text(durText, col4 - doc.getTextWidth(durText), y + 6.5);
+            y += 15;
 
-            // Rows
-            let rowIndex = 0;
             exportEntries
               .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
               .forEach((entry) => {
-                if (y > pageH - 30) { doc.addPage(); y = 20; }
+                const descText = sanitizeText(entry.description || getTaskName(entry.task_id) || '—');
+                const wrappedDesc = doc.splitTextToSize(descText, col2 - col1 - 5);
+                const rowH = Math.max(10, wrappedDesc.length * 5 + 4);
 
-                if (rowIndex % 2 === 0) {
-                  doc.setFillColor(245, 246, 250);
-                  doc.rect(margin, y - 5, contentW, 10, 'F');
-                }
+                checkPageBreak(rowH + 5);
 
-                const d = new Date(entry.start_time);
-                const desc = entry.description || getTaskName(entry.task_id) || '—';
+                // Thin bottom border like in budgets
+                doc.setDrawColor(...LIGHT_GRAY);
+                doc.setLineWidth(0.1);
+                doc.line(margin, y + rowH - 5, pw - margin, y + rowH - 5);
+
                 const projName = getProjectName(entry.project_id) || '—';
-                const startStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                const endStr = entry.end_time ? new Date(entry.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                const d = new Date(entry.start_time);
                 const durStr = entry.duration ? formatDurationShort(entry.duration) : '—';
-                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-
                 const entryUserName = getProfileName(entry.user_id) || userName || '—';
+                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(...DARK);
-                
-                const descTrunc = desc.length > 30 ? desc.substring(0, 27) + '...' : desc;
-                doc.text(descTrunc, col1, y);
-                
+                for (let i = 0; i < wrappedDesc.length; i++) {
+                  doc.text(wrappedDesc[i], col1, y + (i * 4.5));
+                }
+
                 doc.setTextColor(...GRAY);
-                const projTrunc = projName.length > 25 ? projName.substring(0, 22) + '...' : projName;
+                const projTrunc = projName.length > 20 ? projName.substring(0, 18) + '...' : projName;
                 doc.text(projTrunc, col2, y);
-                
-                const memberTrunc = entryUserName.length > 20 ? entryUserName.substring(0, 17) + '...' : entryUserName;
-                doc.text(memberTrunc, col3, y);
 
-                // Duration + time side by side or stacked right
+                const memberTrunc = entryUserName.length > 18 ? entryUserName.substring(0, 15) + '...' : entryUserName;
+                doc.text(`${memberTrunc} • ${dateStr}`, col3, y);
+
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(...BLACK);
-                doc.text(durStr, pw - margin - 4 - doc.getTextWidth(durStr), y);
-                
-                // Small date and time under duration? No, let's put it next to description or as part of row
-                // Or maybe just right aligned before duration?
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7.5);
-                doc.setTextColor(...GRAY);
-                const dateTimeStr = `${dateStr} ${startStr}-${endStr}`;
-                doc.text(dateTimeStr, pw - margin - 22 - doc.getTextWidth(dateTimeStr), y);
+                doc.setTextColor(...DARK);
+                doc.text(durStr, col4 - doc.getTextWidth(durStr), y);
 
-                y += 10;
-                rowIndex++;
+                y += rowH;
               });
 
-            // Thin table bottom line
-            doc.setDrawColor(...LIGHT_GRAY);
-            doc.setLineWidth(0.4);
-            doc.line(margin, y, pw - margin, y);
-            y += 10;
+            y += 8;
 
             // ── Totals ──
             const totalsX = margin + contentW - 75;
-
-            // Total Block — accent background
-            doc.setFillColor(...ACCENT);
-            const totalBlockH = 11;
-            doc.roundedRect(totalsX - 4, y - 2, pw - margin - totalsX + 4, totalBlockH, 2, 2, 'F');
+            
+            y += 6;
+            
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(255, 255, 255);
-            doc.text('TOTAL DE HORAS', totalsX, y + 6.5);
-            const totalText = `${exportTotalHours}h`;
+            doc.setTextColor(...ACCENT);
+            doc.text('TOTAL DE HORAS:', totalsX, y);
+            
+            const totalText = formatDurationShort(exportTotal);
             const totalW = doc.getTextWidth(totalText);
-            doc.text(totalText, pw - margin - totalW, y + 6.5);
-            y += totalBlockH + 12;
-
-            // ── Footer ──
-            doc.setFillColor(...ACCENT);
-            doc.rect(0, pageH - 2, pw, 2, 'F');
-
-            const footerY = pageH - 10;
+            doc.text(totalText, pw - margin - totalW, y);
+            
+            y += 6;
+            
+            // Add thin separator line after total
             doc.setDrawColor(...LIGHT_GRAY);
-            doc.setLineWidth(0.2);
-            doc.line(margin, footerY - 4, pw - margin, footerY - 4);
-
-            doc.setFontSize(7.5);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(...GRAY);
-
-            if (exportOrg) {
-              const companyName = exportOrg.company_name || exportOrg.trade_name || '';
-              const addr = buildOrgAddress(exportOrg);
-              const footerText = [companyName, addr].filter(Boolean).join('  ·  ');
-              if (footerText) {
-                const footerLines = doc.splitTextToSize(footerText, contentW - 30);
-                doc.text(footerLines[0] || '', margin, footerY);
-              }
-            }
-
-            doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, pw - margin - doc.getTextWidth(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`), footerY);
+            doc.setLineWidth(0.1);
+            doc.line(totalsX - 5, y, pw - margin, y);
+            
+            y += 4;
+            
+            addPageFooter();
 
             // save
             doc.save(`relatorio-tempo-${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -1944,7 +1900,7 @@ const TimeTrackingPage = () => {
 
 
           return (
-            <div className="h-full overflow-y-auto scrollbar-thin p-6 space-y-6">
+            <div className="w-full py-2 space-y-6">
              {(() => {
                 const expFilteredProjects = exportClientId
                   ? projects.filter(p => p.client_id === exportClientId)
@@ -2050,34 +2006,61 @@ const TimeTrackingPage = () => {
                         )}
 
                         {exportFilter === 'project' && (
-                          <select
-                            value={exportProjectId}
-                            onChange={(e) => setExportProjectId(e.target.value)}
-                            className="px-3 py-1.5 rounded-lg bg-muted border border-border text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring min-w-[140px]"
-                          >
-                            <option value="">Todos os projetos</option>
-                            {expFilteredProjects.map(p => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                          </select>
+                          <Select value={exportProjectId || "all"} onValueChange={(v) => setExportProjectId(v === "all" ? "" : v)}>
+                            <SelectTrigger className="w-auto min-w-[140px] px-3 py-1.5 rounded-lg bg-muted border border-border text-xs font-medium focus:ring-2 focus:ring-ring h-[30px]">
+                              <SelectValue placeholder="Todos os projetos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos os projetos</SelectItem>
+                              {expFilteredProjects.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         )}
 
                         {/* Date range */}
                         <div className="flex items-center gap-2">
-                          <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                          <input
-                            type="date"
-                            value={exportStartDate}
-                            onChange={(e) => setExportStartDate(e.target.value)}
-                            className="px-2.5 py-1.5 rounded-lg bg-muted border border-border text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring w-[130px]"
-                          />
-                          <span className="text-xs text-muted-foreground">—</span>
-                          <input
-                            type="date"
-                            value={exportEndDate}
-                            onChange={(e) => setExportEndDate(e.target.value)}
-                            className="px-2.5 py-1.5 rounded-lg bg-muted border border-border text-foreground text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring w-[130px]"
-                          />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                className={cn(
+                                  "w-auto min-w-[200px] px-2.5 py-1.5 rounded-lg bg-muted border border-border text-xs font-medium flex items-center justify-start gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors",
+                                  (!exportStartDate && !exportEndDate) ? "text-muted-foreground" : "text-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
+                                {exportStartDate ? (
+                                  exportEndDate ? (
+                                    <>
+                                      {format(parseISO(exportStartDate), 'dd/MM/yyyy')} - {format(parseISO(exportEndDate), 'dd/MM/yyyy')}
+                                    </>
+                                  ) : (
+                                    format(parseISO(exportStartDate), 'dd/MM/yyyy')
+                                  )
+                                ) : (
+                                  <span>Filtrar por período</span>
+                                )}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="range"
+                                selected={{
+                                  from: exportStartDate ? parseISO(exportStartDate) : undefined,
+                                  to: exportEndDate ? parseISO(exportEndDate) : undefined,
+                                }}
+                                onSelect={(range: any) => {
+                                  setExportStartDate(range?.from ? format(range.from, 'yyyy-MM-dd') : '');
+                                  setExportEndDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
+                                }}
+                                initialFocus
+                                numberOfMonths={2}
+                                locale={ptBR}
+                                className="p-3 pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
 
                         {/* Clear filters */}

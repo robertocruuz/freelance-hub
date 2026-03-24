@@ -351,6 +351,7 @@ const BudgetsPage = () => {
       budgetDate: b.budget_date,
       validityDate: b.validity_date,
       deliveryDate: b.delivery_date,
+      deliveryText: b.delivery_text,
       items: b.items,
       total: b.total,
       discount: b.discount,
