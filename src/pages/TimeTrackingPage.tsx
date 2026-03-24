@@ -1120,7 +1120,7 @@ const TimeTrackingPage = () => {
               })}
             </div>
             {/* Time grid */}
-            <div ref={calendarRef} className="flex-1"
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
               onMouseDown={(e) => {
                 // Only trigger on empty space (not on entry blocks)
                 const target = e.target as HTMLElement;
@@ -1255,7 +1255,7 @@ const TimeTrackingPage = () => {
         {/* Calendar View (Daily) */}
         {viewMode === 'calendar' && timeRange === 'daily' && (
           <div className="h-full flex flex-col">
-            <div ref={calendarRef} className="flex-1"
+            <div ref={calendarRef} className="flex-1 overflow-y-auto scrollbar-thin"
               onMouseDown={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('[data-entry-block]')) return;
