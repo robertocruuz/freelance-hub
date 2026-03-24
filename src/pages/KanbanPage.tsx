@@ -633,13 +633,18 @@ const KanbanPage = () => {
               className={`group relative flex flex-col gap-1 rounded-xl border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                 isActive
                   ? 'shadow-sm ring-1'
-                  : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
+                  : 'border-border bg-card hover:bg-[var(--hover-bg)] hover:border-[var(--hover-border)]'
               }`}
-              style={isActive ? {
-                borderColor: color || 'hsl(var(--primary))',
-                backgroundColor: color || 'hsl(var(--primary) / 0.05)',
-                '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
-              } as React.CSSProperties : undefined}
+              style={{
+                ...(isActive ? {
+                  borderColor: color || 'hsl(var(--primary))',
+                  backgroundColor: color || 'hsl(var(--primary) / 0.05)',
+                  '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
+                } : {
+                  '--hover-bg': color ? `${color}14` : 'hsla(var(--primary) / 0.08)',
+                  '--hover-border': color ? `${color}4D` : 'hsla(var(--primary) / 0.3)',
+                })
+              } as React.CSSProperties}
             >
               <div className="flex items-start justify-between gap-2 w-full">
                 <span className={cn("text-sm font-semibold truncate leading-tight pt-0.5", tColor)}>
@@ -714,13 +719,18 @@ const KanbanPage = () => {
                   className={`group relative flex flex-col gap-1 rounded-xl border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                     isActive
                       ? 'shadow-sm ring-1'
-                      : 'border-border bg-card hover:border-primary/30 hover:bg-accent/50'
+                      : 'border-border bg-card hover:bg-[var(--hover-bg)] hover:border-[var(--hover-border)]'
                   }`}
-                  style={isActive ? {
-                    borderColor: color || 'hsl(var(--primary))',
-                    backgroundColor: color || 'hsl(var(--primary) / 0.05)',
-                    '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
-                  } as React.CSSProperties : undefined}
+                  style={{
+                    ...(isActive ? {
+                      borderColor: color || 'hsl(var(--primary))',
+                      backgroundColor: color || 'hsl(var(--primary) / 0.05)',
+                      '--tw-ring-color': color ? `${color}33` : 'hsl(var(--primary) / 0.2)',
+                    } : {
+                      '--hover-bg': color ? `${color}14` : 'hsla(var(--primary) / 0.08)',
+                      '--hover-border': color ? `${color}4D` : 'hsla(var(--primary) / 0.3)',
+                    })
+                  } as React.CSSProperties}
                 >
                   <div className="flex items-start justify-between gap-2 w-full">
                     <span className={cn("text-sm font-semibold truncate leading-tight pt-0.5", tColor)}>

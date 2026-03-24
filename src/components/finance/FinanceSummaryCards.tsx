@@ -75,7 +75,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       {cards.map((c) => (
         <div
           key={c.label}
-          className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-6 transition-all"
+          className={`relative overflow-hidden rounded-2xl border ${c.borderColor} bg-gradient-to-br ${c.gradient} p-5 sm:p-6 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5`}
         >
           {/* Decorative circle */}
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-current opacity-[0.015]" />
