@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus, Target, TrendingUp, Bell, BellOff, Check, CheckCheck, Trash2, Info, ListTodo, MoreHorizontal, ArrowUpRight } from 'lucide-react';
+import { getContrastYIQ } from '@/pages/ProjectsPage';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useMemo } from 'react';
@@ -204,7 +205,22 @@ const HomePage = () => {
     const totalReceived = data.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (Number(i.total) || 0), 0);
     const totalPaid = data.expenses.filter(e => e.status === 'paid').reduce((s, e) => s + (Number(e.amount) || 0), 0);
     const balance = totalReceived - totalPaid;
-    return { totalReceivable, totalPayable, totalReceived, totalPaid, balance };
+
+    const currentMonthStr = format(new Date(), 'yyyy-MM');
+    const receivedThisMonth = data.invoices
+      .filter(i => i.status === 'paid' && i.due_date?.startsWith(currentMonthStr))
+      .reduce((s, i) => s + (Number(i.total) || 0), 0);
+    const paidThisMonth = data.expenses
+      .filter(e => e.status === 'paid' && (e.due_date?.startsWith(currentMonthStr) || e.paid_date?.startsWith(currentMonthStr)))
+      .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const monthBalance = receivedThisMonth - paidThisMonth;
+
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const dueOrOverdueInvoices = data.invoices.filter(i => i.status !== 'paid' && i.due_date && i.due_date <= todayStr).length;
+    const dueOrOverdueExpenses = data.expenses.filter(e => e.status !== 'paid' && e.due_date && e.due_date <= todayStr).length;
+    const pendingDueItems = dueOrOverdueInvoices + dueOrOverdueExpenses;
+
+    return { totalReceivable, totalPayable, totalReceived, totalPaid, balance, monthBalance, pendingDueItems };
   }, [data.invoices, data.expenses]);
 
   const leadStats = useMemo(() => {
@@ -283,7 +299,7 @@ const HomePage = () => {
       </div>
 
       {/* 2. Main Layout 8/4 */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         {/* === Left Column (Activities & Rich Metrics) === */}
         <div className="xl:col-span-8 flex flex-col gap-10">
           
@@ -296,7 +312,7 @@ const HomePage = () => {
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Visão de Negócios' : 'Business Insights'}</h2>
              </div>
              
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Finance Panel */}
                 {isAdminUser && (
                   <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow  cursor-pointer" onClick={() => navigate('/dashboard/finance')}>
@@ -304,15 +320,35 @@ const HomePage = () => {
                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><Wallet className="w-4 h-4 text-emerald-500" /></div>
                       <h3 className="font-semibold text-sm text-foreground">{isPt ? 'Financeiro' : 'Finance'}</h3>
                     </div>
-                    <div className="space-y-4">
-                       <div className="flex flex-col gap-1.5">
-                         <div className="flex justify-between items-center text-xs"><span className="text-muted-foreground font-medium">{isPt ? 'A receber' : 'Receivable'}</span><span className="font-bold text-emerald-500">{fmtCurrency(financeStats.totalReceivable)}</span></div>
-                         <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full transition-all" style={{width: financeStats.totalReceivable > 0 ? '70%' : '0%'}}></div></div>
+                    
+                    <div className="flex flex-col mb-4">
+                       <span className={`text-2xl font-black leading-tight ${financeStats.monthBalance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                         {fmtCurrency(financeStats.monthBalance)}
+                       </span>
+                       <span className="text-[10px] uppercase font-bold text-muted-foreground mt-1 mb-4">
+                         {isPt ? 'Balanço do Mês' : 'Monthly Balance'}
+                       </span>
+
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                             <span className="text-sm font-bold text-emerald-500">{fmtCurrency(financeStats.totalReceivable)}</span>
+                             <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'A receber' : 'Receivable'}</span>
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="text-sm font-bold text-destructive">{fmtCurrency(financeStats.totalPayable)}</span>
+                             <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'A pagar' : 'Payable'}</span>
+                          </div>
                        </div>
-                       <div className="flex flex-col gap-1.5">
-                         <div className="flex justify-between items-center text-xs"><span className="text-muted-foreground font-medium">{isPt ? 'A pagar' : 'Payable'}</span><span className="font-bold text-destructive">{fmtCurrency(financeStats.totalPayable)}</span></div>
-                         <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden"><div className="h-full bg-destructive rounded-full transition-all" style={{width: financeStats.totalPayable > 0 ? '40%' : '0%'}}></div></div>
+                    </div>
+
+                    <div className="mt-auto pt-3 border-t border-border/80 flex justify-between items-center text-xs">
+                       <div className="flex items-center gap-1.5">
+                         <AlertCircle className={`w-3.5 h-3.5 ${financeStats.pendingDueItems > 0 ? 'text-amber-500' : 'text-muted-foreground/60'}`} />
+                         <span className="text-muted-foreground font-medium">{isPt ? 'Vencem hoje/atrasados' : 'Due today/overdue'}</span>
                        </div>
+                       <span className={`font-bold px-2 py-0.5 rounded ${financeStats.pendingDueItems > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-muted/50 text-foreground'}`}>
+                         {financeStats.pendingDueItems}
+                       </span>
                     </div>
                   </div>
                 )}
@@ -323,19 +359,30 @@ const HomePage = () => {
                      <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center"><Target className="w-4 h-4 text-rose-500" /></div>
                      <h3 className="font-semibold text-sm text-foreground">Leads</h3>
                    </div>
-                   <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="flex flex-col">
-                         <span className="text-2xl font-black text-foreground">{leadStats.won}</span>
-                         <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Ganhos' : 'Won'}</span>
-                      </div>
-                      <div className="flex flex-col">
-                         <span className="text-2xl font-black text-foreground">{leadStats.lost}</span>
-                         <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Perdidos' : 'Lost'}</span>
+                   <div className="flex flex-col mb-4">
+                      <span className="text-2xl font-black leading-tight text-primary">
+                        {leadStats.open}
+                      </span>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground mt-1 mb-4">
+                        {isPt ? 'Em andamento' : 'Active'}
+                      </span>
+
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="flex flex-col">
+                            <span className="text-sm font-bold text-foreground">{leadStats.won}</span>
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Ganhos' : 'Won'}</span>
+                         </div>
+                         <div className="flex flex-col">
+                            <span className="text-sm font-bold text-foreground">{leadStats.lost}</span>
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground">{isPt ? 'Perdidos' : 'Lost'}</span>
+                         </div>
                       </div>
                    </div>
                    <div className="mt-auto pt-3 border-t border-border/80 flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground font-medium">{isPt ? 'Em aberto' : 'Open'}</span>
-                      <span className="font-bold px-2 py-0.5 rounded bg-muted/50">{leadStats.open}</span>
+                      <span className="text-muted-foreground font-medium">{isPt ? 'Taxa de conversão' : 'Conversion'}</span>
+                      <span className="font-bold text-rose-500">
+                        {(leadStats.won + leadStats.lost) > 0 ? Math.round((leadStats.won / (leadStats.won + leadStats.lost)) * 100) : 0}%
+                      </span>
                    </div>
                 </div>
 
@@ -466,43 +513,47 @@ const HomePage = () => {
                        <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
                          <FolderKanban className="w-4 h-4 text-amber-500" />
                        </div>
-                       <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Últimos Projetos' : 'Latest Projects'}</h2>
+                       <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Projetos' : 'Projects'}</h2>
                     </div>
                     <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                       {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="flex flex-col bg-card/30 border border-border rounded-2xl  p-3">
-                     <div className="flex flex-col gap-2.5">
-                       {data.projects.slice(0, 5).map(p => {
-                         const client = data.clients.find(c => c.id === p.client_id);
-                         const projectColor = client?.color || p.color || 'hsl(var(--primary))';
-                         const solidCol = projectColor.startsWith('#') ? projectColor : 'hsl(var(--primary))';
-                         return (
-                         <div 
-                           key={p.id} 
-                           className="group flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5  bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
-                           style={{ '--hover-bg': solidCol } as React.CSSProperties} 
-                           onClick={() => navigate('/dashboard/projects')}
-                         >
-                            <div className="flex items-center gap-4">
-                               <span className="text-sm font-bold opacity-95 transition-colors group-hover:text-white text-foreground/90">{p.name}</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                               <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block opacity-80 transition-colors group-hover:text-white/90 text-muted-foreground">
-                                 {client?.name || ''}
-                               </span>
-                               {p.due_date && (
-                                  <span className="text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center backdrop-blur-sm transition-colors group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent bg-background border border-border text-muted-foreground">
-                                    {format(parseISO(p.due_date), 'dd/MM')}
-                                  </span>
-                               )}
-                            </div>
+                  <div className="flex flex-col gap-2.5">
+                    {data.projects.slice(0, 5).map(p => {
+                      const client = data.clients.find(c => c.id === p.client_id);
+                      const projectColor = client?.color || p.color || 'hsl(var(--primary))';
+                      const solidCol = projectColor.startsWith('#') ? projectColor : 'hsl(var(--primary))';
+                      
+                      const contrast = solidCol.startsWith('#') ? getContrastYIQ(solidCol) : 'dark';
+                      const isLight = contrast === 'light';
+                      const tColor = `text-foreground/90 transition-colors duration-300 ${isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`;
+                      const mColor = `text-muted-foreground transition-colors duration-300 ${isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`;
+
+                      return (
+                      <div 
+                        key={p.id} 
+                        className="group flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5  bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
+                        style={{ '--hover-bg': solidCol } as React.CSSProperties} 
+                        onClick={() => navigate('/dashboard/projects')}
+                      >
+                         <div className="flex items-center gap-4">
+                            <span className={`text-sm font-bold opacity-95 ${tColor}`}>{p.name}</span>
                          </div>
-                         );
-                       })}
-                       {data.projects.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground opacity-60">{isPt ? 'Nenhum projeto encontrado.' : 'No projects found.'}</div>}
-                     </div>
+                         <div className="flex items-center gap-4">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider hidden sm:block opacity-80 ${mColor}`}>
+                              {client?.name || ''}
+                            </span>
+                            {p.due_date && (
+                               <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center backdrop-blur-sm ${mColor} bg-background border border-border group-hover:bg-black/10 group-hover:border-transparent`}>
+                                 {format(parseISO(p.due_date), 'dd/MM')}
+                               </span>
+                            )}
+                         </div>
+                      </div>
+                      );
+                    })}
+                    {data.projects.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground opacity-60">{isPt ? 'Nenhum projeto encontrado.' : 'No projects found.'}</div>}
                   </div>
                </div>
 
@@ -519,36 +570,47 @@ const HomePage = () => {
                       {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="flex flex-col bg-card/30 border border-border rounded-2xl  overflow-hidden p-2">
-                     <div className="flex flex-col">
-                        {data.clients.slice(0, 5).map(c => {
-                           const clientProjectsCount = data.projects.filter(p => p.client_id === c.id).length;
-                           const clientBudgetsCount = data.budgets.filter(b => b.client_id === c.id).length;
-                           return (
-                             <div key={c.id} className="group flex items-center gap-3 p-3.5 hover:bg-muted/40 rounded-xl cursor-pointer transition-colors" onClick={() => navigate('/dashboard/clients')}>
-                               <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white  ring-2 ring-background shrink-0 transition-transform group-hover:scale-105 overflow-hidden" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
-                                 {c.logo_url ? (
-                                   <img src={c.logo_url} alt={c.name} className="w-full h-full object-cover" />
-                                 ) : (
-                                   c.name?.charAt(0).toUpperCase()
-                                 )}
-                               </div>
-                               <div className="flex flex-col flex-1 min-w-0">
-                                 <span className="text-sm font-semibold text-foreground/90 truncate group-hover:text-primary transition-colors">{c.name}</span>
-                                 <div className="flex items-center gap-4 mt-1">
-                                    <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1.5">
-                                      <FolderKanban className="w-3 h-3 text-muted-foreground/70" /> {clientProjectsCount} <span className="hidden sm:inline">{isPt ? 'Projetos' : 'Projects'}</span>
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1.5">
-                                      <FileText className="w-3 h-3 text-muted-foreground/70" /> {clientBudgetsCount} <span className="hidden sm:inline">{isPt ? 'Orçamentos' : 'Budgets'}</span>
-                                    </span>
-                                 </div>
-                               </div>
-                             </div>
-                           );
-                        })}
-                        {data.clients.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground opacity-60">{isPt ? 'Nenhum cliente cadastrado.' : 'No clients registered.'}</div>}
-                     </div>
+                  <div className="flex flex-col gap-2.5">
+                    {data.clients.slice(0, 4).map(c => {
+                      const clientProjectsCount = data.projects.filter(p => p.client_id === c.id).length;
+                      const clientBudgetsCount = data.budgets.filter(b => b.client_id === c.id).length;
+                      const solidCol = c.color?.startsWith('#') ? c.color : 'hsl(var(--primary))';
+                      
+                      const contrast = solidCol.startsWith('#') ? getContrastYIQ(solidCol) : 'dark';
+                      const isLight = contrast === 'light';
+                      const tColor = `text-foreground/90 transition-colors duration-300 ${isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`;
+                      const mColor = `text-muted-foreground transition-colors duration-300 ${isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`;
+                      const iconColor = `transition-colors duration-300 w-3 h-3 ${isLight ? 'group-hover:text-white/70' : 'group-hover:text-slate-600'}`;
+
+                      return (
+                      <div 
+                        key={c.id} 
+                        className="group flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
+                        style={{ '--hover-bg': solidCol } as React.CSSProperties}
+                        onClick={() => navigate('/dashboard/clients')}
+                      >
+                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 transition-transform group-hover:scale-105 overflow-hidden shadow-sm" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
+                           {c.logo_url ? (
+                             <img src={c.logo_url} alt={c.name} className="w-full h-full object-cover" />
+                           ) : (
+                             c.name?.charAt(0).toUpperCase()
+                           )}
+                         </div>
+                         <div className="flex flex-col flex-1 min-w-0">
+                           <span className={`text-sm font-bold opacity-95 truncate ${tColor}`}>{c.name}</span>
+                           <div className="flex items-center gap-4 mt-1">
+                              <span className={`text-[10px] font-bold uppercase tracking-wider opacity-80 flex items-center gap-1.5 ${mColor}`}>
+                                <FolderKanban className={iconColor} /> {clientProjectsCount} <span className="hidden sm:inline">{isPt ? 'Projetos' : 'Projects'}</span>
+                              </span>
+                              <span className={`text-[10px] font-bold uppercase tracking-wider opacity-80 flex items-center gap-1.5 ${mColor}`}>
+                                <FileText className={iconColor} /> {clientBudgetsCount} <span className="hidden sm:inline">{isPt ? 'Orçamentos' : 'Budgets'}</span>
+                              </span>
+                           </div>
+                         </div>
+                      </div>
+                      );
+                    })}
+                    {data.clients.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground opacity-60">{isPt ? 'Nenhum cliente cadastrado.' : 'No clients registered.'}</div>}
                   </div>
                </div>
 
@@ -558,7 +620,7 @@ const HomePage = () => {
         </div>
 
         {/* === Right Column (Context Sidebar) === */}
-        <div className="xl:col-span-4 flex flex-col gap-10">
+        <div className="xl:col-span-4 flex flex-col gap-8">
           
           {/* Calendar Panel */}
           <section className="bg-card/40 p-6 rounded-2xl border border-border ">
@@ -634,7 +696,7 @@ const HomePage = () => {
           </section>
 
           {/* Team Panel */}
-          <section className="bg-card/40 p-6 rounded-2xl border border-border  mt-auto">
+          <section className="bg-card/40 p-6 rounded-2xl border border-border">
             <div className="flex items-center justify-between mb-6">
                <div className="flex items-center gap-2.5">
                  <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center">

@@ -9,10 +9,12 @@ VALUES ('client-logos', 'client-logos', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policies for client-logos bucket
+DROP POLICY IF EXISTS "Public Access for client-logos" ON storage.objects;
 CREATE POLICY "Public Access for client-logos" 
 ON storage.objects FOR SELECT 
 USING (bucket_id = 'client-logos');
 
+DROP POLICY IF EXISTS "Authenticated users can upload to client-logos" ON storage.objects;
 CREATE POLICY "Authenticated users can upload to client-logos" 
 ON storage.objects FOR INSERT 
 WITH CHECK (
@@ -20,13 +22,19 @@ WITH CHECK (
     AND auth.role() = 'authenticated'
 );
 
+DROP POLICY IF EXISTS "Authenticated users can update their client-logos" ON storage.objects;
 CREATE POLICY "Authenticated users can update their client-logos" 
 ON storage.objects FOR UPDATE 
+USING (
+    bucket_id = 'client-logos' 
+    AND auth.role() = 'authenticated'
+)
 WITH CHECK (
     bucket_id = 'client-logos' 
     AND auth.role() = 'authenticated'
 );
 
+DROP POLICY IF EXISTS "Authenticated users can delete their client-logos" ON storage.objects;
 CREATE POLICY "Authenticated users can delete their client-logos" 
 ON storage.objects FOR DELETE 
 USING (

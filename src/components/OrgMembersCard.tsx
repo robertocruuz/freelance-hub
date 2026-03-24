@@ -176,7 +176,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       {/* Excluded: the inline invite form was removed to avoid redundancy with the "Invite Member" modal. */}
 
       {/* Members list */}
-        <div className="flex flex-col">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-2">
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
             const isCurrentUser = member.user_id === user?.id;
@@ -186,92 +186,104 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             return (
               <div
                 key={member.id}
-                className="group flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 rounded-xl hover:bg-muted/40 transition-colors"
+                className="group flex flex-col gap-4 p-5 rounded-2xl bg-card border border-border hover:shadow-md hover:border-primary/30 transition-all relative isolate"
               >
-                <Avatar className="w-10 h-10 shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all overflow-hidden bg-primary/10">
-                  {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover w-full h-full" />}
-                  <AvatarFallback className="bg-transparent text-primary text-sm font-extrabold flex items-center justify-center">
-                    {getInitials(member.profile?.name, member.profile?.email)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start w-full">
+                  <Avatar className="w-12 h-12 shrink-0 ring-4 ring-background shadow-sm transition-all overflow-hidden bg-primary/10">
+                    {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover w-full h-full" />}
+                    <AvatarFallback className="bg-transparent text-primary text-base font-extrabold flex items-center justify-center">
+                      {getInitials(member.profile?.name, member.profile?.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {canManage ? (
+                      <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
+                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-full font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors">
+                          <RoleIcon className="w-3 h-3 text-muted-foreground" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin" className="font-semibold text-xs">Admin</SelectItem>
+                          <SelectItem value="collaborator" className="font-semibold text-xs">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 rounded-full border shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
+                        <RoleIcon className="w-3 h-3" />
+                        {roleLabel(member.role)}
+                      </Badge>
+                    )}
+                    {member.status === 'pending' && (
+                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" />
+                        {isPt ? 'Pendente' : 'Pending'}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col min-w-0 mt-1">
                   <p className="text-base font-extrabold text-foreground truncate flex items-center gap-2">
                     {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
-                    {isOwner && <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-primary/10 text-primary">proprietário</span>}
-                    {isCurrentUser && !isOwner && <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-muted text-muted-foreground">você</span>}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground truncate font-medium">
                     {member.profile?.email || ''}
                   </p>
+                  
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    {isOwner && <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_1px_rgba(255,255,255,0.1)]">Proprietário</span>}
+                    {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">Você</span>}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {member.status === 'pending' && (
-                    <Badge variant="outline" className="text-[10px] gap-1">
-                      <Clock className="w-3 h-3" />
-                      {isPt ? 'Pendente' : 'Pending'}
-                    </Badge>
-                  )}
-                  {canManage ? (
-                    <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
-                      <SelectTrigger className="h-9 text-xs w-auto gap-1.5 px-3 rounded-full font-semibold border-border/50 bg-card/60 shadow-sm">
-                        <RoleIcon className="w-3.5 h-3.5" />
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin" className="font-semibold">Admin</SelectItem>
-                        <SelectItem value="collaborator" className="font-semibold">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Badge variant="outline" className={`text-xs px-2.5 py-1 rounded-full border border-border/50 shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
-                      <RoleIcon className="w-3.5 h-3.5" />
-                      {roleLabel(member.role)}
-                    </Badge>
-                  )}
-                  {canManage && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{isPt ? 'Remover membro?' : 'Remove member?'}</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {isPt
-                              ? 'Este membro perderá acesso aos dados da organização.'
-                              : 'This member will lose access to organization data.'}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleRemoveMember(member.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            {isPt ? 'Remover' : 'Remove'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                  {isCurrentUser && !isOwner && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreVertical className="w-3.5 h-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive gap-2"
-                          onClick={() => setLeaveDialogOpen(true)}
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          {isPt ? 'Sair da equipe' : 'Leave team'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
+
+                {/* Actions at the bottom right */}
+                {(canManage || (isCurrentUser && !isOwner)) && (
+                  <div className="absolute bottom-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {canManage && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="rounded-2xl">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{isPt ? 'Remover membro?' : 'Remove member?'}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {isPt
+                                ? 'Este membro perderá acesso aos dados da organização.'
+                                : 'This member will lose access to organization data.'}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="rounded-xl">{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleRemoveMember(member.id)} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              {isPt ? 'Remover' : 'Remove'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                    {isCurrentUser && !isOwner && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-xl">
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive gap-2 font-semibold cursor-pointer"
+                            onClick={() => setLeaveDialogOpen(true)}
+                          >
+                            <LogOut className="w-4 h-4" />
+                            {isPt ? 'Sair da equipe' : 'Leave team'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -343,18 +355,21 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Users className="w-4 h-4 text-primary" />
-          </div>
-          <h2 className="text-lg font-semibold text-foreground">
+        <div className="flex items-center gap-3">
+          {orgProfile?.logo ? (
+            <div className="w-10 h-10 rounded-lg shadow-sm flex items-center justify-center shrink-0 overflow-hidden bg-white border border-border">
+              <img src={orgProfile.logo} alt="Logo" className="w-full h-full object-contain p-1.5" />
+            </div>
+          ) : (
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 shadow-[0_0_0_1px_rgba(var(--primary),0.1)]">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+          )}
+          <h2 className="text-xl font-extrabold text-foreground tracking-tight">
             {orgProfile?.name || (isPt ? 'Membros da Organização' : 'Organization Members')}
           </h2>
         </div>
         <div className="flex items-center gap-4">
-          {orgProfile?.logo && (
-            <img src={orgProfile.logo} alt="Logo" className="h-8 max-w-[120px] object-contain shrink-0 drop-shadow-sm" />
-          )}
           {isAdmin && (
           <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
             <DialogTrigger asChild>
@@ -392,7 +407,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
           )}
         </div>
       </div>
-      <div className="flex flex-col bg-card/30 border border-border rounded-2xl p-2">
+      <div className="w-full">
         {teamContent}
       </div>
     </div>

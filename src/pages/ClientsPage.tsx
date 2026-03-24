@@ -396,7 +396,7 @@ const ClientsPage = () => {
                 onClick={() => setLogoModalOpen(true)}
               >
                 {selectedClient.logo_url ? (
-                  <img src={selectedClient.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
+                  <img src={selectedClient.logo_url} alt="Logo" className="w-full h-full object-cover" />
                 ) : (
                   selectedClient.name.charAt(0).toUpperCase()
                 )}
@@ -829,7 +829,7 @@ const ClientsPage = () => {
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {c.logo_url ? (
                         <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden border border-border group-hover:border-transparent transition-colors duration-300">
-                          <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-contain p-1" />
+                          <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-cover" />
                         </div>
                       ) : (
                         <div

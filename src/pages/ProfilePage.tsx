@@ -302,18 +302,27 @@ const ProfilePage = () => {
   );
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.profile}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {lang === 'pt-BR' ? 'Gerencie suas informações pessoais e da sua empresa' : 'Manage your personal and company information'}
-        </p>
+    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 animate-fade-in fill-mode-forwards opacity-0" style={{ animationDelay: '100ms' }}>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+             <span className="text-sm font-semibold text-primary">{lang === 'pt-BR' ? 'Sua Conta' : 'Your Account'}</span>
+          </div>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+            {t.profile}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-2">
+            {lang === 'pt-BR' ? 'Gerencie suas informações pessoais e corporativas' : 'Manage your personal and company information'}
+          </p>
+        </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
       {/* Profile Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-4">
+      <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-7 lg:col-span-7 h-full">
+        <CardHeader className="flex flex-row items-center gap-4 pb-4">
           <div
             className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer group relative overflow-hidden"
             onClick={() => setAvatarModalOpen(true)}
@@ -437,9 +446,73 @@ const ProfilePage = () => {
         </CardContent>
       </Card>
 
+      {/* Security Card */}
+      <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-5 lg:col-span-5 h-full">
+        <CardHeader className="flex flex-row items-center gap-4 pb-4">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-destructive" />
+          </div>
+          <div>
+            <CardTitle className="text-xl">
+              {lang === 'pt-BR' ? 'Segurança' : 'Security'}
+            </CardTitle>
+            <CardDescription className="mt-0.5">
+              {lang === 'pt-BR' ? 'Gerencie sua senha de acesso' : 'Manage your access password'}
+            </CardDescription>
+          </div>
+        </CardHeader>
+
+        <Separator />
+
+        <CardContent className="pt-5 pb-6 flex-1 flex flex-col justify-center">
+          {!changingPassword ? (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+              <div className="flex items-center gap-3">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Senha' : 'Password'}</p>
+                  <p className="text-xs text-muted-foreground">••••••••</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setChangingPassword(true)} className="gap-1.5">
+                <Pencil className="w-3.5 h-3.5" />
+                {lang === 'pt-BR' ? 'Alterar' : 'Change'}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Nova senha' : 'New password'}</Label>
+                  <Input
+                    type="password"
+                    value={passwordForm.password}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Confirmar senha' : 'Confirm password'}</Label>
+                  <Input
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              <ActionButtons
+                onSave={handleChangePassword}
+                onCancel={() => { setChangingPassword(false); setPasswordForm({ password: '', confirmPassword: '' }); }}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Organization Card */}
-      <Collapsible open={orgDetailsOpen || editingOrg} onOpenChange={setOrgDetailsOpen}>
-        <Card>
+      <Collapsible open={orgDetailsOpen || editingOrg} onOpenChange={setOrgDetailsOpen} className="md:col-span-12">
+        <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm overflow-hidden h-full">
           <CollapsibleTrigger asChild>
             <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
               <div className="flex items-start gap-3">
@@ -814,70 +887,7 @@ const ProfilePage = () => {
           </CollapsibleContent>
         </Card>
       </Collapsible>
-
-      {/* Security Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5 text-destructive" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">
-              {lang === 'pt-BR' ? 'Segurança' : 'Security'}
-            </CardTitle>
-            <CardDescription className="mt-0.5">
-              {lang === 'pt-BR' ? 'Gerencie sua senha de acesso' : 'Manage your access password'}
-            </CardDescription>
-          </div>
-        </CardHeader>
-
-        <Separator />
-
-        <CardContent className="pt-5 pb-6">
-          {!changingPassword ? (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
-              <div className="flex items-center gap-3">
-                <Lock className="w-4 h-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">{lang === 'pt-BR' ? 'Senha' : 'Password'}</p>
-                  <p className="text-xs text-muted-foreground">••••••••</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setChangingPassword(true)} className="gap-1.5">
-                <Pencil className="w-3.5 h-3.5" />
-                {lang === 'pt-BR' ? 'Alterar' : 'Change'}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Nova senha' : 'New password'}</Label>
-                  <Input
-                    type="password"
-                    value={passwordForm.password}
-                    onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
-                    placeholder="••••••••"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">{lang === 'pt-BR' ? 'Confirmar senha' : 'Confirm password'}</Label>
-                  <Input
-                    type="password"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-              <ActionButtons
-                onSave={handleChangePassword}
-                onCancel={() => { setChangingPassword(false); setPasswordForm({ password: '', confirmPassword: '' }); }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Logo Upload Modal */}
       <Dialog open={logoModalOpen} onOpenChange={setLogoModalOpen}>
