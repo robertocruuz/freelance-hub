@@ -553,7 +553,7 @@ export default function ProjectDashboardPage() {
 
   return (
     <div 
-      className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in pb-20"
+      className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in pb-20"
       style={cPrimaryHSL ? { '--primary': cPrimaryHSL } as React.CSSProperties : undefined}
     >
       {/* Header */}

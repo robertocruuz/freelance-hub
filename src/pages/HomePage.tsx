@@ -240,7 +240,7 @@ const HomePage = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 animate-pulse">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 animate-pulse">
         <div className="h-12 bg-muted/50 rounded-xl w-64" />
         <div className="h-20 bg-muted/40 rounded-2xl w-full" />
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
@@ -252,7 +252,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 max-w-[1800px] mx-auto relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
       {/* 1. Dashboard Header Strip */}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/80">
         <div>

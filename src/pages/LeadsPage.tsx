@@ -299,7 +299,7 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4 h-full flex flex-col min-h-0 animate-fade-in">
+    <div className="w-full min-w-full px-4 sm:px-6 lg:px-8 py-6 space-y-4 h-full flex flex-col min-h-0 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-3 shrink-0">
         {/* Title and subtitle */}
@@ -406,7 +406,7 @@ export default function LeadsPage() {
 
           {/* Kanban Board */}
           <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden pb-2">
-            <div className="flex gap-3 h-full items-start" style={{ minWidth: stages.length * 290 }}>
+            <div className="flex gap-3 h-full items-start w-max px-0.5">
               {stages.map(stage => {
                 const stageLeads = filtered.filter(l => l.stage_id === stage.id).sort((a, b) => a.position - b.position);
                 const stageValue = stageLeads.reduce((s, l) => s + l.value, 0);

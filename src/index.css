@@ -251,22 +251,40 @@
     box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15), inset 0 1px 2px hsl(225 50% 10% / 0.03);
   }
 
-  /* Primary button with glow */
+  /* Primary button with flat premium transition */
   .btn-glow {
-    background: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-    border: 2px solid hsl(var(--accent-foreground));
-    box-shadow: 0 2px 8px hsl(var(--accent) / 0.3);
-    transition: all 0.2s ease;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    box-shadow: none;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: hsl(0 0% 100% / 0.15);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
   }
 
   .btn-glow:hover {
-    box-shadow: 0 4px 16px hsl(var(--accent) / 0.4);
-    transform: translateY(-1px);
+    box-shadow: none;
+    background-color: hsl(var(--primary));
+    transform: translateY(0);
+  }
+
+  .btn-glow:hover::after {
+    opacity: 1;
   }
 
   .btn-glow:active {
-    transform: translateY(0);
+    transform: scale(0.96);
+    box-shadow: none;
   }
 
   /* Landing hero */

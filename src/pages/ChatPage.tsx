@@ -35,7 +35,7 @@ export default function ChatPage() {
   const showArea = !isMobile || !!activeChannelId;
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col h-[calc(100vh-theme(spacing.28))] md:h-[calc(100vh-theme(spacing.12))] animate-fade-in">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col h-[calc(100vh-theme(spacing.28))] md:h-[calc(100vh-theme(spacing.12))] animate-fade-in">
       <div className="flex items-center justify-between mb-4 shrink-0">
         <div>
           <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">

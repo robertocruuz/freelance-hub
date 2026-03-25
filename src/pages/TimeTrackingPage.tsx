@@ -869,7 +869,7 @@ const TimeTrackingPage = () => {
 
   return (
     <div className={cn(
-      "w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-3 animate-fade-in",
+      "w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-3 animate-fade-in",
       viewMode === 'report' ? "min-h-full" : "h-full min-h-0"
     )}>
       {/* Page Header */}

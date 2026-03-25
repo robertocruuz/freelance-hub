@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
@@ -16,6 +16,15 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Password validation
+  const hasMinLength = password.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>\-_]/.test(password);
+  
+  const isPasswordValid = hasMinLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
 
   // Slider State
   const tips = [
@@ -63,6 +72,10 @@ const LoginPage = () => {
           toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
         }
       } else if (isRegister) {
+        if (!isPasswordValid) {
+          toast.error('A senha não atende aos requisitos mínimos.');
+          return;
+        }
         const { error } = await signUp(email, password, name);
         if (error) {
           toast.error(error.message);
@@ -156,7 +169,7 @@ const LoginPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring/50 transition-all pr-12"
                   required
-                  minLength={6}
+                  minLength={isRegister ? 8 : 6}
                 />
                 <button
                   type="button"
@@ -166,6 +179,31 @@ const LoginPage = () => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+
+              {isRegister && (
+                <div className="mt-4 grid grid-cols-1 gap-2">
+                  <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${hasMinLength ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {hasMinLength ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    <span>Mínimo de 8 caracteres</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${hasUpperCase ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {hasUpperCase ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    <span>Pelo menos 1 letra maiúscula</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${hasLowerCase ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {hasLowerCase ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    <span>Pelo menos 1 letra minúscula</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${hasNumber ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {hasNumber ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    <span>Pelo menos 1 número</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${hasSpecialChar ? 'text-green-500 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {hasSpecialChar ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                    <span>Pelo menos 1 caractere especial</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -184,7 +222,7 @@ const LoginPage = () => {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (isRegister && !isPasswordValid)}
               className="w-full py-3 rounded-[0.85rem] bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-all"
             >
               {loading ? '...' : isForgotPassword ? 'Enviar link' : isRegister ? 'Criar conta' : 'Entrar'}

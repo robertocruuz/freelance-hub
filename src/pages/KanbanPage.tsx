@@ -587,7 +587,7 @@ const KanbanPage = () => {
   const activeBoardColorStyle = boardColorHsl ? { '--primary': boardColorHsl, '--ring': boardColorHsl } as React.CSSProperties : undefined;
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 h-full min-h-0 flex flex-col animate-fade-in" style={activeBoardColorStyle}>
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 relative z-10 h-full min-h-0 flex flex-col animate-fade-in" style={activeBoardColorStyle}>
       {/* Header */}
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

@@ -85,7 +85,7 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
           <h2 className="text-lg font-semibold">{isPt ? 'Conversas' : 'Chats'}</h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-muted rounded-full">
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
