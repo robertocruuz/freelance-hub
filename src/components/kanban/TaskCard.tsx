@@ -122,7 +122,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
 
   const contrast = (!isOverdue && clientColor) ? getContrastYIQ(clientColor) : 'dark';
   const tColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-  const mColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white/80' : 'text-slate-800') : 'text-muted-foreground';
+  const mColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-muted-foreground';
   const btnColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white hover:bg-white/20' : 'text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:bg-muted';
   const cbClass = (!isOverdue && clientColor)
     ? (contrast === 'light'
@@ -224,7 +224,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             </span>
             
             {task.due_date && (
-              <span className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-destructive font-medium' : isDueToday ? 'text-amber-600 dark:text-amber-400 font-medium' : mColor)}>
+              <span className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-destructive font-medium' : isDueToday ? (clientColor ? cn(tColor, "font-semibold") : 'text-amber-600 dark:text-amber-400 font-medium') : mColor)}>
                 {isOverdue && <AlertTriangle className="w-3.5 h-3.5" />}
                 <Calendar className="w-3.5 h-3.5" />
                 {format(new Date(task.due_date), 'dd MMM', { locale: ptBR })}

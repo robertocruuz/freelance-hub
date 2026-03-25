@@ -26,7 +26,7 @@ const LandingPage = () => {
         ? 'Centralize todas as informações dos seus clientes em um só lugar. Histórico completo, contatos e documentos organizados.' 
         : 'Centralize all your client information in one place. Complete history, organized contacts and documents.',
       image: featureClients,
-      color: 'from-blue-500 to-blue-600',
+      color: 'bg-blue-500',
     },
     {
       icon: FolderKanban,
@@ -35,7 +35,7 @@ const LandingPage = () => {
         ? 'Organize seus projetos visualmente com quadros Kanban personalizáveis. Arraste, solte e acompanhe o progresso em tempo real.' 
         : 'Organize your projects visually with customizable Kanban boards. Drag, drop and track progress in real-time.',
       image: featureKanban,
-      color: 'from-purple-500 to-purple-600',
+      color: 'bg-purple-500',
     },
     {
       icon: Clock,
@@ -44,7 +44,7 @@ const LandingPage = () => {
         ? 'Registre cada minuto do seu trabalho automaticamente. Relatórios detalhados para cobrar exatamente o que você trabalhou.' 
         : 'Track every minute of your work automatically. Detailed reports to bill exactly what you worked.',
       image: featureTimetracking,
-      color: 'from-green-500 to-green-600',
+      color: 'bg-green-500',
     },
     {
       icon: FileText,
@@ -53,7 +53,7 @@ const LandingPage = () => {
         ? 'Crie orçamentos impressionantes em minutos. Templates personalizáveis e envio direto para seus clientes.' 
         : 'Create stunning quotes in minutes. Customizable templates and direct sending to your clients.',
       image: featureBudgets,
-      color: 'from-orange-500 to-orange-600',
+      color: 'bg-orange-500',
     },
     {
       icon: Receipt,
@@ -62,7 +62,7 @@ const LandingPage = () => {
         ? 'Transforme orçamentos aprovados em faturas com um clique. Controle de pagamentos e lembretes automáticos.' 
         : 'Turn approved quotes into invoices with one click. Payment tracking and automatic reminders.',
       image: featureInvoices,
-      color: 'from-pink-500 to-pink-600',
+      color: 'bg-pink-500',
     },
     {
       icon: KeyRound,
@@ -71,7 +71,7 @@ const LandingPage = () => {
         ? 'Armazene credenciais de clientes com segurança total. Acesse de qualquer lugar com criptografia de ponta.' 
         : 'Store client credentials with total security. Access from anywhere with end-to-end encryption.',
       image: featureVault,
-      color: 'from-cyan-500 to-cyan-600',
+      color: 'bg-cyan-500',
     },
   ];
 
@@ -124,9 +124,9 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
+    <div className="relative h-screen flex flex-col bg-background overflow-y-auto overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border/50">
+      <header className="sticky top-0 z-50 bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           <h2 className="text-xl font-extrabold tracking-tight text-foreground">
             Logo<span className="text-primary">*</span>
@@ -140,7 +140,7 @@ const LandingPage = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all shadow-none"
               >
                 {item.label}
               </a>
@@ -159,7 +159,7 @@ const LandingPage = () => {
             >
               {lang === 'pt-BR' ? 'PT' : 'EN'}
             </button>
-            <Button onClick={() => navigate('/login')} className="rounded-full px-6">
+            <Button onClick={() => navigate('/login')} className="rounded-full px-6 shadow-none">
               {lang === 'pt-BR' ? 'Entrar' : 'Sign In'}
             </Button>
           </div>
@@ -169,11 +169,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="relative pt-16 pb-24 md:pt-24 md:pb-32">
         {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-primary/5 to-accent/5 rounded-full blur-3xl" />
-        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
@@ -212,7 +208,7 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/login')} 
-                className="rounded-full px-8 h-14 text-base font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                className="rounded-full px-8 h-14 text-base font-bold transition-all hover:opacity-90 shadow-none"
               >
                 {lang === 'pt-BR' ? 'Começar gratuitamente' : 'Start for free'}
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -220,7 +216,7 @@ const LandingPage = () => {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="rounded-full px-8 h-14 text-base font-medium"
+                className="rounded-full px-8 h-14 text-base font-medium border-border shadow-none"
               >
                 <Play className="w-5 h-5 mr-2" />
                 {lang === 'pt-BR' ? 'Ver demonstração' : 'Watch demo'}
@@ -250,8 +246,8 @@ const LandingPage = () => {
 
           {/* Hero Image/Screenshot */}
           <div className="mt-16 relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-border/50">
+            <div className="absolute inset-0 z-10 pointer-events-none" />
+            <div className="bg-card rounded-2xl md:rounded-3xl overflow-hidden border border-border">
               <AspectRatio ratio={16 / 9}>
                 <img 
                   src="/home.png" 
@@ -261,7 +257,7 @@ const LandingPage = () => {
               </AspectRatio>
             </div>
             {/* Floating badges */}
-            <div className="absolute -left-4 top-1/4 glass rounded-xl p-4 shadow-lg hidden lg:flex items-center gap-3 animate-float">
+            <div className="absolute -left-4 top-1/4 bg-card rounded-xl p-4 border border-border hidden lg:flex items-center gap-3 animate-float">
               <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
               </div>
@@ -270,7 +266,7 @@ const LandingPage = () => {
                 <p className="text-xs text-muted-foreground">{lang === 'pt-BR' ? 'Há 2 minutos' : '2 minutes ago'}</p>
               </div>
             </div>
-            <div className="absolute -right-4 top-1/3 glass rounded-xl p-4 shadow-lg hidden lg:flex items-center gap-3 animate-float" style={{ animationDelay: '1s' }}>
+            <div className="absolute -right-4 top-1/3 bg-card rounded-xl p-4 border border-border hidden lg:flex items-center gap-3 animate-float" style={{ animationDelay: '1s' }}>
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
@@ -324,7 +320,7 @@ const LandingPage = () => {
               >
                 {/* Content */}
                 <div className="flex-1 space-y-6">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}>
+                  <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center`}>
                     <feature.icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -345,7 +341,7 @@ const LandingPage = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button variant="ghost" className="group">
+                  <Button variant="ghost" className="group shadow-none">
                     {lang === 'pt-BR' ? 'Saiba mais' : 'Learn more'}
                     <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -353,9 +349,9 @@ const LandingPage = () => {
 
                 {/* Image */}
                 <div className="flex-1 w-full">
-                  <div className="glass rounded-2xl overflow-hidden shadow-xl border border-border/50">
+                  <div className="bg-card rounded-2xl overflow-hidden border border-border">
                     <AspectRatio ratio={4 / 3}>
-                      <div className={`w-full h-full bg-gradient-to-br ${feature.color} opacity-10`} />
+                      <div className={`w-full h-full ${feature.color} opacity-10`} />
                       <img 
                         src={feature.image} 
                         alt={feature.title}
@@ -386,7 +382,7 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((testimonial, i) => (
-              <Card key={i} className="glass border-border/50">
+              <Card key={i} className="bg-card border-border">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-1 mb-4">
                     {[...Array(testimonial.rating)].map((_, j) => (
@@ -428,7 +424,7 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Free Plan */}
-            <Card className="glass border-border/50">
+            <Card className="bg-card border-border">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold text-foreground mb-2">{lang === 'pt-BR' ? 'Gratuito' : 'Free'}</h3>
                 <p className="text-muted-foreground text-sm mb-6">{lang === 'pt-BR' ? 'Para começar' : 'To get started'}</p>
@@ -448,14 +444,14 @@ const LandingPage = () => {
                     </li>
                   ))}
                 </ul>
-                <Button variant="outline" className="w-full rounded-full" onClick={() => navigate('/login')}>
+                <Button variant="outline" className="w-full rounded-full shadow-none" onClick={() => navigate('/login')}>
                   {lang === 'pt-BR' ? 'Começar grátis' : 'Start free'}
                 </Button>
               </CardContent>
             </Card>
 
             {/* Pro Plan */}
-            <Card className="relative border-primary/50 shadow-xl shadow-primary/10 scale-105">
+            <Card className="relative bg-card border-primary scale-105">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
                 {lang === 'pt-BR' ? 'POPULAR' : 'POPULAR'}
               </div>
@@ -479,14 +475,14 @@ const LandingPage = () => {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full rounded-full" onClick={() => navigate('/login')}>
+                <Button className="w-full rounded-full shadow-none" onClick={() => navigate('/login')}>
                   {lang === 'pt-BR' ? 'Assinar Pro' : 'Subscribe Pro'}
                 </Button>
               </CardContent>
             </Card>
 
             {/* Business Plan */}
-            <Card className="glass border-border/50">
+            <Card className="bg-card border-border">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold text-foreground mb-2">Business</h3>
                 <p className="text-muted-foreground text-sm mb-6">{lang === 'pt-BR' ? 'Para equipes' : 'For teams'}</p>
@@ -507,7 +503,7 @@ const LandingPage = () => {
                     </li>
                   ))}
                 </ul>
-                <Button variant="outline" className="w-full rounded-full" onClick={() => navigate('/login')}>
+                <Button variant="outline" className="w-full rounded-full shadow-none" onClick={() => navigate('/login')}>
                   {lang === 'pt-BR' ? 'Falar com vendas' : 'Contact sales'}
                 </Button>
               </CardContent>
@@ -517,14 +513,14 @@ const LandingPage = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 md:py-32 landing-hero-bg">
+      <section className="py-20 md:py-32 bg-card border-y border-border">
         <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-6">
             {lang === 'pt-BR' 
               ? 'Pronto para transformar seu negócio?' 
               : 'Ready to transform your business?'}
           </h2>
-          <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
             {lang === 'pt-BR'
               ? 'Junte-se a milhares de freelancers que já estão economizando tempo e ganhando mais.'
               : 'Join thousands of freelancers who are already saving time and earning more.'}
@@ -533,13 +529,13 @@ const LandingPage = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/login')} 
-              className="rounded-full px-8 h-14 text-base font-bold bg-accent text-accent-foreground hover:bg-accent/90"
+              className="rounded-full px-8 h-14 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-none"
             >
               {lang === 'pt-BR' ? 'Criar conta gratuita' : 'Create free account'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
-          <p className="mt-6 text-sm text-white/50">
+          <p className="mt-6 text-sm text-muted-foreground">
             {lang === 'pt-BR' 
               ? 'Sem cartão de crédito • Cancele quando quiser' 
               : 'No credit card required • Cancel anytime'}
