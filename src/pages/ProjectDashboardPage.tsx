@@ -24,6 +24,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import { UserChecklist } from '@/components/UserChecklist';
 
 const hexToHSL = (hex: string | null) => {
   if (!hex) return null;
@@ -617,13 +618,14 @@ export default function ProjectDashboardPage() {
               </div>
               {!showItemForm && (
                 <Button 
+                  variant="ghost" 
                   size="sm" 
                   onClick={() => setShowItemForm(true)} 
-                  className="rounded-lg gap-2"
+                  className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5"
                   disabled={isLinkedToBudget}
                   title={isLinkedToBudget ? "Edite os itens através do Orçamento original" : "Adicionar Item"}
                 >
-                  <Plus className="w-4 h-4" /> Adicionar
+                  <Plus className="w-3.5 h-3.5" /> Adicionar
                 </Button>
               )}
             </div>
@@ -827,10 +829,10 @@ export default function ProjectDashboardPage() {
                     size="icon"
                     onClick={toggleTimer}
                     className={cn(
-                      "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all shadow-xl hover:scale-105 shrink-0",
+                      "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all hover:scale-105 shrink-0",
                       isTimerRunningForThis 
-                        ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/30" 
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30"
+                        ? "bg-red-500 hover:bg-red-600 text-white" 
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
                     )}
                   >
                     {isTimerRunningForThis ? (
@@ -847,14 +849,12 @@ export default function ProjectDashboardPage() {
             <div className="p-6 sm:p-8 bg-muted/5 flex flex-col relative z-10 rounded-b-3xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ListChecks className="w-4 h-4 text-primary" />
-                  </div>
+                  <ListChecks className="w-5 h-5 text-primary" />
                   <h4 className="text-sm font-extrabold uppercase tracking-wider">Últimos Registros</h4>
                 </div>
-                <div className="flex items-center gap-3 bg-background/50 rounded-xl px-4 py-2 border border-border/50 shadow-sm">
+                <div className="flex items-center gap-3">
                   <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Tempo Total:</p>
-                  <p className="text-lg font-extrabold text-foreground" style={{ fontFeatureSettings: '"tnum"' }}>
+                  <p className="text-lg font-bold text-foreground" style={{ fontFeatureSettings: '"tnum"' }}>
                     {formatTime(totalTimeSeconds)}
                   </p>
                 </div>
@@ -939,8 +939,13 @@ export default function ProjectDashboardPage() {
                 <h3 className="text-lg font-bold">Arquivos</h3>
               </div>
               {!showFileForm && (
-                <Button size="sm" onClick={() => setShowFileForm(true)} className="rounded-lg gap-2">
-                  <Plus className="w-4 h-4" /> Adicionar
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowFileForm(true)} 
+                  className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Adicionar
                 </Button>
               )}
             </div>
@@ -1001,6 +1006,7 @@ export default function ProjectDashboardPage() {
             )}
           </div>
 
+          <UserChecklist projectId={id} />
         </div>
       </div>
 

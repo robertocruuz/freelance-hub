@@ -255,8 +255,19 @@ const ProjectsPage = () => {
 
   const loadProjects = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from('projects').select('*').order('name');
-    if (data) setProjects(data);
+    const [projectsRes, favoritesRes] = await Promise.all([
+      supabase.from('projects').select('*').order('name'),
+      supabase.from('project_favorites').select('project_id').eq('user_id', user.id)
+    ]);
+
+    if (projectsRes.data) {
+      const favorites = new Set((favoritesRes.data || []).map(f => f.project_id));
+      const enriched = projectsRes.data.map(p => ({
+        ...p,
+        is_favorite: favorites.has(p.id)
+      }));
+      setProjects(enriched);
+    }
   }, [user]);
 
   const loadItems = useCallback(async (projectId: string) => {
@@ -397,20 +408,30 @@ const ProjectsPage = () => {
 
   const toggleFavorite = async (projectId: string, currentStatus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!user) return;
+    
     try {
-      const { error } = await supabase
-        .from('projects')
-        // @ts-ignore - is_favorite is added via migration
-        .update({ is_favorite: !currentStatus })
-        .eq('id', projectId);
-        
-      if (error) throw error;
+      if (currentStatus) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('project_favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('project_id', projectId);
+        if (error) throw error;
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('project_favorites')
+          .insert({ user_id: user.id, project_id: projectId });
+        if (error && error.code !== '23505') throw error;
+      }
       
       setProjects(projects.map(p => p.id === projectId ? { ...p, is_favorite: !currentStatus } : p));
       toast.success(!currentStatus ? 'Projeto favoritado!' : 'Removido dos favoritos');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
-      toast.error('Erro ao favoritar projeto');
+      toast.error(`Erro ao favoritar projeto: ${error.message || 'Erro desconhecido'}`);
     }
   };
 

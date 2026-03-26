@@ -102,6 +102,9 @@ const translations = {
     deleteEntry: 'Excluir registro',
     noEntries: 'Nenhum registro ainda.',
     entries: 'Registros',
+    checklist: 'Lembretes',
+    addChecklistItem: 'Adicionar novo item...',
+    noChecklistItems: 'Sua lista está vazia.',
   },
   'en': {
     heroTitle: 'Your complete\nplatform for\nfreelancers',
@@ -197,6 +200,9 @@ const translations = {
     deleteEntry: 'Delete entry',
     noEntries: 'No entries yet.',
     entries: 'Entries',
+    checklist: 'Reminders',
+    addChecklistItem: 'Add new item...',
+    noChecklistItems: 'Your list is empty.',
   },
 };
 

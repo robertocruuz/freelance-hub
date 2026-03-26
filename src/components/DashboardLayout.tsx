@@ -421,17 +421,23 @@ const DashboardLayout = () => {
 
   const fetchFavorites = async () => {
     if (!user) return;
-    const { data } = await (supabase.from('projects') as any)
+    const { data } = await supabase
+        .from('project_favorites')
         .select(`
-          id, 
-          name, 
-          color,
-          clients ( color )
+          project_id,
+          projects (
+            id,
+            name,
+            color,
+            clients ( color )
+          )
         `)
-        .eq('is_favorite', true)
-        .eq('user_id', user.id)
-        .order('name');
-    if (data) setFavoriteProjects(data);
+        .eq('user_id', user.id);
+    
+    if (data) {
+      const projects = data.map((f: any) => f.projects).filter(Boolean);
+      setFavoriteProjects(projects);
+    }
   };
 
   useEffect(() => {
@@ -460,6 +466,10 @@ const DashboardLayout = () => {
         fetchProfile();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${user.id}` }, () => {
+        // We still listen to projects in case a project name/color changes
+        fetchFavorites();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'project_favorites', filter: `user_id=eq.${user.id}` }, () => {
         fetchFavorites();
       })
       .subscribe();

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Users, FolderKanban, FileText, Clock, Receipt, SquareKanban, AlertCircle, DollarSign, CalendarDays, ChevronLeft, ChevronRight, Wallet, UserPlus, Target, TrendingUp, Bell, BellOff, Check, CheckCheck, Trash2, Info, ListTodo, MoreHorizontal, ArrowUpRight } from 'lucide-react';
+import { UserChecklist } from '@/components/UserChecklist';
 import { getContrastYIQ } from '@/pages/ProjectsPage';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -626,6 +627,9 @@ const HomePage = () => {
           <section className="bg-card/40 p-6 rounded-2xl border border-border ">
             <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
           </section>
+
+          {/* Personal Checklist */}
+          <UserChecklist />
 
           {/* Notifications Panel */}
           <section className="flex flex-col min-h-[300px] bg-card/40 p-6 rounded-2xl border border-border ">

@@ -589,27 +589,26 @@ const KanbanPage = () => {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 relative z-10 h-full min-h-0 flex flex-col animate-fade-in" style={activeBoardColorStyle}>
       {/* Header */}
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Tarefas</h1>
-            <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
-          </div>
-
-        </div>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-fit mb-3 bg-card shadow-sm border border-border">
-          <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
-            <Kanban className="w-3.5 h-3.5" />
-            Meus Painéis
-          </TabsTrigger>
-          <TabsTrigger value="shared" className="gap-1.5 text-xs">
-            <Share2 className="w-3.5 h-3.5" />
-            Compartilhadas comigo
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Tarefas</h1>
+              <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
+            </div>
+
+            <TabsList className="bg-card shadow-sm border border-border">
+              <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
+                <Kanban className="w-3.5 h-3.5" />
+                Meus Painéis
+              </TabsTrigger>
+              <TabsTrigger value="shared" className="gap-1.5 text-xs">
+                <Share2 className="w-3.5 h-3.5" />
+                Compartilhadas comigo
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
 
         <TabsContent value="my-boards" className="flex-1 flex flex-col min-h-0 mt-0 data-[state=inactive]:hidden">
 
