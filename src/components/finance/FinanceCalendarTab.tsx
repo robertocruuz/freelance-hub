@@ -196,7 +196,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
               A pagar
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-destructive" />
+              <span className="w-2.5 h-1.5 rounded-full bg-black/50 dark:bg-white/50" />
               Ambos
             </span>
           </div>
@@ -209,7 +209,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
             </h3>
             <div className="flex items-center gap-3">
               {hasEvents && (
-                <div className="flex items-center gap-3 text-xs bg-background/50 backdrop-blur-md border border-border/50 px-3 py-1.5 rounded-full">
+                <div className="flex items-center gap-3 text-xs bg-background border border-border/50 px-3 py-1.5 rounded-full">
                   {totalReceivables > 0 && (
                     <span className="text-primary font-bold">+{formatCurrency(totalReceivables)}</span>
                   )}

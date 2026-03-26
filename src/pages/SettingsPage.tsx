@@ -108,7 +108,7 @@ const SettingsPage = () => {
   const themeOptions = [
     { value: 'light', label: isPt ? 'Claro' : 'Light', icon: Sun, preview: 'bg-background border-border' },
     { value: 'dark', label: isPt ? 'Escuro' : 'Dark', icon: Moon, preview: 'bg-foreground border-foreground' },
-    { value: 'system', label: isPt ? 'Sistema' : 'System', icon: Monitor, preview: 'bg-gradient-to-br from-background to-foreground border-border' },
+    { value: 'system', label: isPt ? 'Sistema' : 'System', icon: Monitor, preview: 'bg-muted border-border' },
   ];
 
   return (

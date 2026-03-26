@@ -17,9 +17,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       prefix: balance >= 0 ? '+' : '-',
       icon: Scale,
       trend: balance >= 0 ? ArrowUpRight : ArrowDownRight,
-      gradient: balance >= 0
-        ? 'from-blue-500/10 to-blue-500/5 dark:from-blue-500/20 dark:to-blue-500/5'
-        : 'from-red-500/10 to-red-500/5 dark:from-red-500/20 dark:to-red-500/5',
+      gradient: 'bg-transparent',
       iconBg: balance >= 0 ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-red-100 dark:bg-red-900/50',
       iconColor: balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400',
       valueColor: balance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300',
@@ -30,7 +28,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       value: formatCurrency(receivedThisMonth),
       icon: DollarSign,
       trend: ArrowUpRight,
-      gradient: 'from-emerald-500/10 to-emerald-500/5 dark:from-emerald-500/20 dark:to-emerald-500/5',
+      gradient: 'bg-transparent',
       iconBg: 'bg-emerald-100 dark:bg-emerald-900/50',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
       valueColor: 'text-emerald-700 dark:text-emerald-300',
@@ -41,7 +39,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       value: formatCurrency(paidThisMonth),
       icon: TrendingDown,
       trend: ArrowDownRight,
-      gradient: 'from-red-500/10 to-red-500/5 dark:from-red-500/20 dark:to-red-500/5',
+      gradient: 'bg-transparent',
       iconBg: 'bg-red-100 dark:bg-red-900/50',
       iconColor: 'text-red-600 dark:text-red-400',
       valueColor: 'text-red-700 dark:text-red-300',
@@ -51,7 +49,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       label: 'A receber',
       value: formatCurrency(totalReceivable),
       icon: TrendingUp,
-      gradient: 'from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/5',
+      gradient: 'bg-transparent',
       iconBg: 'bg-primary/10 dark:bg-primary/20',
       iconColor: 'text-primary',
       valueColor: 'text-primary dark:text-blue-300',
@@ -62,7 +60,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       value: String(nextDueCount),
       subtitle: nextDueCount === 0 ? 'Nenhum' : nextDueCount === 1 ? '1 item' : `${nextDueCount} itens`,
       icon: CalendarClock,
-      gradient: 'from-amber-500/10 to-amber-500/5 dark:from-amber-500/20 dark:to-amber-500/5',
+      gradient: 'bg-transparent',
       iconBg: 'bg-amber-100 dark:bg-amber-900/50',
       iconColor: 'text-amber-600 dark:text-amber-400',
       valueColor: 'text-amber-700 dark:text-amber-300',
@@ -75,7 +73,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
       {cards.map((c) => (
         <div
           key={c.label}
-          className={`relative overflow-hidden rounded-2xl border ${c.borderColor} bg-gradient-to-br ${c.gradient} p-5 sm:p-6 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5`}
+          className={`relative overflow-hidden rounded-2xl border ${c.borderColor} bg-card p-5 sm:p-6 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5`}
         >
           {/* Decorative circle */}
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-current opacity-[0.015]" />

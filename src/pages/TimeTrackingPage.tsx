@@ -1951,7 +1951,7 @@ const TimeTrackingPage = () => {
                     </div>
 
                     {/* Filters bar - compact inline layout */}
-                    <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm relative z-30">
+                    <div className="rounded-xl border border-border bg-card relative z-30">
                       <div className="px-4 py-3 flex flex-wrap items-center gap-3">
                         {/* User filter pills */}
                         <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 p-1">

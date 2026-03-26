@@ -66,7 +66,7 @@ export default function ChatInput({ onSendMessage }: any) {
   ];
 
   return (
-    <div className="p-4 bg-card/80 backdrop-blur-md border-t border-border shrink-0">
+    <div className="p-4 bg-card border-t border-border shrink-0">
       <form onSubmit={handleSend} className="flex items-center gap-2 max-w-4xl mx-auto w-full">
         <input 
           type="file" 

@@ -286,9 +286,7 @@ const LoginPage = () => {
               100% { background-position: 0% 50%; }
             }
             .animate-fluid-background {
-              background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-              background-size: 400% 400%;
-              animation: fluidGradient 15s ease infinite;
+              background: var(--primary);
             }
             
             .glass-slider-enter { animation: sliderFadeIn 0.5s ease-out forwards; }
@@ -310,7 +308,7 @@ const LoginPage = () => {
               
               <div className="flex flex-wrap gap-3 mb-8">
                 {tips[currentTip].tags.map((tag, i) => (
-                  <span key={i} className="px-5 py-2 rounded-full border border-white/30 text-[13px] font-medium bg-white/10 tracking-wide backdrop-blur-md">
+                  <span key={i} className="px-5 py-2 rounded-full border border-white/20 text-[13px] font-medium bg-black/20 tracking-wide">
                     {tag}
                   </span>
                 ))}

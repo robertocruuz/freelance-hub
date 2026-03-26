@@ -547,7 +547,7 @@ const DashboardLayout = () => {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-background/80" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-card flex flex-col z-50 shadow-xl border-r border-border">
             <button
               onClick={() => setMobileOpen(false)}

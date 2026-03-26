@@ -63,7 +63,7 @@ export default function ChatArea({ chatState, isMobile }: any) {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card/40 backdrop-blur-sm shrink-0">
+      <div className="flex items-center gap-3 p-4 border-b border-border bg-card/40 shrink-0">
         {isMobile && (
           <Button variant="ghost" size="icon" className="mr-1 -ml-2 text-muted-foreground" onClick={() => setActiveChannelId(null)}>
             <ArrowLeft className="h-5 w-5" />

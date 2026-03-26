@@ -246,13 +246,13 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/40" />
       <div
         className="relative w-full max-w-2xl h-full bg-card border-l border-border overflow-y-auto animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-4 flex items-start justify-between">
+        <div className="sticky top-0 z-10 bg-card border-b border-border px-6 py-4 flex items-start justify-between">
           <div className="flex-1 mr-4">
             <input
               value={title}

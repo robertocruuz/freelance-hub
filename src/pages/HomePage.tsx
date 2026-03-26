@@ -545,7 +545,7 @@ const HomePage = () => {
                               {client?.name || ''}
                             </span>
                             {p.due_date && (
-                               <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center backdrop-blur-sm ${mColor} bg-background border border-border group-hover:bg-black/10 group-hover:border-transparent`}>
+                               <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 w-14 text-center ${mColor} bg-background border border-border group-hover:bg-black/10 group-hover:border-transparent`}>
                                  {format(parseISO(p.due_date), 'dd/MM')}
                                </span>
                             )}
