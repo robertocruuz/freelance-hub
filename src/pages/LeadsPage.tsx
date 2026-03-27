@@ -17,6 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, isPast } from 'date-fns';
 import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -208,26 +211,59 @@ export default function LeadsPage() {
     }
   };
 
-  const confirmWin = async (convert: boolean) => {
-    if (!winAndConvertLead) return;
-    await updateLead(winAndConvertLead.id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
-    if (convert) {
-      await doConvertToProject(winAndConvertLead);
+  const ensureClientFromLead = async (lead: Lead) => {
+    if (!user) return null;
+
+    if (lead.client_id) {
+      return lead.client_id;
     }
-    setWinAndConvertLead(null);
+
+    const { data: existingClient } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('name', lead.title)
+      .maybeSingle();
+
+    const clientId = existingClient?.id ?? null;
+    if (clientId) {
+      await updateLead(lead.id, { client_id: clientId } as Partial<Lead>);
+      return clientId;
+    }
+
+    const { data: createdClient, error } = await supabase
+      .from('clients')
+      .insert({
+        user_id: user.id,
+        name: lead.title,
+        responsible: lead.contact_name || null,
+        email: lead.contact_email || null,
+        phone: lead.contact_phone || null,
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      toast({ title: 'Erro ao criar cliente', description: error.message, variant: 'destructive' });
+      return null;
+    }
+
+    await updateLead(lead.id, { client_id: createdClient.id } as Partial<Lead>);
+    return createdClient.id;
   };
 
-  const doConvertToProject = async (lead: Lead) => {
+  const doConvertToProject = async (lead: Lead, clientId?: string | null) => {
     if (!user) return;
+    const resolvedClientId = clientId ?? lead.client_id ?? null;
     const { data, error } = await supabase.from('projects').insert({
       name: lead.title,
-      client_id: lead.client_id,
+      client_id: resolvedClientId,
       user_id: user.id,
     }).select().single();
 
     if (error) {
       toast({ title: 'Erro ao criar projeto', description: error.message, variant: 'destructive' });
-      return;
+      return false;
     }
 
     if (lead.value > 0) {
@@ -241,15 +277,42 @@ export default function LeadsPage() {
 
     toast({ title: 'Projeto criado!', description: `"${lead.title}" foi convertido em projeto.` });
     navigate('/dashboard/projects');
+    return true;
+  };
+
+  const convertLeadFromWin = async (mode: 'none' | 'client' | 'client_project') => {
+    if (!winAndConvertLead) return;
+    await updateLead(winAndConvertLead.id, { status: 'won', won_at: new Date().toISOString() } as Partial<Lead>);
+
+    if (mode === 'client') {
+      const clientId = await ensureClientFromLead(winAndConvertLead);
+      if (clientId) {
+        toast({ title: 'Cliente criado!', description: `"${winAndConvertLead.title}" foi convertido em cliente.` });
+      }
+    }
+
+    if (mode === 'client_project') {
+      const clientId = await ensureClientFromLead(winAndConvertLead);
+      if (!clientId) return;
+      await doConvertToProject(winAndConvertLead, clientId);
+    }
+    setWinAndConvertLead(null);
   };
 
   const handleConvertToProject = (lead: Lead) => {
     setConvertLead(lead);
   };
 
-  const confirmConvert = async () => {
+  const confirmConvert = async (mode: 'client' | 'client_project') => {
     if (!convertLead) return;
-    await doConvertToProject(convertLead);
+    const clientId = await ensureClientFromLead(convertLead);
+    if (!clientId) return;
+
+    if (mode === 'client') {
+      toast({ title: 'Cliente criado!', description: `"${convertLead.title}" foi convertido em cliente.` });
+    } else {
+      await doConvertToProject(convertLead, clientId);
+    }
     setConvertLead(null);
   };
 
@@ -677,38 +740,46 @@ export default function LeadsPage() {
       </AlertDialog>
 
       {/* Win & Convert dialog */}
-      <AlertDialog open={!!winAndConvertLead} onOpenChange={v => !v && setWinAndConvertLead(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>🏆 Negócio ganho!</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja converter "{winAndConvertLead?.title}" em um projeto?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => confirmWin(false)}>Apenas marcar como ganho</AlertDialogCancel>
-            <AlertDialogAction onClick={() => confirmWin(true)}>
-              Converter em Projeto
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={!!winAndConvertLead} onOpenChange={v => !v && setWinAndConvertLead(null)}>
+        <DialogContent className="max-w-2xl p-6 sm:p-7 rounded-2xl">
+          <DialogHeader className="pr-8">
+            <DialogTitle className="text-xl sm:text-2xl">🏆 Negócio ganho!</DialogTitle>
+            <DialogDescription className="text-base leading-relaxed pt-1">
+              Escolha o que fazer com "{winAndConvertLead?.title}" após marcar como ganho.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:space-x-0 pt-1">
+            <Button variant="outline" className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => convertLeadFromWin('none')}>
+              Nada
+            </Button>
+            <Button variant="outline" className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => convertLeadFromWin('client')}>
+              Converter em cliente
+            </Button>
+            <Button className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => convertLeadFromWin('client_project')}>
+              Converter em projeto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Convert existing won lead dialog */}
-      <AlertDialog open={!!convertLead} onOpenChange={v => !v && setConvertLead(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Converter em Projeto</AlertDialogTitle>
-            <AlertDialogDescription>
-              Criar um novo projeto a partir de "{convertLead?.title}" com valor de {convertLead?.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmConvert}>Criar Projeto</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={!!convertLead} onOpenChange={v => !v && setConvertLead(null)}>
+        <DialogContent className="max-w-2xl p-6 sm:p-7 rounded-2xl">
+          <DialogHeader className="pr-8">
+            <DialogTitle className="text-xl sm:text-2xl">Converter lead ganho</DialogTitle>
+            <DialogDescription className="text-base leading-relaxed pt-1">
+              Escolha se deseja converter "{convertLead?.title}" em cliente ou em cliente e projeto.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:space-x-0 pt-1">
+            <Button variant="outline" className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => setConvertLead(null)}>
+              Cancelar
+            </Button>
+            <Button variant="outline" className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => confirmConvert('client')}>Converter em cliente</Button>
+            <Button className="w-full h-11 text-sm font-medium rounded-xl shadow-none" onClick={() => confirmConvert('client_project')}>Converter em projeto</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

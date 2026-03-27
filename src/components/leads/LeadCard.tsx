@@ -57,7 +57,7 @@ export default function LeadCard({ lead, onEdit, onDelete, onWin, onLose, onConv
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => onConvertToProject(lead)} className="text-primary">
-                    <FolderPlus className="w-4 h-4 mr-2" /> Converter em Projeto
+                    <FolderPlus className="w-4 h-4 mr-2" /> Converter lead
                   </DropdownMenuItem>
                 </>
               )}
