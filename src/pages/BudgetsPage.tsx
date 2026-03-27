@@ -267,10 +267,32 @@ const BudgetsPage = () => {
               const newName = items[i].description;
               
               if (oldName !== newName && oldName.trim() !== '' && newName.trim() !== '') {
-                await supabase.from('tasks')
-                  .update({ title: newName })
+                const { data: affectedTasks } = await supabase
+                  .from('tasks')
+                  .select('id')
                   .eq('project_id', projId)
                   .eq('title', oldName);
+
+                await supabase.from('tasks')
+                  .update({ title: newName, updated_by: user.id } as any)
+                  .eq('project_id', projId)
+                  .eq('title', oldName);
+
+                if (affectedTasks && affectedTasks.length > 0) {
+                  await supabase.from('task_activity_logs').insert(
+                    affectedTasks.map((task) => ({
+                      task_id: task.id,
+                      user_id: user.id,
+                      action: 'title_changed',
+                      details: {
+                        from: oldName,
+                        to: newName,
+                        source: 'budget_sync',
+                        budget_id: editingId,
+                      },
+                    })) as any
+                  );
+                }
               }
             }
           }

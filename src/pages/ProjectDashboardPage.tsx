@@ -276,6 +276,11 @@ export default function ProjectDashboardPage() {
   };
 
   const handleSaveItem = async () => {
+    if (isLinkedToBudget) {
+      toast.error('Edite os itens através do orçamento original.');
+      resetItemForm();
+      return;
+    }
     if (!itemName.trim() || !project) return;
     const payload = {
       project_id: project.id,
@@ -298,6 +303,10 @@ export default function ProjectDashboardPage() {
   };
 
   const handleEditItem = (item: ProjectItem) => {
+    if (isLinkedToBudget) {
+      toast.error('Este projeto está vinculado a um orçamento. Os itens não podem ser editados aqui.');
+      return;
+    }
     setEditingItemId(item.id);
     setItemName(item.name);
     setItemValue(String(item.value));
@@ -305,6 +314,10 @@ export default function ProjectDashboardPage() {
   };
 
   const handleDeleteItem = (item: ProjectItem) => {
+    if (isLinkedToBudget) {
+      toast.error('Itens vinculados a orçamento não podem ser excluídos aqui.');
+      return;
+    }
     setItemToDelete(item);
   };
 
@@ -620,7 +633,10 @@ export default function ProjectDashboardPage() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => setShowItemForm(true)} 
+                  onClick={() => {
+                    if (isLinkedToBudget) return;
+                    setShowItemForm(true);
+                  }} 
                   className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5"
                   disabled={isLinkedToBudget}
                   title={isLinkedToBudget ? "Edite os itens através do Orçamento original" : "Adicionar Item"}
@@ -630,7 +646,7 @@ export default function ProjectDashboardPage() {
               )}
             </div>
 
-            {showItemForm && (
+            {showItemForm && !isLinkedToBudget && (
               <div className="bg-muted/30 border border-border p-4 rounded-xl mb-4 animate-fade-in">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -662,7 +678,10 @@ export default function ProjectDashboardPage() {
                     <div 
                       key={item.id} 
                       onClick={() => handleEditItem(item)}
-                      className="flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer group"
+                      className={cn(
+                        "flex items-center justify-between p-3 rounded-xl border border-border/50 transition-colors group",
+                        isLinkedToBudget ? "cursor-default" : "cursor-pointer hover:bg-muted/30"
+                      )}
                     >
                       <span className="font-medium text-sm">{item.name}</span>
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
@@ -739,7 +758,12 @@ export default function ProjectDashboardPage() {
                   const statusLabel = t.kanban_columns?.name ? t.kanban_columns.name : (t.status === 'done' ? 'Concluída' : 'Pendente');
                   
                   return (
-                    <div key={t.id} className="py-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => navigate('/dashboard/kanban', { state: { taskId: t.id } })}
+                      className="w-full py-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors text-left"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn("w-2 h-2 rounded-full shrink-0", isDone ? 'bg-green-500' : 'bg-primary')} />
                         <span className="font-medium text-sm truncate">{t.title}</span>
@@ -747,7 +771,7 @@ export default function ProjectDashboardPage() {
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground uppercase ml-2 shrink-0">
                         {statusLabel}
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
