@@ -286,7 +286,9 @@ const LoginPage = () => {
               100% { background-position: 0% 50%; }
             }
             .animate-fluid-background {
-              background: var(--primary);
+              background: linear-gradient(-45deg, hsl(var(--primary)), #6366f1, #a855f7, #ec4899);
+              background-size: 400% 400%;
+              animation: fluidGradient 15s ease infinite;
             }
             
             .glass-slider-enter { animation: sliderFadeIn 0.5s ease-out forwards; }

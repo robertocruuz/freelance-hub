@@ -46,7 +46,7 @@ export const UserChecklist = ({ projectId }: { projectId?: string }) => {
   }
 
   return (
-    <section className="bg-card/40 p-6 rounded-2xl border border-border flex flex-col space-y-4">
+    <section className="bg-card/40 p-6 rounded-2xl border border-border flex flex-col space-y-4 h-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <ListTodo className="w-5 h-5 text-primary" />
@@ -125,7 +125,7 @@ export const UserChecklist = ({ projectId }: { projectId?: string }) => {
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder={t.addChecklistItem}
-          className="bg-transparent border-0 border-b border-border rounded-none px-0 pr-8 focus-visible:ring-0 focus-visible:border-primary/50 transition-all placeholder:text-muted-foreground/30 text-sm h-9"
+          className="bg-transparent border-0 border-b border-border rounded-none px-0 pr-8 focus-visible:ring-0 focus-visible:border-primary/50 transition-all placeholder-[#676F7E] text-sm h-9"
         />
         {newItem.trim() && (
           <button 
