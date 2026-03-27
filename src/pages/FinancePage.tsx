@@ -12,7 +12,7 @@ import CashFlowTab from '@/components/finance/CashFlowTab';
 import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
 import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter, CalendarIcon } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export interface FinanceInvoice {
@@ -27,16 +27,31 @@ export interface FinanceInvoice {
   created_at: string;
 }
 
+export interface InvoicePrefillDraft {
+  sourceTaskId: string;
+  invoiceName: string;
+  clientId: string;
+  projectId: string;
+  dueDate: string | null;
+  items: {
+    description: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
+}
+
 type ViewMode = 'month' | 'overview';
 
 export default function FinancePage() {
   const { user } = useAuth();
   const { expenses } = useExpenses();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [autoEditId, setAutoEditId] = useState<string | null>(null);
+  const [invoicePrefillDraft, setInvoicePrefillDraft] = useState<InvoicePrefillDraft | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const tabsRef = useRef<HTMLDivElement>(null);
   const [overviewFiltersOpen, setOverviewFiltersOpen] = useState(false);
@@ -76,6 +91,36 @@ export default function FinancePage() {
   }, [user]);
 
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+
+  useEffect(() => {
+    const fromTask = searchParams.get('from_task');
+    if (!fromTask) return;
+
+    const description = searchParams.get('desc') || '';
+    const invoiceName = searchParams.get('name') || description || 'Nova Fatura';
+    const value = parseFloat(searchParams.get('value') || '0');
+    const clientId = searchParams.get('client') || '';
+    const projectId = searchParams.get('project') || '';
+    const dueDate = searchParams.get('due_date');
+
+    setViewMode('month');
+    setInvoicePrefillDraft({
+      sourceTaskId: fromTask,
+      invoiceName,
+      clientId,
+      projectId,
+      dueDate,
+      items: description
+        ? [{ description, quantity: 1, unitPrice: Number.isFinite(value) ? value : 0 }]
+        : [],
+    });
+
+    setTimeout(() => {
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   if (roleChecked && !isAdmin) {
     return <Navigate to="/dashboard" replace />;
@@ -218,7 +263,15 @@ export default function FinancePage() {
                 <h2 className="text-lg font-bold text-foreground">A Receber</h2>
               </div>
               <div className="h-full flex flex-col">
-                <ReceivablesTab invoices={invoices} onRefresh={fetchInvoices} monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+                <ReceivablesTab
+                  invoices={invoices}
+                  onRefresh={fetchInvoices}
+                  monthFilter={monthStr}
+                  autoEditId={autoEditId}
+                  onAutoEditDone={() => setAutoEditId(null)}
+                  prefillDraft={invoicePrefillDraft}
+                  onPrefillApplied={() => setInvoicePrefillDraft(null)}
+                />
               </div>
             </div>
             

@@ -175,6 +175,11 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
             onSelect={setSelectedDate}
             locale={ptBR}
             className="p-1 pointer-events-auto"
+            classNames={{
+              day_today: "rounded-full border border-border/60 text-foreground font-semibold",
+              day_selected:
+                "rounded-full bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-semibold",
+            }}
             modifiers={{
               receivable: receivableDates,
               payable: payableDates,

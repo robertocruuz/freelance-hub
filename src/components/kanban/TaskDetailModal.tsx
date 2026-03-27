@@ -653,11 +653,14 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 onClick={() => {
                   const params = new URLSearchParams();
                   params.set('from_task', task.id);
+                  params.set('name', task.title);
                   params.set('desc', task.title);
                   params.set('value', String(task.real_value || task.estimated_value || 0));
                   if (task.client_id) params.set('client', task.client_id);
+                  if (task.project_id) params.set('project', task.project_id);
+                  if (task.due_date) params.set('due_date', task.due_date);
                   onClose();
-                  navigate(`/dashboard/invoices?${params.toString()}`);
+                  navigate(`/dashboard/finance?${params.toString()}`);
                 }}
               >
                 <Receipt className="w-3.5 h-3.5" /> Gerar Fatura

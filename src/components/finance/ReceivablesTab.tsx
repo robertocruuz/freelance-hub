@@ -44,7 +44,7 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
 import { useClients } from '@/hooks/useClients';
-import type { FinanceInvoice } from '@/pages/FinancePage';
+import type { FinanceInvoice, InvoicePrefillDraft } from '@/pages/FinancePage';
 
 interface InvoiceItem {
   description: string;
@@ -99,9 +99,19 @@ interface Props {
   monthFilter?: string;
   autoEditId?: string | null;
   onAutoEditDone?: () => void;
+  prefillDraft?: InvoicePrefillDraft | null;
+  onPrefillApplied?: () => void;
 }
 
-export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, monthFilter, autoEditId, onAutoEditDone }: Props) {
+export default function ReceivablesTab({
+  invoices: parentInvoices,
+  onRefresh,
+  monthFilter,
+  autoEditId,
+  onAutoEditDone,
+  prefillDraft,
+  onPrefillApplied,
+}: Props) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const { clients } = useClients();
@@ -216,6 +226,34 @@ export default function ReceivablesTab({ invoices: parentInvoices, onRefresh, mo
       }
     }
   }, [autoEditId, mappedInvoices]);
+
+  const prefillProcessed = useRef<string | null>(null);
+  useEffect(() => {
+    if (!prefillDraft || prefillDraft.sourceTaskId === prefillProcessed.current) return;
+
+    prefillProcessed.current = prefillDraft.sourceTaskId;
+    setCreating(true);
+    setEditingInvoiceId(null);
+    setInvoiceName(prefillDraft.invoiceName || '');
+    setClientId(prefillDraft.clientId || '');
+    setProjectId(prefillDraft.projectId || null);
+    setItems(prefillDraft.items);
+    setTaxes(0);
+    setDiscount(0);
+    setDueDate(prefillDraft.dueDate ? new Date(prefillDraft.dueDate + 'T12:00:00') : undefined);
+    setPaymentMethods([]);
+    setOtherPaymentMethod('');
+    setNotes('');
+    setIsRecurring(false);
+    setRecurringMonths('12');
+    setRecurringGroupId(null);
+    setEditingItemIdx(null);
+    setNewDesc('');
+    setNewQty(1);
+    setNewPrice(0);
+    toast.success('Fatura pré-preenchida a partir da tarefa!');
+    onPrefillApplied?.();
+  }, [prefillDraft, onPrefillApplied]);
 
   // Filter by month
   const monthInvoices = monthFilter
