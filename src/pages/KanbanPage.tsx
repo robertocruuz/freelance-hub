@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { formatCurrency, cn, getContrastYIQ, hexToHsl } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -12,8 +12,11 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  closestCenter,
+  pointerWithin,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { Plus, LayoutGrid, List, Search, SlidersHorizontal, CalendarDays, AlertTriangle, CheckCircle2, CheckSquare, X, User, FolderOpen, Flag, Tag, Clock, Gauge, Timer, ArrowUpDown, ChevronDown, ArrowUp, ArrowDown, Kanban, MoreHorizontal, Pencil, Trash2, FolderKanban, Share2, Briefcase } from 'lucide-react';
 import { useKanban, Task, KanbanBoard } from '@/hooks/useKanban';
 import { useClients } from '@/hooks/useClients';
@@ -73,6 +76,8 @@ const KanbanPage = () => {
   const { user } = useAuth();
   const { columns, tasks, allColumns, allTasks, boards, loading, setTasks } = kanban;
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const [initialTaskHandled, setInitialTaskHandled] = useState(false);
 
   const [view, setView] = useState<ViewMode>('kanban');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -130,6 +135,24 @@ const KanbanPage = () => {
       }
     }
   }, [loading, boards]);
+
+  // Handle specific task routing from state
+  useEffect(() => {
+    if (!loading && allTasks && allColumns && allTasks.length > 0 && location.state?.taskId && !initialTaskHandled) {
+      const targetTask = allTasks.find((t: any) => t.id === location.state.taskId);
+      if (targetTask && targetTask.column_id) {
+        const targetCol = allColumns.find((c: any) => c.id === targetTask.column_id);
+        if (targetCol) {
+           if (targetCol.board_id) {
+             setActiveBoardId(targetCol.board_id);
+           }
+           setSelectedTask(targetTask);
+        }
+      }
+      setInitialTaskHandled(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [loading, allTasks, allColumns, location.state, initialTaskHandled]);
 
   // Load profiles for shared board owners
   useEffect(() => {
@@ -804,7 +827,21 @@ const KanbanPage = () => {
         </div>
       )}
 
-      {activeBoardId && (<>
+      {activeBoardId && (() => {
+        const activeBoard = boards.find(b => b.id === activeBoardId);
+        const currentBoardColor = activeBoard ? getBoardColor(activeBoard) : undefined;
+        
+        return (
+        <>
+        {currentBoardColor && (
+          <style>{`
+            .dynamic-board-hover:hover {
+              border-color: ${currentBoardColor} !important;
+              color: ${currentBoardColor} !important;
+              background-color: ${currentBoardColor}15 !important;
+            }
+          `}</style>
+        )}
 
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -827,7 +864,8 @@ const KanbanPage = () => {
           variant={showFilters || activeFilterCount > 0 ? "default" : "outline"}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-9 gap-1.5 text-xs transition-colors ${showFilters || activeFilterCount > 0 ? 'shadow-md shadow-primary/20' : 'bg-card border-border shadow-sm text-muted-foreground hover:text-foreground'}`}
+          className={`h-9 gap-1.5 text-xs transition-all duration-200 ${showFilters || activeFilterCount > 0 ? 'shadow-md shadow-primary/20 text-white' : 'bg-card border-border shadow-sm text-muted-foreground hover:text-foreground dynamic-board-hover'}`}
+          style={showFilters || activeFilterCount > 0 && currentBoardColor ? { backgroundColor: currentBoardColor, borderColor: currentBoardColor } : undefined}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           Filtros
@@ -839,7 +877,7 @@ const KanbanPage = () => {
           <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </Button>
 
-        <ShareButton resourceType="board" resourceId={activeBoardId} className="bg-card border-border shadow-sm text-muted-foreground hover:text-foreground" />
+        <ShareButton resourceType="board" resourceId={activeBoardId} className="bg-card border-border shadow-sm text-muted-foreground hover:text-foreground transition-all duration-200 dynamic-board-hover" themeColor={currentBoardColor || undefined} />
 
         {/* Active filter pills inline */}
         {!showFilters && activeFilterCount > 0 && (
@@ -1195,7 +1233,7 @@ const KanbanPage = () => {
       {view === 'kanban' && (
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={pointerWithin}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
@@ -1267,7 +1305,7 @@ const KanbanPage = () => {
             </div>
           </div>
 
-          <DragOverlay dropAnimation={{
+          <DragOverlay modifiers={[snapCenterToCursor, restrictToWindowEdges]} dropAnimation={{
             duration: 200,
             easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
           }}>
@@ -1416,7 +1454,9 @@ const KanbanPage = () => {
           kanban={kanban}
         />
       )}
-      </>)}
+      </>
+      );
+      })()}
         </TabsContent>
 
         <TabsContent value="shared" className="flex-1 flex flex-col h-full min-h-0 mt-4 outline-none data-[state=inactive]:hidden">

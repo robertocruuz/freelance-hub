@@ -307,16 +307,14 @@ const HomePage = () => {
         <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <ListTodo className="w-4 h-4 text-primary" />
-              </div>
+              <ListTodo className="w-5 h-5 text-foreground" />
               <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Minhas Tarefas' : 'My Tasks'}</h2>
             </div>
             <button onClick={() => navigate('/dashboard/kanban')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                {isPt ? 'Ver todas' : 'View all'} <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
-          <div className="flex flex-col bg-card/30 border border-border rounded-2xl flex-1 justify-between p-2">
+          <div className="flex flex-col bg-card border border-border rounded-2xl flex-1 justify-between p-2">
              {myTasks.length === 0 ? (
                <div className="flex flex-col items-center justify-center p-10 text-center opacity-60 m-auto">
                   <CheckCheck className="w-6 h-6 text-emerald-500 mb-3" />
@@ -335,7 +333,7 @@ const HomePage = () => {
                        key={t.id} 
                        className="group flex items-center gap-3 p-3.5 border-b border-border/60 last:border-0 cursor-pointer rounded-xl transition-all hover:-translate-y-0.5 hover:bg-[var(--hover-bg)] hover:border-transparent" 
                        style={{ '--hover-bg': solidCol } as React.CSSProperties}
-                       onClick={() => navigate('/dashboard/kanban')}
+                       onClick={() => navigate('/dashboard/kanban', { state: { taskId: t.id } })}
                      >
                         <div className="flex flex-col min-w-0 flex-1">
                           <p className="text-sm font-semibold text-foreground/90 truncate transition-colors group-hover:text-white">{t.title}</p>
@@ -359,14 +357,12 @@ const HomePage = () => {
         {/* 2. Time Tracking */}
         <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
           <div className="flex items-center gap-2.5 mb-6">
-            <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-cyan-500" />
-            </div>
+            <Clock className="w-5 h-5 text-foreground" />
             <h2 className="font-semibold text-lg text-foreground">Time Tracking</h2>
             {timeStats.activeTimer && <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ml-2 ring-4 ring-green-500/20" />}
           </div>
           
-          <div className="flex flex-col bg-card/30 border border-border rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card/60 transition-colors" onClick={() => navigate('/dashboard/time')}>
+          <div className="flex flex-col bg-card border border-border rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card transition-colors" onClick={() => navigate('/dashboard/time')}>
             <div className="flex justify-between items-start">
                <div className="flex flex-col">
                   <span className="text-[10px] text-muted-foreground font-bold mb-1 block uppercase tracking-wide">{isPt ? 'Hoje' : 'Today'}</span>
@@ -388,9 +384,7 @@ const HomePage = () => {
         <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
-               <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
-                 <FolderKanban className="w-4 h-4 text-amber-500" />
-               </div>
+               <FolderKanban className="w-5 h-5 text-foreground" />
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Projetos' : 'Projects'}</h2>
             </div>
             <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
@@ -434,12 +428,10 @@ const HomePage = () => {
 
         {/* ROW 2: (3 CARDS) */}
         {/* 4. Notificações */}
-        <section className="col-span-12 xl:col-span-4 flex flex-col min-h-[300px] bg-card/40 p-6 rounded-2xl border border-border h-full">
+        <section className="col-span-12 xl:col-span-4 flex flex-col min-h-[300px] bg-card p-6 rounded-2xl border border-border h-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <Bell className="w-4 h-4 text-blue-500" />
-              </div>
+              <Bell className="w-5 h-5 text-foreground" />
               <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Notificações' : 'Notifications'}</h2>
               {data.notifications.filter(n => !n.read).length > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500">
@@ -502,13 +494,13 @@ const HomePage = () => {
         </section>
 
         {/* 5. Calendário */}
-        <section className="col-span-12 xl:col-span-4 bg-card/40 p-6 rounded-2xl border border-border h-full">
+        <section className="col-span-12 xl:col-span-4 bg-card p-6 rounded-2xl border border-border h-full">
           <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </section>
 
         {/* 6. Personal Checklist */}
         <div className="col-span-12 xl:col-span-4 flex flex-col pt-0.5 h-full">
-          <UserChecklist />
+          <UserChecklist className="h-full" />
         </div>
 
         {/* ROW 3+: REMAINING */}
@@ -516,9 +508,7 @@ const HomePage = () => {
         <section className="col-span-12 flex flex-col mt-4">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
-               <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                 <Users className="w-4 h-4 text-emerald-500" />
-               </div>
+               <Users className="w-5 h-5 text-foreground" />
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Clientes Ativos' : 'Active Clients'}</h2>
             </div>
             <button onClick={() => navigate('/dashboard/clients')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
@@ -539,7 +529,7 @@ const HomePage = () => {
                 key={c.id} 
                 className="group flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
                 style={{ '--hover-bg': solidCol } as React.CSSProperties}
-                onClick={() => navigate('/dashboard/clients')}
+                onClick={() => navigate('/dashboard/clients', { state: { clientId: c.id } })}
               >
                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
                    {c.logo_url ? <img src={c.logo_url} className="w-full h-full object-cover" /> : c.name?.charAt(0).toUpperCase()}
@@ -561,18 +551,16 @@ const HomePage = () => {
         {/* 8. Financeiro (Visão de Negócios) */}
         <section className="col-span-12 mt-4">
            <div className="flex items-center gap-2.5 mb-6">
-             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-               <TrendingUp className="w-4 h-4 text-primary" />
-             </div>
+             <TrendingUp className="w-5 h-5 text-foreground" />
              <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Visão de Negócios' : 'Business Insights'}</h2>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Finance Panel */}
               {isAdminUser && (
-                <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/finance')}>
+                <div className="flex flex-col p-6 rounded-2xl border border-border bg-card hover:bg-card transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/finance')}>
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><Wallet className="w-4 h-4 text-emerald-500" /></div>
+                    <Wallet className="w-5 h-5 text-foreground" />
                     <h3 className="font-semibold text-sm text-foreground">{isPt ? 'Financeiro' : 'Finance'}</h3>
                   </div>
                   <div className="flex flex-col mb-4">
@@ -606,9 +594,9 @@ const HomePage = () => {
               )}
               
               {/* Leads Panel */}
-              <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/leads')}>
+              <div className="flex flex-col p-6 rounded-2xl border border-border bg-card hover:bg-card transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/leads')}>
                  <div className="flex items-center gap-3 mb-6">
-                   <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center"><Target className="w-4 h-4 text-rose-500" /></div>
+                   <Target className="w-5 h-5 text-foreground" />
                    <h3 className="font-semibold text-sm text-foreground">Leads</h3>
                  </div>
                  <div className="flex flex-col mb-4">
@@ -638,9 +626,9 @@ const HomePage = () => {
               </div>
 
               {/* Budgets Panel */}
-              <div className="flex flex-col p-6 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/budgets')}>
+              <div className="flex flex-col p-6 rounded-2xl border border-border bg-card hover:bg-card transition-shadow cursor-pointer" onClick={() => navigate('/dashboard/budgets')}>
                  <div className="flex items-center gap-3 mb-6">
-                   <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center"><FileText className="w-4 h-4 text-amber-500" /></div>
+                   <FileText className="w-5 h-5 text-foreground" />
                    <h3 className="font-semibold text-sm text-foreground">{isPt ? 'Orçamentos' : 'Budgets'}</h3>
                  </div>
                  <div className="grid grid-cols-2 gap-4 mb-4">
@@ -665,12 +653,10 @@ const HomePage = () => {
 
         {/* ROW 5: COLLABORATION */}
         {/* 9. Equipe */}
-        <section className="col-span-12 bg-card/40 p-6 rounded-2xl border border-border mt-4 mb-20">
+        <section className="col-span-12 bg-card p-6 rounded-2xl border border-border mt-4 mb-20">
           <div className="flex items-center justify-between mb-6">
              <div className="flex items-center gap-2.5">
-               <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center">
-                 <UserPlus className="w-4 h-4 text-violet-500" />
-               </div>
+               <UserPlus className="w-5 h-5 text-foreground" />
                <h2 className="font-semibold text-lg text-foreground truncate">{orgName || (isPt ? 'Equipe' : 'Team')}</h2>
              </div>
              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide bg-background border border-border px-2 py-1 rounded-md">{teamStats.total} {isPt ? 'membros' : 'members'}</span>
@@ -766,9 +752,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
     <div className="space-y-4 w-full">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <CalendarDays className="w-4 h-4 text-primary" />
-          </div>
+          <CalendarDays className="w-5 h-5 text-foreground" />
           <div className="flex flex-col">
             <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
             <p className="text-[10px] font-medium text-muted-foreground capitalize mt-1">

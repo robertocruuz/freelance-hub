@@ -13,6 +13,7 @@ import FinanceCalendarTab from '@/components/finance/FinanceCalendarTab';
 import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
 import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter, CalendarIcon } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export interface FinanceInvoice {
   id: string;
@@ -122,67 +123,55 @@ export default function FinancePage() {
         </div>
         <div className="flex flex-wrap items-center gap-4 xl:gap-6">
           {/* View mode toggle */}
-          <div className="flex items-center p-1 rounded-full bg-muted/50 border border-border/50 shadow-sm">
-            <button
-              onClick={() => setViewMode('overview')}
-              className={`px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
-                viewMode === 'overview'
-                  ? 'bg-card text-foreground shadow-md'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              Visão Geral
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-2 ${
-                viewMode === 'month'
-                  ? 'bg-card text-foreground shadow-md'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-            >
-              <CalendarIcon className="w-4 h-4" />
-              Visão Mensal
-            </button>
-          </div>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+            <TabsList className="bg-card shadow-sm border border-border rounded-full h-10 p-1">
+              <TabsTrigger value="overview" className="gap-2 text-sm font-medium rounded-full px-4">
+                <LayoutDashboard className="w-4 h-4" />
+                Visão Geral
+              </TabsTrigger>
+              <TabsTrigger value="month" className="gap-2 text-sm font-medium rounded-full px-4">
+                <CalendarIcon className="w-4 h-4" />
+                Visão Mensal
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           {/* Date navigation */}
           {viewMode === 'month' && (
-            <div className="flex items-center gap-1 p-1 rounded-full bg-muted/30 border border-border/50">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
+            <div className="flex items-center h-10 p-1 rounded-full bg-card shadow-sm border border-border">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <button
                 onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-bold capitalize px-4 py-1.5 rounded-full transition-colors ${isCurrentMonth ? 'text-foreground hover:bg-muted/50' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                className={`text-sm font-medium capitalize px-4 h-8 flex items-center justify-center transition-colors ${isCurrentMonth ? 'text-foreground hover:bg-muted/50 rounded-full' : 'text-primary hover:bg-primary/10 rounded-full cursor-pointer'}`}
                 title={isCurrentMonth ? monthLabel : 'Voltar ao mês atual'}
               >
                 {monthLabel}
               </button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}
           {viewMode === 'overview' && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 p-1 rounded-full bg-muted/30 border border-border/50">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
+              <div className="flex items-center h-10 p-1 rounded-full bg-card shadow-sm border border-border">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <button
                   onClick={() => setSelectedMonth(new Date())}
-                  className={`text-sm font-bold px-4 py-1.5 rounded-full transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground hover:bg-muted/50' : 'text-primary hover:bg-primary/10 cursor-pointer'}`}
+                  className={`text-sm font-medium px-4 h-8 flex items-center justify-center transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground hover:bg-muted/50 rounded-full' : 'text-primary hover:bg-primary/10 rounded-full cursor-pointer'}`}
                 >
                   {selectedMonth.getFullYear()}
                 </button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-background transition-colors" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               <Button
                 variant={overviewFiltersOpen ? 'default' : 'outline'}
-                className="h-10 px-5 rounded-full text-xs font-bold gap-2 shadow-sm border-border/50 transition-all hover:bg-muted"
+                className="h-10 px-5 rounded-full text-sm font-medium gap-2 shadow-sm border-border/50 transition-all hover:bg-muted hover:text-foreground"
                 onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
                 <Filter className="w-4 h-4" />

@@ -269,7 +269,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
     <div className="space-y-5">
       {/* Collapsible Filter panel */}
       {filtersOpen && (
-        <div className="rounded-2xl border border-border/50 bg-card/40 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
           <div className="px-4 py-4 space-y-4">
             {/* PERÍODO - full width row */}
             <div className="space-y-2.5">
@@ -483,7 +483,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       {/* Annual summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {summaryItems.map(item => (
-          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/40 p-5 transition-all hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:bg-card">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
@@ -498,7 +498,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {kpiItems.map(item => (
-          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card/40 p-5 transition-all hover:bg-card/60 hover:shadow-md hover:-translate-y-0.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+          <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:bg-card">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
@@ -515,7 +515,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
       {/* Monthly comparison chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+        <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-border bg-card flex flex-col hover:bg-card transition-colors">
           <div className="p-6 pb-2">
             <h3 className="text-base font-extrabold text-foreground">Comparativo Mensal</h3>
             <p className="text-xs font-medium text-muted-foreground mt-1">Entradas vs Saídas — {periodLabel} {yearStr}</p>
@@ -535,7 +535,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
         </div>
 
         {/* Pie chart */}
-        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card flex flex-col hover:bg-card transition-colors">
           <div className="p-6 pb-0">
             <h3 className="text-base font-extrabold text-foreground">Despesas por Categoria</h3>
             <p className="text-xs font-medium text-muted-foreground mt-1">Distribuição do período</p>
@@ -565,7 +565,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
       {/* Cumulative balance + Monthly balance bars */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card flex flex-col hover:bg-card transition-colors">
           <div className="p-6 pb-2">
             <h3 className="text-base font-extrabold text-foreground">Evolução Acumulada</h3>
             <p className="text-xs font-medium text-muted-foreground mt-1">Saldo acumulado — {periodLabel} {yearStr}</p>
@@ -589,7 +589,7 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col hover:bg-card/60 transition-colors">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card flex flex-col hover:bg-card transition-colors">
           <div className="p-6 pb-2">
             <h3 className="text-base font-extrabold text-foreground">Saldo Mensal</h3>
             <p className="text-xs font-medium text-muted-foreground mt-1">Resultado de cada mês — {periodLabel} {yearStr}</p>

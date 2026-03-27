@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Plus, Trash2, X, Check } from 'lucide-react';
 
-export const UserChecklist = ({ projectId }: { projectId?: string }) => {
+export const UserChecklist = ({ projectId, className }: { projectId?: string, className?: string }) => {
   const { items, loading, addItem, toggleItem, deleteItem, updateItem, refresh } = useChecklist(projectId);
   const { t } = useI18n();
   const [newItem, setNewItem] = useState('');
@@ -35,7 +35,7 @@ export const UserChecklist = ({ projectId }: { projectId?: string }) => {
 
   if (loading && items.length === 0) {
     return (
-      <div className="bg-card/40 p-6 rounded-2xl border border-border animate-pulse">
+      <div className={cn("bg-card p-6 rounded-2xl border border-border animate-pulse flex flex-col", className)}>
         <div className="h-6 bg-muted/40 rounded w-32 mb-6" />
         <div className="space-y-3">
           <div className="h-10 bg-muted/30 rounded w-full" />
@@ -46,10 +46,10 @@ export const UserChecklist = ({ projectId }: { projectId?: string }) => {
   }
 
   return (
-    <section className="bg-card/40 p-6 rounded-2xl border border-border flex flex-col space-y-4 h-full">
+    <section className={cn("bg-card p-6 rounded-2xl border border-border flex flex-col space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <ListTodo className="w-5 h-5 text-primary" />
+          <ListTodo className="w-5 h-5 text-foreground" />
           <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
         </div>
 

@@ -143,7 +143,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       );
     }
     return (
-      <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm flex flex-col">
+      <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm flex flex-col">
         <div className="flex flex-col items-center justify-center py-16 text-center px-6">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5 shadow-sm">
             <Users className="w-10 h-10 text-primary" />

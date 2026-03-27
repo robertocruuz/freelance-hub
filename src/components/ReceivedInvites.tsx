@@ -135,7 +135,7 @@ const ReceivedInvites = ({ onAccepted }: { onAccepted?: () => void }) => {
           </h2>
         </div>
 
-        <div className="flex flex-col bg-card/30 border border-border rounded-2xl p-2">
+        <div className="flex flex-col bg-card border border-border rounded-2xl p-2">
           {invites.map((invite) => {
             const RoleIcon = roleIcons[invite.role] || Eye;
             const isExpired = new Date(invite.expires_at) < new Date();

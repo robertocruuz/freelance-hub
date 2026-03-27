@@ -15,12 +15,14 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Share2, Users, UserPlus, X, Building2, Globe, Mail, Loader2 } from 'lucide-react';
+import { hexToHsl } from '@/lib/utils';
 
 interface ShareButtonProps {
   resourceType: 'board' | 'task' | 'pipeline' | 'lead';
   resourceId: string;
   compact?: boolean;
   className?: string;
+  themeColor?: string;
 }
 
 interface ShareRecord {
@@ -30,7 +32,7 @@ interface ShareRecord {
   profile?: { name: string | null; email: string | null; avatar_url: string | null };
 }
 
-export const ShareButton = ({ resourceType, resourceId, compact = false, className }: ShareButtonProps) => {
+export const ShareButton = ({ resourceType, resourceId, compact = false, className, themeColor }: ShareButtonProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -228,7 +230,15 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
+      <PopoverContent className={`w-80 p-0 ${themeColor ? 'share-theme-override' : ''}`} align="start">
+        {themeColor && (
+          <style>{`
+            .share-theme-override {
+              --primary: ${hexToHsl(themeColor)};
+              --ring: ${hexToHsl(themeColor)};
+            }
+          `}</style>
+        )}
         <div className="p-3 border-b border-border">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">
             <Share2 className="w-4 h-4" />

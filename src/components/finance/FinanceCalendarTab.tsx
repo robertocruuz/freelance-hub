@@ -168,7 +168,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6">
-        <div className="overflow-hidden bg-card/40 border border-border/50 shadow-sm rounded-2xl p-5 hover:bg-card/60 transition-colors">
+        <div className="overflow-hidden bg-card border border-border rounded-2xl p-5 hover:bg-card transition-colors">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -202,7 +202,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
           </div>
         </div>
 
-        <div className="overflow-hidden bg-card/40 border border-border/50 shadow-sm rounded-2xl flex flex-col">
+        <div className="overflow-hidden bg-card border border-border rounded-2xl flex flex-col">
           <div className="flex items-center justify-between p-6 pb-4 border-b border-border/40">
             <h3 className="text-base font-extrabold text-foreground">
               {selectedDate ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}

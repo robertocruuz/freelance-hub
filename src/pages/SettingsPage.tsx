@@ -5,13 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sun, Moon, Monitor, Globe, Bell, Database, Download, Trash2, Palette, Languages, BellRing, CalendarClock, UserPlus, ArrowDownToLine, HardDriveDownload, Sparkles, ChevronDown, Target, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
@@ -136,26 +131,22 @@ const SettingsPage = () => {
           title={isPt ? 'Aparência' : 'Appearance'}
           description={isPt ? 'Escolha como o Freelaz se parece' : 'Choose how Freelaz looks'}
         >
-          <div className="grid grid-cols-2 gap-2 p-2 rounded-[24px] bg-muted/40 border border-border/50">
-            {themeOptions.map((opt, idx) => {
-              const isSelected = theme === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setTheme(opt.value as any)}
-                  className={`flex justify-center items-center gap-2 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-300
-                    ${idx === 2 ? 'col-span-2' : ''}
-                    ${isSelected
-                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
-                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                  <opt.icon className={`w-4 h-4 transition-colors ${isSelected ? 'text-primary' : ''}`} />
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
+          <Tabs value={theme} onValueChange={(v) => setTheme(v as any)} className="w-full">
+            <TabsList className="w-full bg-card border border-border rounded-full h-10 p-1">
+              <TabsTrigger value="light" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+                <Sun className="w-3.5 h-3.5" />
+                {isPt ? 'Claro' : 'Light'}
+              </TabsTrigger>
+              <TabsTrigger value="dark" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+                <Moon className="w-3.5 h-3.5" />
+                {isPt ? 'Escuro' : 'Dark'}
+              </TabsTrigger>
+              <TabsTrigger value="system" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+                <Monitor className="w-3.5 h-3.5" />
+                {isPt ? 'Sistema' : 'System'}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </SettingsCard>
 
         {/* ── Idioma ── */}
@@ -164,28 +155,18 @@ const SettingsPage = () => {
           title={isPt ? 'Idioma' : 'Language'}
           description={isPt ? 'Defina o idioma da interface' : 'Set the interface language'}
         >
-          <div className="grid grid-cols-2 gap-2 p-2 rounded-[24px] bg-muted/40 border border-border/50">
-            {[
-              { value: 'pt-BR', flag: '🇧🇷', label: 'Português' },
-              { value: 'en', flag: '🇺🇸', label: 'English' },
-            ].map((opt) => {
-              const isSelected = lang === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setLang(opt.value as any)}
-                  className={`flex justify-center items-center gap-2 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-300
-                    ${isSelected
-                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/50'
-                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                  <span className="text-base">{opt.flag}</span>
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
+          <Tabs value={lang} onValueChange={(v) => setLang(v as any)} className="w-full">
+            <TabsList className="w-full bg-card border border-border rounded-full h-10 p-1">
+              <TabsTrigger value="pt-BR" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+                <span className="text-sm">🇧🇷</span>
+                Português
+              </TabsTrigger>
+              <TabsTrigger value="en" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+                <span className="text-sm">🇺🇸</span>
+                English
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </SettingsCard>
 
         {/* ── Dados e Exportação ── */}
@@ -259,7 +240,7 @@ const SettingsPage = () => {
 
 /* ─── Settings Card ─── */
 const SettingsCard = ({ icon: Icon, title, description, className = '', children }: { icon: any; title: string; description: string; className?: string; children: React.ReactNode }) => (
-  <div className={`flex flex-col p-6 rounded-2xl border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm ${className}`}>
+  <div className={`flex flex-col p-6 rounded-2xl border border-border bg-card transition-colors ${className}`}>
     <div className="flex items-center gap-4 mb-5">
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
         <Icon className="w-5 h-5 text-primary" />

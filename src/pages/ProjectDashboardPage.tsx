@@ -724,7 +724,7 @@ export default function ProjectDashboardPage() {
                 <FolderKanban className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-bold">Tarefas Vinculadas</h3>
               </div>
-              <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/kanban')} className="rounded-lg h-8 text-xs px-3 gap-1.5">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/kanban')} className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5">
                 Ir ao painel <ExternalLink className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -783,7 +783,7 @@ export default function ProjectDashboardPage() {
                       }
                     }}
                     onFocus={() => { if (!isTimerRunningForThis) setShowSuggestions(true); }}
-                    className="rounded-2xl w-full px-5 py-6 text-base bg-muted/40 hover:bg-muted/80 transition-colors border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 focus-visible:ring-offset-0 shadow-inner"
+                    className="bg-transparent border-0 border-b border-border rounded-none px-0 py-2 h-12 text-base focus-visible:ring-0 focus-visible:border-primary/50 transition-all font-medium placeholder:text-muted-foreground/50 shadow-none"
                     autoComplete="off"
                   />
                   {!isTimerRunningForThis && showSuggestions && filteredSuggestions.length > 0 && (

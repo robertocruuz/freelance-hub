@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Plus, Trash2, Pencil, Users, Phone, Mail, FileText as DocIcon, ChevronLeft, ChevronDown, ChevronRight, FolderKanban, Clock, Receipt, FileText, SquareKanban, User, ExternalLink, X, Search, Camera } from 'lucide-react';
 import ClientLogoUploadModal from '@/components/ClientLogoUploadModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -221,6 +221,7 @@ const ClientsPage = () => {
   const { t } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -247,6 +248,17 @@ const ClientsPage = () => {
   }, [user]);
 
   useEffect(() => { loadClients(); }, [loadClients]);
+
+  useEffect(() => {
+    if (clients.length > 0 && location.state?.clientId && !selectedClient) {
+      const client = clients.find(c => c.id === location.state.clientId);
+      if (client) {
+        openClient360(client);
+        // Limpa o state do React Router para que ao fechar os detalhes não reabra automaticamente
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [clients, location.state?.clientId, selectedClient]);
 
   const openCreate = () => {
     setEditing(null);
