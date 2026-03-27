@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ListTodo, Plus, Trash2, X, Check } from 'lucide-react';
 
 export const UserChecklist = ({ projectId }: { projectId?: string }) => {
-  const { items, loading, addItem, toggleItem, deleteItem, updateItem } = useChecklist(projectId);
+  const { items, loading, addItem, toggleItem, deleteItem, updateItem, refresh } = useChecklist(projectId);
   const { t } = useI18n();
   const [newItem, setNewItem] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,9 +47,12 @@ export const UserChecklist = ({ projectId }: { projectId?: string }) => {
 
   return (
     <section className="bg-card/40 p-6 rounded-2xl border border-border flex flex-col space-y-4">
-      <div className="flex items-center gap-2.5">
-        <ListTodo className="w-5 h-5 text-primary" />
-        <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <ListTodo className="w-5 h-5 text-primary" />
+          <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
+        </div>
+
       </div>
 
       <div className="flex-1 overflow-y-auto minimal-scrollbar max-h-[400px] pr-1 -mr-1">

@@ -555,7 +555,7 @@ export default function ProjectDashboardPage() {
   return (
     <div 
       className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in pb-20"
-      style={cPrimaryHSL ? { '--primary': cPrimaryHSL } as React.CSSProperties : undefined}
+      style={cPrimaryHSL ? { '--primary': cPrimaryHSL, '--ring': cPrimaryHSL } as React.CSSProperties : undefined}
     >
       {/* Header */}
       <div 
@@ -783,7 +783,7 @@ export default function ProjectDashboardPage() {
                       }
                     }}
                     onFocus={() => { if (!isTimerRunningForThis) setShowSuggestions(true); }}
-                    className="rounded-2xl w-full px-5 py-6 text-base bg-muted/40 hover:bg-muted/80 transition-colors border-transparent focus:border-primary shadow-inner"
+                    className="rounded-2xl w-full px-5 py-6 text-base bg-muted/40 hover:bg-muted/80 transition-colors border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 focus-visible:ring-offset-0 shadow-inner"
                     autoComplete="off"
                   />
                   {!isTimerRunningForThis && showSuggestions && filteredSuggestions.length > 0 && (

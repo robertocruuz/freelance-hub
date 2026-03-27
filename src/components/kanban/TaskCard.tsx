@@ -120,11 +120,11 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
     return `${m}min`;
   };
 
-  const contrast = (!isOverdue && clientColor) ? getContrastYIQ(clientColor) : 'dark';
-  const tColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
-  const mColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-muted-foreground';
-  const btnColor = (!isOverdue && clientColor) ? (contrast === 'light' ? 'text-white hover:bg-white/20' : 'text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:bg-muted';
-  const cbClass = (!isOverdue && clientColor)
+  const contrast = clientColor ? getContrastYIQ(clientColor) : 'dark';
+  const tColor = clientColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
+  const mColor = clientColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-muted-foreground';
+  const btnColor = clientColor ? (contrast === 'light' ? 'text-white hover:bg-white/20' : 'text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:bg-muted';
+  const cbClass = clientColor
     ? (contrast === 'light'
        ? 'border-white/40 data-[state=checked]:bg-white data-[state=checked]:text-slate-900'
        : 'border-slate-900/40 data-[state=checked]:bg-slate-900 data-[state=checked]:text-white')
@@ -136,14 +136,14 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         ref={setNodeRef}
         style={{
           ...style,
-          ...(!isOverdue && clientColor ? { backgroundColor: clientColor, borderColor: clientColor } : {}),
+          ...(clientColor ? { backgroundColor: clientColor, borderColor: clientColor } : {}),
         }}
         {...attributes}
         {...listeners}
         onClick={onClick}
         className={cn(
           "border border-border/50 shadow-sm rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative",
-          (!isOverdue && clientColor) ? "" : "bg-card",
+          clientColor ? "" : "bg-card",
           isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60 opacity-80' : '',
           isOverdue ? 'border-l-[3px] border-l-destructive' : ''
         )}
@@ -224,8 +224,15 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
             </span>
             
             {task.due_date && (
-              <span className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-destructive font-medium' : isDueToday ? (clientColor ? cn(tColor, "font-semibold") : 'text-amber-600 dark:text-amber-400 font-medium') : mColor)}>
-                {isOverdue && <AlertTriangle className="w-3.5 h-3.5" />}
+              <span className={cn(
+                'flex items-center gap-1 text-xs', 
+                isOverdue 
+                  ? (clientColor ? tColor : 'text-destructive font-medium') 
+                  : isDueToday 
+                    ? (clientColor ? cn(tColor, "font-semibold") : 'text-amber-600 dark:text-amber-400 font-medium') 
+                    : mColor
+              )}>
+                {isOverdue && <AlertTriangle className={cn("w-3.5 h-3.5", clientColor ? tColor : "text-destructive")} />}
                 <Calendar className="w-3.5 h-3.5" />
                 {format(new Date(task.due_date), 'dd MMM', { locale: ptBR })}
               </span>
