@@ -428,6 +428,7 @@ const DashboardLayout = () => {
           projects (
             id,
             name,
+            is_archived,
             color,
             clients ( color )
           )
@@ -435,7 +436,7 @@ const DashboardLayout = () => {
         .eq('user_id', user.id);
     
     if (data) {
-      const projects = data.map((f: any) => f.projects).filter(Boolean);
+      const projects = data.map((f: any) => f.projects).filter((p: any) => p && !p.is_archived);
       setFavoriteProjects(projects);
     }
   };

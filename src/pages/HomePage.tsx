@@ -70,7 +70,7 @@ const HomePage = () => {
       const [clients, budgets, projects, tasks, timeEntries, invoices, expenses, orgMembers, leads, notifications] = await Promise.all([
         supabase.from('clients').select('*').order('created_at', { ascending: false }),
         supabase.from('budgets').select('*').order('created_at', { ascending: false }),
-        supabase.from('projects').select('*').order('created_at', { ascending: false }),
+        supabase.from('projects').select('*').eq('is_archived', false).order('created_at', { ascending: false }),
         supabase.from('tasks').select('*').order('created_at', { ascending: false }),
         supabase.from('time_entries').select('*').order('start_time', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
@@ -146,15 +146,14 @@ const HomePage = () => {
   };
 
   const myTasks = useMemo(() => {
-    return data.tasks.filter(t => 
-      t.status !== 'done' && 
-      (t.user_id === user?.id || (t.assigned_to && t.assigned_to.includes(user?.id)))
+    return data.tasks.filter(t =>
+      t.status !== 'done'
     ).sort((a, b) => {
       if (!a.due_date) return 1;
       if (!b.due_date) return -1;
       return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
     });
-  }, [data.tasks, user]);
+  }, [data.tasks]);
 
   const taskStats = useMemo(() => {
     const total = data.tasks.length;
@@ -324,25 +323,35 @@ const HomePage = () => {
                <div className="flex flex-col">
                  {myTasks.slice(0, 5).map(t => {
                     const project = data.projects.find(p => p.id === t.project_id);
-                    const client = project ? data.clients.find(c => c.id === project.client_id) : null;
-                    const itemColor = client?.color || project?.color || 'hsl(var(--primary))';
+                    const client = t.client_id
+                      ? data.clients.find(c => c.id === t.client_id)
+                      : project
+                        ? data.clients.find(c => c.id === project.client_id)
+                        : null;
+                    const hasLinkedColor = Boolean(client?.color || project?.color);
+                    const itemColor = client?.color || project?.color || '#FFFFFF';
                     const isLate = t.due_date && new Date(t.due_date) < now && t.status !== 'done';
-                    const solidCol = itemColor.startsWith('#') ? itemColor : 'hsl(var(--primary))';
+                    const solidCol = itemColor.startsWith('#') ? itemColor : '#FFFFFF';
+                    const hoverTitleColor = hasLinkedColor ? 'group-hover:text-white' : 'group-hover:text-white dark:group-hover:text-black';
+                    const hoverMetaColor = hasLinkedColor ? 'group-hover:text-white/80' : 'group-hover:text-white/80 dark:group-hover:text-black/70';
+                    const hoverBadgeColor = hasLinkedColor
+                      ? 'group-hover:bg-black/20 group-hover:text-white'
+                      : 'group-hover:bg-white/20 group-hover:text-white dark:group-hover:bg-black/10 dark:group-hover:text-black';
                     return (
                      <div 
                        key={t.id} 
-                       className="group flex items-center gap-3 p-3.5 border-b border-border/60 last:border-0 cursor-pointer rounded-xl transition-all hover:-translate-y-0.5 hover:bg-[var(--hover-bg)] hover:border-transparent" 
-                       style={{ '--hover-bg': solidCol } as React.CSSProperties}
+                       className={`group flex items-center gap-3 p-3.5 border-b border-border/60 last:border-0 cursor-pointer rounded-xl transition-all hover:-translate-y-0.5 hover:border-transparent ${hasLinkedColor ? 'hover:bg-[var(--hover-bg)]' : 'hover:bg-black dark:hover:bg-white'}`}
+                       style={hasLinkedColor ? { '--hover-bg': solidCol } as React.CSSProperties : undefined}
                        onClick={() => navigate('/dashboard/kanban', { state: { taskId: t.id } })}
                      >
                         <div className="flex flex-col min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground/90 truncate transition-colors group-hover:text-white">{t.title}</p>
-                          {t.project_id && <span className="text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors group-hover:text-white/80">{project?.name || 'Projeto'}</span>}
+                          <p className={`text-sm font-semibold text-foreground/90 truncate transition-colors ${hoverTitleColor}`}>{t.title}</p>
+                          {t.project_id && <span className={`text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors ${hoverMetaColor}`}>{project?.name || 'Projeto'}</span>}
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors ${
                           isLate 
-                          ? 'bg-destructive/10 text-destructive group-hover:bg-black/20 group-hover:text-white' 
-                          : 'bg-background border border-border text-muted-foreground group-hover:bg-black/20 group-hover:text-white group-hover:border-transparent'
+                          ? `bg-destructive/10 text-destructive ${hoverBadgeColor}` 
+                          : `bg-background border border-border text-muted-foreground ${hoverBadgeColor} group-hover:border-transparent`
                         }`}>
                           {t.due_date ? format(parseISO(t.due_date), 'dd/MM') : '-'}
                         </span>
@@ -668,13 +677,13 @@ const HomePage = () => {
                const name = profile?.name || 'Membro';
                const role = m.role === 'admin' ? 'Admin' : 'Member';
                return (
-                 <div key={m.id || i} className="flex items-center gap-3 cursor-pointer group hover:bg-muted/40 p-3 rounded-xl transition-colors border border-transparent hover:border-border/60" onClick={() => navigate('/dashboard/team')}>
+                 <div key={m.id || i} className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl transition-colors border border-transparent hover:bg-muted/40 hover:border-border/60 dark:hover:bg-white dark:hover:border-white/50" onClick={() => navigate('/dashboard/team')}>
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
                       {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" /> : name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-sm font-bold text-foreground/90 group-hover:text-primary transition-colors truncate">{name}</span>
-                      <span className="text-[10px] text-muted-foreground font-medium">{role}</span>
+                      <span className="text-sm font-bold text-foreground/90 group-hover:text-primary dark:group-hover:text-black transition-colors truncate">{name}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium dark:group-hover:text-black/70 transition-colors">{role}</span>
                     </div>
                  </div>
                );
@@ -794,7 +803,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
               key={dateStr}
               onClick={() => setSelectedDay(isSelected ? null : dateStr)}
               className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
-                ${today ? 'bg-primary text-primary-foreground font-bold' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
+                ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
                 ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
               `}
             >
@@ -802,7 +811,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
               {dayTasks.length > 0 && (
                 <div className="flex gap-0.5 mt-1.5">
                   {dayTasks.slice(0, 3).map((task, i) => (
-                    <span key={i} className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80' : (priorityColor[task.priority] || 'bg-primary')}`} />
+                    <span key={i} className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : (priorityColor[task.priority] || 'bg-primary')}`} />
                   ))}
                 </div>
               )}

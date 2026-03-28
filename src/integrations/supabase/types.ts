@@ -784,6 +784,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          archived_at: string | null
           budget_id: string | null
           client_id: string | null
           contract_url: string | null
@@ -792,11 +793,13 @@ export type Database = {
           due_date: string | null
           due_text: string | null
           id: string
+          is_archived: boolean
           name: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           budget_id?: string | null
           client_id?: string | null
           contract_url?: string | null
@@ -805,11 +808,13 @@ export type Database = {
           due_date?: string | null
           due_text?: string | null
           id?: string
+          is_archived?: boolean
           name: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           budget_id?: string | null
           client_id?: string | null
           contract_url?: string | null
@@ -818,6 +823,7 @@ export type Database = {
           due_date?: string | null
           due_text?: string | null
           id?: string
+          is_archived?: boolean
           name?: string
           updated_at?: string
           user_id?: string

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle, Star, Archive } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -65,6 +65,8 @@ interface Project {
   created_at: string;
   is_favorite?: boolean;
   color?: string | null;
+  is_archived?: boolean;
+  archived_at?: string | null;
 }
 
 interface BudgetItem {
@@ -435,6 +437,29 @@ const ProjectsPage = () => {
     }
   };
 
+  const toggleArchive = async (projectId: string, archive: boolean) => {
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        is_archived: archive,
+        archived_at: archive ? new Date().toISOString() : null,
+      })
+      .eq('id', projectId);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      next.delete(projectId);
+      return next;
+    });
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, is_archived: archive, archived_at: archive ? new Date().toISOString() : null } : p));
+    toast.success(archive ? 'Projeto arquivado!' : 'Projeto desarquivado!');
+  };
+
   const handleEdit = (p: Project) => {
     setEditingId(p.id);
     setName(p.name);
@@ -731,10 +756,13 @@ const ProjectsPage = () => {
     }
   };
 
-  const filtered = projects.filter(p =>
+  const filteredProjects = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     clientName(p.client_id).toLowerCase().includes(search.toLowerCase())
   );
+
+  const activeProjects = filteredProjects.filter(p => !p.is_archived);
+  const archivedProjects = filteredProjects.filter(p => p.is_archived);
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in">
@@ -743,8 +771,13 @@ const ProjectsPage = () => {
         <div>
           <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.projects}</h1>
           <p className="text-sm text-muted-foreground">
-            {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
+            {activeProjects.length} {activeProjects.length === 1 ? 'projeto ativo' : 'projetos ativos'}
           </p>
+          {archivedProjects.length > 0 && (
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              {archivedProjects.length} {archivedProjects.length === 1 ? 'arquivado' : 'arquivados'}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* Expandable Search w/ Default Label */}
@@ -982,7 +1015,7 @@ const ProjectsPage = () => {
       )}
 
       {/* Empty state */}
-      {filtered.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground w-full">
           <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
             <FolderKanban className="w-8 h-8 opacity-50" />
@@ -991,8 +1024,10 @@ const ProjectsPage = () => {
           <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
+        <div className="space-y-8">
+        {activeProjects.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 items-stretch">
-          {filtered.map(p => {
+          {activeProjects.map(p => {
             const isExpanded = expandedIds.has(p.id);
             const items = projectItems[p.id] || [];
             const total = getProjectTotal(p.id);
@@ -1080,6 +1115,9 @@ const ProjectsPage = () => {
                           <DropdownMenuItem onClick={() => handleEdit(p)}>
                             <Pencil className="w-4 h-4 mr-2" /> Editar projeto
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleArchive(p.id, true)}>
+                            <Archive className="w-4 h-4 mr-2" /> Arquivar projeto
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
                             <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
                           </DropdownMenuItem>
@@ -1117,6 +1155,80 @@ const ProjectsPage = () => {
               </div>
             );
           })}
+        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground w-full border border-dashed border-border rounded-2xl">
+            <p className="text-sm font-medium">Nenhum projeto ativo neste filtro.</p>
+          </div>
+        )}
+
+        {archivedProjects.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Archive className="w-4 h-4 text-muted-foreground" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Arquivados</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+              {archivedProjects.map((p) => {
+                const hoverColor = clientColor(p.client_id) || p.color;
+                const contrast = hoverColor ? getContrastYIQ(hoverColor) : 'dark';
+                const isLight = contrast === 'light';
+                const archivedText = hoverColor
+                  ? isLight
+                    ? 'group-hover:text-white'
+                    : 'group-hover:text-slate-900'
+                  : 'group-hover:text-foreground';
+                const archivedMuted = hoverColor
+                  ? isLight
+                    ? 'group-hover:text-white/80'
+                    : 'group-hover:text-slate-700'
+                  : 'group-hover:text-muted-foreground';
+
+                return (
+                  <div
+                    key={p.id}
+                    className="group relative rounded-xl border border-border/70 bg-muted/35 overflow-hidden transition-all duration-200 hover:border-transparent"
+                  >
+                    {hoverColor && (
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                        style={{ backgroundColor: hoverColor }}
+                      />
+                    )}
+                    <div
+                      className="relative z-10 flex items-center justify-between gap-3 px-4 py-3 cursor-pointer"
+                      onClick={() => navigate(`/dashboard/projects/${p.id}`)}
+                    >
+                      <div className="min-w-0">
+                        <p className={cn("text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-1", archivedMuted)}>
+                          {p.client_id && clientName(p.client_id) !== '-' ? clientName(p.client_id) : 'Sem cliente'}
+                        </p>
+                        <p className={cn("text-sm font-semibold text-foreground truncate", archivedText)}>{p.name}</p>
+                      </div>
+                      <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg text-muted-foreground", archivedText)}>
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => toggleArchive(p.id, false)}>
+                              <FolderOpen className="w-4 h-4 mr-2" /> Desarquivar projeto
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                              <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
         </div>
       )}
 

@@ -163,6 +163,7 @@ export default function ReceivablesTab({
     const { data: projData } = await supabase
       .from('projects')
       .select('id, name, client_id, due_date, discount')
+      .eq('is_archived', false)
       .order('name', { ascending: true });
     if (!projData) return;
     const projectIds = projData.map(p => p.id);
@@ -787,8 +788,8 @@ export default function ReceivablesTab({
               aria-checked={isRecurring}
               onClick={() => setIsRecurring(!isRecurring)}
               className={cn(
-                'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
-                isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'
+                'w-5 h-5 rounded-md border flex items-center justify-center transition-colors shrink-0 bg-background/95 text-primary shadow-sm dark:border-white/20 dark:bg-card dark:hover:border-white/40',
+                isRecurring ? 'bg-primary border-primary text-primary-foreground' : 'border-border hover:border-primary/60'
               )}
             >
               {isRecurring && <Repeat className="w-3 h-3" />}

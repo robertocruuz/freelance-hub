@@ -79,13 +79,13 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-card/30">
+    <div className="flex flex-col w-full h-full bg-card/30 dark:bg-background">
       <div className="p-4 border-b border-border space-y-4 shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{isPt ? 'Conversas' : 'Chats'}</h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-muted rounded-full">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground rounded-full hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -193,7 +193,7 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
                     onClick={() => setActiveChannelId(channel.id)}
                     className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
                       isActive 
-                        ? 'bg-primary/10 text-primary' 
+                        ? 'bg-primary/10 text-primary dark:bg-white dark:text-black' 
                         : 'hover:bg-muted/50 text-foreground'
                     }`}
                   >
@@ -212,15 +212,15 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <div className="flex items-center justify-between gap-1 leading-none mb-1">
-                        <p className={`text-[13px] truncate ${isActive || isUnread ? 'font-semibold' : 'font-medium'}`}>
+                        <p className={`text-[13px] truncate ${isActive ? 'font-semibold dark:text-black' : isUnread ? 'font-semibold' : 'font-medium'}`}>
                           {info.name}
                         </p>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">
+                        <span className={`text-[10px] whitespace-nowrap shrink-0 ${isActive ? 'text-primary/70 dark:text-black/70' : 'text-muted-foreground'}`}>
                           {formatDistanceToNow(updatedDate, { addSuffix: true, locale: isPt ? ptBR : enUS })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <p className={`text-[12px] truncate pr-5 ${isActive ? 'text-primary' : isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                        <p className={`text-[12px] truncate pr-5 ${isActive ? 'text-primary dark:text-black/75' : isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                           {(() => {
                             const lastMsg = channel.messages?.[0];
                             if (!lastMsg) {
@@ -245,7 +245,7 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
                     <div className="absolute right-2 bottom-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full hover:bg-background/80 text-muted-foreground hover:text-foreground">
+                          <Button variant="ghost" size="icon" className={`h-5 w-5 rounded-full hover:bg-background/80 hover:text-foreground ${isActive ? 'text-primary/70 dark:text-black/70 dark:hover:bg-black/10 dark:hover:text-black' : 'text-muted-foreground'}`}>
                             <ChevronDown className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>

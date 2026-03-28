@@ -123,7 +123,7 @@ export const KanbanColumnComponent = ({
 
   const loadProjects = async () => {
     setLoadingItems(true);
-    const { data } = await supabase.from('projects').select('id, name').order('name');
+    const { data } = await supabase.from('projects').select('id, name').eq('is_archived', false).order('name');
     if (data) setProjects(data);
     setLoadingItems(false);
   };

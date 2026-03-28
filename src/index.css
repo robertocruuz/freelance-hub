@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 225 50% 10%;
 
-    --primary: 252 87% 51%; /* Vivid Indigo */
+    --primary: 0 0% 0%; /* Brand black */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 15% 94%;
@@ -24,29 +24,29 @@
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
 
-    --accent: 252 87% 95%; /* Light primary for hover */
-    --accent-foreground: 252 87% 51%;
+    --accent: 0 0% 96%; /* Light neutral for hover */
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 252 87% 51%;
+    --ring: 0 0% 0%;
 
     --radius: 1.25rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 225 30% 20%;
-    --sidebar-primary: 252 87% 51%;
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 96%;
     --sidebar-accent-foreground: 225 30% 15%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 252 87% 51%;
+    --sidebar-ring: 0 0% 0%;
 
     /* Landing page tokens */
-    --landing-hero: 252 87% 51%;
+    --landing-hero: 0 0% 0%;
     --landing-accent: 80 85% 55%;
     --landing-accent-foreground: 225 100% 15%;
 
@@ -60,9 +60,9 @@
     --glass-inner-glow: inset 0 1px 0 hsl(0 0% 100% / 0.5);
 
     --hero-gradient: none;
-    --mesh-1: hsl(252 87% 51% / 0.04);
+    --mesh-1: hsl(0 0% 0% / 0.05);
     --mesh-2: hsl(80 85% 55% / 0.03);
-    --mesh-3: hsl(252 80% 60% / 0.03);
+    --mesh-3: hsl(0 0% 0% / 0.02);
 
     --surface-elevated: 0 0% 100%;
     --surface-overlay: 0 0% 99%;
@@ -70,44 +70,44 @@
 
   .dark {
     --background: 240 3% 6%; /* #0e0e0f */
-    --foreground: 220 15% 92%;
+    --foreground: 220 18% 96%;
 
     --card: 240 3% 6%; /* #0e0e0f */
-    --card-foreground: 220 15% 92%;
+    --card-foreground: 220 18% 96%;
 
     --popover: 240 3% 6%;
-    --popover-foreground: 220 15% 92%;
+    --popover-foreground: 220 18% 96%;
 
-    --primary: 252 87% 65%;
+    --primary: 0 0% 8%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 225 15% 11%;
-    --secondary-foreground: 220 15% 92%;
+    --secondary-foreground: 220 18% 96%;
 
     --muted: 225 15% 11%;
-    --muted-foreground: 220 10% 60%;
+    --muted-foreground: 220 12% 72%;
 
-    --accent: 252 40% 25%;
-    --accent-foreground: 252 87% 85%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 96%;
 
     --destructive: 0 62% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 225 15% 14%;
     --input: 225 15% 14%;
-    --ring: 252 87% 65%;
+    --ring: 0 0% 24%;
 
     --sidebar-background: 240 3% 6%;
-    --sidebar-foreground: 220 15% 92%;
-    --sidebar-primary: 252 87% 65%;
+    --sidebar-foreground: 220 18% 96%;
+    --sidebar-primary: 0 0% 8%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 225 15% 14%;
-    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-accent-foreground: 220 18% 97%;
     --sidebar-border: 225 15% 14%;
-    --sidebar-ring: 252 87% 65%;
+    --sidebar-ring: 0 0% 24%;
 
     /* Landing page tokens */
-    --landing-hero: 252 87% 55%;
+    --landing-hero: 0 0% 8%;
     --landing-accent: 80 85% 55%;
     --landing-accent-foreground: 225 100% 10%;
 
@@ -197,7 +197,7 @@
   }
 
   .text-gradient-hero {
-    background: linear-gradient(135deg, hsl(225 50% 10%) 0%, hsl(225 100% 50%) 100%);
+    background: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(0 0% 38%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -288,6 +288,76 @@
     box-shadow: none;
   }
 
+  .btn-funfill {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .btn-funfill::before {
+    content: '';
+    position: absolute;
+    inset: -140% -35%;
+    background:
+      linear-gradient(120deg, transparent 30%, hsl(0 0% 100% / 0.18) 48%, hsl(0 0% 100% / 0.5) 52%, transparent 70%),
+      linear-gradient(180deg, hsl(0 0% 100% / 0.14), transparent 45%);
+    transform: translateX(-115%) rotate(12deg);
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .btn-funfill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 18%, hsl(0 0% 100% / 0.2), transparent 38%),
+      linear-gradient(135deg, hsl(0 0% 100% / 0.12), transparent 55%);
+    transform: scaleX(0.08);
+    transform-origin: left center;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .btn-funfill > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dark .btn-funfill::before {
+    background:
+      linear-gradient(120deg, transparent 30%, hsl(0 0% 0% / 0.08) 48%, hsl(0 0% 0% / 0.2) 52%, transparent 70%),
+      linear-gradient(180deg, hsl(0 0% 0% / 0.12), transparent 45%);
+  }
+
+  .dark .btn-funfill::after {
+    background:
+      radial-gradient(circle at 18% 18%, hsl(0 0% 0% / 0.12), transparent 38%),
+      linear-gradient(135deg, hsl(0 0% 0% / 0.08), transparent 55%);
+  }
+
+  .btn-funfill:hover::before {
+    transform: translateX(115%) rotate(12deg);
+    opacity: 1;
+  }
+
+  .btn-funfill:hover::after {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+  .btn-funfill:active {
+    transform: scale(0.98);
+  }
+
+  .btn-funfill:focus-visible {
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.18);
+  }
+
   /* Landing hero */
   .landing-hero-bg {
     background: hsl(var(--landing-hero));
@@ -300,9 +370,9 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 30% 40%, hsl(var(--landing-hero) / 0.8), transparent),
-      radial-gradient(ellipse 50% 50% at 80% 30%, hsl(225 100% 55% / 0.4), transparent),
-      radial-gradient(ellipse 60% 40% at 60% 80%, hsl(225 100% 35% / 0.3), transparent);
+      radial-gradient(ellipse 80% 60% at 30% 40%, hsl(var(--landing-hero) / 0.85), transparent),
+      radial-gradient(ellipse 50% 50% at 80% 30%, hsl(0 0% 24% / 0.35), transparent),
+      radial-gradient(ellipse 60% 40% at 60% 80%, hsl(0 0% 12% / 0.28), transparent);
     pointer-events: none;
     z-index: 0;
   }

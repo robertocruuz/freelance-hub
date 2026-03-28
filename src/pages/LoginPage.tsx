@@ -286,7 +286,7 @@ const LoginPage = () => {
               100% { background-position: 0% 50%; }
             }
             .animate-fluid-background {
-              background: linear-gradient(-45deg, hsl(var(--primary)), #6366f1, #a855f7, #ec4899);
+              background: linear-gradient(-45deg, hsl(var(--primary)), #1a1a1a, #2a2a2a, #0a0a0a);
               background-size: 400% 400%;
               animation: fluidGradient 15s ease infinite;
             }

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Plus, Trash2, X, Check } from 'lucide-react';
 
-export const UserChecklist = ({ projectId, className }: { projectId?: string, className?: string }) => {
+export const UserChecklist = ({ projectId, className, accentColor }: { projectId?: string, className?: string, accentColor?: string | null }) => {
   const { items, loading, addItem, toggleItem, deleteItem, updateItem, refresh } = useChecklist(projectId);
   const { t } = useI18n();
   const [newItem, setNewItem] = useState('');
@@ -49,7 +49,7 @@ export const UserChecklist = ({ projectId, className }: { projectId?: string, cl
     <section className={cn("bg-card p-6 rounded-2xl border border-border flex flex-col space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <ListTodo className="w-5 h-5 text-foreground" />
+          <ListTodo className="w-5 h-5" style={accentColor ? { color: accentColor } : undefined} />
           <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
         </div>
 
@@ -73,7 +73,7 @@ export const UserChecklist = ({ projectId, className }: { projectId?: string, cl
                 <Checkbox
                   checked={item.is_completed}
                   onCheckedChange={(checked) => toggleItem(item.id, checked as boolean)}
-                  className="w-5 h-5 rounded-full border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all duration-300"
+                  className="transition-all duration-300"
                 />
                 
                 {editingId === item.id ? (

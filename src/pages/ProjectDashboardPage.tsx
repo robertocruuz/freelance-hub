@@ -1030,7 +1030,7 @@ export default function ProjectDashboardPage() {
             )}
           </div>
 
-          <UserChecklist projectId={id} />
+          <UserChecklist projectId={id} accentColor={cColor} />
         </div>
       </div>
 

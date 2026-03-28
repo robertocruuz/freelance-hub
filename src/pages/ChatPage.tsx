@@ -47,7 +47,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-card/50 border border-border rounded-2xl overflow-hidden flex shadow-sm">
+      <div className="flex-1 min-h-0 bg-card/50 dark:bg-background border border-border rounded-2xl overflow-hidden flex shadow-sm">
         {showSidebar && (
           <div className={`${isMobile ? 'w-full' : 'w-[320px] lg:w-[380px]'} border-r border-border flex shrink-0`}>
             <ChatSidebar chatState={chatState} isMobile={isMobile} />
@@ -55,11 +55,11 @@ export default function ChatPage() {
         )}
         
         {showArea && (
-          <div className="flex-1 flex flex-col min-w-0 bg-background/50">
+          <div className="flex-1 flex flex-col min-w-0 bg-background dark:bg-background">
             {activeChannelId ? (
               <ChatArea chatState={chatState} isMobile={isMobile} />
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center bg-card/30">
+              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center bg-card/30 dark:bg-background">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                   <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
