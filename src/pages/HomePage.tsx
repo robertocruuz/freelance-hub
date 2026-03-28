@@ -418,10 +418,10 @@ const HomePage = () => {
                 style={{ '--hover-bg': solidCol } as React.CSSProperties} 
                 onClick={() => navigate('/dashboard/projects')}
               >
-                 <div className="flex items-center gap-3">
-                    <span className={`text-sm font-bold opacity-95 truncate max-w-[120px] ${tColor}`}>{p.name}</span>
+                 <div className="flex items-center gap-3 min-w-0 flex-1 pr-3">
+                    <span className={`text-sm font-bold opacity-95 truncate block w-full ${tColor}`}>{p.name}</span>
                  </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-2 shrink-0">
                     {p.due_date && (
                        <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 text-center ${mColor} bg-background border border-border group-hover:bg-black/10 group-hover:border-transparent`}>
                          {format(parseISO(p.due_date), 'dd/MM')}

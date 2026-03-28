@@ -940,7 +940,7 @@ export default function ProjectDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {notifications.map(n => (
-                  <div key={n.id} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
+                  <div key={n.id} className="flex flex-col p-3 rounded-xl bg-muted/30 dark:bg-background border border-border">
                     <span className="text-sm font-medium text-foreground">
                       Tarefa &quot;{n.tasks?.title}&quot;
                     </span>
