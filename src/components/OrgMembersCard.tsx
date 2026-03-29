@@ -198,7 +198,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     {canManage ? (
                       <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
-                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-full font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors">
+                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-[8px] font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors">
                           <RoleIcon className="w-3 h-3 text-muted-foreground" />
                           <SelectValue />
                         </SelectTrigger>
@@ -208,13 +208,13 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 rounded-full border shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
+                      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 rounded-[8px] border shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
                         <RoleIcon className="w-3 h-3" />
                         {roleLabel(member.role)}
                       </Badge>
                     )}
                     {member.status === 'pending' && (
-                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-full">
+                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-[8px]">
                         <Clock className="w-3 h-3" />
                         {isPt ? 'Pendente' : 'Pending'}
                       </Badge>
@@ -231,8 +231,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                   </p>
                   
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
-                    {isOwner && <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_1px_rgba(255,255,255,0.1)]">Proprietário</span>}
-                    {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">Você</span>}
+                    {isOwner && <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-[8px] bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_1px_rgba(255,255,255,0.1)]">Proprietário</span>}
+                    {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border">Você</span>}
                   </div>
                 </div>
 
@@ -371,9 +371,9 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
         </div>
         <div className="flex items-center gap-4">
           {isAdmin && (
-          <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
-            <DialogTrigger asChild>
-              <Button className="gap-1.5 h-8 px-3 rounded-full font-semibold shadow-sm text-xs shrink-0">
+            <Dialog open={inviteOpen} onOpenChange={(open) => { setInviteOpen(open); if (!open) { setInviteEmail(''); } }}>
+              <DialogTrigger asChild>
+              <Button className="gap-1.5 h-8 px-3 rounded-[10px] font-semibold shadow-sm text-xs shrink-0">
                 <UserPlus className="w-3.5 h-3.5" />
                 {isPt ? 'Convidar Membro' : 'Invite Member'}
               </Button>

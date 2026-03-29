@@ -221,7 +221,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
             {shareCount > 0 && <span className="text-[10px]">{shareCount}</span>}
           </button>
         ) : (
-          <Button variant="outline" size="sm" className={`gap-1.5 text-xs ${className || ''}`}>
+          <Button variant="outline" size="sm" className={`gap-1.5 text-xs rounded-[8px] ${className || ''}`}>
             <Share2 className="w-3.5 h-3.5" />
             Compartilhar
             {shareCount > 0 && (
@@ -230,7 +230,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className={`w-80 p-0 ${themeColor ? 'share-theme-override' : ''}`} align="start">
+      <PopoverContent className={`w-80 p-0 rounded-[8px] ${themeColor ? 'share-theme-override' : ''}`} align="start">
         {themeColor && (
           <style>{`
             .share-theme-override {
@@ -249,9 +249,9 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
         <div className="p-3 space-y-3">
           {/* Share with org */}
           {hasOrg && (
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/50">
+            <div className="flex items-center justify-between p-2.5 rounded-[8px] bg-muted/30 border border-border/50">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[8px] bg-primary/10 flex items-center justify-center">
                   <Building2 className="w-4 h-4 text-primary" />
                 </div>
                 <div>
@@ -281,7 +281,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
                     value={searchEmail}
                     onChange={(e) => setSearchEmail(e.target.value)}
                     placeholder="Buscar por nome ou email..."
-                    className="h-8 text-xs mb-2"
+                    className="h-8 text-xs mb-2 rounded-[8px]"
                   />
                 )}
                 <div className="max-h-32 overflow-y-auto space-y-1">
@@ -290,7 +290,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
                       key={member.user_id}
                       onClick={() => shareWithUser(member.user_id)}
                       disabled={loading}
-                      className="flex items-center gap-2 w-full p-1.5 rounded-lg hover:bg-muted/50 transition text-left"
+                      className="flex items-center gap-2 w-full p-1.5 rounded-[8px] hover:bg-muted/50 transition text-left"
                     >
                       <Avatar className="w-6 h-6">
                         {member.avatar_url && <AvatarImage src={member.avatar_url} className="object-cover" />}
@@ -324,13 +324,13 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
                 onKeyDown={(e) => e.key === 'Enter' && inviteByEmail()}
                 placeholder="email@exemplo.com"
                 type="email"
-                className="h-8 text-xs flex-1"
+                className="h-8 text-xs flex-1 rounded-[8px]"
               />
               <Button
                 size="sm"
                 onClick={inviteByEmail}
                 disabled={inviteLoading || !inviteEmail.trim()}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2.5 text-xs rounded-[8px]"
               >
                 {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
               </Button>
@@ -348,7 +348,7 @@ export const ShareButton = ({ resourceType, resourceId, compact = false, classNa
                 </Label>
                 <div className="space-y-1">
                   {userShares.map((share) => (
-                    <div key={share.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-muted/20">
+                    <div key={share.id} className="flex items-center gap-2 p-1.5 rounded-[8px] bg-muted/20">
                       <Avatar className="w-6 h-6">
                         {share.profile?.avatar_url && <AvatarImage src={share.profile.avatar_url} className="object-cover" />}
                         <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">

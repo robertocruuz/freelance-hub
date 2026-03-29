@@ -196,7 +196,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           )}
 
       {dialogOpen && (
-        <div ref={formRef} className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 animate-fade-in">
+        <div ref={formRef} className="space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-foreground">{editing ? 'Editar Despesa' : 'Nova Despesa'}</h3>
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setDialogOpen(false); resetForm(); }}>
@@ -206,13 +206,13 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           <div className="space-y-4">
             <div>
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Descrição *</Label>
-              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Assinatura Adobe" className="mt-1.5" autoFocus />
+              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Assinatura Adobe" className="mt-1.5 rounded-[8px]" autoFocus />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Categoria</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 rounded-[8px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {EXPENSE_CATEGORIES.map(c => (
                       <SelectItem key={c.value} value={c.value}>{categoryIcons[c.value]} {c.label}</SelectItem>
@@ -222,7 +222,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
               </div>
               <div>
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valor *</Label>
-                <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0,00" min="0" step="0.01" className="mt-1.5" />
+                <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0,00" min="0" step="0.01" className="mt-1.5 rounded-[8px]" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -230,7 +230,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vencimento</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn('w-full justify-start text-left font-normal mt-1.5', !dueDate && 'text-muted-foreground')}>
+                    <Button variant="outline" className={cn('w-full justify-start text-left font-normal mt-1.5 rounded-[8px]', !dueDate && 'text-muted-foreground')}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {dueDate ? format(dueDate, 'dd/MM/yyyy') : 'Selecionar'}
                     </Button>
@@ -243,7 +243,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
               <div>
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pagamento</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 rounded-[8px]"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                   <SelectContent>
                     {PAYMENT_METHODS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
                   </SelectContent>
@@ -272,7 +272,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
               <div className="ml-8">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Duração da recorrência</Label>
                 <Select value={recurringMonths} onValueChange={setRecurringMonths}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 rounded-[8px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="3">3 meses</SelectItem>
                     <SelectItem value="6">6 meses</SelectItem>
@@ -285,7 +285,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
             )}
             <div>
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Observações</Label>
-              <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="mt-1.5" />
+              <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="mt-1.5 rounded-[8px]" />
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
@@ -295,10 +295,10 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 justify-between">
+      {!dialogOpen && <div className="flex flex-wrap items-center gap-3 justify-between">
         <div className="flex gap-2 flex-wrap">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Categoria" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-9 text-sm rounded-[8px]"><SelectValue placeholder="Categoria" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas categorias</SelectItem>
               {EXPENSE_CATEGORIES.map(c => (
@@ -309,7 +309,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
             </SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[160px] h-9 text-sm rounded-lg"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-9 text-sm rounded-[8px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos ({expenses.length})</SelectItem>
               <SelectItem value="pending">Pendente</SelectItem>
@@ -324,16 +324,16 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
             </div>
           )}
         </div>
-      </div>
+      </div>}
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : grouped.length === 0 ? (
+      ) : grouped.length === 0 && !dialogOpen ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
-            <Receipt className="w-8 h-8 opacity-50" />
+          <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
+            <Receipt className="w-8 h-8 text-muted-foreground/70" />
           </div>
           <p className="text-sm font-medium">Nenhuma despesa encontrada</p>
           <p className="text-xs mt-1 text-muted-foreground/70">Clique em "Nova Despesa" para começar.</p>

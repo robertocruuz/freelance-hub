@@ -29,7 +29,7 @@ const ClientSelect = ({ value, onChange, onClientChange, placeholder = 'Cliente'
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-muted border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full flex items-center justify-between px-4 py-2 rounded-[8px] bg-muted border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       >
         <span className="flex items-center gap-2 min-w-0 truncate">
           {selected ? (

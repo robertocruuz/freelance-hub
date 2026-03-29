@@ -169,12 +169,12 @@ export default function FinancePage() {
         <div className="flex flex-wrap items-center gap-4 xl:gap-6">
           {/* View mode toggle */}
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-            <TabsList className="bg-card shadow-sm border border-border rounded-full h-10 p-1">
-              <TabsTrigger value="overview" className="gap-2 text-sm font-medium rounded-full px-4">
+            <TabsList className="bg-card shadow-sm border border-border rounded-[12px] h-10 p-1">
+              <TabsTrigger value="overview" className="gap-2 text-sm font-medium rounded-[8px] px-4">
                 <LayoutDashboard className="w-4 h-4" />
                 Visão Geral
               </TabsTrigger>
-              <TabsTrigger value="month" className="gap-2 text-sm font-medium rounded-full px-4">
+              <TabsTrigger value="month" className="gap-2 text-sm font-medium rounded-[8px] px-4">
                 <CalendarIcon className="w-4 h-4" />
                 Visão Mensal
               </TabsTrigger>
@@ -182,41 +182,41 @@ export default function FinancePage() {
           </Tabs>
           {/* Date navigation */}
           {viewMode === 'month' && (
-            <div className="flex items-center h-10 p-1 rounded-full bg-card shadow-sm border border-border">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
+            <div className="flex items-center h-10 p-1 rounded-[12px] bg-card shadow-sm border border-border">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} aria-label="Mês anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <button
                 onClick={() => setSelectedMonth(new Date())}
-                className={`text-sm font-medium capitalize px-4 h-8 flex items-center justify-center transition-colors ${isCurrentMonth ? 'text-foreground hover:bg-muted/50 rounded-full' : 'text-primary hover:bg-primary/10 rounded-full cursor-pointer'}`}
+                className={`text-sm font-medium capitalize px-4 h-8 flex items-center justify-center transition-colors ${isCurrentMonth ? 'text-foreground hover:bg-muted/50 rounded-[8px]' : 'text-primary hover:bg-primary/10 rounded-[8px] cursor-pointer'}`}
                 title={isCurrentMonth ? monthLabel : 'Voltar ao mês atual'}
               >
                 {monthLabel}
               </button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} aria-label="Próximo mês">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           )}
           {viewMode === 'overview' && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center h-10 p-1 rounded-full bg-card shadow-sm border border-border">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
+            <div className="flex items-center h-10 p-1 rounded-[12px] bg-card shadow-sm border border-border">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1))} aria-label="Ano anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <button
                   onClick={() => setSelectedMonth(new Date())}
-                  className={`text-sm font-medium px-4 h-8 flex items-center justify-center transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground hover:bg-muted/50 rounded-full' : 'text-primary hover:bg-primary/10 rounded-full cursor-pointer'}`}
+                  className={`text-sm font-medium px-4 h-8 flex items-center justify-center transition-colors ${selectedMonth.getFullYear() === new Date().getFullYear() ? 'text-foreground hover:bg-muted/50 rounded-[8px]' : 'text-primary hover:bg-primary/10 rounded-[8px] cursor-pointer'}`}
                 >
                   {selectedMonth.getFullYear()}
                 </button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px] hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1))} aria-label="Próximo ano">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
               <Button
                 variant={overviewFiltersOpen ? 'default' : 'outline'}
-                className="h-10 px-5 rounded-full text-sm font-medium gap-2 shadow-sm border-border/50 transition-all hover:bg-muted hover:text-foreground"
+                className="h-10 px-5 rounded-[8px] text-sm font-medium gap-2 shadow-sm border-border/50 transition-all hover:bg-muted hover:text-foreground"
                 onClick={() => setOverviewFiltersOpen(prev => !prev)}
               >
                 <Filter className="w-4 h-4" />
@@ -257,7 +257,7 @@ export default function FinancePage() {
             {/* Receivables Column */}
             <div className="relative flex flex-col">
               <div className="flex items-center gap-2 mb-4 h-8">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-[8px] bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <ArrowDownToLine className="w-4 h-4 text-emerald-500" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">A Receber</h2>
@@ -278,7 +278,7 @@ export default function FinancePage() {
             {/* Payables Column */}
             <div className="relative flex flex-col">
               <div className="flex items-center gap-2 mb-4 h-8">
-                <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-[8px] bg-red-500/10 flex items-center justify-center shrink-0">
                   <ArrowUpFromLine className="w-4 h-4 text-red-500" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">A Pagar</h2>
@@ -292,8 +292,8 @@ export default function FinancePage() {
           {/* Cash Flow */}
           <div className="flex flex-col gap-5 mt-8">
              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <BarChart3 className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 rounded-[8px] bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4 text-blue-500" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">Fluxo de Caixa</h2>
              </div>
@@ -304,3 +304,4 @@ export default function FinancePage() {
     </div>
   );
 }
+

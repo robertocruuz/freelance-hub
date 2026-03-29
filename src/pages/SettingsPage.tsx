@@ -132,16 +132,16 @@ const SettingsPage = () => {
           description={isPt ? 'Escolha como o Freelaz se parece' : 'Choose how Freelaz looks'}
         >
           <Tabs value={theme} onValueChange={(v) => setTheme(v as any)} className="w-full">
-            <TabsList className="w-full bg-card border border-border rounded-full h-10 p-1">
-              <TabsTrigger value="light" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+            <TabsList className="w-full bg-card border border-border rounded-[12px] h-10 p-1">
+              <TabsTrigger value="light" className="flex-1 gap-1.5 text-sm font-medium rounded-[8px]">
                 <Sun className="w-3.5 h-3.5" />
                 {isPt ? 'Claro' : 'Light'}
               </TabsTrigger>
-              <TabsTrigger value="dark" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+              <TabsTrigger value="dark" className="flex-1 gap-1.5 text-sm font-medium rounded-[8px]">
                 <Moon className="w-3.5 h-3.5" />
                 {isPt ? 'Escuro' : 'Dark'}
               </TabsTrigger>
-              <TabsTrigger value="system" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+              <TabsTrigger value="system" className="flex-1 gap-1.5 text-sm font-medium rounded-[8px]">
                 <Monitor className="w-3.5 h-3.5" />
                 {isPt ? 'Sistema' : 'System'}
               </TabsTrigger>
@@ -156,12 +156,12 @@ const SettingsPage = () => {
           description={isPt ? 'Defina o idioma da interface' : 'Set the interface language'}
         >
           <Tabs value={lang} onValueChange={(v) => setLang(v as any)} className="w-full">
-            <TabsList className="w-full bg-card border border-border rounded-full h-10 p-1">
-              <TabsTrigger value="pt-BR" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+            <TabsList className="w-full bg-card border border-border rounded-[12px] h-10 p-1">
+              <TabsTrigger value="pt-BR" className="flex-1 gap-1.5 text-sm font-medium rounded-[8px]">
                 <span className="text-sm">🇧🇷</span>
                 Português
               </TabsTrigger>
-              <TabsTrigger value="en" className="flex-1 gap-1.5 text-sm font-medium rounded-full">
+              <TabsTrigger value="en" className="flex-1 gap-1.5 text-sm font-medium rounded-[8px]">
                 <span className="text-sm">🇺🇸</span>
                 English
               </TabsTrigger>

@@ -70,41 +70,41 @@
 
   .dark {
     --background: 240 3% 6%; /* #0e0e0f */
-    --foreground: 220 18% 96%;
+    --foreground: 220 18% 98%;
 
     --card: 240 3% 6%; /* #0e0e0f */
-    --card-foreground: 220 18% 96%;
+    --card-foreground: 220 18% 98%;
 
     --popover: 240 3% 6%;
-    --popover-foreground: 220 18% 96%;
+    --popover-foreground: 220 18% 98%;
 
     --primary: 0 0% 8%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 225 15% 11%;
-    --secondary-foreground: 220 18% 96%;
+    --secondary-foreground: 220 18% 98%;
 
     --muted: 225 15% 11%;
-    --muted-foreground: 220 12% 72%;
+    --muted-foreground: 220 12% 80%;
 
     --accent: 0 0% 16%;
-    --accent-foreground: 0 0% 96%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 15% 14%;
-    --input: 225 15% 14%;
-    --ring: 0 0% 24%;
+    --border: 225 12% 20%;
+    --input: 225 12% 20%;
+    --ring: 0 0% 34%;
 
     --sidebar-background: 240 3% 6%;
-    --sidebar-foreground: 220 18% 96%;
+    --sidebar-foreground: 220 18% 98%;
     --sidebar-primary: 0 0% 8%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 225 15% 14%;
-    --sidebar-accent-foreground: 220 18% 97%;
-    --sidebar-border: 225 15% 14%;
-    --sidebar-ring: 0 0% 24%;
+    --sidebar-accent-foreground: 220 18% 98%;
+    --sidebar-border: 225 12% 20%;
+    --sidebar-ring: 0 0% 34%;
 
     /* Landing page tokens */
     --landing-hero: 0 0% 8%;
@@ -113,7 +113,7 @@
 
     /* Dark flat tokens instead of glass */
     --glass-bg: 240 3% 6%;
-    --glass-border: 225 15% 14%;
+    --glass-border: 225 12% 20%;
     --glass-shadow: none;
     --glass-shadow-lg: 0 4px 20px hsl(0 0% 0% / 0.4);
     --glass-highlight: none;

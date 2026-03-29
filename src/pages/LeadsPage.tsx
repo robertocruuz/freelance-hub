@@ -374,12 +374,12 @@ export default function LeadsPage() {
         {/* Tabs and action buttons in one row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
-            <TabsList className="bg-card border border-border/50 shadow-sm p-1 rounded-full">
-              <TabsTrigger value="my-leads" className="gap-1.5 text-xs">
+            <TabsList className="bg-card border border-border/50 shadow-sm p-1 rounded-[12px]">
+              <TabsTrigger value="my-leads" className="gap-1.5 text-xs rounded-[8px]">
                 <DollarSign className="w-3.5 h-3.5" />
                 Meus Leads
               </TabsTrigger>
-              <TabsTrigger value="shared" className="gap-1.5 text-xs">
+              <TabsTrigger value="shared" className="gap-1.5 text-xs rounded-[8px]">
                 <Share2 className="w-3.5 h-3.5" />
                 Compartilhados comigo
               </TabsTrigger>
@@ -436,7 +436,7 @@ export default function LeadsPage() {
                 placeholder="Buscar negócios..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="pl-9 pr-8 h-9 bg-card border-border/50 shadow-sm"
+                className="pl-9 pr-8 h-9 bg-card border-border/50 shadow-sm rounded-[8px]"
               />
               {search && (
                 <button
@@ -450,7 +450,7 @@ export default function LeadsPage() {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setStageFilter(null)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!stageFilter ? 'bg-primary text-primary-foreground' : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80 shadow-sm'}`}
+                className={`h-9 px-5 rounded-[8px] text-xs font-medium transition-colors ${!stageFilter ? 'bg-primary text-primary-foreground' : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80 shadow-sm'}`}
               >
                 Todas
               </button>
@@ -458,7 +458,7 @@ export default function LeadsPage() {
                 <button
                   key={s.id}
                   onClick={() => setStageFilter(s.id === stageFilter ? null : s.id)}
-                  className={`px-3 py-1.5 rounded-full border border-border/50 shadow-sm text-xs font-medium transition-colors ${stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'}`}
+                  className={`h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-xs font-medium transition-colors ${stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'}`}
                   style={stageFilter === s.id ? { backgroundColor: s.color, borderColor: s.color } : undefined}
                 >
                   {s.name}

@@ -637,7 +637,7 @@ export default function ProjectDashboardPage() {
                     if (isLinkedToBudget) return;
                     setShowItemForm(true);
                   }} 
-                  className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5"
+                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5"
                   disabled={isLinkedToBudget}
                   title={isLinkedToBudget ? "Edite os itens através do Orçamento original" : "Adicionar Item"}
                 >
@@ -743,7 +743,7 @@ export default function ProjectDashboardPage() {
                 <FolderKanban className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-bold">Tarefas Vinculadas</h3>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/kanban')} className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/kanban')} className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5">
                 Ir ao painel <ExternalLink className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -897,7 +897,7 @@ export default function ProjectDashboardPage() {
                           {format(new Date(e.start_time), "dd/MM/yyyy 'às' HH:mm")}
                         </span>
                       </div>
-                      <span className="text-primary font-bold whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-md">{formatTime(e.duration || 0)}</span>
+                      <span className="text-primary font-bold whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-[8px]">{formatTime(e.duration || 0)}</span>
                     </div>
                   ))}
                   {entries.length > 5 && (
@@ -926,7 +926,7 @@ export default function ProjectDashboardPage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={handleClearNotifications} 
-                  className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px]"
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                   Limpar
@@ -967,7 +967,7 @@ export default function ProjectDashboardPage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setShowFileForm(true)} 
-                  className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2 rounded-lg gap-1.5"
+                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" /> Adicionar
                 </Button>

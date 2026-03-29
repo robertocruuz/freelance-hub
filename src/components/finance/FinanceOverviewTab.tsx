@@ -482,35 +482,41 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
 
       {/* Annual summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {summaryItems.map(item => (
+        {summaryItems.map(item => {
+          const summaryIconColor = item.label === 'Total recebido' ? 'text-emerald-600 dark:text-emerald-400' : item.color;
+          const summaryIconBg = item.label === 'Total recebido' ? 'bg-emerald-100 dark:bg-emerald-900/50' : item.bgColor;
+          return (
           <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:bg-card">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
-              <item.icon className={`w-4 h-4 ${item.color}`} />
+            <div className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${summaryIconBg}`}>
+              <item.icon className={`w-4 h-4 ${summaryIconColor}`} />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{item.label}</p>
-              <p className={`text-lg font-black truncate leading-none ${item.color}`}>{formatCurrency(item.value)}</p>
+              <p className={`text-lg font-black truncate leading-none ${summaryIconColor}`}>{formatCurrency(item.value)}</p>
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {kpiItems.map(item => (
+        {kpiItems.map(item => {
+          const kpiIconColor = item.label === 'Ticket mÃ©dio' ? 'text-blue-600 dark:text-blue-400' : item.color;
+          const kpiIconBg = item.label === 'Ticket mÃ©dio' ? 'bg-blue-100 dark:bg-blue-900/50' : item.bgColor;
+          return (
           <div key={item.label} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:bg-card">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
-              <item.icon className={`w-4 h-4 ${item.color}`} />
+            <div className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 ${kpiIconBg}`}>
+              <item.icon className={`w-4 h-4 ${kpiIconColor}`} />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{item.label}</p>
-              <p className={`text-lg font-black truncate leading-none mb-0.5 ${item.color}`}>{item.value}</p>
+              <p className={`text-lg font-black truncate leading-none mb-0.5 ${kpiIconColor}`}>{item.value}</p>
               {'subValue' in item && item.subValue && (
                 <p className="text-[10px] font-semibold text-muted-foreground">{item.subValue}</p>
               )}
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* Monthly comparison chart */}
@@ -543,8 +549,8 @@ export default function FinanceOverviewTab({ invoices, selectedYear, onResetToMo
           <div className="p-6 pt-2 flex-1">
             {categoryData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                  <PiggyBank className="w-5 h-5 text-muted-foreground" />
+                <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
+                  <PiggyBank className="w-8 h-8 text-muted-foreground/70" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Nenhuma despesa</p>
               </div>

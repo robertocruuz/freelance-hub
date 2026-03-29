@@ -92,20 +92,20 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
         <div className="space-y-4 mt-2">
           <div>
             <Label>Título *</Label>
-            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Nome do negócio" />
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Nome do negócio" className="rounded-[8px]" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Valor (R$)</Label>
-              <Input value={value} onChange={e => setValue(maskCurrency(e.target.value))} placeholder="0,00" />
+              <Input value={value} onChange={e => setValue(maskCurrency(e.target.value))} placeholder="0,00" className="rounded-[8px]" />
             </div>
             <div>
               <Label>Etapa</Label>
               <select
                 value={stageId}
                 onChange={e => setStageId(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-[8px] border border-input bg-background px-3 py-2 text-sm"
               >
                 {stages.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -131,7 +131,7 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full justify-start text-left font-normal',
+                    'w-full justify-start text-left font-normal rounded-[8px]',
                     !expectedCloseDate && 'text-muted-foreground'
                   )}
                 >
@@ -172,21 +172,21 @@ export default function LeadFormModal({ open, onClose, onSave, lead, stages, def
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label>Contato</Label>
-              <Input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nome" />
+              <Input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Nome" className="rounded-[8px]" />
             </div>
             <div>
               <Label>Email</Label>
-              <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="email@..." />
+              <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="email@..." className="rounded-[8px]" />
             </div>
             <div>
               <Label>Telefone</Label>
-              <Input value={contactPhone} onChange={e => setContactPhone(maskPhone(e.target.value))} placeholder="(00) 00000-0000" />
+              <Input value={contactPhone} onChange={e => setContactPhone(maskPhone(e.target.value))} placeholder="(00) 00000-0000" className="rounded-[8px]" />
             </div>
           </div>
 
           <div>
             <Label>Observações</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="rounded-[8px]" />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

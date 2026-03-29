@@ -245,10 +245,10 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
   const progress = totalChecklistProgress();
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative w-full max-w-2xl h-full bg-card border-l border-border overflow-y-auto animate-fade-in"
+        className="relative w-full max-w-5xl max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] bg-card border border-border rounded-[16px] overflow-y-auto shadow-2xl animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -262,7 +262,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             />
             <div className="flex items-center gap-2 mt-2">
               <Select value={task.column_id || ''} onValueChange={(v) => onUpdate(task.id, { column_id: v })}>
-                <SelectTrigger className="h-7 text-xs w-auto bg-background border border-input shadow-sm">
+                <SelectTrigger className="h-7 text-xs w-auto rounded-[8px] bg-background border border-input shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,7 +275,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 onUpdate(task.id, { priority: v });
                 kanban.logActivity(task.id, 'priority_changed', { from: task.priority, to: v });
               }}>
-                <SelectTrigger className="h-7 text-xs w-auto bg-background border border-input shadow-sm">
+                <SelectTrigger className="h-7 text-xs w-auto rounded-[8px] bg-background border border-input shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -293,11 +293,11 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 resourceType="task" 
                 resourceId={task.id} 
                 compact 
-                className="h-7 px-2.5 text-xs w-auto bg-background border border-input shadow-sm border border-input rounded-md flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors" 
+                className="h-7 px-2.5 text-xs w-auto bg-background border border-input shadow-sm border border-input rounded-[8px] flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors" 
               />
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-secondary transition">
+          <button onClick={onClose} className="w-8 h-8 rounded-[8px] flex items-center justify-center hover:bg-secondary transition">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -308,7 +308,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Cliente</label>
               <Select value={task.client_id || 'none'} onValueChange={(v) => onUpdate(task.id, { client_id: v === 'none' ? null : v })}>
-                <SelectTrigger className="h-9 text-sm bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm rounded-[8px] bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -328,7 +328,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 }
                 onUpdate(task.id, updates);
               }}>
-                <SelectTrigger className="h-9 text-sm bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm rounded-[8px] bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
@@ -338,7 +338,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tipo</label>
               <Select value={task.task_type || 'none'} onValueChange={(v) => onUpdate(task.id, { task_type: v === 'none' ? null : v })}>
-                <SelectTrigger className="h-9 text-sm bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm rounded-[8px] bg-background border border-input shadow-sm"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {taskTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
@@ -351,7 +351,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-9 px-3 rounded-md border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors bg-background border border-input shadow-sm",
+                      "w-full h-9 px-3 rounded-[8px] border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors bg-background border border-input shadow-sm",
                       !task.start_date && "text-muted-foreground"
                     )}
                   >
@@ -377,7 +377,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-9 px-3 rounded-md border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors bg-background border border-input shadow-sm",
+                      "w-full h-9 px-3 rounded-[8px] border border-input text-sm flex items-center justify-between text-left focus:outline-none focus:ring-1 focus:ring-ring transition-colors bg-background border border-input shadow-sm",
                       !task.due_date && "text-muted-foreground"
                     )}
                   >
@@ -399,11 +399,11 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo estimado (h)</label>
-              <Input type="number" value={task.estimated_time || ''} onChange={(e) => onUpdate(task.id, { estimated_time: e.target.value ? parseInt(e.target.value) : null })} className="h-9 text-sm bg-background border border-input shadow-sm" />
+              <Input type="number" value={task.estimated_time || ''} onChange={(e) => onUpdate(task.id, { estimated_time: e.target.value ? parseInt(e.target.value) : null })} className="h-9 rounded-[8px] text-sm bg-background border border-input shadow-sm" />
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tempo registrado</label>
-              <div className="h-9 flex items-center gap-1.5 px-3 rounded-md bg-secondary/50 border border-border text-sm">
+              <div className="h-9 flex items-center gap-1.5 px-3 rounded-[8px] bg-secondary/50 border border-border text-sm">
                 <Timer className="w-3.5 h-3.5 text-primary" />
                 <span className={totalTrackedSeconds > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}>
                   {totalTrackedSeconds > 0 ? formatTrackedTime(totalTrackedSeconds) : 'Nenhum'}
@@ -418,7 +418,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Complexidade</label>
               <Select value={String(task.complexity)} onValueChange={(v) => onUpdate(task.id, { complexity: parseInt(v) })}>
-                <SelectTrigger className="h-9 text-sm bg-background border border-input shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm rounded-[8px] bg-background border border-input shadow-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{'⭐'.repeat(n)}</SelectItem>)}
                 </SelectContent>
@@ -426,11 +426,11 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Valor estimado (R$)</label>
-              <Input type="number" value={task.estimated_value || ''} onChange={(e) => onUpdate(task.id, { estimated_value: parseFloat(e.target.value) || 0 })} className="h-9 text-sm bg-background border border-input shadow-sm" />
+              <Input type="number" value={task.estimated_value || ''} onChange={(e) => onUpdate(task.id, { estimated_value: parseFloat(e.target.value) || 0 })} className="h-9 rounded-[8px] text-sm bg-background border border-input shadow-sm" />
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Valor real (R$)</label>
-              <Input type="number" value={task.real_value || ''} onChange={(e) => onUpdate(task.id, { real_value: parseFloat(e.target.value) || 0 })} className="h-9 text-sm bg-background border border-input shadow-sm" />
+              <Input type="number" value={task.real_value || ''} onChange={(e) => onUpdate(task.id, { real_value: parseFloat(e.target.value) || 0 })} className="h-9 rounded-[8px] text-sm bg-background border border-input shadow-sm" />
             </div>
           </div>
 
@@ -444,20 +444,20 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               onChange={(e) => setDescription(e.target.value)}
               onBlur={saveDescription}
               placeholder="Adicione uma descrição mais detalhada..."
-              className="bg-background border border-input shadow-sm min-h-[100px] text-sm"
+              className="rounded-[8px] bg-background border border-input shadow-sm min-h-[100px] text-sm"
             />
           </div>
 
           {/* Tabs for checklists, comments, activity */}
           <Tabs defaultValue="checklists" className="w-full">
-            <TabsList className="w-full bg-muted/40 border-b border-border">
-              <TabsTrigger value="checklists" className="flex-1 text-xs gap-1">
+            <TabsList className="w-full rounded-[8px] bg-muted/40 border-b border-border">
+              <TabsTrigger value="checklists" className="flex-1 rounded-[8px] text-xs gap-1">
                 <CheckSquare className="w-3.5 h-3.5" /> Checklists {progress && `(${progress.pct}%)`}
               </TabsTrigger>
-              <TabsTrigger value="comments" className="flex-1 text-xs gap-1">
+              <TabsTrigger value="comments" className="flex-1 rounded-[8px] text-xs gap-1">
                 <MessageSquare className="w-3.5 h-3.5" /> Comentários ({comments.length})
               </TabsTrigger>
-              <TabsTrigger value="activity" className="flex-1 text-xs gap-1">
+              <TabsTrigger value="activity" className="flex-1 rounded-[8px] text-xs gap-1">
                 <Activity className="w-3.5 h-3.5" /> Atividade
               </TabsTrigger>
             </TabsList>
@@ -465,12 +465,12 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
             {/* Checklists */}
             <TabsContent value="checklists" className="mt-4 space-y-4">
               {checklists.map((cl) => (
-                <div key={cl.id} className="bg-card border border-border/50 shadow-sm rounded-xl p-4">
+                <div key={cl.id} className="bg-card border border-border/50 shadow-sm rounded-[8px] p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold">{cl.title}</h4>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-semibold text-muted-foreground">{getChecklistProgress(cl)}%</span>
-                      <button onClick={() => { kanban.deleteChecklist(cl.id); loadDetails(); }} className="text-destructive hover:bg-destructive/10 rounded p-0.5">
+                      <button onClick={() => { kanban.deleteChecklist(cl.id); loadDetails(); }} className="text-destructive hover:bg-destructive/10 rounded-[8px] p-0.5">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -478,7 +478,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   <Progress value={getChecklistProgress(cl)} className="h-1.5 mb-3" />
                   <div className="space-y-1.5">
                     {cl.items.map((item) => (
-                      <label key={item.id} className="flex items-center gap-2 py-1 px-1 rounded-lg hover:bg-secondary/50 transition cursor-pointer group">
+                      <label key={item.id} className="flex items-center gap-2 py-1 px-1 rounded-[8px] hover:bg-secondary/50 transition cursor-pointer group">
                         <Checkbox
                           checked={item.is_completed}
                           onCheckedChange={(checked) => handleToggleItem(item.id, !!checked)}
@@ -502,9 +502,9 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                       onChange={(e) => setNewItemTitles((prev) => ({ ...prev, [cl.id]: e.target.value }))}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddChecklistItem(cl.id)}
                       placeholder="Adicionar item..."
-                      className="h-7 text-xs bg-background border border-input shadow-sm flex-1"
+                      className="h-7 rounded-[8px] text-xs bg-background border border-input shadow-sm flex-1"
                     />
-                    <Button size="sm" onClick={() => handleAddChecklistItem(cl.id)} className="h-7 text-xs px-2">
+                    <Button size="sm" onClick={() => handleAddChecklistItem(cl.id)} className="h-7 rounded-[8px] text-xs px-2">
                       <Plus className="w-3 h-3" />
                     </Button>
                   </div>
@@ -518,9 +518,9 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   onChange={(e) => setNewChecklistTitle(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddChecklist()}
                   placeholder="Nome do checklist..."
-                  className="h-8 text-xs bg-background border border-input shadow-sm flex-1"
+                  className="h-8 rounded-[8px] text-xs bg-background border border-input shadow-sm flex-1"
                 />
-                <Button size="sm" onClick={handleAddChecklist} className="h-8 text-xs btn-glow">
+                <Button size="sm" onClick={handleAddChecklist} className="h-8 rounded-[8px] text-xs btn-glow">
                   <CheckSquare className="w-3.5 h-3.5 mr-1" /> Criar Checklist
                 </Button>
               </div>
@@ -534,11 +534,11 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   const initial = profile?.name ? profile.name.charAt(0).toUpperCase() : 'U';
                   const canDelete = user?.id === c.user_id; // Check kanban user
                   return (
-                  <div key={c.id} className="bg-card border border-border/50 shadow-sm rounded-xl p-3 group relative">
+                  <div key={c.id} className="bg-card border border-border/50 shadow-sm rounded-[8px] p-3 group relative">
                     {canDelete && (
                       <button
                         onClick={(e) => { e.preventDefault(); setCommentToDelete(c.id); }}
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive p-1 rounded-md hover:bg-destructive/10 transition-colors"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive p-1 rounded-[8px] hover:bg-destructive/10 transition-colors"
                         title="Excluir Comentário"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -567,9 +567,9 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
                   placeholder="Escrever um comentário..."
-                  className="bg-background border border-input shadow-sm text-sm flex-1"
+                  className="rounded-[8px] bg-background border border-input shadow-sm text-sm flex-1"
                 />
-                <Button onClick={handleAddComment} className="btn-glow text-xs">Enviar</Button>
+                <Button onClick={handleAddComment} className="btn-glow rounded-[8px] text-xs">Enviar</Button>
               </div>
             </TabsContent>
 
@@ -634,7 +634,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs gap-1.5"
+                className="rounded-[8px] text-xs gap-1.5 hover:bg-black hover:text-white hover:border-black"
                 onClick={() => {
                   const params = new URLSearchParams();
                   if (task.project_id) params.set('project', task.project_id);
@@ -649,7 +649,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs gap-1.5"
+                className="rounded-[8px] text-xs gap-1.5 hover:bg-black hover:text-white hover:border-black"
                 onClick={() => {
                   const params = new URLSearchParams();
                   params.set('from_task', task.id);
@@ -668,7 +668,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs gap-1.5"
+                className="rounded-[8px] text-xs gap-1.5 hover:bg-black hover:text-white hover:border-black"
                 onClick={() => {
                   const params = new URLSearchParams();
                   params.set('from_task', task.id);
@@ -682,7 +682,7 @@ export const TaskDetailModal = ({ task, columns, onClose, onUpdate, onDelete, ka
                 <FileText className="w-3.5 h-3.5" /> Gerar Orçamento
               </Button>
             </div>
-            <Button variant="destructive" size="sm" onClick={() => fetchDeleteImpact()} className="text-xs">
+            <Button variant="destructive" size="sm" onClick={() => fetchDeleteImpact()} className="rounded-[8px] text-xs">
               <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir tarefa
             </Button>
           </div>

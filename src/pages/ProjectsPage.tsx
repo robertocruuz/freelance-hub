@@ -788,7 +788,7 @@ const ProjectsPage = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                "pl-9 pr-8 rounded-[10px] transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
                 search 
                   ? "w-[180px] sm:w-[250px]" 
                   : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
@@ -806,7 +806,7 @@ const ProjectsPage = () => {
           
           <Button
             onClick={() => { resetForm(); setShowForm(true); loadAllBudgets(); }}
-            className="gap-2 rounded-full font-semibold shadow-sm shrink-0 h-10 px-4"
+            className="gap-2 rounded-[10px] font-semibold shadow-sm shrink-0 h-10 px-4"
           >
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newProject}</span>
           </Button>
@@ -1016,12 +1016,12 @@ const ProjectsPage = () => {
 
       {/* Empty state */}
       {filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground w-full">
-          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
-            <FolderKanban className="w-8 h-8 opacity-50" />
+        <div className="flex flex-col items-center justify-center py-20 text-center w-full bg-card/30">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <FolderKanban className="w-8 h-8 text-primary" />
           </div>
-          <p className="text-sm font-medium">{t.noProjects}</p>
-          <p className="text-xs mt-1 text-muted-foreground/70">Crie um projeto para começar a organizar seus trabalhos.</p>
+          <h3 className="text-lg font-medium text-foreground mb-1">{t.noProjects}</h3>
+          <p className="max-w-sm text-muted-foreground">Crie um projeto para começar a organizar seus trabalhos.</p>
         </div>
       ) : (
         <div className="space-y-8">

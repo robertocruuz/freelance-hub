@@ -131,7 +131,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
   }).filter(d => d.value > 0);
 
   const summaryItems = [
-    { label: 'A receber', value: totalReceivable, icon: TrendingUp, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { label: 'A receber', value: totalReceivable, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-100 dark:bg-emerald-900/50' },
     { label: 'A pagar', value: totalPayable, icon: TrendingDown, color: 'text-destructive', bgColor: 'bg-destructive/10' },
     { label: 'Saldo previsto', value: projectedBalance, icon: Wallet, color: projectedBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: projectedBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
     { label: 'Saldo atual', value: currentBalance, icon: PiggyBank, color: currentBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400', bgColor: currentBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50' },
@@ -248,7 +248,7 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {summaryItems.map(item => (
           <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-all">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.bgColor}`}>
+            <div className={`w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0 ${item.bgColor}`}>
               <item.icon className={`w-4 h-4 ${item.color}`} />
             </div>
             <div className="min-w-0">
@@ -295,8 +295,8 @@ export default function CashFlowTab({ invoices, monthFilter }: Props) {
           <CardContent className="pt-2">
             {categoryData.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                  <PiggyBank className="w-5 h-5 text-muted-foreground" />
+                <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
+                  <PiggyBank className="w-8 h-8 text-muted-foreground/70" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Nenhuma despesa</p>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">Registre despesas para ver o gráfico</p>

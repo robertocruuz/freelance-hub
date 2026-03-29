@@ -79,7 +79,7 @@ export default function FinanceSummaryCards({ balance, receivedThisMonth, paidTh
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-current opacity-[0.015]" />
 
           <div className="flex items-start justify-between mb-3">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.iconBg}`}>
+            <div className={`w-9 h-9 rounded-[8px] flex items-center justify-center ${c.iconBg}`}>
               <c.icon className={`w-4 h-4 ${c.iconColor}`} />
             </div>
             {c.trend && <c.trend className={`w-4 h-4 ${c.iconColor} opacity-60`} />}

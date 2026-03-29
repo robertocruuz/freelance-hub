@@ -227,7 +227,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-full bg-primary/5 text-primary hover:bg-primary/20 transition-all border border-primary/20"
+                  className="h-8 w-8 rounded-[8px] bg-transparent text-black hover:bg-black hover:text-white transition-all border-transparent shadow-none"
                   onClick={() => setChooserOpen(true)}
                   title="Adicionar evento"
                 >
@@ -239,8 +239,8 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
           <div className="p-6 pt-4 flex-1">
             {!hasEvents ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
-                  <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
+                  <CalendarDays className="w-8 h-8 text-muted-foreground/70" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Nenhum evento nesta data</p>
                 <p className="text-xs text-muted-foreground/60 mt-0.5 mb-4">Datas com eventos ficam destacadas no calendário</p>
@@ -248,7 +248,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5"
+                    className="gap-1.5 border-border hover:bg-black hover:text-white"
                     onClick={() => setChooserOpen(true)}
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -265,8 +265,8 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                     onClick={() => onEventClick?.('receivable', inv.id)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <ArrowDownLeft className="w-4 h-4 text-primary" />
+                      <div className="w-10 h-10 rounded-xl bg-transparent flex items-center justify-center">
+                        <ArrowDownLeft className="w-5 h-5 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{inv.name || 'Fatura'}</p>
@@ -283,8 +283,8 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                     onClick={() => onEventClick?.('expense', exp.id)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center">
-                        <ArrowUpRight className="w-4 h-4 text-destructive" />
+                      <div className="w-10 h-10 rounded-xl bg-transparent flex items-center justify-center">
+                        <ArrowUpRight className="w-5 h-5 text-destructive" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{exp.description}</p>
@@ -309,10 +309,10 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => handleChooseType('receivable')}
-              className="flex flex-col items-center gap-3 p-5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer group"
+              className="flex flex-col items-center gap-3 p-5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all cursor-pointer group dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowDownLeft className="w-6 h-6 text-primary" />
+              <div className="w-14 h-14 rounded-xl bg-transparent flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ArrowDownLeft className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="text-center">
                 <p className="text-sm font-bold text-foreground">Recebimento</p>
@@ -323,8 +323,8 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
               onClick={() => handleChooseType('expense')}
               className="flex flex-col items-center gap-3 p-5 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/30 transition-all cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowUpRight className="w-6 h-6 text-destructive" />
+              <div className="w-14 h-14 rounded-xl bg-transparent flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ArrowUpRight className="w-8 h-8 text-destructive" />
               </div>
               <div className="text-center">
                 <p className="text-sm font-bold text-foreground">Despesa</p>

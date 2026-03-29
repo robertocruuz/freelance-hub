@@ -80,7 +80,7 @@ export default function ChatInput({ onSendMessage }: any) {
           type="button" 
           variant="ghost" 
           size="icon" 
-          className="shrink-0 text-muted-foreground hover:bg-muted"
+          className="h-12 w-12 rounded-[8px] shrink-0 text-muted-foreground hover:bg-muted"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
           title={isPt ? 'Anexar arquivo' : 'Attach file'}
@@ -93,7 +93,7 @@ export default function ChatInput({ onSendMessage }: any) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={isPt ? 'Digite uma mensagem...' : 'Type a message...'}
-            className="w-full pl-4 pr-10 py-6 bg-background/50 border-input rounded-2xl shadow-sm focus-visible:ring-1"
+            className="w-full pl-4 pr-10 py-6 bg-background/50 border-input rounded-[8px] shadow-sm focus-visible:ring-1"
           />
           <div className="absolute right-1 top-1/2 -translate-y-1/2">
             <Popover>
@@ -126,7 +126,7 @@ export default function ChatInput({ onSendMessage }: any) {
         <Button 
           type="submit" 
           size="icon" 
-          className="h-12 w-12 rounded-2xl shrink-0 shadow-sm"
+          className="h-12 w-12 rounded-[8px] shrink-0 shadow-sm"
           disabled={!message.trim() && !uploading}
         >
           <Send className="h-5 w-5" />

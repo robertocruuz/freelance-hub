@@ -23,13 +23,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -133,7 +126,7 @@ export default function ReceivablesTab({
   const [organization, setOrganization] = useState<any>(null);
   const [projects, setProjects] = useState<ProjectWithItems[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importExpanded, setImportExpanded] = useState(false);
 
   // New item input
   const [newDesc, setNewDesc] = useState('');
@@ -196,7 +189,7 @@ export default function ReceivablesTab({
     setTaxes(0);
     setDiscount(project.discount || 0);
     setCreating(true);
-    setImportDialogOpen(false);
+    setImportExpanded(false);
     toast.success(`Projeto "${project.name}" importado!`);
   };
 
@@ -462,18 +455,38 @@ export default function ReceivablesTab({
       {/* Action Buttons (Absolute Top Right) */}
       {!creating && (
         <div className="absolute -top-12 right-0 flex items-center gap-2 z-10">
-          <Dialog open={importDialogOpen} onOpenChange={(open) => { setImportDialogOpen(open); if (open) loadProjects(); }}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 rounded-xl bg-background hover:bg-muted">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-xl bg-background hover:bg-muted"
+            onClick={async () => {
+              const next = !importExpanded;
+              setImportExpanded(next);
+              if (next) await loadProjects();
+            }}
+          >
                 <FolderKanban className="w-4 h-4" />
                 <span className="hidden sm:inline">Importar</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              {/* Form Import content kept exactly the same */}
-              <DialogHeader>
-                <DialogTitle>Importar de Projeto</DialogTitle>
-              </DialogHeader>
+          </Button>
+          <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5 rounded-xl font-semibold shadow-sm">
+            <Plus className="w-4 h-4" /> Nova Fatura
+          </Button>
+        </div>
+      )}
+
+      {/* Main Card Content */}
+      <div className="border border-border bg-card rounded-2xl p-4 sm:p-6 flex-1 flex flex-col">
+        <div className="space-y-5">
+          {importExpanded && !creating && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Importar de Projeto</h2>
+                </div>
+                <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => setImportExpanded(false)}>
+                  Cancelar
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Selecione um projeto para importar os dados na fatura.
               </p>
@@ -525,18 +538,8 @@ export default function ReceivablesTab({
                   })}
                 </div>
               )}
-            </DialogContent>
-          </Dialog>
-
-          <Button onClick={() => setCreating(true)} size="sm" className="gap-1.5 rounded-xl font-semibold shadow-sm">
-            <Plus className="w-4 h-4" /> Nova Fatura
-          </Button>
-        </div>
-      )}
-
-      {/* Main Card Content */}
-      <div className="border border-border bg-card rounded-2xl p-4 sm:p-6 flex-1 flex flex-col">
-        <div className="space-y-5">
+            </div>
+          )}
           {/* Near due warning */}
           {nearDue.length > 0 && !creating && (
             <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-4" role="alert">
@@ -563,7 +566,7 @@ export default function ReceivablesTab({
 
       {/* Create/Edit Form */}
       {creating && (
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-5 animate-fade-in">
+        <div className="space-y-5 animate-fade-in">
           {/* Name */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Nome da Fatura</label>
@@ -571,7 +574,7 @@ export default function ReceivablesTab({
               placeholder="Ex: Projeto Website"
               value={invoiceName}
               onChange={(e) => setInvoiceName(e.target.value)}
-              className="rounded-xl"
+              className="rounded-[8px]"
             />
           </div>
 
@@ -587,7 +590,7 @@ export default function ReceivablesTab({
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      "w-full h-10 px-3 rounded-[8px] bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
                       !dueDate && "text-muted-foreground"
                     )}
                   >
@@ -628,7 +631,7 @@ export default function ReceivablesTab({
                 placeholder="Especifique a forma de pagamento..."
                 value={otherPaymentMethod}
                 onChange={(e) => setOtherPaymentMethod(e.target.value)}
-                className="rounded-xl mt-1"
+                className="rounded-[8px] mt-1"
               />
             )}
           </div>
@@ -644,7 +647,7 @@ export default function ReceivablesTab({
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                  className="rounded-xl"
+                  className="rounded-[8px]"
                 />
               </div>
               <div className="space-y-1">
@@ -655,7 +658,7 @@ export default function ReceivablesTab({
                   min={1}
                   value={newQty}
                   onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
-                  className="rounded-xl text-center"
+                  className="rounded-[8px] text-center"
                 />
               </div>
               <div className="space-y-1">
@@ -668,7 +671,7 @@ export default function ReceivablesTab({
                   value={newPrice || ''}
                   onChange={(e) => setNewPrice(+e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                  className="rounded-xl text-right"
+                  className="rounded-[8px] text-right"
                 />
               </div>
               <Button onClick={addItem} size="sm" className="rounded-xl h-10">
@@ -751,7 +754,7 @@ export default function ReceivablesTab({
                 value={taxes || ''}
                 onChange={(e) => setTaxes(Math.min(100, Math.max(0, +e.target.value)))}
                 placeholder="0"
-                className="w-40 rounded-xl"
+                className="w-40 rounded-[8px]"
               />
             </div>
             <div className="space-y-1.5">
@@ -764,7 +767,7 @@ export default function ReceivablesTab({
                 value={discount || ''}
                 onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
                 placeholder="0"
-                className="w-40 rounded-xl"
+                className="w-40 rounded-[8px]"
               />
             </div>
           </div>
@@ -776,7 +779,7 @@ export default function ReceivablesTab({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Observações sobre a fatura..."
-              className="rounded-xl"
+              className="rounded-[8px]"
             />
           </div>
 
@@ -803,7 +806,7 @@ export default function ReceivablesTab({
             <div className="ml-8">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Duração da recorrência</Label>
               <Select value={recurringMonths} onValueChange={setRecurringMonths}>
-                <SelectTrigger className="mt-1.5 w-48"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="mt-1.5 w-48 rounded-[8px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="3">3 meses</SelectItem>
                   <SelectItem value="6">6 meses</SelectItem>
@@ -851,10 +854,10 @@ export default function ReceivablesTab({
       )}
 
       {/* Invoices List */}
-      {monthInvoices.length === 0 && !creating ? (
+      {monthInvoices.length === 0 && !creating && !importExpanded ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
-            <Receipt className="w-8 h-8 opacity-50" />
+          <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
+            <Receipt className="w-8 h-8 text-muted-foreground/70" />
           </div>
           <p className="text-sm font-medium">Nenhuma fatura criada ainda</p>
           <p className="text-xs mt-1 text-muted-foreground/70">Clique em "Nova Fatura" para começar.</p>

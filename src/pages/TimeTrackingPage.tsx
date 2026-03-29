@@ -118,7 +118,7 @@ const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente'
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`flex items-center justify-between gap-1 rounded-lg border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring ${fullWidth ? 'w-full px-4 py-2 bg-muted text-sm' : 'px-2 py-1.5 bg-transparent'}`}
+        className={`flex items-center justify-between gap-1 rounded-[8px] border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring ${fullWidth ? 'w-full px-4 py-2 bg-background text-sm' : 'px-2 py-1.5 bg-transparent'}`}
       >
         <span className="flex items-center gap-1.5 min-w-0 truncate">
           {selected ? (
@@ -133,7 +133,7 @@ const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente'
         <ChevronDown className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 w-full min-w-[180px] max-h-52 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+        <div className="absolute z-50 mt-1 w-full min-w-[180px] max-h-52 overflow-y-auto rounded-[8px] border border-border bg-popover shadow-lg">
           <button type="button" onClick={() => { onChange(''); setOpen(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-muted transition-colors ${!value ? 'bg-muted font-medium' : ''}`}>
             <span className="text-muted-foreground">{placeholder}</span>
           </button>
@@ -898,7 +898,7 @@ const TimeTrackingPage = () => {
           {showSuggestions && filteredSuggestions.length > 0 && (
             <div
               ref={suggestionsRef}
-              className="absolute left-0 top-full mt-1 w-full max-w-md z-50 rounded-lg border border-border bg-popover shadow-lg overflow-hidden"
+              className="absolute left-0 top-full mt-1 w-full max-w-md z-50 rounded-[12px] border border-border bg-popover shadow-lg overflow-hidden"
             >
               {!description.trim() && (
                 <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/50">
@@ -1398,10 +1398,12 @@ const TimeTrackingPage = () => {
         {viewMode === 'list' && (
           <div className="h-full overflow-y-auto scrollbar-thin p-4 space-y-1.5">
             {filteredEntries.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm font-medium">{t.noEntries}</p>
-                <p className="text-xs mt-1">Inicie o timer para registrar seu tempo</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center bg-card/30">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                  <Clock className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-1">{t.noEntries}</h3>
+                <p className="max-w-sm text-muted-foreground">Inicie o timer para registrar seu tempo</p>
               </div>
             ) : (
               filteredEntries.map((entry) => (
@@ -2275,7 +2277,7 @@ const TimeTrackingPage = () => {
 
       {/* Edit dialog */}
       <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
-        <DialogContent>
+        <DialogContent className="rounded-[12px]">
           <DialogHeader>
             <DialogTitle>{t.editEntry}</DialogTitle>
           </DialogHeader>
@@ -2284,14 +2286,14 @@ const TimeTrackingPage = () => {
               placeholder={t.description}
               value={editDesc}
               onChange={(e) => setEditDesc(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <CompactClientSelect clients={clients} value={editClientId} onChange={(v) => { setEditClientId(v); setEditProjectId(''); setEditTaskId(''); }} placeholder="Cliente" fullWidth />
             <select
               value={editProjectId}
               onChange={(e) => { setEditProjectId(e.target.value); setEditTaskId(''); }}
               disabled={!editClientId}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">{editClientId ? t.project : 'Selecione um cliente primeiro'}</option>
               {editFilteredProjects.map((p) => (
@@ -2302,7 +2304,7 @@ const TimeTrackingPage = () => {
               value={editTaskId}
               onChange={(e) => setEditTaskId(e.target.value)}
               disabled={!editProjectId}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">{editProjectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
               {editFilteredTasks.map((t) => (
@@ -2316,7 +2318,7 @@ const TimeTrackingPage = () => {
                   type="time"
                   value={editStartTime}
                   onChange={(e) => setEditStartTime(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                   className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
@@ -2325,7 +2327,7 @@ const TimeTrackingPage = () => {
                   type="time"
                   value={editEndTime}
                   onChange={(e) => setEditEndTime(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                   className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
@@ -2337,13 +2339,13 @@ const TimeTrackingPage = () => {
                     confirmDeleteEntry(editingEntry.id);
                   }
                 }}
-                className="py-2 px-3 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 font-medium flex items-center gap-1.5 transition-colors"
+                className="py-2 px-3 rounded-[8px] bg-destructive/10 text-destructive hover:bg-destructive/20 font-medium flex items-center gap-1.5 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 {t.deleteEntry}
               </button>
-              <button onClick={() => setEditingEntry(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-              <button onClick={saveEdit} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+              <button onClick={() => setEditingEntry(null)} className="flex-1 py-2 rounded-[8px] bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
+              <button onClick={saveEdit} className="flex-1 py-2 rounded-[8px] bg-primary text-primary-foreground font-medium">{t.save}</button>
             </div>
           </div>
         </DialogContent>
@@ -2368,7 +2370,7 @@ const TimeTrackingPage = () => {
 
       {/* Create entry dialog */}
       <Dialog open={!!createModalData} onOpenChange={() => setCreateModalData(null)}>
-        <DialogContent>
+        <DialogContent className="rounded-[12px]">
           <DialogHeader>
             <DialogTitle>Novo registro de tempo</DialogTitle>
           </DialogHeader>
@@ -2388,7 +2390,7 @@ const TimeTrackingPage = () => {
               placeholder="No que você estava trabalhando?"
               value={createDesc}
               onChange={(e) => setCreateDesc(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               autoFocus
             />
             <CompactClientSelect clients={clients} value={createClientId} onChange={(v) => { setCreateClientId(v); setCreateProjectId(''); setCreateTaskId(''); }} placeholder="Cliente" fullWidth />
@@ -2396,7 +2398,7 @@ const TimeTrackingPage = () => {
               value={createProjectId}
               onChange={(e) => { setCreateProjectId(e.target.value); setCreateTaskId(''); }}
               disabled={!createClientId}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+               className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">{createClientId ? t.project : 'Selecione um cliente primeiro'}</option>
               {createFilteredProjects.map((p) => (
@@ -2407,7 +2409,7 @@ const TimeTrackingPage = () => {
               value={createTaskId}
               onChange={(e) => setCreateTaskId(e.target.value)}
               disabled={!createProjectId}
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+               className="w-full px-4 py-2 rounded-[8px] bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">{createProjectId ? 'Selecione a tarefa' : 'Selecione um projeto primeiro'}</option>
               {createFilteredTasks.map((t) => (
@@ -2415,8 +2417,8 @@ const TimeTrackingPage = () => {
               ))}
             </select>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setCreateModalData(null)} className="flex-1 py-2 rounded-lg bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
-              <button onClick={saveCreate} className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-medium">{t.save}</button>
+              <button onClick={() => setCreateModalData(null)} className="flex-1 py-2 rounded-[8px] bg-secondary text-secondary-foreground font-medium">{t.cancel}</button>
+              <button onClick={saveCreate} className="flex-1 py-2 rounded-[8px] bg-primary text-primary-foreground font-medium">{t.save}</button>
             </div>
           </div>
         </DialogContent>

@@ -124,11 +124,24 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
   const tColor = clientColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-foreground';
   const mColor = clientColor ? (contrast === 'light' ? 'text-white' : 'text-slate-900') : 'text-muted-foreground';
   const btnColor = clientColor ? (contrast === 'light' ? 'text-white hover:bg-white/20' : 'text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:bg-muted';
+  const checkboxBorderColor = clientColor
+    ? (contrast === 'light' ? 'rgba(255,255,255,0.55)' : 'rgba(15,23,42,0.35)')
+    : undefined;
   const cbClass = clientColor
     ? (contrast === 'light'
-       ? 'border-white/40 data-[state=checked]:bg-white data-[state=checked]:text-slate-900'
-       : 'border-slate-900/40 data-[state=checked]:bg-slate-900 data-[state=checked]:text-white')
+       ? 'data-[state=unchecked]:border-white/50 data-[state=unchecked]:bg-white/15 text-white data-[state=checked]:border-white data-[state=checked]:bg-white data-[state=checked]:text-[var(--task-checkbox-color)]'
+       : 'data-[state=unchecked]:border-[var(--task-checkbox-color)] data-[state=unchecked]:bg-[var(--task-checkbox-color)] data-[state=unchecked]:text-white dark:data-[state=unchecked]:border-[var(--task-checkbox-color)] dark:data-[state=unchecked]:bg-[var(--task-checkbox-color)] dark:data-[state=unchecked]:text-white data-[state=checked]:border-white data-[state=checked]:bg-white data-[state=checked]:text-[var(--task-checkbox-color)]')
     : 'border-primary/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground';
+  const checkboxStyle = clientColor
+    ? ({
+        ['--task-checkbox-color' as string]: clientColor,
+        backgroundColor: isCompleted
+          ? (contrast === 'light' ? '#ffffff' : '#0f0f10')
+          : clientColor,
+        borderColor: checkboxBorderColor,
+        color: isCompleted ? clientColor : '#ffffff',
+      } as React.CSSProperties)
+    : undefined;
 
   return (
     <>
@@ -149,7 +162,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         )}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <Checkbox
               checked={isCompleted}
               onCheckedChange={(checked) => {
@@ -157,11 +170,12 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
                   onToggleComplete(task.id, !!checked);
                 }
               }}
+              style={checkboxStyle}
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className={cn("mt-0.5 shrink-0 rounded-full", cbClass)}
+              className={cn("shrink-0 rounded-[8px]", cbClass)}
             />
-            <h4 className={cn("text-sm font-semibold truncate flex-1", isCompleted ? "line-through opacity-60" : "", tColor)}>
+            <h4 className={cn("flex-1 truncate pt-0.5 text-sm font-semibold leading-none", isCompleted ? "line-through opacity-60" : "", tColor)}>
               {task.title}
             </h4>
           </div>

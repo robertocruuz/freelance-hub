@@ -75,6 +75,8 @@ const statusColors: Record<string, string> = {
   rejected: 'bg-destructive/10 text-destructive',
 };
 
+const normalizeBudgetStatus = (status: string | null | undefined) => (status || 'draft').toLowerCase();
+
 const getContrastYIQ = (hexcolor: string) => {
   if (!hexcolor) return 'dark';
   const r = parseInt(hexcolor.substring(1, 3), 16);
@@ -179,6 +181,16 @@ const BudgetsPage = () => {
       toast.info('Orçamento pré-preenchido a partir da tarefa!');
     }
   }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const budgetId = searchParams.get('budget');
+    if (!budgetId || budgets.length === 0) return;
+
+    const targetBudget = budgets.find((budget) => budget.id === budgetId);
+    if (!targetBudget) return;
+
+    setExpandedBudget(budgetId);
+  }, [searchParams, budgets]);
 
   const addItem = () => {
     if (!newDesc.trim()) return toast.error('Informe a descrição do item.');
@@ -364,7 +376,10 @@ const BudgetsPage = () => {
     loadBudgets();
   };
 
-  const statusLabel = (s: string) => (t as any)[s] || s;
+  const statusLabel = (s: string) => {
+    const normalized = normalizeBudgetStatus(s);
+    return (t as any)[normalized] || normalized;
+  };
 
   const exportBudgetPdf = async (b: Budget) => {
     const client = clients.find(c => c.id === b.client_id) || null;
@@ -443,7 +458,7 @@ const BudgetsPage = () => {
   const clientColorFn = (id: string | null) => (clients.find(c => c.id === id) as any)?.color || null;
 
   const filteredBudgets = budgets.filter(b => {
-    const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+    const matchStatus = statusFilter === 'all' || normalizeBudgetStatus(b.status) === statusFilter;
     const matchClient = filterClientId === 'all' || b.client_id === filterClientId;
     const matchSearch = !search || 
       (b.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -471,7 +486,7 @@ const BudgetsPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className={cn(
-                  "pl-9 pr-8 rounded-full transition-all duration-300 ease-out h-full border bg-background border-border  focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
+                  "pl-9 pr-8 rounded-[10px] transition-all duration-300 ease-out h-full border bg-background border-border  focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
                   search 
                     ? "w-[180px] sm:w-[250px]" 
                     : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
@@ -489,7 +504,7 @@ const BudgetsPage = () => {
             
             <Button
               onClick={() => setCreating(true)}
-              className="gap-2 rounded-full font-semibold  shrink-0 h-10 px-4"
+              className="gap-2 rounded-[10px] font-semibold  shrink-0 h-10 px-4"
             >
               <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t.newBudget}</span>
             </Button>
@@ -506,7 +521,7 @@ const BudgetsPage = () => {
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
+                  'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border',
                   statusFilter === s
                     ? 'bg-primary text-primary-foreground border-primary '
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
@@ -519,7 +534,7 @@ const BudgetsPage = () => {
 
           <div className="w-full sm:w-[220px]">
             <Select value={filterClientId} onValueChange={setFilterClientId}>
-              <SelectTrigger className="h-9 px-3 text-xs rounded-xl font-medium border-border/50 bg-card/60 ">
+              <SelectTrigger className="h-9 px-3 text-xs rounded-[8px] font-medium border-border/50 bg-card/60 ">
                 <SelectValue placeholder="Filtrar por cliente" />
               </SelectTrigger>
               <SelectContent>
@@ -535,7 +550,7 @@ const BudgetsPage = () => {
 
       {/* Create/Edit Form */}
       {isFormOpen && (
-        <div className="max-w-4xl rounded-2xl border border-border bg-card p-6 space-y-5  animate-fade-in mx-auto sm:mx-0">
+        <div className="max-w-4xl rounded-[8px] border border-border bg-card p-6 space-y-5  animate-fade-in mx-auto sm:mx-0">
           <h2 className="text-lg font-bold text-foreground">
             {editingId ? 'Editar Orçamento' : t.newBudget}
           </h2>
@@ -547,7 +562,7 @@ const BudgetsPage = () => {
               placeholder="Ex: Projeto Website Corporativo"
               value={budgetName}
               onChange={(e) => setBudgetName(e.target.value)}
-              className="rounded-xl"
+              className="rounded-[8px]"
             />
           </div>
 
@@ -565,7 +580,7 @@ const BudgetsPage = () => {
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      "w-full h-10 px-3 rounded-[8px] bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
                       !budgetDate && "text-muted-foreground"
                     )}
                   >
@@ -584,7 +599,7 @@ const BudgetsPage = () => {
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      "w-full h-10 px-3 rounded-[8px] bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
                       !validityDate && "text-muted-foreground"
                     )}
                   >
@@ -603,7 +618,7 @@ const BudgetsPage = () => {
                 <PopoverTrigger asChild>
                   <button
                     className={cn(
-                      "w-full h-10 px-3 rounded-xl bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
+                      "w-full h-10 px-3 rounded-[8px] bg-background border border-input text-sm flex items-center gap-2 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors",
                       !deliveryDate && "text-muted-foreground"
                     )}
                   >
@@ -622,7 +637,7 @@ const BudgetsPage = () => {
                 placeholder="Ex: A combinar, 15 dias"
                 value={deliveryText}
                 onChange={(e) => setDeliveryText(e.target.value)}
-                className="rounded-xl h-10 text-sm"
+                className="rounded-[8px] h-10 text-sm"
               />
             </div>
           </div>
@@ -638,7 +653,7 @@ const BudgetsPage = () => {
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                  className="rounded-lg h-9 text-sm"
+                  className="rounded-[8px] h-9 text-sm"
                 />
               </div>
               <div className="space-y-1">
@@ -648,7 +663,7 @@ const BudgetsPage = () => {
                   min={1}
                   value={newQty}
                   onChange={(e) => setNewQty(Math.max(1, +e.target.value))}
-                  className="rounded-lg h-9 text-sm text-center"
+                  className="rounded-[8px] h-9 text-sm text-center"
                 />
               </div>
               <div className="space-y-1">
@@ -660,10 +675,10 @@ const BudgetsPage = () => {
                   value={newPrice || ''}
                   onChange={(e) => setNewPrice(+e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addItem()}
-                  className="rounded-lg h-9 text-sm text-right"
+                  className="rounded-[8px] h-9 text-sm text-right"
                 />
               </div>
-              <Button size="sm" className="h-9 rounded-lg text-xs" onClick={addItem}>
+              <Button size="sm" className="h-9 rounded-[8px] text-xs" onClick={addItem}>
                 Adicionar
               </Button>
             </div>
@@ -671,7 +686,7 @@ const BudgetsPage = () => {
 
           {/* Items table */}
           {items.length > 0 && (
-            <div className="rounded-xl border border-border overflow-hidden">
+            <div className="rounded-[8px] border border-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50">
@@ -688,21 +703,21 @@ const BudgetsPage = () => {
                       {editingItemIdx === idx ? (
                         <>
                           <td className="py-2 px-3">
-                            <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="h-8 rounded-lg text-sm" />
+                            <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="h-8 rounded-[8px] text-sm" />
                           </td>
                           <td className="py-2 px-3">
-                            <Input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className="h-8 rounded-lg text-sm text-center" />
+                            <Input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className="h-8 rounded-[8px] text-sm text-center" />
                           </td>
                           <td className="py-2 px-3">
-                            <Input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className="h-8 rounded-lg text-sm text-right" />
+                            <Input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className="h-8 rounded-[8px] text-sm text-right" />
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-foreground tabular-nums">
                             {formatCurrency(editQty * editPrice)}
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center justify-center gap-1.5">
-                              <Button size="sm" className="h-7 rounded-lg text-xs" onClick={saveEditItem}>Salvar</Button>
-                              <Button size="sm" variant="ghost" className="h-7 rounded-lg text-xs" onClick={cancelEditItem}>Cancelar</Button>
+                              <Button size="sm" className="h-7 rounded-[8px] text-xs" onClick={saveEditItem}>Salvar</Button>
+                              <Button size="sm" variant="ghost" className="h-7 rounded-[8px] text-xs" onClick={cancelEditItem}>Cancelar</Button>
                             </div>
                           </td>
                         </>
@@ -714,10 +729,10 @@ const BudgetsPage = () => {
                           <td className="py-2.5 px-3 text-right font-medium text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</td>
                           <td className="py-2.5 px-3">
                             <div className="flex items-center justify-center gap-1">
-                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg" onClick={() => startEditItem(idx)}>
+                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-[8px]" onClick={() => startEditItem(idx)}>
                                 <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-lg hover:bg-destructive/10" onClick={() => removeItem(idx)}>
+                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-[8px] hover:bg-destructive/10" onClick={() => removeItem(idx)}>
                                 <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </Button>
                             </div>
@@ -742,7 +757,7 @@ const BudgetsPage = () => {
                 step={0.1}
                 value={discount || ''}
                 onChange={(e) => setDiscount(Math.min(100, Math.max(0, +e.target.value)))}
-                className="w-40 rounded-xl"
+                className="w-40 rounded-[8px]"
               />
             </div>
           </div>
@@ -754,7 +769,7 @@ const BudgetsPage = () => {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Observações sobre o orçamento..."
-              className="w-full px-3 py-2 rounded-xl bg-background border border-input text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-y text-foreground"
+              className="w-full px-3 py-2 rounded-[8px] bg-background border border-input text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-y text-foreground"
             />
           </div>
 
@@ -775,10 +790,10 @@ const BudgetsPage = () => {
               <span className="text-primary tabular-nums">{formatCurrency(total)}</span>
             </div>
             <div className="flex gap-2 pt-2 justify-end">
-              <Button variant="ghost" onClick={resetForm} className="rounded-xl font-semibold">
+              <Button variant="ghost" onClick={resetForm} className="rounded-[8px] font-semibold">
                 {t.cancel}
               </Button>
-              <Button onClick={saveBudget} className="rounded-xl font-semibold">
+              <Button onClick={saveBudget} className="rounded-[8px] font-semibold">
                 {t.save}
               </Button>
             </div>
@@ -788,12 +803,12 @@ const BudgetsPage = () => {
 
       {/* Budget list */}
       {!isFormOpen && filteredBudgets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <div className="w-16 h-16 rounded-2xl bg-muted/80 flex items-center justify-center mb-4">
-            <FileText className="w-8 h-8 opacity-50" />
+        <div className="flex flex-col items-center justify-center py-20 text-center bg-card/30">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <FileText className="w-8 h-8 text-primary" />
           </div>
-          <p className="text-sm font-medium">Nenhum orçamento encontrado.</p>
-          <p className="text-xs mt-1 text-muted-foreground/70">
+          <h3 className="text-lg font-medium text-foreground mb-1">Nenhum orçamento encontrado.</h3>
+          <p className="max-w-sm text-muted-foreground">
             {search || statusFilter !== 'all' ? 'Tente alterar os filtros de busca.' : 'Crie um orçamento para começar.'}
           </p>
         </div>
@@ -908,8 +923,9 @@ const isExpanded = expandedBudget === b.id;
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button className={cn(
-                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 z-20 relative",
-                                    !color ? `focus-visible:ring-ring ${statusColors[b.status]}` : '',
+                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 z-20 relative",
+                                    statusColors[normalizeBudgetStatus(b.status)],
+                                    !color && 'focus-visible:ring-ring',
                                     stColorHover,
                                     stColorActive,
                                     color && (isLight ? 'focus-visible:ring-white/50' : 'focus-visible:ring-slate-900/50')
@@ -918,12 +934,12 @@ const isExpanded = expandedBudget === b.id;
                                     <ChevronDown className="w-3 h-3" />
                                   </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="rounded-[12px]">
                                   {statuses.map((s) => (
                                     <DropdownMenuItem
                                       key={s}
                                       onClick={() => changeStatus(b.id, s)}
-                                      className={cn("gap-2", b.status === s && 'font-bold')}
+                                      className={cn("gap-2 rounded-[8px]", b.status === s && 'font-bold')}
                                     >
                                       <span className={cn("w-2 h-2 rounded-full shrink-0", statusColors[s])} />
                                       {statusLabel(s)}
@@ -934,9 +950,6 @@ const isExpanded = expandedBudget === b.id;
                               <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
                                 <Download className="w-3.5 h-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => createProjectFromBudget(b)} title="Criar projeto a partir do orçamento">
-                                <FolderInput className="w-3.5 h-3.5" />
-                              </Button>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)}>
@@ -944,6 +957,9 @@ const isExpanded = expandedBudget === b.id;
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => createProjectFromBudget(b)}>
+                                    <FolderInput className="w-4 h-4 mr-2" /> Criar projeto
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => startEditing(b)}>
                                     <Pencil className="w-4 h-4 mr-2" /> Editar
                                   </DropdownMenuItem>

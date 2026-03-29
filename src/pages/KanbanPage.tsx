@@ -154,6 +154,24 @@ const KanbanPage = () => {
     }
   }, [loading, allTasks, allColumns, location.state, initialTaskHandled]);
 
+  // Handle specific task routing from query string
+  useEffect(() => {
+    const taskId = searchParams.get('task');
+    if (!taskId || loading || !allTasks || !allColumns || allTasks.length === 0) return;
+
+    const targetTask = allTasks.find((t: any) => t.id === taskId);
+    if (!targetTask || !targetTask.column_id) return;
+
+    const targetCol = allColumns.find((c: any) => c.id === targetTask.column_id);
+    if (!targetCol) return;
+
+    if (targetCol.board_id && targetCol.board_id !== activeBoardId) {
+      setActiveBoardId(targetCol.board_id);
+    }
+
+    setSelectedTask(targetTask);
+  }, [searchParams, loading, allTasks, allColumns, activeBoardId]);
+
   // Load profiles for shared board owners
   useEffect(() => {
     if (!user || !boards.length) return;
@@ -620,12 +638,12 @@ const KanbanPage = () => {
               <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
             </div>
 
-            <TabsList className="bg-card shadow-sm border border-border">
-              <TabsTrigger value="my-boards" className="gap-1.5 text-xs">
+            <TabsList className="bg-card shadow-sm border border-border p-1 rounded-[12px]">
+              <TabsTrigger value="my-boards" className="gap-1.5 text-xs rounded-[8px]">
                 <Kanban className="w-3.5 h-3.5" />
                 Meus Painéis
               </TabsTrigger>
-              <TabsTrigger value="shared" className="gap-1.5 text-xs">
+              <TabsTrigger value="shared" className="gap-1.5 text-xs rounded-[8px]">
                 <Share2 className="w-3.5 h-3.5" />
                 Compartilhadas comigo
               </TabsTrigger>
@@ -851,7 +869,7 @@ const KanbanPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar tarefas..."
-            className="pl-9 pr-8 h-9 text-sm bg-card border border-border shadow-sm"
+            className="pl-9 pr-8 h-9 text-sm bg-card border border-border shadow-sm rounded-[8px]"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
@@ -864,7 +882,7 @@ const KanbanPage = () => {
           variant={showFilters || activeFilterCount > 0 ? "default" : "outline"}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-9 gap-1.5 text-xs transition-all duration-200 ${showFilters || activeFilterCount > 0 ? 'shadow-md shadow-primary/20 text-white' : 'bg-card border-border shadow-sm text-muted-foreground hover:text-foreground dynamic-board-hover'}`}
+          className={`h-9 gap-1.5 text-xs transition-all duration-200 rounded-[8px] ${showFilters || activeFilterCount > 0 ? 'shadow-md shadow-primary/20 text-white' : 'bg-card border-border shadow-sm text-muted-foreground hover:text-foreground dynamic-board-hover'}`}
           style={showFilters || activeFilterCount > 0 && currentBoardColor ? { backgroundColor: currentBoardColor, borderColor: currentBoardColor } : undefined}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -939,16 +957,16 @@ const KanbanPage = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-1 bg-secondary rounded-xl p-0.5 ml-auto">
+        <div className="flex items-center gap-1 bg-secondary rounded-[8px] p-0.5 ml-auto">
           <button
             onClick={() => setView('kanban')}
-            className={`p-1.5 rounded-lg transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            className={`p-1.5 rounded-[8px] transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setView('list')}
-            className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            className={`p-1.5 rounded-[8px] transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
           >
             <List className="w-4 h-4" />
           </button>
