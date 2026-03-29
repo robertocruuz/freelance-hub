@@ -7,6 +7,16 @@ import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -246,6 +256,7 @@ const ClientsPage = () => {
   const [responsible, setResponsible] = useState('');
   const [color, setColor] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [deleteConfirmClient, setDeleteConfirmClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
@@ -333,9 +344,39 @@ const ClientsPage = () => {
   };
 
   const deleteClient = async (id: string) => {
+    const [projectsRes, budgetsRes] = await Promise.all([
+      supabase.from('projects').select('id', { count: 'exact', head: true }).eq('client_id', id),
+      supabase.from('budgets').select('id', { count: 'exact', head: true }).eq('client_id', id),
+    ]);
+
+    if (projectsRes.error) {
+      toast.error(projectsRes.error.message);
+      return;
+    }
+
+    if (budgetsRes.error) {
+      toast.error(budgetsRes.error.message);
+      return;
+    }
+
+    const projectCount = projectsRes.count || 0;
+    const budgetCount = budgetsRes.count || 0;
+
+    if (projectCount > 0 || budgetCount > 0) {
+      const parts: string[] = [];
+      if (projectCount > 0) parts.push(`${projectCount} projeto${projectCount > 1 ? 's' : ''}`);
+      if (budgetCount > 0) parts.push(`${budgetCount} orçamento${budgetCount > 1 ? 's' : ''}`);
+
+      toast.error(`Não é possível excluir este cliente porque ele possui vínculo com ${parts.join(' e ')}.`);
+      return;
+    }
+
     const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) toast.error(error.message);
-    else loadClients();
+    else {
+      toast.success('Cliente excluído com sucesso.');
+      loadClients();
+    }
   };
 
   const loadClientDetails = useCallback(async (clientId: string) => {
@@ -932,7 +973,7 @@ const ClientsPage = () => {
                       <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnColor)} onClick={() => openEdit(c)}>
                         <Pencil className="w-3 h-3" />
                       </Button>
-                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnDestructive)} onClick={() => deleteClient(c.id)}>
+                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnDestructive)} onClick={() => setDeleteConfirmClient(c)}>
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
@@ -969,6 +1010,31 @@ const ClientsPage = () => {
         color={color} setColor={setColor}
         onSave={handleSave}
       />
+
+      <AlertDialog open={!!deleteConfirmClient} onOpenChange={(open) => { if (!open) setDeleteConfirmClient(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirmClient) {
+                  deleteClient(deleteConfirmClient.id);
+                  setDeleteConfirmClient(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

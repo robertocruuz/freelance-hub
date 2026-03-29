@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Plus, Trash2, Receipt, Download, FolderKanban, Pencil, CalendarIcon, ChevronDown, MoreVertical, AlertTriangle, Repeat } from 'lucide-react';
 import { format, isPast, isToday, addDays, isBefore, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, getContrastYIQ } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -909,50 +909,48 @@ export default function ReceivablesTab({
               return sortedKeys.map(key => {
                 const color = key !== '__no_client__' ? clientColorFn(key) : null;
                 return (
-                  <div key={key} className="space-y-2.5">
-                    {/* Client group header */}
-                    <div className="flex items-center gap-2 px-1">
-                      {color && (
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                      )}
-                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                        {key === '__no_client__' ? 'Sem cliente' : clientNameFn(key)}
-                      </h3>
-                      <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded-md">
-                        {grouped[key].length}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
+                    <div key={key} className="space-y-2">
                       {grouped[key].map((inv) => {
                         const isOverdue = inv.status === 'overdue';
+                        const contrast = color ? getContrastYIQ(color) : 'dark';
+                        const isLight = contrast === 'light';
+                        const hoverText = color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
+                        const hoverMuted = color ? (isLight ? 'group-hover:text-white/85' : 'group-hover:text-slate-700') : '';
+                        const hoverIconButton = color ? (isLight ? 'group-hover:text-white group-hover:hover:bg-white/20' : 'group-hover:text-slate-900 group-hover:hover:bg-slate-900/10') : '';
                         return (
                           <div
                             key={inv.id}
-                            className={cn(
-                              "rounded-xl border overflow-hidden transition-all duration-200 group",
-                              isOverdue && "border-destructive/20"
+                          className={cn(
+                            "rounded-xl border overflow-hidden transition-all duration-200 group relative",
+                            isOverdue && "border-destructive/20"
+                          )}
+                          style={color
+                            ? { backgroundColor: `${color}08`, borderColor: isOverdue ? undefined : `${color}30` }
+                            : { backgroundColor: 'hsl(var(--card) / 0.4)', borderColor: isOverdue ? undefined : 'hsl(var(--border))' }
+                          }
+                        >
+                            {color && (
+                              <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                                style={{ backgroundColor: color }}
+                              />
                             )}
-                            style={color
-                              ? { backgroundColor: `${color}08`, borderColor: isOverdue ? undefined : `${color}30`, borderLeftWidth: '3px', borderLeftColor: color }
-                              : { backgroundColor: 'hsl(var(--card) / 0.4)', borderColor: isOverdue ? undefined : 'hsl(var(--border))' }
-                            }
-                          >
-                            <div className="flex items-center justify-between p-4">
+                            <div className="relative z-10 flex items-center justify-between p-4">
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-foreground truncate">
+                                <p className={cn("font-semibold text-foreground truncate", hoverText)}>
                                   {inv.name || inv.client_name || 'Sem nome'}
                                 </p>
                                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                   {inv.client_name && inv.name && (
-                                    <span className="text-xs text-muted-foreground">{inv.client_name}</span>
+                                    <span className={cn("text-xs text-muted-foreground", hoverMuted)}>{inv.client_name}</span>
                                   )}
                                   {inv.due_date && (
                                     <>
-                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className={cn("text-xs text-muted-foreground", hoverMuted)}>·</span>
                                       <span className={cn(
                                         "text-xs flex items-center gap-1",
-                                        isOverdue ? "text-destructive font-medium" : "text-muted-foreground"
+                                        isOverdue ? "text-destructive font-medium" : "text-muted-foreground",
+                                        !isOverdue && hoverMuted
                                       )}>
                                         <CalendarIcon className="w-3 h-3" />
                                         {format(new Date(inv.due_date + 'T12:00:00'), 'dd/MM/yyyy')}
@@ -961,57 +959,53 @@ export default function ReceivablesTab({
                                   )}
                                   {inv.is_recurring && (
                                     <>
-                                      <span className="text-xs text-muted-foreground">·</span>
+                                      <span className={cn("text-xs text-muted-foreground", hoverMuted)}>·</span>
                                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 gap-1 bg-primary/10 text-primary border-primary/30">
                                         <Repeat className="w-2.5 h-2.5" />
                                         {inv.recurring_months}x
                                       </Badge>
                                     </>
                                   )}
-                                  <span className="text-xs text-muted-foreground">·</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {inv.items.length} {inv.items.length === 1 ? 'item' : 'itens'}
-                                  </span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 ml-3 shrink-0" onClick={e => e.stopPropagation()}>
-                                <span className="font-semibold text-primary tabular-nums text-sm">
+                                <span className={cn("font-semibold text-primary tabular-nums text-sm", color && hoverText)}>
                                   {formatCurrency(inv.total)}
                                 </span>
                                 {/* Status dropdown */}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button className={cn(
-                                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                                      statusColors[inv.status]
-                                    )}>
+                                  <button className={cn(
+                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                                    statusColors[inv.status]
+                                  )}>
                                       {statusLabel(inv.status)}
                                       <ChevronDown className="w-3 h-3" />
                                     </button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    {['pending', 'paid', 'overdue'].map((s) => (
-                                      <DropdownMenuItem
-                                        key={s}
-                                        onClick={() => updateInvoiceStatus(inv.id, s)}
-                                        className={cn("gap-2", inv.status === s && "font-bold")}
-                                      >
-                                        <span className={cn("w-2 h-2 rounded-full shrink-0", statusDots[s])} />
-                                        {statusLabel(s)}
-                                      </DropdownMenuItem>
-                                    ))}
+                                <DropdownMenuContent align="end" className="rounded-[8px]">
+                                  {['pending', 'paid', 'overdue'].map((s) => (
+                                    <DropdownMenuItem
+                                      key={s}
+                                      onClick={() => updateInvoiceStatus(inv.id, s)}
+                                      className={cn("gap-2 rounded-[4px]", inv.status === s && "font-bold")}
+                                    >
+                                      <span className={cn("w-2 h-2 rounded-full shrink-0", statusDots[s])} />
+                                      {statusLabel(s)}
+                                    </DropdownMenuItem>
+                                  ))}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
-                                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => editInvoice(inv)} title="Editar">
-                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", hoverIconButton)} onClick={() => editInvoice(inv)} title="Editar">
+                                  <Pencil className={cn("w-3.5 h-3.5 text-muted-foreground", color && hoverText)} />
                                 </Button>
-                                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => exportInvoicePdf(inv)} title="Exportar PDF">
-                                  <Download className="w-3.5 h-3.5 text-muted-foreground" />
+                                <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", hoverIconButton)} onClick={() => exportInvoicePdf(inv)} title="Exportar PDF">
+                                  <Download className={cn("w-3.5 h-3.5 text-muted-foreground", color && hoverText)} />
                                 </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg">
-                                      <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg", hoverIconButton)}>
+                                      <MoreVertical className={cn("w-3.5 h-3.5 text-muted-foreground", color && hoverText)} />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
@@ -1049,7 +1043,6 @@ export default function ReceivablesTab({
                         );
                       })}
                     </div>
-                  </div>
                 );
               });
             })()}
@@ -1061,3 +1054,4 @@ export default function ReceivablesTab({
     </div>
   );
 }
+

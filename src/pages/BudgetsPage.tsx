@@ -372,7 +372,28 @@ const BudgetsPage = () => {
   };
 
   const deleteBudget = async (id: string) => {
-    await supabase.from('budgets').delete().eq('id', id);
+    const { count, error: linkError } = await supabase
+      .from('projects')
+      .select('id', { count: 'exact', head: true })
+      .eq('budget_id', id);
+
+    if (linkError) {
+      toast.error(linkError.message);
+      return;
+    }
+
+    if ((count || 0) > 0) {
+      toast.error(`Não é possível excluir este orçamento porque ele está vinculado a ${count} projeto${count! > 1 ? 's' : ''}.`);
+      return;
+    }
+
+    const { error } = await supabase.from('budgets').delete().eq('id', id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success('Orçamento excluído com sucesso.');
     loadBudgets();
   };
 
@@ -956,14 +977,14 @@ const isExpanded = expandedBudget === b.id;
                                     <MoreVertical className="w-3.5 h-3.5" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => createProjectFromBudget(b)}>
+                                <DropdownMenuContent align="end" className="rounded-[8px]">
+                                  <DropdownMenuItem onClick={() => createProjectFromBudget(b)} className="rounded-[4px]">
                                     <FolderInput className="w-4 h-4 mr-2" /> Criar projeto
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => startEditing(b)}>
+                                  <DropdownMenuItem onClick={() => startEditing(b)} className="rounded-[4px]">
                                     <Pencil className="w-4 h-4 mr-2" /> Editar
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="text-destructive focus:text-destructive">
+                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="rounded-[4px] text-destructive focus:text-destructive">
                                     <Trash2 className="w-4 h-4 mr-2" /> Excluir
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>

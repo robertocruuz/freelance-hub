@@ -137,7 +137,11 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
 
   // Filter by month first
   const monthExpenses = monthFilter
-    ? expenses.filter(e => (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter)))
+    ? expenses.filter(e =>
+        !e.due_date && !e.paid_date
+          ? true
+          : (e.due_date && e.due_date.startsWith(monthFilter)) || (e.paid_date && e.paid_date.startsWith(monthFilter))
+      )
     : expenses;
 
   // Auto-update overdue
@@ -311,7 +315,7 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-[160px] h-9 text-sm rounded-[8px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos ({expenses.length})</SelectItem>
+              <SelectItem value="all">Todos ({monthExpenses.length})</SelectItem>
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="paid">Pago</SelectItem>
               <SelectItem value="overdue">Atrasado</SelectItem>

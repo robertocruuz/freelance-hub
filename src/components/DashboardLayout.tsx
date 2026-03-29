@@ -92,7 +92,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
         <button
           {...triggerProps}
           className={cn(
-            'w-full flex items-center gap-3 rounded-lg transition-all duration-150 px-3 py-2.5',
+            'w-full flex items-center gap-3 rounded-[8px] transition-all duration-150 px-3 py-2.5',
             'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
           )}
         >
@@ -122,7 +122,7 @@ const TimerIndicator = ({ navigate, collapsed }: { navigate: (path: string) => v
       <button
         onClick={() => navigate('/dashboard/time')}
         className={cn(
-          'w-full flex items-center gap-2 rounded-lg bg-destructive/10 hover:bg-destructive/15 transition-all py-2.5',
+          'w-full flex items-center gap-2 rounded-[8px] bg-destructive/10 hover:bg-destructive/15 transition-all py-2.5',
           collapsed ? 'justify-center px-2' : 'px-3'
         )}
       >
@@ -240,7 +240,7 @@ const SidebarNav = ({
                   if (isMobile) setMobileOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-3 rounded-xl transition-all duration-150 hover:shadow-sm',
+                  'w-full flex items-center gap-3 rounded-[8px] transition-all duration-150 hover:shadow-sm',
                   collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
                   isFav && item.bgColor 
                     ? (active 
@@ -298,7 +298,7 @@ const SidebarNav = ({
             <button
               onClick={() => { navigate('/dashboard/settings'); if (isMobile) setMobileOpen(false); }}
               className={cn(
-                'w-full flex items-center gap-3 rounded-lg transition-all duration-150',
+                'w-full flex items-center gap-3 rounded-[8px] transition-all duration-150',
                 collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
                 settingsActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'

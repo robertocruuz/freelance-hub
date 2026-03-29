@@ -174,7 +174,7 @@ const SettingsPage = () => {
           icon={Database}
           title={isPt ? 'Dados e Exportação' : 'Data & Export'}
           description={isPt ? 'Exporte ou limpe dados locais' : 'Export or clear local data'}
-          className="md:col-span-2 xl:col-span-1"
+          className="md:col-span-2 xl:col-span-3 xl:order-4"
         >
           <div className="flex flex-col gap-3 mt-auto">
             <Button variant="outline" onClick={handleExportData} disabled={exportLoading} className="w-full justify-between rounded-xl h-11 px-4">
@@ -197,7 +197,7 @@ const SettingsPage = () => {
           icon={Bell}
           title={isPt ? 'Notificações' : 'Notifications'}
           description={isPt ? 'Gerencie suas preferências de notificação' : 'Manage your notification preferences'}
-          className="md:col-span-2 xl:col-span-3"
+          className="md:col-span-2 xl:col-span-1 xl:order-3"
         >
           <div className="space-y-4 pt-1">
             <NotificationRow

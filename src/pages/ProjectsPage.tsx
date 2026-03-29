@@ -1111,14 +1111,14 @@ const ProjectsPage = () => {
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(p)}>
+                        <DropdownMenuContent align="end" className="rounded-[8px]">
+                          <DropdownMenuItem onClick={() => handleEdit(p)} className="rounded-[4px]">
                             <Pencil className="w-4 h-4 mr-2" /> Editar projeto
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toggleArchive(p.id, true)}>
+                          <DropdownMenuItem onClick={() => toggleArchive(p.id, true)} className="rounded-[4px]">
                             <Archive className="w-4 h-4 mr-2" /> Arquivar projeto
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                          <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="rounded-[4px] text-destructive focus:text-destructive">
                             <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -1212,11 +1212,11 @@ const ProjectsPage = () => {
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => toggleArchive(p.id, false)}>
+                          <DropdownMenuContent align="end" className="rounded-[8px]">
+                            <DropdownMenuItem onClick={() => toggleArchive(p.id, false)} className="rounded-[4px]">
                               <FolderOpen className="w-4 h-4 mr-2" /> Desarquivar projeto
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="text-destructive focus:text-destructive">
+                            <DropdownMenuItem onClick={() => setDeleteConfirmId(p.id)} className="rounded-[4px] text-destructive focus:text-destructive">
                               <Trash2 className="w-4 h-4 mr-2" /> Excluir projeto
                             </DropdownMenuItem>
                           </DropdownMenuContent>

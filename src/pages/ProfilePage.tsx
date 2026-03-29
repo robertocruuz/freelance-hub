@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { maskCPF, maskCNPJ, maskPhone, maskCEP } from '@/lib/masks';
 import { useSearchParams } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 const ProfilePage = () => {
   const { user } = useAuth();
   const { t, lang } = useI18n();
@@ -298,7 +299,7 @@ const ProfilePage = () => {
   );
 
   const FieldDisplay = ({ value }: { value: string }) => (
-    <p className="text-foreground font-medium text-sm py-1.5">{value || '—'}</p>
+    <p className="rounded-[8px] text-foreground font-medium text-sm py-1.5">{value || '—'}</p>
   );
 
   return (
@@ -321,19 +322,19 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
       {/* Profile Card */}
-      <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-7 lg:col-span-7 h-full">
+      <Card className="flex flex-col rounded-[16px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-7 lg:col-span-7 h-full">
         <CardHeader className="flex flex-row items-center gap-4 pb-4">
           <div
-            className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer group relative overflow-hidden"
+            className="w-14 h-14 rounded-[8px] bg-primary/10 flex items-center justify-center shrink-0 cursor-pointer group relative overflow-hidden"
             onClick={() => setAvatarModalOpen(true)}
           >
-            <Avatar className="w-14 h-14 rounded-2xl">
+            <Avatar className="w-14 h-14 rounded-[8px]">
               {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
-              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold rounded-2xl">
+              <AvatarFallback className="bg-primary text-primary-foreground text-base font-bold rounded-[8px]">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[8px]">
               <Camera className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -376,6 +377,7 @@ const ProfilePage = () => {
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   placeholder={lang === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
+                  className="rounded-[8px]"
                 />
               ) : (
                 <FieldDisplay value={profile.name} />
@@ -394,6 +396,7 @@ const ProfilePage = () => {
                   onChange={(e) => setEditForm({ ...editForm, document: maskCPF(e.target.value) })}
                   placeholder="000.000.000-00"
                   maxLength={14}
+                  className="rounded-[8px]"
                 />
               ) : (
                 <FieldDisplay value={profile.document} />
@@ -412,6 +415,7 @@ const ProfilePage = () => {
                   onChange={(e) => setEditForm({ ...editForm, phone: maskPhone(e.target.value) })}
                   placeholder="(00) 00000-0000"
                   maxLength={15}
+                  className="rounded-[8px]"
                 />
               ) : (
                 <FieldDisplay value={profile.phone} />
@@ -447,9 +451,9 @@ const ProfilePage = () => {
       </Card>
 
       {/* Security Card */}
-      <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-5 lg:col-span-5 h-full">
+      <Card className="flex flex-col rounded-[16px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm md:col-span-5 lg:col-span-5 h-full">
         <CardHeader className="flex flex-row items-center gap-4 pb-4">
-          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-[8px] bg-destructive/10 flex items-center justify-center shrink-0">
             <Shield className="w-5 h-5 text-destructive" />
           </div>
           <div>
@@ -512,10 +516,10 @@ const ProfilePage = () => {
 
       {/* Organization Card */}
       <Collapsible open={orgDetailsOpen || editingOrg} onOpenChange={setOrgDetailsOpen} className="md:col-span-12">
-        <Card className="flex flex-col rounded-[24px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm overflow-hidden h-full">
+        <Card className="flex flex-col rounded-[16px] border border-border/50 bg-card/40 hover:bg-card/80 transition-colors shadow-sm overflow-hidden h-full">
           <CollapsibleTrigger asChild>
-            <CardHeader className="flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
-              <div className="flex items-start gap-3">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors">
+              <div className="flex items-center gap-3">
                 <div
                   className="relative cursor-pointer group shrink-0"
                   onClick={(e) => { e.stopPropagation(); if (isAdmin || !orgId) setLogoModalOpen(true); }}
@@ -544,7 +548,7 @@ const ProfilePage = () => {
                   </CardDescription>
                 </div>
               </div>
-              <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 shrink-0 mt-2 ${orgDetailsOpen || editingOrg ? 'rotate-0' : '-rotate-90'}`} />
+              <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 shrink-0 ${orgDetailsOpen || editingOrg ? 'rotate-0' : '-rotate-90'}`} />
             </CardHeader>
           </CollapsibleTrigger>
 
@@ -576,7 +580,7 @@ const ProfilePage = () => {
                           {lang === 'pt-BR' ? 'Razão Social' : 'Company Name'}
                         </Label>
                         {editingOrg ? (
-                          <Input value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
+                          <Input className="rounded-[8px]" value={orgForm.company_name} onChange={(e) => setOrgForm({ ...orgForm, company_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome da empresa' : 'Company name'} />
                         ) : (
                           <FieldDisplay value={org.company_name} />
                         )}
@@ -586,7 +590,7 @@ const ProfilePage = () => {
                           {lang === 'pt-BR' ? 'Nome Fantasia' : 'Trade Name'}
                         </Label>
                         {editingOrg ? (
-                          <Input value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
+                          <Input className="rounded-[8px]" value={orgForm.trade_name} onChange={(e) => setOrgForm({ ...orgForm, trade_name: e.target.value })} placeholder={lang === 'pt-BR' ? 'Nome fantasia' : 'Trade name'} />
                         ) : (
                           <FieldDisplay value={org.trade_name} />
                         )}
@@ -601,7 +605,7 @@ const ProfilePage = () => {
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">CNPJ</Label>
                         {editingOrg ? (
-                          <Input value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
+                          <Input className="rounded-[8px]" value={orgForm.cnpj} onChange={(e) => setOrgForm({ ...orgForm, cnpj: maskCNPJ(e.target.value) })} placeholder="00.000.000/0001-00" maxLength={18} />
                         ) : (
                           <FieldDisplay value={org.cnpj} />
                         )}
@@ -629,7 +633,7 @@ const ProfilePage = () => {
                             onChange={(e) => setOrgForm({ ...orgForm, state_registration: e.target.value })}
                             placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
                             disabled={orgForm.state_registration === 'ISENTO'}
-                            className={orgForm.state_registration === 'ISENTO' ? 'opacity-50' : ''}
+                            className={cn("rounded-[8px]", orgForm.state_registration === 'ISENTO' && 'opacity-50')}
                           />
                         ) : (
                           <div className="flex items-center gap-2">
@@ -663,7 +667,7 @@ const ProfilePage = () => {
                             onChange={(e) => setOrgForm({ ...orgForm, municipal_registration: e.target.value })}
                             placeholder={lang === 'pt-BR' ? 'Opcional' : 'Optional'}
                             disabled={orgForm.municipal_registration === 'ISENTO'}
-                            className={orgForm.municipal_registration === 'ISENTO' ? 'opacity-50' : ''}
+                            className={cn("rounded-[8px]", orgForm.municipal_registration === 'ISENTO' && 'opacity-50')}
                           />
                         ) : (
                           <div className="flex items-center gap-2">
@@ -690,7 +694,7 @@ const ProfilePage = () => {
                         <div className="space-y-1">
                           <Label className="text-sm text-muted-foreground">CEP</Label>
                           {editingOrg ? (
-                            <Input value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: data.logradouro || '', complement: data.complemento || '', neighborhood: data.bairro || '', state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
+                            <Input className="rounded-[8px]" value={orgForm.zip_code} onChange={(e) => { const masked = maskCEP(e.target.value); setOrgForm({ ...orgForm, zip_code: masked }); const digits = masked.replace(/\D/g, ''); if (digits.length === 8) { fetch(`https://viacep.com.br/ws/${digits}/json/`).then(r => r.json()).then(data => { if (!data.erro) { const stateCode = data.uf || ''; setOrgForm(prev => ({ ...prev, zip_code: masked, address: data.logradouro || '', complement: data.complemento || '', neighborhood: data.bairro || '', state: stateCode, city: data.localidade || '' })); if (stateCode) { fetchCitiesByState(stateCode).then(c => setCities(c)); } } }).catch(() => {}); } }} placeholder="00000-000" maxLength={9} />
                           ) : (
                             <FieldDisplay value={org.zip_code} />
                           )}
@@ -700,7 +704,7 @@ const ProfilePage = () => {
                             {lang === 'pt-BR' ? 'Endereço' : 'Address'}
                           </Label>
                           {editingOrg ? (
-                            <Input value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
+                            <Input className="rounded-[8px]" value={orgForm.address} onChange={(e) => setOrgForm({ ...orgForm, address: e.target.value })} placeholder={lang === 'pt-BR' ? 'Rua, número, complemento, bairro' : 'Street, number, complement, neighborhood'} />
                           ) : (
                             <FieldDisplay value={org.address} />
                           )}
@@ -710,7 +714,7 @@ const ProfilePage = () => {
                             {lang === 'pt-BR' ? 'Complemento' : 'Complement'}
                           </Label>
                           {editingOrg ? (
-                            <Input value={orgForm.complement} onChange={(e) => setOrgForm({ ...orgForm, complement: e.target.value })} placeholder={lang === 'pt-BR' ? 'Apto, sala, bloco...' : 'Apt, suite, block...'} />
+                            <Input className="rounded-[8px]" value={orgForm.complement} onChange={(e) => setOrgForm({ ...orgForm, complement: e.target.value })} placeholder={lang === 'pt-BR' ? 'Apto, sala, bloco...' : 'Apt, suite, block...'} />
                           ) : (
                             <FieldDisplay value={org.complement} />
                           )}
@@ -720,7 +724,7 @@ const ProfilePage = () => {
                             {lang === 'pt-BR' ? 'Bairro' : 'Neighborhood'}
                           </Label>
                           {editingOrg ? (
-                            <Input value={orgForm.neighborhood} onChange={(e) => setOrgForm({ ...orgForm, neighborhood: e.target.value })} placeholder={lang === 'pt-BR' ? 'Bairro' : 'Neighborhood'} />
+                            <Input className="rounded-[8px]" value={orgForm.neighborhood} onChange={(e) => setOrgForm({ ...orgForm, neighborhood: e.target.value })} placeholder={lang === 'pt-BR' ? 'Bairro' : 'Neighborhood'} />
                           ) : (
                             <FieldDisplay value={org.neighborhood} />
                           )}
@@ -736,7 +740,7 @@ const ProfilePage = () => {
                           {editingOrg ? (
                             <Popover open={statePopoverOpen} onOpenChange={setStatePopoverOpen}>
                               <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()}>
+                                <Button variant="outline" className="w-full justify-between font-normal rounded-[8px]" onClick={(e) => e.stopPropagation()}>
                                   {orgForm.state
                                     ? brazilianStates.find(s => s.value === orgForm.state)?.label || orgForm.state
                                     : (lang === 'pt-BR' ? 'Selecione o estado' : 'Select state')}
@@ -779,7 +783,7 @@ const ProfilePage = () => {
                           {editingOrg ? (
                             <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
                               <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between font-normal" onClick={(e) => e.stopPropagation()} disabled={!orgForm.state}>
+                                <Button variant="outline" className="w-full justify-between font-normal rounded-[8px]" onClick={(e) => e.stopPropagation()} disabled={!orgForm.state}>
                                   {orgForm.city || (lang === 'pt-BR' ? 'Selecione a cidade' : 'Select city')}
                                   <ChevronDown className="w-4 h-4 opacity-50" />
                                 </Button>
@@ -831,7 +835,7 @@ const ProfilePage = () => {
                           {lang === 'pt-BR' ? 'Email' : 'Email'}
                         </Label>
                         {editingOrg ? (
-                          <Input type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
+                          <Input className="rounded-[8px]" type="email" value={orgForm.business_email} onChange={(e) => setOrgForm({ ...orgForm, business_email: e.target.value })} placeholder="contato@empresa.com" />
                         ) : (
                           <FieldDisplay value={org.business_email} />
                         )}
@@ -842,7 +846,7 @@ const ProfilePage = () => {
                           {lang === 'pt-BR' ? 'Telefone' : 'Phone'}
                         </Label>
                         {editingOrg ? (
-                          <Input value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
+                          <Input className="rounded-[8px]" value={orgForm.business_phone} onChange={(e) => setOrgForm({ ...orgForm, business_phone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
                         ) : (
                           <FieldDisplay value={org.business_phone} />
                         )}
@@ -851,7 +855,7 @@ const ProfilePage = () => {
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">Site</Label>
                         {editingOrg ? (
-                          <Input value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
+                          <Input className="rounded-[8px]" value={orgForm.website} onChange={(e) => setOrgForm({ ...orgForm, website: e.target.value })} placeholder="https://www.empresa.com" />
                         ) : (
                           <FieldDisplay value={org.website} />
                         )}
@@ -948,3 +952,5 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+
+
