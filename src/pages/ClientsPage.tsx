@@ -439,6 +439,21 @@ const ClientsPage = () => {
     const mColor = cColor ? (contrast === 'light' ? 'text-white/80' : 'text-slate-700') : 'text-muted-foreground';
     const bColor = cColor ? (contrast === 'light' ? 'border-white/20 text-white hover:bg-white/20' : 'border-slate-900/20 text-slate-900 hover:bg-slate-900/10') : 'border-border text-foreground hover:bg-muted';
     const badgeBgMuted = cColor ? (contrast === 'light' ? 'bg-white/10 text-white/90 border-white/10' : 'bg-slate-900/5 text-slate-800 border-slate-900/5') : 'bg-muted/60 hover:bg-primary/10 hover:text-primary border-transparent';
+    const detailTagClass = cColor
+      ? contrast === 'light'
+        ? 'text-xs font-medium text-primary bg-primary/10 border border-primary/10 px-3 py-1 rounded-[8px]'
+        : 'text-xs font-medium text-slate-900 bg-primary/15 border border-primary/10 px-3 py-1 rounded-[8px]'
+      : 'text-xs font-medium text-black bg-muted px-3 py-1 rounded-[8px]';
+    const detailTagCompactClass = cColor
+      ? contrast === 'light'
+        ? 'text-[10px] font-medium text-primary bg-primary/10 border border-primary/10 px-1.5 py-0.5 rounded-[8px]'
+        : 'text-[10px] font-medium text-slate-900 bg-primary/15 border border-primary/10 px-1.5 py-0.5 rounded-[8px]'
+      : 'text-[10px] font-medium text-black bg-muted px-1.5 py-0.5 rounded-[8px]';
+    const detailBadgeClass = cColor
+      ? contrast === 'light'
+        ? 'text-[10px] capitalize rounded-[8px] text-primary bg-primary/10 border-primary/10 hover:bg-primary/10'
+        : 'text-[10px] capitalize rounded-[8px] text-slate-900 bg-primary/15 border-primary/10 hover:bg-primary/15'
+      : 'text-[10px] capitalize rounded-[8px] text-black';
 
     return (
       <div 
@@ -619,12 +634,12 @@ const ClientsPage = () => {
                               <span className="font-semibold text-foreground">{p.name}</span>
                               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                 {projectTasks.length > 0 && (
-                                  <span className="text-xs font-medium text-black bg-muted px-3 py-1 rounded-[8px]">
+                                  <span className={detailTagClass}>
                                     {projectTasks.length} tarefa{projectTasks.length !== 1 ? 's' : ''}
                                   </span>
                                 )}
                                 {totalProjectTime > 0 && (
-                                  <span className="text-xs font-medium text-black bg-muted px-3 py-1 rounded-[8px]">
+                                  <span className={detailTagClass}>
                                     {formatDuration(totalProjectTime)}
                                   </span>
                                 )}
@@ -649,8 +664,8 @@ const ClientsPage = () => {
                                   <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="hover:text-primary hover:underline transition-colors font-medium">{task.title}</button>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <Badge variant="outline" className="text-[10px] capitalize rounded-[8px] text-black">{translatePriority(task.priority)}</Badge>
-                                  <Badge variant="secondary" className="text-[10px] rounded-[8px] text-black">{translateStatus(task.status)}</Badge>
+                                  <Badge variant="outline" className={detailBadgeClass}>{translatePriority(task.priority)}</Badge>
+                                  <Badge variant="secondary" className={cn(detailBadgeClass, "normal-case")}>{translateStatus(task.status)}</Badge>
                                 </div>
                               </div>
                             ))}
@@ -677,7 +692,7 @@ const ClientsPage = () => {
                 <div className="space-y-2.5">
                   <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                     <SquareKanban className="w-3.5 h-3.5" /> Tarefas sem projeto
-                    <span className="text-[10px] font-medium text-black bg-muted px-1.5 py-0.5 rounded-[8px]">
+                    <span className={detailTagCompactClass}>
                       {orphanTasks.length}
                     </span>
                   </h2>
@@ -691,8 +706,8 @@ const ClientsPage = () => {
                           <button onClick={() => navigate(`/dashboard/kanban?task=${task.id}`)} className="font-medium hover:text-primary hover:underline transition-colors">{task.title}</button>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Badge variant="outline" className="text-[10px] capitalize rounded-[8px] text-black">{translatePriority(task.priority)}</Badge>
-                          <Badge variant="secondary" className="text-[10px] rounded-[8px] text-black">{translateStatus(task.status)}</Badge>
+                          <Badge variant="outline" className={detailBadgeClass}>{translatePriority(task.priority)}</Badge>
+                          <Badge variant="secondary" className={cn(detailBadgeClass, "normal-case")}>{translateStatus(task.status)}</Badge>
                         </div>
                       </div>
                     ))}
@@ -735,14 +750,14 @@ const ClientsPage = () => {
                           </div>
                           <span className="font-medium text-foreground truncate">{e.description || '—'}</span>
                           {proj && (
-                            <span className="text-xs font-medium text-black bg-muted px-3 py-1 rounded-[8px] shrink-0">
+                            <span className={cn(detailTagClass, "shrink-0")}>
                               {proj.name}
                             </span>
                           )}
                         </div>
                         <div className="flex items-center gap-3 shrink-0 ml-3">
                           <span className="text-xs text-muted-foreground">{new Date(e.start_time).toLocaleDateString()}</span>
-                          <span className="font-mono font-semibold text-black tabular-nums text-xs bg-muted/60 px-3 py-1 rounded-[8px]">{formatDuration(e.duration || 0)}</span>
+                          <span className={cn(detailTagClass, "font-mono font-semibold tabular-nums")}>{formatDuration(e.duration || 0)}</span>
                         </div>
                       </div>
                     );
@@ -761,7 +776,7 @@ const ClientsPage = () => {
                   <div className="space-y-2.5">
                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <Receipt className="w-3.5 h-3.5" /> Faturas
-                      <span className="text-[10px] font-medium text-black bg-muted px-1.5 py-0.5 rounded-[8px]">
+                      <span className={detailTagCompactClass}>
                         {details.invoices.length}
                       </span>
                     </h2>
@@ -774,7 +789,7 @@ const ClientsPage = () => {
                           <span className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleDateString()}</span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground tabular-nums">{formatCurrency(inv.total)}</span>
-                            <Badge variant="secondary" className="text-[10px] capitalize rounded-[8px] text-black">{translateBillingStatus(inv.status)}</Badge>
+                            <Badge variant="secondary" className={cn(detailBadgeClass, "normal-case")}>{translateBillingStatus(inv.status)}</Badge>
                           </div>
                         </div>
                       ))}
@@ -798,7 +813,7 @@ const ClientsPage = () => {
                     </button>
                     <h2 className="hidden text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5" /> Orçamentos
-                      <span className="text-[10px] font-medium text-black bg-muted px-1.5 py-0.5 rounded-[8px]">
+                      <span className={detailTagCompactClass}>
                         {details.budgets.length}
                       </span>
                     </h2>
@@ -820,7 +835,7 @@ const ClientsPage = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground tabular-nums">{formatCurrency(b.total)}</span>
-                            <Badge variant="secondary" className="text-[10px] capitalize rounded-[8px] text-black">{translateBillingStatus(b.status)}</Badge>
+                            <Badge variant="secondary" className={cn(detailBadgeClass, "normal-case")}>{translateBillingStatus(b.status)}</Badge>
                           </div>
                         </button>
                       ))}

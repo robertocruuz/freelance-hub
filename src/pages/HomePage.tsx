@@ -553,9 +553,9 @@ const HomePage = () => {
                 style={{ '--hover-bg': solidCol } as React.CSSProperties}
                 onClick={() => navigate('/dashboard/clients', { state: { clientId: c.id } })}
               >
-                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
-                   {c.logo_url ? <img src={c.logo_url} className="w-full h-full object-cover" /> : c.name?.charAt(0).toUpperCase()}
-                 </div>
+                        <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm" style={{ backgroundColor: c.color || 'hsl(var(--primary))' }}>
+                          {c.logo_url ? <img src={c.logo_url} className="w-full h-full object-cover rounded-full" /> : c.name?.charAt(0).toUpperCase()}
+                        </div>
                  <div className="flex flex-col flex-1 min-w-0">
                    <span className={`text-sm font-bold opacity-95 truncate ${tColor}`}>{c.name}</span>
                    <span className={`text-[10px] font-bold uppercase tracking-wider opacity-80 ${mColor}`}>
