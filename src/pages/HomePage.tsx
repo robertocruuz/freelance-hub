@@ -8,6 +8,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, isToday, parseISO, differenceInMinutes, subDays, startOfDay, endOfDay, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, getDay, isSameMonth, formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface DashboardData {
   clients: any[];
@@ -404,17 +405,29 @@ const HomePage = () => {
             {data.projects.slice(0, 5).map(p => {
               const client = data.clients.find(c => c.id === p.client_id);
               const projectColor = client?.color || p.color || 'hsl(var(--primary))';
-              const solidCol = projectColor.startsWith('#') ? projectColor : 'hsl(var(--primary))';
-              
-              const contrast = solidCol.startsWith('#') ? getContrastYIQ(solidCol) : 'dark';
-              const isLight = contrast === 'light';
-              const tColor = `text-foreground/90 transition-colors duration-300 ${isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`;
-              const mColor = `text-muted-foreground transition-colors duration-300 ${isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`;
+              const isHexColor = projectColor.startsWith('#');
+              const solidCol = isHexColor ? projectColor : 'hsl(var(--primary))';
+              const contrast = isHexColor ? getContrastYIQ(solidCol) : 'light';
+              const useLightText = contrast === 'light';
+              const tColor = isHexColor
+                ? `text-foreground/90 transition-colors duration-300 ${useLightText ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`
+                : 'text-foreground/90 transition-colors duration-300 group-hover:text-white dark:group-hover:text-black';
+              const mColor = isHexColor
+                ? `text-muted-foreground transition-colors duration-300 ${useLightText ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`
+                : 'text-muted-foreground transition-colors duration-300 group-hover:text-white/80 dark:group-hover:text-black/70';
+              const badgeHover = isHexColor
+                ? (useLightText
+                    ? 'group-hover:bg-white/15 group-hover:border-transparent'
+                    : 'group-hover:bg-black/10 group-hover:border-transparent')
+                : 'group-hover:bg-white/15 group-hover:border-transparent dark:group-hover:bg-black/10';
 
               return (
               <div 
                 key={p.id} 
-                className="group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]" 
+                className={cn(
+                  "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]",
+                  !isHexColor && "dark:hover:bg-white dark:hover:border-white"
+                )}
                 style={{ '--hover-bg': solidCol } as React.CSSProperties} 
                 onClick={() => navigate('/dashboard/projects')}
               >
@@ -423,7 +436,7 @@ const HomePage = () => {
                  </div>
                  <div className="flex items-center gap-2 shrink-0">
                     {p.due_date && (
-                       <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 text-center ${mColor} bg-background border border-border group-hover:bg-black/10 group-hover:border-transparent`}>
+                       <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 text-center ${mColor} bg-background border border-border ${badgeHover}`}>
                          {format(parseISO(p.due_date), 'dd/MM')}
                        </span>
                     )}
@@ -449,7 +462,7 @@ const HomePage = () => {
               )}
             </div>
             {data.notifications.filter(n => !n.read).length > 0 && (
-              <button onClick={markAllAsRead} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors" title={isPt ? 'Marcar lidas' : 'Mark all read'}>
+              <button onClick={markAllAsRead} className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors" title={isPt ? 'Marcar lidas' : 'Mark all read'}>
                 <CheckCheck className="w-4 h-4" />
               </button>
             )}
@@ -478,9 +491,9 @@ const HomePage = () => {
                       <div className="flex flex-col gap-1.5 min-w-0 pr-1">
                         <div className="flex items-center gap-2">
                           {!n.read && <div className="w-2 h-2 rounded-full bg-primary shrink-0" />}
-                          <p className={`text-sm leading-snug truncate ${!n.read ? 'font-bold text-foreground' : 'font-semibold text-foreground/80'}`}>{n.title}</p>
+                          <p className={`text-sm leading-snug truncate ${!n.read ? 'font-bold text-foreground' : 'font-semibold text-foreground/90'}`}>{n.title}</p>
                         </div>
-                        <span className={`text-[10px] font-medium ${!n.read ? 'text-primary/70 ml-4' : 'text-muted-foreground/80'}`}>
+                        <span className={`text-[10px] font-medium ${!n.read ? 'text-muted-foreground ml-4' : 'text-muted-foreground/80'}`}>
                           {formatDistanceToNow(parseISO(n.created_at), { addSuffix: true, locale: isPt ? ptBR : enUS })}
                         </span>
                       </div>

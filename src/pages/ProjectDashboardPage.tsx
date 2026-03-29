@@ -564,6 +564,21 @@ export default function ProjectDashboardPage() {
   const bColor = cColor ? (contrast === 'light' ? 'text-white/80 hover:text-white hover:bg-white/20' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-900/10') : 'text-muted-foreground hover:text-foreground';
   const badgeBg = cColor ? (contrast === 'light' ? 'bg-white/20 text-white border-white/20' : 'bg-slate-900/10 text-slate-900 border-slate-900/10') : 'bg-primary/10 text-primary border-primary/20';
   const badgeBgMuted = cColor ? (contrast === 'light' ? 'bg-white/10 text-white/90 border-white/10' : 'bg-slate-900/5 text-slate-800 border-slate-900/5') : 'bg-muted/50 text-muted-foreground border-border/50';
+  const primaryGhostButton = cColor
+    ? contrast === 'light'
+      ? 'text-muted-foreground hover:text-white hover:bg-primary'
+      : 'text-muted-foreground hover:text-slate-900 hover:bg-primary'
+    : 'text-muted-foreground hover:text-white hover:bg-primary dark:hover:text-black';
+  const primaryActionButton = cColor
+    ? contrast === 'light'
+      ? 'text-white hover:bg-primary hover:text-white bg-primary/15 shadow-sm'
+      : 'text-slate-900 hover:bg-primary hover:text-slate-900 bg-primary/15 shadow-sm'
+    : 'text-primary hover:bg-primary hover:text-primary-foreground bg-primary/10 shadow-sm';
+  const filledPrimaryButton = cColor
+    ? contrast === 'light'
+      ? 'bg-primary hover:bg-primary/90 text-white'
+      : 'bg-primary hover:bg-primary/90 text-slate-900'
+    : 'bg-primary hover:bg-primary/90 text-primary-foreground';
 
   return (
     <div 
@@ -637,7 +652,7 @@ export default function ProjectDashboardPage() {
                     if (isLinkedToBudget) return;
                     setShowItemForm(true);
                   }} 
-                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5"
+                  className={cn("text-xs h-8 px-2 rounded-[8px] gap-1.5", primaryGhostButton)}
                   disabled={isLinkedToBudget}
                   title={isLinkedToBudget ? "Edite os itens através do Orçamento original" : "Adicionar Item"}
                 >
@@ -692,7 +707,7 @@ export default function ProjectDashboardPage() {
                             "rounded-lg h-8 px-3 text-xs font-semibold gap-1.5 transition-all",
                             itemHasTask 
                               ? "text-muted-foreground/40 opacity-50 cursor-not-allowed bg-transparent" 
-                              : "text-primary hover:bg-primary hover:text-primary-foreground bg-primary/10 shadow-sm"
+                              : primaryActionButton
                           )}
                           onClick={(e) => {
                             if (itemHasTask) {
@@ -743,7 +758,7 @@ export default function ProjectDashboardPage() {
                 <FolderKanban className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-bold">Tarefas Vinculadas</h3>
               </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/kanban')} className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/kanban')} className={cn("text-xs h-8 px-2 rounded-[8px] gap-1.5", primaryGhostButton)}>
                 Ir ao painel <ExternalLink className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -856,7 +871,7 @@ export default function ProjectDashboardPage() {
                       "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all hover:scale-105 shrink-0",
                       isTimerRunningForThis 
                         ? "bg-red-500 hover:bg-red-600 text-white" 
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                        : filledPrimaryButton
                     )}
                   >
                     {isTimerRunningForThis ? (
@@ -873,7 +888,7 @@ export default function ProjectDashboardPage() {
             <div className="p-6 sm:p-8 bg-muted/5 flex flex-col relative z-10 rounded-b-3xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <ListChecks className="w-5 h-5 text-primary" />
+                <ListChecks className="w-5 h-5 text-primary" />
                   <h4 className="text-sm font-extrabold uppercase tracking-wider">Últimos Registros</h4>
                 </div>
                 <div className="flex items-center gap-3">
@@ -926,7 +941,7 @@ export default function ProjectDashboardPage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={handleClearNotifications} 
-                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px]"
+                  className={cn("text-xs h-8 px-2 rounded-[8px]", primaryGhostButton)}
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                   Limpar
@@ -940,7 +955,7 @@ export default function ProjectDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {notifications.map(n => (
-                  <div key={n.id} className="flex flex-col p-3 rounded-xl bg-muted/30 dark:bg-background border border-border">
+                  <div key={n.id} className="flex flex-col p-3 rounded-xl bg-primary/[0.05] border border-primary/10">
                     <span className="text-sm font-medium text-foreground">
                       Tarefa &quot;{n.tasks?.title}&quot;
                     </span>
@@ -967,7 +982,7 @@ export default function ProjectDashboardPage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setShowFileForm(true)} 
-                  className="text-xs text-muted-foreground hover:text-white hover:bg-primary h-8 px-2 rounded-[8px] gap-1.5"
+                  className={cn("text-xs h-8 px-2 rounded-[8px] gap-1.5", primaryGhostButton)}
                 >
                   <Plus className="w-3.5 h-3.5" /> Adicionar
                 </Button>

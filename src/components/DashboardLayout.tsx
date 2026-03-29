@@ -99,7 +99,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
           <div className="relative shrink-0">
             <Bell className="w-[18px] h-[18px]" strokeWidth={1.8} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center ring-2 ring-card">
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center ring-2 ring-card dark:bg-white dark:text-black">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}

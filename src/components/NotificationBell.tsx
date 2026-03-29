@@ -32,24 +32,24 @@ const typeIcons: Record<string, typeof Info> = {
 
 const typeStyles: Record<string, { icon: string; accent: string; dot: string }> = {
   info: {
-    icon: 'text-primary',
-    accent: 'bg-primary/10 ring-1 ring-primary/20',
+    icon: 'text-primary dark:text-white/90',
+    accent: 'bg-primary/10 ring-1 ring-primary/20 dark:bg-white/10 dark:ring-white/10',
     dot: 'bg-primary',
   },
   invite: {
-    icon: 'text-accent-foreground',
-    accent: 'bg-accent/15 ring-1 ring-accent/30',
+    icon: 'text-accent-foreground dark:text-white/90',
+    accent: 'bg-accent/15 ring-1 ring-accent/30 dark:bg-white/10 dark:ring-white/10',
     dot: 'bg-accent',
   },
   warning: {
-    icon: 'text-destructive',
-    accent: 'bg-destructive/10 ring-1 ring-destructive/20',
+    icon: 'text-destructive dark:text-red-400',
+    accent: 'bg-destructive/10 ring-1 ring-destructive/20 dark:bg-white/10 dark:ring-white/10',
     dot: 'bg-destructive',
   },
   reminder: {
-    icon: 'text-muted-foreground',
-    accent: 'bg-muted ring-1 ring-border',
-    dot: 'bg-muted-foreground',
+    icon: 'text-muted-foreground dark:text-white/80',
+    accent: 'bg-muted ring-1 ring-border dark:bg-white/10 dark:ring-white/10',
+    dot: 'bg-muted-foreground dark:bg-white/70',
   },
 };
 
@@ -162,7 +162,7 @@ export function NotificationBell({
           <button className="relative w-10 h-10 rounded-xl hover:bg-muted transition-all flex items-center justify-center text-muted-foreground hover:text-foreground group/bell">
             <Bell className="w-[18px] h-[18px] transition-transform group-hover/bell:scale-110" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-card animate-in zoom-in-50 duration-200">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-md ring-2 ring-card animate-in zoom-in-50 duration-200 dark:bg-white dark:text-black">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -179,15 +179,15 @@ export function NotificationBell({
         <div className="relative px-5 pt-5 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Bell className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center dark:bg-white/10">
+                <Bell className="w-4 h-4 text-primary dark:text-white" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">
                   {isPt ? 'Notificações' : 'Notifications'}
                 </h3>
                 {unreadCount > 0 && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-[10px] text-muted-foreground mt-0.5 dark:text-white/70">
                     {unreadCount} {isPt ? 'não lidas' : 'unread'}
                   </p>
                 )}
@@ -198,7 +198,7 @@ export function NotificationBell({
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="h-7 px-2.5 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                  className="h-7 px-2.5 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1 dark:text-white dark:hover:bg-white/10"
                   title={isPt ? 'Marcar todas como lidas' : 'Mark all as read'}
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
@@ -207,7 +207,7 @@ export function NotificationBell({
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors dark:text-white/70 dark:hover:text-white"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -232,10 +232,10 @@ export function NotificationBell({
               <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
                 <BellOff className="w-7 h-7 text-muted-foreground/30" />
               </div>
-              <p className="text-sm font-semibold text-foreground/60 mb-1">
+              <p className="text-sm font-semibold text-foreground/60 mb-1 dark:text-white/70">
                 {isPt ? 'Tudo em dia!' : 'All caught up!'}
               </p>
-              <p className="text-xs text-muted-foreground/50 text-center max-w-[200px]">
+              <p className="text-xs text-muted-foreground/50 text-center max-w-[200px] dark:text-white/50">
                 {isPt ? 'Nenhuma notificação no momento' : 'No notifications at the moment'}
               </p>
             </div>
@@ -274,15 +274,15 @@ export function NotificationBell({
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[13px] leading-snug ${!notification.read ? 'font-semibold text-foreground' : 'text-foreground/75 font-medium'}`}>
+                      <p className={`text-[13px] leading-snug ${!notification.read ? 'font-semibold text-foreground dark:text-white' : 'text-foreground/75 font-medium dark:text-white/85'}`}>
                         {notification.title}
                       </p>
                       {notification.message && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed dark:text-white/75">
                           {notification.message}
                         </p>
                       )}
-                      <p className="text-[10px] text-muted-foreground/50 mt-1.5 font-medium">
+                      <p className="text-[10px] text-muted-foreground/50 mt-1.5 font-medium dark:text-white/45">
                         {timeAgo(notification.created_at)}
                       </p>
                     </div>
@@ -295,7 +295,7 @@ export function NotificationBell({
                             e.stopPropagation();
                             markAsRead(notification.id);
                           }}
-                          className="w-7 h-7 rounded-lg hover:bg-primary/10 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                          className="w-7 h-7 rounded-lg hover:bg-primary/10 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors dark:text-white/75 dark:hover:text-white dark:hover:bg-white/10"
                           title={isPt ? 'Marcar como lida' : 'Mark as read'}
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -306,7 +306,7 @@ export function NotificationBell({
                           e.stopPropagation();
                           deleteNotification(notification.id);
                         }}
-                        className="w-7 h-7 rounded-lg hover:bg-destructive/10 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                        className="w-7 h-7 rounded-lg hover:bg-destructive/10 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors dark:text-white/75 dark:hover:text-red-400 dark:hover:bg-white/10"
                         title={isPt ? 'Excluir' : 'Delete'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -324,7 +324,7 @@ export function NotificationBell({
           <div className="border-t border-border/50 px-4 py-3 flex justify-center">
             <button
               onClick={deleteAllNotifications}
-              className="h-8 px-4 rounded-lg text-xs font-semibold text-destructive/80 hover:text-destructive hover:bg-destructive/8 transition-all flex items-center gap-1.5"
+              className="h-8 px-4 rounded-lg text-xs font-semibold text-destructive/80 hover:text-destructive hover:bg-destructive/8 transition-all flex items-center gap-1.5 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-white/10"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {isPt ? 'Limpar todas' : 'Clear all'}
@@ -337,3 +337,4 @@ export function NotificationBell({
 };
 
 export default NotificationBell;
+
