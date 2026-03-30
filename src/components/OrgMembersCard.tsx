@@ -49,8 +49,8 @@ const roleIcons = {
 };
 
 const roleColors = {
-  admin: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  collaborator: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  admin: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
+  collaborator: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
 };
 
 const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }: { embedded?: boolean; orgHook?: ReturnType<typeof useOrganization>; onLeave?: () => void }) => {
@@ -198,8 +198,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     {canManage ? (
                       <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
-                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-[8px] font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors">
-                          <RoleIcon className="w-3 h-3 text-muted-foreground" />
+                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-[8px] font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors dark:bg-muted/40 dark:border-white/10 dark:text-foreground dark:hover:bg-white/10">
+                          <RoleIcon className="w-3 h-3 text-muted-foreground dark:text-white/80" />
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -214,7 +214,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                       </Badge>
                     )}
                     {member.status === 'pending' && (
-                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-[8px]">
+                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-[8px] dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
                         <Clock className="w-3 h-3" />
                         {isPt ? 'Pendente' : 'Pending'}
                       </Badge>
@@ -231,8 +231,8 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
                   </p>
                   
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
-                    {isOwner && <span className="text-[9px] uppercase font-black tracking-wider px-2 py-0.5 rounded-[8px] bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_1px_rgba(255,255,255,0.1)]">Proprietário</span>}
-                    {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border">Você</span>}
+                    {isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">Proprietário</span>}
+                    {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">Você</span>}
                   </div>
                 </div>
 

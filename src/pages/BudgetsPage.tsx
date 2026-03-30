@@ -869,7 +869,10 @@ const isExpanded = expandedBudget === b.id;
                   const mColorActive = color && isExpanded ? (isLight ? 'text-white/80' : 'text-slate-800 dark:text-white/80') : '';
                   const mColor = `${color && isExpanded ? '' : mColorNormal} ${mColorHover} ${mColorActive} transition-colors duration-300`;
                   
-                  const btnColorNormal = 'text-muted-foreground hover:bg-muted hover:text-foreground group-hover:text-white hover:group-hover:bg-white/20 hover:group-hover:text-white dark:group-hover:text-black dark:hover:group-hover:bg-black/10 dark:hover:group-hover:text-black';
+                  const btnColorNormal = cn(
+                    'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    !isExpanded && 'group-hover:text-white hover:group-hover:bg-white/20 hover:group-hover:text-white dark:group-hover:text-black dark:hover:group-hover:bg-black/10 dark:hover:group-hover:text-black'
+                  );
                   const btnColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900 dark:group-hover:text-white/80 dark:hover:group-hover:bg-white/20 dark:hover:group-hover:text-white') : '';
                   const btnColorActive = color && isExpanded ? (isLight ? 'text-white/80 hover:bg-white/20 hover:text-white' : 'text-slate-700 hover:bg-slate-900/10 hover:text-slate-900 dark:text-white/80 dark:hover:bg-white/20 dark:hover:text-white') : '';
                   const btnColor = `${color && isExpanded ? '' : btnColorNormal} ${btnColorHover} ${btnColorActive} transition-colors duration-300`;
@@ -878,7 +881,9 @@ const isExpanded = expandedBudget === b.id;
                   const hlColorHover = color && !isExpanded
                     ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900 dark:group-hover:bg-white/20 dark:group-hover:text-white')
                     : 'group-hover:bg-white/20 group-hover:text-white dark:group-hover:bg-black/10 dark:group-hover:text-black';
-                  const hlColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900 dark:bg-white/20 dark:text-white') : 'bg-primary/10 text-primary';
+                  const hlColorActive = color && isExpanded
+                    ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900 dark:bg-white/20 dark:text-white')
+                    : 'bg-primary/10 text-primary dark:bg-white/10 dark:text-white';
                   const highlightColor = `${isExpanded ? hlColorActive : hlColorNormal} ${!isExpanded ? hlColorHover : ''} transition-colors duration-300`;
                   
                   const stColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900 dark:group-hover:bg-white/20 dark:group-hover:text-white') : '';
@@ -890,7 +895,8 @@ const isExpanded = expandedBudget === b.id;
                           className={cn(
                             "group rounded-xl border flex flex-col overflow-hidden transition-all duration-300 relative box-border bg-card z-0",
                             isExpanded ? " border-border/80" : " hover:-translate-y-0.5",
-                            !color && "hover:border-black hover:bg-black dark:hover:bg-white dark:hover:border-white"
+                            !color && !isExpanded && "hover:border-black hover:bg-black dark:hover:bg-white dark:hover:border-white",
+                            !color && isExpanded && "bg-card"
                           )}
                         >
                           {/* Smooth Background Transition */}
@@ -948,7 +954,7 @@ const isExpanded = expandedBudget === b.id;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
-                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : "text-primary group-hover:text-white dark:text-foreground dark:group-hover:text-black")}>
+                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : isExpanded ? "text-primary dark:text-foreground" : "text-primary group-hover:text-white dark:text-foreground dark:group-hover:text-black")}>
                                 {formatCurrency(b.total)}
                               </span>
                               <DropdownMenu>
@@ -1033,7 +1039,7 @@ const isExpanded = expandedBudget === b.id;
                                     </div>
                                   )}
                                   {b.notes && (
-                                    <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                                    <p className="text-xs text-muted-foreground bg-muted/50 rounded-[8px] px-3 py-2">
                                       {b.notes}
                                     </p>
                                   )}
