@@ -69,10 +69,10 @@ interface Budget {
 const statuses = ['draft', 'sent', 'approved', 'rejected'] as const;
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-muted text-muted-foreground',
-  sent: 'bg-accent text-accent-foreground',
-  approved: 'bg-primary/10 text-primary',
-  rejected: 'bg-destructive/10 text-destructive',
+  draft: 'bg-muted text-muted-foreground dark:bg-muted dark:text-foreground',
+  sent: 'bg-accent text-accent-foreground dark:bg-accent dark:text-foreground',
+  approved: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white',
+  rejected: 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-red-300',
 };
 
 const normalizeBudgetStatus = (status: string | null | undefined) => (status || 'draft').toLowerCase();
@@ -852,27 +852,37 @@ const isExpanded = expandedBudget === b.id;
                   const activeColorStyle = isExpanded && color ? { backgroundColor: color } : {};
                   
                   const tColorNormal = 'text-foreground';
-                  const tColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
-                  const tColorActive = color && isExpanded ? (isLight ? 'text-white' : 'text-slate-900') : '';
+                  const tColorHover = color && !isExpanded
+                    ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900 dark:group-hover:text-white')
+                    : !isExpanded
+                      ? 'group-hover:text-white dark:group-hover:text-black'
+                      : '';
+                  const tColorActive = color && isExpanded ? (isLight ? 'text-white' : 'text-slate-900 dark:text-white') : '';
                   const tColor = `${color && isExpanded ? '' : tColorNormal} ${tColorHover} ${tColorActive} transition-colors duration-300`;
                   
                   const mColorNormal = 'text-muted-foreground';
-                  const mColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800') : '';
-                  const mColorActive = color && isExpanded ? (isLight ? 'text-white/80' : 'text-slate-800') : '';
+                  const mColorHover = color && !isExpanded
+                    ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800 dark:group-hover:text-white/80')
+                    : !isExpanded
+                      ? 'group-hover:text-white/80 dark:group-hover:text-black/70'
+                      : '';
+                  const mColorActive = color && isExpanded ? (isLight ? 'text-white/80' : 'text-slate-800 dark:text-white/80') : '';
                   const mColor = `${color && isExpanded ? '' : mColorNormal} ${mColorHover} ${mColorActive} transition-colors duration-300`;
                   
-                  const btnColorNormal = 'text-muted-foreground hover:bg-muted hover:text-foreground';
-                  const btnColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900') : '';
-                  const btnColorActive = color && isExpanded ? (isLight ? 'text-white/80 hover:bg-white/20 hover:text-white' : 'text-slate-700 hover:bg-slate-900/10 hover:text-slate-900') : '';
+                  const btnColorNormal = 'text-muted-foreground hover:bg-muted hover:text-foreground group-hover:text-white hover:group-hover:bg-white/20 hover:group-hover:text-white dark:group-hover:text-black dark:hover:group-hover:bg-black/10 dark:hover:group-hover:text-black';
+                  const btnColorHover = color && !isExpanded ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900 dark:group-hover:text-white/80 dark:hover:group-hover:bg-white/20 dark:hover:group-hover:text-white') : '';
+                  const btnColorActive = color && isExpanded ? (isLight ? 'text-white/80 hover:bg-white/20 hover:text-white' : 'text-slate-700 hover:bg-slate-900/10 hover:text-slate-900 dark:text-white/80 dark:hover:bg-white/20 dark:hover:text-white') : '';
                   const btnColor = `${color && isExpanded ? '' : btnColorNormal} ${btnColorHover} ${btnColorActive} transition-colors duration-300`;
                   
                   const hlColorNormal = 'bg-muted text-muted-foreground';
-                  const hlColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'group-hover:bg-primary/10 group-hover:text-primary';
-                  const hlColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : 'bg-primary/10 text-primary';
+                  const hlColorHover = color && !isExpanded
+                    ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900 dark:group-hover:bg-white/20 dark:group-hover:text-white')
+                    : 'group-hover:bg-white/20 group-hover:text-white dark:group-hover:bg-black/10 dark:group-hover:text-black';
+                  const hlColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900 dark:bg-white/20 dark:text-white') : 'bg-primary/10 text-primary';
                   const highlightColor = `${isExpanded ? hlColorActive : hlColorNormal} ${!isExpanded ? hlColorHover : ''} transition-colors duration-300`;
                   
-                  const stColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : '';
-                  const stColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900') : '';
+                  const stColorHover = color && !isExpanded ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900 dark:group-hover:bg-white/20 dark:group-hover:text-white') : '';
+                  const stColorActive = color && isExpanded ? (isLight ? 'bg-white/20 text-white' : 'bg-slate-900/10 text-slate-900 dark:bg-white/20 dark:text-white') : '';
 
                   return (
                       <div
@@ -880,7 +890,7 @@ const isExpanded = expandedBudget === b.id;
                           className={cn(
                             "group rounded-xl border flex flex-col overflow-hidden transition-all duration-300 relative box-border bg-card z-0",
                             isExpanded ? " border-border/80" : " hover:-translate-y-0.5",
-                            !color && "hover:border-border/80"
+                            !color && "hover:border-black hover:bg-black dark:hover:bg-white dark:hover:border-white"
                           )}
                         >
                           {/* Smooth Background Transition */}
@@ -938,7 +948,7 @@ const isExpanded = expandedBudget === b.id;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
-                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : "text-primary")}>
+                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : "text-primary group-hover:text-white dark:text-foreground dark:group-hover:text-black")}>
                                 {formatCurrency(b.total)}
                               </span>
                               <DropdownMenu>
