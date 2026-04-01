@@ -329,15 +329,27 @@ const HomePage = () => {
                       : project
                         ? data.clients.find(c => c.id === project.client_id)
                         : null;
-                    const hasLinkedColor = Boolean(client?.color || project?.color);
-                    const itemColor = client?.color || project?.color || '#FFFFFF';
-                    const isLate = t.due_date && new Date(t.due_date) < now && t.status !== 'done';
-                    const solidCol = itemColor.startsWith('#') ? itemColor : '#FFFFFF';
-                    const hoverTitleColor = hasLinkedColor ? 'group-hover:text-white' : 'group-hover:text-white dark:group-hover:text-black';
-                    const hoverMetaColor = hasLinkedColor ? 'group-hover:text-white/80' : 'group-hover:text-white/80 dark:group-hover:text-black/70';
-                    const hoverBadgeColor = hasLinkedColor
-                      ? 'group-hover:bg-black/20 group-hover:text-white'
-                      : 'group-hover:bg-white/20 group-hover:text-white dark:group-hover:bg-black/10 dark:group-hover:text-black';
+                     const hasLinkedColor = Boolean(client?.color || project?.color);
+                     const itemColor = client?.color || project?.color || '#FFFFFF';
+                     const isLate = t.due_date && new Date(t.due_date) < now && t.status !== 'done';
+                     const solidCol = itemColor.startsWith('#') ? itemColor : '#FFFFFF';
+                     const contrast = hasLinkedColor ? getContrastYIQ(solidCol) : 'light';
+                     const useLightHoverText = contrast === 'light';
+                     const hoverTitleColor = hasLinkedColor
+                       ? useLightHoverText
+                         ? 'group-hover:text-white'
+                         : 'group-hover:text-slate-900'
+                       : 'group-hover:text-white dark:group-hover:text-black';
+                     const hoverMetaColor = hasLinkedColor
+                       ? useLightHoverText
+                         ? 'group-hover:text-white/80'
+                         : 'group-hover:text-slate-700'
+                       : 'group-hover:text-white/80 dark:group-hover:text-black/70';
+                     const hoverBadgeColor = hasLinkedColor
+                       ? useLightHoverText
+                         ? 'group-hover:bg-black/20 group-hover:text-white'
+                         : 'group-hover:bg-slate-900/10 group-hover:text-slate-900'
+                       : 'group-hover:bg-white/20 group-hover:text-white dark:group-hover:bg-black/10 dark:group-hover:text-black';
                     return (
                      <div 
                        key={t.id} 
@@ -365,8 +377,8 @@ const HomePage = () => {
         </section>
 
         {/* 2. Calendário */}
-        <section className="col-span-12 xl:col-span-8 bg-card p-6 rounded-2xl border border-border h-full">
-          <TaskCalendarCard tasks={data.tasks} invoices={data.invoices} expenses={data.expenses} isPt={isPt} navigate={navigate} />
+        <section className="col-span-12 xl:col-span-8 flex flex-col h-full">
+          <TaskCalendarCard tasks={data.tasks} invoices={data.invoices} expenses={data.expenses} isPt={isPt} navigate={navigate} headerOutside />
         </section>
 
         {/* 3. Personal Checklist */}
@@ -817,12 +829,14 @@ const TaskCalendarCard = ({
   expenses,
   isPt,
   navigate,
+  headerOutside = false,
 }: {
   tasks: any[];
   invoices: any[];
   expenses: any[];
   isPt: boolean;
   navigate: (path: string, options?: any) => void;
+  headerOutside?: boolean;
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -963,7 +977,6 @@ const TaskCalendarCard = ({
             : 'py-3 hover:bg-transparent first:pt-0 border-b border-border/60 last:border-b-0'
         }`}
       >
-        <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${markerClassName}`} />
         <div className="min-w-0 flex-1">
           <span className="text-sm font-semibold text-foreground/90 block truncate">{event.title}</span>
           <span className="text-[11px] text-muted-foreground">{subtitle}</span>
@@ -978,30 +991,51 @@ const TaskCalendarCard = ({
   };
 
   return (
-    <div className="grid w-full h-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)]">
-      <div className="min-w-0">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2.5">
-            <CalendarDays className="w-5 h-5 text-foreground" />
-            <div className="flex flex-col">
+    <div className="flex h-full flex-col">
+      {headerOutside && (
+        <div className="mb-6 grid w-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)]">
+          <div className="min-w-0 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <CalendarDays className="w-5 h-5 text-foreground" />
               <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
-              <p className="text-[10px] font-medium text-muted-foreground capitalize mt-1">
-                {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
-              </p>
+            </div>
+            <div className="flex items-center gap-0.5 bg-background border border-border rounded-[8px] p-0.5">
+              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-muted-foreground hover:text-foreground transition-colors uppercase min-w-[72px] flex items-center justify-center">
+                {format(currentMonth, 'MMMM', { locale: isPt ? ptBR : enUS })}
+              </button>
+              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-1">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="text-[10px] font-bold px-2 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors uppercase">
-              {isPt ? 'Hoje' : 'Today'}
-            </button>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <div className="hidden xl:block" />
         </div>
+      )}
+
+      <div className={`grid w-full h-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)] ${headerOutside ? 'rounded-2xl border border-border bg-card p-6' : ''}`}>
+      <div className="min-w-0">
+        {!headerOutside && (
+        <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2.5">
+                <CalendarDays className="w-5 h-5 text-foreground" />
+                <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
+              </div>
+              <div className="flex items-center gap-1 bg-background border border-border rounded-[8px] p-1">
+                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-muted-foreground hover:text-foreground transition-colors uppercase min-w-[92px] flex items-center justify-center">
+                  {format(currentMonth, 'MMMM', { locale: isPt ? ptBR : enUS })}
+                </button>
+                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+        </div>
+        )}
 
         <div className="grid grid-cols-7 gap-1">
           {weekDays.map(d => (
@@ -1060,11 +1094,7 @@ const TaskCalendarCard = ({
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
             {' • '}{selectedSummary}
           </span>
-          <h3 className="text-sm font-semibold text-foreground mb-4">
-            {isPt ? 'Eventos do dia' : 'Day events'}
-          </h3>
-
-          <div className="overflow-y-auto minimal-scrollbar pr-1 -mr-1 flex-1">
+            <div className="overflow-y-auto minimal-scrollbar pr-1 -mr-1 flex-1">
             {selectedEvents.length > 0 ? selectedEvents.map(event => renderEventRow(event)) : (
               <div className="h-full min-h-[220px] flex items-center justify-center p-6 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -1075,6 +1105,7 @@ const TaskCalendarCard = ({
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

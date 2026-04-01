@@ -176,7 +176,14 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
       {/* Excluded: the inline invite form was removed to avoid redundancy with the "Invite Member" modal. */}
 
       {/* Members list */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-2">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card pb-2">
+          <div className="hidden grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(180px,0.8fr)_72px] items-center gap-4 border-b border-border/70 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:grid">
+            <span>{isPt ? 'Nome' : 'Name'}</span>
+            <span>Email</span>
+            <span>{isPt ? 'Permissão' : 'Role'}</span>
+            <span className="text-right">{isPt ? 'Ações' : 'Actions'}</span>
+          </div>
+          <div className="flex flex-col">
           {members.map((member) => {
             const RoleIcon = roleIcons[member.role] || Eye;
             const isCurrentUser = member.user_id === user?.id;
@@ -186,51 +193,61 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
             return (
               <div
                 key={member.id}
-                className="group flex flex-col gap-4 p-5 rounded-2xl bg-card border border-border hover:shadow-md hover:border-primary/30 transition-all relative isolate"
+                className="group grid gap-4 border-t border-border/60 px-5 py-4 first:border-t-0 transition-colors hover:bg-muted/20 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(180px,0.8fr)_72px] md:items-center"
               >
-                <div className="flex justify-between items-start w-full">
+                <div className="flex min-w-0 items-center gap-4">
                   <Avatar className="w-12 h-12 shrink-0 ring-4 ring-background shadow-sm transition-all overflow-hidden bg-primary/10">
                     {member.profile?.avatar_url && <AvatarImage src={member.profile.avatar_url} className="object-cover w-full h-full" />}
                     <AvatarFallback className="bg-transparent text-primary text-base font-extrabold flex items-center justify-center">
                       {getInitials(member.profile?.name, member.profile?.email)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    {canManage ? (
-                      <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
-                        <SelectTrigger className="h-7 text-[10px] w-auto gap-1.5 px-2.5 rounded-[8px] font-semibold border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors dark:bg-muted/40 dark:border-white/10 dark:text-foreground dark:hover:bg-white/10">
-                          <RoleIcon className="w-3 h-3 text-muted-foreground dark:text-white/80" />
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin" className="font-semibold text-xs">Admin</SelectItem>
-                          <SelectItem value="collaborator" className="font-semibold text-xs">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 rounded-[8px] border shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
-                        <RoleIcon className="w-3 h-3" />
-                        {roleLabel(member.role)}
-                      </Badge>
-                    )}
-                    {member.status === 'pending' && (
-                      <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-[8px] dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
-                        <Clock className="w-3 h-3" />
-                        {isPt ? 'Pendente' : 'Pending'}
-                      </Badge>
-                    )}
+                  <div className="flex min-w-0 flex-col">
+                    <p className="text-base font-extrabold text-foreground truncate flex items-center gap-2">
+                      {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate font-medium md:hidden">
+                      {member.profile?.email || ''}
+                    </p>
+                    
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">{'Propriet\u00E1rio'}</span>}
+                      {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">{'Voc\u00EA'}</span>}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col min-w-0 mt-1">
-                  <p className="text-base font-extrabold text-foreground truncate flex items-center gap-2">
-                    {member.profile?.name || member.profile?.email || member.user_id.slice(0, 8)}
+                <div className="min-w-0 md:pl-2">
+                  <p className="truncate text-sm font-medium text-muted-foreground md:text-foreground">
+                    {member.profile?.email || '—'}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate font-medium">
-                    {member.profile?.email || ''}
-                  </p>
+                </div>
+
+                <div className="flex flex-col items-start gap-1.5 md:mt-0">
+                  {canManage ? (
+                    <Select value={member.role} onValueChange={(v) => handleRoleChange(member.id, v as any)}>
+                      <SelectTrigger className="h-8 w-auto min-w-0 gap-1.5 px-2.5 rounded-[8px] text-sm font-medium border-border/50 bg-card shadow-sm hover:bg-muted/50 transition-colors dark:bg-muted/40 dark:border-white/10 dark:text-foreground dark:hover:bg-white/10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin" className="font-semibold text-sm">Admin</SelectItem>
+                        <SelectItem value="collaborator" className="font-semibold text-sm">{isPt ? 'Colaborador' : 'Collaborator'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge variant="outline" className={`text-xs px-3 py-1 rounded-[10px] border shadow-sm gap-1.5 font-bold ${roleColors[member.role]}`}>
+                      <RoleIcon className="w-3.5 h-3.5" />
+                      {roleLabel(member.role)}
+                    </Badge>
+                  )}
+                  {member.status === 'pending' && (
+                    <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 border-amber-500/20 px-2 py-0.5 rounded-[8px] dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
+                      <Clock className="w-3 h-3" />
+                      {isPt ? 'Pendente' : 'Pending'}
+                    </Badge>
+                  )}
                   
-                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  <div className="hidden items-center gap-2 mt-2 flex-wrap">
                     {isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">Proprietário</span>}
                     {isCurrentUser && !isOwner && <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foreground border border-border dark:bg-white/10 dark:text-white/90 dark:border-white/10">Você</span>}
                   </div>
@@ -238,27 +255,32 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
 
                 {/* Actions at the bottom right */}
                 {(canManage || (isCurrentUser && !isOwner)) && (
-                  <div className="absolute bottom-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 md:justify-end sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     {canManage && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-transparent text-destructive/70 hover:text-destructive hover:bg-transparent transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent className="rounded-2xl">
                           <AlertDialogHeader>
-                            <AlertDialogTitle>{isPt ? 'Remover membro?' : 'Remove member?'}</AlertDialogTitle>
+                            <AlertDialogTitle>{isPt ? 'Confirmar remoção do membro?' : 'Confirm member removal?'}</AlertDialogTitle>
                             <AlertDialogDescription>
                               {isPt
                                 ? 'Este membro perderá acesso aos dados da organização.'
-                                : 'This member will lose access to organization data.'}
+                                : 'By confirming, this user will be removed from the organization and will immediately lose access to shared data.'}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
+                          <div className="rounded-xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                            {isPt
+                              ? 'Impacto: ele não poderá mais acessar projetos, tarefas, arquivos, financeiro e demais informações vinculadas a esta organização.'
+                              : 'Impact: they will no longer be able to access projects, tasks, files, finance data, or other organization information.'}
+                          </div>
                           <AlertDialogFooter>
                             <AlertDialogCancel className="rounded-xl">{isPt ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleRemoveMember(member.id)} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              {isPt ? 'Remover' : 'Remove'}
+                              {isPt ? 'Sim, remover usuário' : 'Yes, remove user'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -287,6 +309,7 @@ const OrgMembersCard = ({ embedded = false, orgHook: externalOrgHook, onLeave }:
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* Pending invites */}
