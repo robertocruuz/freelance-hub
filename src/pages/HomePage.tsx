@@ -364,89 +364,15 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* 2. Time Tracking */}
-        <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
-          <div className="flex items-center gap-2.5 mb-6">
-            <Clock className="w-5 h-5 text-foreground" />
-            <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Gestão de tempo' : 'Time Tracking'}</h2>
-            {timeStats.activeTimer && <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ml-2 ring-4 ring-green-500/20" />}
-          </div>
-          
-          <div className="flex flex-col bg-card border border-border rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card transition-colors" onClick={() => navigate('/dashboard/time')}>
-            <div className="flex justify-between items-start">
-               <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground font-bold mb-1 block uppercase tracking-wide">{isPt ? 'Hoje' : 'Today'}</span>
-                  <div className="text-4xl font-black tracking-tighter text-foreground">{fmtTime(timeStats.todayMin)}</div>
-               </div>
-               {timeStats.activeTimer && (
-                 <div className="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 text-[8px] font-bold uppercase tracking-wider animate-pulse">
-                   {isPt ? 'Ativo' : 'Active'}
-                 </div>
-               )}
-            </div>
-            <div className="w-full pt-4 border-t border-border/60">
-               <MiniBarChart data={timeStats.last7} />
-            </div>
-          </div>
+        {/* 2. Calendário */}
+        <section className="col-span-12 xl:col-span-8 bg-card p-6 rounded-2xl border border-border h-full">
+          <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
         </section>
 
-        {/* 3. Projetos */}
-        <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-               <FolderKanban className="w-5 h-5 text-foreground" />
-               <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Projetos' : 'Projects'}</h2>
-            </div>
-            <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-              {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="flex flex-col gap-2.5 flex-1 h-full">
-            {data.projects.slice(0, 5).map(p => {
-              const client = data.clients.find(c => c.id === p.client_id);
-              const projectColor = client?.color || p.color || 'hsl(var(--primary))';
-              const isHexColor = projectColor.startsWith('#');
-              const solidCol = isHexColor ? projectColor : 'hsl(var(--primary))';
-              const contrast = isHexColor ? getContrastYIQ(solidCol) : 'light';
-              const useLightText = contrast === 'light';
-              const tColor = isHexColor
-                ? `text-foreground/90 transition-colors duration-300 ${useLightText ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`
-                : 'text-foreground/90 transition-colors duration-300 group-hover:text-white dark:group-hover:text-black';
-              const mColor = isHexColor
-                ? `text-muted-foreground transition-colors duration-300 ${useLightText ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`
-                : 'text-muted-foreground transition-colors duration-300 group-hover:text-white/80 dark:group-hover:text-black/70';
-              const badgeHover = isHexColor
-                ? (useLightText
-                    ? 'group-hover:bg-white/15 group-hover:border-transparent'
-                    : 'group-hover:bg-black/10 group-hover:border-transparent')
-                : 'group-hover:bg-white/15 group-hover:border-transparent dark:group-hover:bg-black/10';
-
-              return (
-              <div 
-                key={p.id} 
-                className={cn(
-                  "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all hover:-translate-y-0.5 bg-card border border-border hover:bg-[var(--hover-bg)] hover:border-[var(--hover-bg)]",
-                  !isHexColor && "dark:hover:bg-white dark:hover:border-white"
-                )}
-                style={{ '--hover-bg': solidCol } as React.CSSProperties} 
-                onClick={() => navigate('/dashboard/projects')}
-              >
-                 <div className="flex items-center gap-3 min-w-0 flex-1 pr-3">
-                    <span className={`text-sm font-bold opacity-95 truncate block w-full ${tColor}`}>{p.name}</span>
-                 </div>
-                 <div className="flex items-center gap-2 shrink-0">
-                    {p.due_date && (
-                       <span className={`text-[10px] font-bold px-2 py-1 rounded-md opacity-95 text-center ${mColor} bg-background border border-border ${badgeHover}`}>
-                         {format(parseISO(p.due_date), 'dd/MM')}
-                       </span>
-                    )}
-                 </div>
-              </div>
-              );
-            })}
-            {data.projects.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground opacity-60 m-auto">{isPt ? 'Nenhum projeto.' : 'No projects.'}</div>}
-          </div>
-        </section>
+        {/* 3. Personal Checklist */}
+        <div className="col-span-12 xl:col-span-4 flex flex-col pt-0.5 h-full">
+          <UserChecklist className="h-full" />
+        </div>
 
         {/* ROW 2: (3 CARDS) */}
         {/* 4. Notificações */}
@@ -515,15 +441,79 @@ const HomePage = () => {
           )}
         </section>
 
-        {/* 5. Calendário */}
-        <section className="col-span-12 xl:col-span-4 bg-card p-6 rounded-2xl border border-border h-full">
-          <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
+        {/* 5. Time Tracking */}
+        <section className="col-span-12 xl:col-span-4 flex flex-col h-full">
+          <div className="flex items-center gap-2.5 mb-6">
+            <Clock className="w-5 h-5 text-foreground" />
+            <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Gestão de tempo' : 'Time Tracking'}</h2>
+            {timeStats.activeTimer && <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ml-2 ring-4 ring-green-500/20" />}
+          </div>
+          
+          <div className="flex flex-col bg-card border border-border rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card transition-colors" onClick={() => navigate('/dashboard/time')}>
+            <div className="flex justify-between items-start">
+               <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground font-bold mb-1 block uppercase tracking-wide">{isPt ? 'Hoje' : 'Today'}</span>
+                  <div className="text-4xl font-black tracking-tighter text-foreground">{fmtTime(timeStats.todayMin)}</div>
+               </div>
+               {timeStats.activeTimer && (
+                 <div className="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 text-[8px] font-bold uppercase tracking-wider animate-pulse">
+                   {isPt ? 'Ativo' : 'Active'}
+                 </div>
+               )}
+            </div>
+            <div className="w-full pt-4 border-t border-border/60">
+               <MiniBarChart data={timeStats.last7} />
+            </div>
+          </div>
         </section>
 
-        {/* 6. Personal Checklist */}
-        <div className="col-span-12 xl:col-span-4 flex flex-col pt-0.5 h-full">
-          <UserChecklist className="h-full" />
-        </div>
+        {/* 6. Projetos */}
+        <section className="col-span-12 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+               <FolderKanban className="w-5 h-5 text-foreground" />
+               <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Projetos' : 'Projects'}</h2>
+            </div>
+            <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+              {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:gap-3">
+            {data.projects.slice(0, 5).map(p => {
+              const client = data.clients.find(c => c.id === p.client_id);
+              const projectColor = client?.color || p.color || 'hsl(var(--primary))';
+              const isHexColor = projectColor.startsWith('#');
+              const solidCol = isHexColor ? projectColor : 'hsl(var(--primary))';
+              const contrast = isHexColor ? getContrastYIQ(solidCol) : 'light';
+              const useLightText = contrast === 'light';
+              const tColor = isHexColor
+                ? `text-foreground/90 transition-colors duration-300 ${useLightText ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`
+                : 'text-foreground/90 transition-colors duration-300 group-hover:text-white dark:group-hover:text-black';
+              const mColor = isHexColor
+                ? `text-muted-foreground transition-colors duration-300 ${useLightText ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`
+                : 'text-muted-foreground transition-colors duration-300 group-hover:text-white/80 dark:group-hover:text-black/70';
+              const topMeta = client?.name || (isPt ? 'Sem cliente' : 'No client');
+              const bottomMeta = p.due_date
+                ? `${isPt ? 'Entrega' : 'Due'} ${format(parseISO(p.due_date), 'dd/MM')}`
+                : undefined;
+
+              return (
+              <div key={p.id} className="flex justify-center first:justify-start last:justify-end">
+                <ProjectFolderCard
+                  title={p.name}
+                  topMeta={topMeta}
+                  bottomMeta={bottomMeta}
+                  solidCol={solidCol}
+                  titleClassName={tColor}
+                  metaClassName={mColor}
+                  onClick={() => navigate('/dashboard/projects')}
+                />
+              </div>
+              );
+            })}
+            {data.projects.length === 0 && <div className="col-span-full p-8 text-center text-sm text-muted-foreground opacity-60 m-auto">{isPt ? 'Nenhum projeto.' : 'No projects.'}</div>}
+          </div>
+        </section>
 
         {/* ROW 3+: REMAINING */}
         {/* 7. Clientes */}
@@ -736,6 +726,80 @@ const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours:
   );
 };
 
+const ProjectFolderCard = ({
+  title,
+  topMeta,
+  bottomMeta,
+  solidCol,
+  titleClassName,
+  metaClassName,
+  onClick,
+}: {
+  title: string;
+  topMeta: string;
+  bottomMeta?: string;
+  solidCol: string;
+  titleClassName: string;
+  metaClassName: string;
+  onClick: () => void;
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative block aspect-[637.6/480] w-full max-w-[96%] cursor-pointer text-left transition-all hover:-translate-y-0.5"
+    >
+      <svg
+        viewBox="0 0 637.6 480"
+        preserveAspectRatio="xMinYMin meet"
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 h-full w-[calc(100%+1px)] max-w-none"
+      >
+        <path
+          d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+          fill="hsl(var(--muted) / 0.65)"
+        />
+        <path
+          d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+          fill={solidCol}
+          className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ filter: 'brightness(0.9)' }}
+        />
+        <rect
+          x=".5"
+          y="106.4"
+          width="636.6"
+          height="360.1"
+          rx="42.5"
+          ry="42.5"
+          fill="hsl(var(--card))"
+          stroke="hsl(var(--border))"
+          strokeWidth="1.5"
+          className="transition-opacity duration-300 group-hover:opacity-0"
+        />
+        <rect
+          x=".5"
+          y="106.4"
+          width="636.6"
+          height="360.1"
+          rx="42.5"
+          ry="42.5"
+          fill={solidCol}
+          stroke={solidCol}
+          strokeWidth="1.5"
+          className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        />
+      </svg>
+
+      <div className="absolute left-[11%] top-[41%] w-[70%] flex flex-col gap-1.5">
+        <div className={`text-[10px] font-black uppercase tracking-[0.22em] ${metaClassName}`}>{topMeta}</div>
+        <div className={`max-w-[78%] text-[16px] leading-[1.08] font-black ${titleClassName}`}>{title}</div>
+        {bottomMeta ? <div className={`text-[10px] font-black uppercase tracking-[0.18em] ${metaClassName}`}>{bottomMeta}</div> : null}
+      </div>
+    </button>
+  );
+};
+
 const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boolean; navigate: (path: string) => void }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -767,11 +831,12 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
     low: 'bg-muted-foreground/40',
   };
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const selectedTasks = selectedDay ? tasksByDate[selectedDay] || [] : [];
+  const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  const selectedTasks = tasksByDate[selectedDay] || [];
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="grid w-full h-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)]">
+      <div className="min-w-0">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
           <CalendarDays className="w-5 h-5 text-foreground" />
@@ -786,7 +851,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
           <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => setCurrentMonth(new Date())} className="text-[10px] font-bold px-2 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors uppercase">
+          <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="text-[10px] font-bold px-2 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors uppercase">
             {isPt ? 'Hoje' : 'Today'}
           </button>
           <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
@@ -814,7 +879,7 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
           return (
             <button
               key={dateStr}
-              onClick={() => setSelectedDay(isSelected ? null : dateStr)}
+              onClick={() => setSelectedDay(dateStr)}
               className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
                 ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
                 ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
@@ -833,8 +898,10 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
         })}
       </div>
 
+      </div>
+
       {selectedDay && selectedTasks.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-border/80 animate-fade-in fill-mode-forwards">
+        <div className="mt-4 pt-4 border-t border-border/80 animate-fade-in fill-mode-forwards xl:hidden">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
             {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
@@ -856,6 +923,49 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
           </div>
         </div>
       )}
+
+      <div className="min-w-0 xl:border-l xl:border-border/80 xl:pl-6">
+        <div className="h-full flex flex-col">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
+            {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
+            {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
+          </span>
+          <h3 className="text-sm font-semibold text-foreground mb-4">
+            {isPt ? 'Eventos do dia' : 'Day events'}
+          </h3>
+
+          <div className="overflow-y-auto minimal-scrollbar pr-1 -mr-1 flex-1">
+            {selectedTasks.length > 0 ? selectedTasks.map(task => (
+              <button
+                key={task.id}
+                onClick={() => navigate('/dashboard/kanban')}
+                className="w-full flex items-start gap-3 py-3 text-left transition-colors hover:bg-transparent first:pt-0 border-b border-border/60 last:border-b-0"
+              >
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${priorityColor[task.priority] || 'bg-primary'}`} />
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-foreground/90 block truncate">{task.title}</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {task.status === 'done'
+                      ? (isPt ? 'Concluída' : 'Done')
+                      : task.status === 'in_progress'
+                        ? (isPt ? 'Em andamento' : 'In progress')
+                        : (isPt ? 'Pendente' : 'Pending')}
+                  </span>
+                </div>
+                {task.status === 'done' && (
+                  <span className="ml-auto text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 p-1 rounded shrink-0"><CheckCheck className="w-3.5 h-3.5" /></span>
+                )}
+              </button>
+            )) : (
+              <div className="h-full min-h-[220px] flex items-center justify-center p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {isPt ? 'Nenhuma tarefa agendada para este dia.' : 'No tasks scheduled for this day.'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
