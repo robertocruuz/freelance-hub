@@ -571,9 +571,9 @@ export default function ProjectDashboardPage() {
     : 'text-muted-foreground hover:text-white hover:bg-primary dark:hover:text-black';
   const primaryActionButton = cColor
     ? contrast === 'light'
-      ? 'text-white hover:bg-primary hover:text-white bg-primary/15 shadow-sm'
-      : 'text-slate-900 hover:bg-primary hover:text-slate-900 bg-primary/15 shadow-sm'
-    : 'text-primary hover:bg-primary hover:text-primary-foreground bg-primary/10 shadow-sm';
+      ? 'bg-primary text-white hover:bg-primary/90 hover:text-white shadow-sm'
+      : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground shadow-sm'
+    : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground shadow-sm';
   const filledPrimaryButton = cColor
     ? contrast === 'light'
       ? 'bg-primary hover:bg-primary/90 text-white'
@@ -606,10 +606,17 @@ export default function ProjectDashboardPage() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {project.client_id && clientName(project.client_id) !== '-' && (
-                <span className={cn("text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md flex items-center gap-1.5 border", badgeBg)}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/clients', { state: { clientId: project.client_id } })}
+                  className={cn(
+                    "text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md flex items-center gap-1.5 border transition-colors hover:opacity-90",
+                    badgeBg
+                  )}
+                >
                   {cColor && <Briefcase className={cn("w-3 h-3", contrast === 'light' ? 'text-white' : 'text-slate-900')} />}
                   {clientName(project.client_id)}
-                </span>
+                </button>
               )}
               {(project.due_text || project.due_date) && (
                 <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md shadow-sm border", badgeBgMuted)}>
@@ -704,7 +711,7 @@ export default function ProjectDashboardPage() {
                           variant={itemHasTask ? "ghost" : "secondary"}
                           size="sm" 
                           className={cn(
-                            "rounded-lg h-8 px-3 text-xs font-semibold gap-1.5 transition-all",
+                            "rounded-[8px] h-8 px-3 text-xs font-semibold gap-1.5 transition-all",
                             itemHasTask 
                               ? "text-muted-foreground/40 opacity-50 cursor-not-allowed bg-transparent" 
                               : primaryActionButton
@@ -725,12 +732,12 @@ export default function ProjectDashboardPage() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className={cn(
-                          "w-8 h-8 rounded-lg",
-                          isLinkedToBudget 
-                            ? "text-muted-foreground/30 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/30" 
-                            : "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        )}
+                          className={cn(
+                            "w-8 h-8 rounded-lg",
+                            isLinkedToBudget 
+                              ? "text-muted-foreground/30 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/30" 
+                              : "bg-transparent text-muted-foreground hover:bg-transparent hover:text-destructive"
+                          )}
                         onClick={(e) => {
                           if (isLinkedToBudget) {
                             e.stopPropagation();
@@ -1032,8 +1039,17 @@ export default function ProjectDashboardPage() {
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => handleEditFile(f)}>
-                        <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "w-7 h-7 text-muted-foreground hover:bg-transparent",
+                          cColor ? "hover:text-[var(--client-accent)]" : "hover:text-primary"
+                        )}
+                        style={cColor ? ({ '--client-accent': cColor } as React.CSSProperties) : undefined}
+                        onClick={() => handleEditFile(f)}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
                       <Button variant="ghost" size="icon" className="w-7 h-7 hover:text-destructive" onClick={() => handleDeleteFile(f)}>
                         <Trash2 className="w-3.5 h-3.5" />

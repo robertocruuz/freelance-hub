@@ -212,7 +212,8 @@ export default function ReceivablesTab({
   const autoEditProcessed = useRef<string | null>(null);
   useEffect(() => {
     if (autoEditId && autoEditId !== autoEditProcessed.current && mappedInvoices.length > 0) {
-      const inv = mappedInvoices.find(i => i.id === autoEditId);
+      const [invoiceId] = autoEditId.split(':');
+      const inv = mappedInvoices.find(i => i.id === invoiceId);
       if (inv) {
         autoEditProcessed.current = autoEditId;
         editInvoice(inv);

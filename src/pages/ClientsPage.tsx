@@ -263,6 +263,7 @@ const ClientsPage = () => {
   const [expandedSections, setExpandedSections] = useState({
     projects: true,
     timeEntries: true,
+    invoices: true,
     budgets: true,
   });
   const [logoModalOpen, setLogoModalOpen] = useState(false);
@@ -415,7 +416,7 @@ const ClientsPage = () => {
     loadClientDetails(c.id);
   };
 
-  const toggleSection = (section: 'projects' | 'timeEntries' | 'budgets') => {
+  const toggleSection = (section: 'projects' | 'timeEntries' | 'invoices' | 'budgets') => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
@@ -774,12 +775,20 @@ const ClientsPage = () => {
               <div className="grid grid-cols-1 gap-6">
                 {details.invoices.length > 0 && (
                   <div className="space-y-2.5">
-                    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-1.5">
-                      <Receipt className="w-3.5 h-3.5" /> Faturas
-                      <span className={detailTagCompactClass}>
-                        {details.invoices.length}
-                      </span>
-                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => toggleSection('invoices')}
+                      className="px-1 flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest"
+                    >
+                      <Receipt className="w-3.5 h-3.5" />
+                      <span>Faturas</span>
+                      {expandedSections.invoices ? (
+                        <ChevronDown className="w-4 h-4 text-foreground" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-foreground" />
+                      )}
+                    </button>
+                    {expandedSections.invoices && (
                     <div className="rounded-xl border border-border bg-card overflow-hidden">
                       {details.invoices.map((inv, idx) => (
                         <div key={inv.id} className={cn(
@@ -794,6 +803,7 @@ const ClientsPage = () => {
                         </div>
                       ))}
                     </div>
+                    )}
                   </div>
                 )}
                 {details.budgets.length > 0 && (

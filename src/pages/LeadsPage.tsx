@@ -450,7 +450,11 @@ export default function LeadsPage() {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setStageFilter(null)}
-                className={`h-9 px-5 rounded-[8px] text-xs font-medium transition-colors ${!stageFilter ? 'bg-primary text-primary-foreground' : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80 shadow-sm'}`}
+                className={`h-9 px-5 rounded-[8px] text-sm font-normal leading-none shadow-sm transition-colors ${
+                  !stageFilter
+                    ? 'bg-primary text-primary-foreground border border-primary'
+                    : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80'
+                }`}
               >
                 Todas
               </button>
@@ -458,7 +462,9 @@ export default function LeadsPage() {
                 <button
                   key={s.id}
                   onClick={() => setStageFilter(s.id === stageFilter ? null : s.id)}
-                  className={`h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-xs font-medium transition-colors ${stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'}`}
+                  className={`h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors ${
+                    stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'
+                  }`}
                   style={stageFilter === s.id ? { backgroundColor: s.color, borderColor: s.color } : undefined}
                 >
                   {s.name}

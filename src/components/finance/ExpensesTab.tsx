@@ -126,7 +126,8 @@ export default function ExpensesTab({ monthFilter, autoEditId, onAutoEditDone }:
   const autoEditProcessed = useRef<string | null>(null);
   useEffect(() => {
     if (autoEditId && autoEditId !== autoEditProcessed.current && expenses.length > 0) {
-      const exp = expenses.find(e => e.id === autoEditId);
+      const [expenseId] = autoEditId.split(':');
+      const exp = expenses.find(e => e.id === expenseId);
       if (exp) {
         autoEditProcessed.current = autoEditId;
         openEdit(exp);

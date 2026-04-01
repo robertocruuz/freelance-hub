@@ -41,6 +41,7 @@ export interface InvoicePrefillDraft {
 }
 
 type ViewMode = 'month' | 'overview';
+type AutoEditTarget = { type: 'receivable' | 'expense'; id: string; token: number } | null;
 
 export default function FinancePage() {
   const { user } = useAuth();
@@ -50,7 +51,7 @@ export default function FinancePage() {
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [autoEditId, setAutoEditId] = useState<string | null>(null);
+  const [autoEditTarget, setAutoEditTarget] = useState<AutoEditTarget>(null);
   const [invoicePrefillDraft, setInvoicePrefillDraft] = useState<InvoicePrefillDraft | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -58,7 +59,7 @@ export default function FinancePage() {
   const [overviewFilterCount, setOverviewFilterCount] = useState(0);
 
   const handleEventClick = (type: 'receivable' | 'expense', id: string) => {
-    setAutoEditId(id);
+    setAutoEditTarget({ type, id, token: Date.now() });
     setTimeout(() => {
       tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -267,8 +268,8 @@ export default function FinancePage() {
                   invoices={invoices}
                   onRefresh={fetchInvoices}
                   monthFilter={monthStr}
-                  autoEditId={autoEditId}
-                  onAutoEditDone={() => setAutoEditId(null)}
+                  autoEditId={autoEditTarget?.type === 'receivable' ? `${autoEditTarget.id}:${autoEditTarget.token}` : null}
+                  onAutoEditDone={() => setAutoEditTarget(null)}
                   prefillDraft={invoicePrefillDraft}
                   onPrefillApplied={() => setInvoicePrefillDraft(null)}
                 />
@@ -284,7 +285,7 @@ export default function FinancePage() {
                 <h2 className="text-lg font-bold text-foreground">A Pagar</h2>
               </div>
               <div className="h-full flex flex-col">
-                <ExpensesTab monthFilter={monthStr} autoEditId={autoEditId} onAutoEditDone={() => setAutoEditId(null)} />
+                <ExpensesTab monthFilter={monthStr} autoEditId={autoEditTarget?.type === 'expense' ? `${autoEditTarget.id}:${autoEditTarget.token}` : null} onAutoEditDone={() => setAutoEditTarget(null)} />
               </div>
             </div>
           </div>

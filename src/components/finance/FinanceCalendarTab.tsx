@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
@@ -58,9 +58,9 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
 
   const handleSave = async () => {
     if (!user || !selectedDate) return;
-    if (!name.trim()) return toast.error('Informe uma descrição.');
+    if (!name.trim()) return toast.error('Informe uma descriÃ§Ã£o.');
     const numAmount = parseFloat(amount);
-    if (!numAmount || numAmount <= 0) return toast.error('Informe um valor válido.');
+    if (!numAmount || numAmount <= 0) return toast.error('Informe um valor vÃ¡lido.');
 
     setSaving(true);
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -243,7 +243,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                   <CalendarDays className="w-8 h-8 text-muted-foreground/70" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Nenhum evento nesta data</p>
-                <p className="text-xs text-muted-foreground/60 mt-0.5 mb-4">Datas com eventos ficam destacadas no calendário</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5 mb-4">Datas com eventos ficam destacadas no calendÃ¡rio</p>
                 {selectedDate && (
                   <Button
                     variant="outline"
@@ -261,19 +261,19 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                 {selectedEvents.invoices.map(inv => (
                   <div
                     key={inv.id}
-                    className="group flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 hover:border-primary/20 cursor-pointer"
+                    className="group flex items-center justify-between p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/10 transition-all hover:bg-emerald-500/10 hover:border-emerald-500/20 cursor-pointer"
                     onClick={() => onEventClick?.('receivable', inv.id)}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-transparent flex items-center justify-center">
-                        <ArrowDownLeft className="w-5 h-5 text-primary" />
+                        <ArrowDownLeft className="w-5 h-5 text-emerald-600" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{inv.name || 'Fatura'}</p>
                         <p className="text-[11px] text-primary/70 font-medium">A receber · clique para editar</p>
                       </div>
                     </div>
-                    <span className="font-extrabold text-sm text-primary tabular-nums">{formatCurrency(inv.total)}</span>
+                    <span className="font-extrabold text-sm text-emerald-600 tabular-nums">{formatCurrency(inv.total)}</span>
                   </div>
                 ))}
                 {selectedEvents.expenses.map(exp => (
@@ -288,7 +288,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">{exp.description}</p>
-                        <p className="text-[11px] text-destructive/70 font-medium">A pagar · clique para editar</p>
+                        <p className="text-[11px] text-destructive/70 font-medium">A pagar Â· clique para editar</p>
                       </div>
                     </div>
                     <span className="font-extrabold text-sm text-destructive tabular-nums">{formatCurrency(exp.amount)}</span>
@@ -366,7 +366,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
             )}
 
             <div className="space-y-2">
-              <Label>Descrição</Label>
+              <Label>DescriÃ§Ã£o</Label>
               <Input
                 placeholder={eventType === 'receivable' ? 'Ex: Projeto website' : 'Ex: Servidor cloud'}
                 value={name}
@@ -431,3 +431,5 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
     </>
   );
 }
+
+
