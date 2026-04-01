@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Pencil, Trash2, FolderKanban, ChevronDown, ChevronRight, ListChecks, FileText, MoreVertical, Sparkles, CalendarIcon, X, Kanban, Link2, FolderOpen, ExternalLink, Search, MessageCircle, Star, Archive } from 'lucide-react';
@@ -102,6 +102,67 @@ export const getContrastYIQ = (hexcolor: string | null) => {
   // Aumentamos o threshold (padrão 128) para 160 para favorecer textos claros (brancos)
   // em cores de tom médio vibrante como o laranja, mantendo o contraste visual moderno.
   return (yiq >= 160) ? 'dark' : 'light';
+};
+
+const ProjectFolderFrame = ({
+  color,
+  children,
+  className,
+}: {
+  color?: string | null;
+  children: ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div className={cn("group relative w-full aspect-[637.6/467.1] overflow-hidden rounded-[18px]", className)}>
+      <svg
+        viewBox="0 0 637.6 467.1"
+        preserveAspectRatio="xMinYMin meet"
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full"
+      >
+        <path
+          d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+          fill="hsl(var(--muted) / 0.65)"
+          className="transition-opacity duration-300"
+        />
+        {color ? (
+          <path
+            d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+            fill={color}
+            className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          />
+        ) : null}
+        <rect
+          x="1.25"
+          y="107.15"
+          width="634.1"
+          height="357.95"
+          rx="42.5"
+          ry="42.5"
+          fill="hsl(var(--card))"
+          stroke="hsl(var(--border))"
+          strokeWidth="1.5"
+          className="transition-opacity duration-300 group-hover:opacity-0"
+        />
+        {color ? (
+          <rect
+            x="1.25"
+            y="107.15"
+            width="634.1"
+            height="357.95"
+            rx="42.5"
+            ry="42.5"
+            fill={color}
+            stroke={color}
+            strokeWidth="1.5"
+            className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          />
+        ) : null}
+      </svg>
+      <div className="relative z-10 flex h-full flex-col px-5 pb-4 pt-[4.1rem]">{children}</div>
+    </div>
+  );
 };
 
 const ProjectsPage = () => {
@@ -1027,7 +1088,7 @@ const ProjectsPage = () => {
         <div className="space-y-8">
         {activeProjects.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 items-stretch">
-          {activeProjects.map(p => {
+          {activeProjects.map((p) => {
             const isExpanded = expandedIds.has(p.id);
             const items = projectItems[p.id] || [];
             const total = getProjectTotal(p.id);
@@ -1044,35 +1105,22 @@ const ProjectsPage = () => {
             const badgeBg = `bg-primary/10 text-primary transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : ''}`;
             const badgeBgMuted = `bg-muted text-muted-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/10 group-hover:text-white/90' : 'group-hover:bg-slate-900/5 group-hover:text-slate-800') : ''}`;
             
-            const iconBox = `bg-muted/60 text-muted-foreground transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : 'group-hover:bg-muted group-hover:text-foreground'}`;
-            const iconBoxActive = `bg-primary/10 text-primary transition-colors duration-300 ${color ? (isLight ? 'group-hover:bg-white/30 group-hover:text-white' : 'group-hover:bg-slate-900/15 group-hover:text-slate-900') : ''}`;
-
             return (
-              <div
+              <ProjectFolderFrame
                 key={p.id}
+                color={color}
                 className={cn(
-                  "group rounded-2xl border flex flex-col overflow-hidden transition-all duration-300 relative h-full",
-                  "bg-card z-0",
-                  isExpanded ? "shadow-md ring-1 ring-primary/10" : "hover:shadow-lg hover:-translate-y-1 hover:border-transparent",
-                  !color && "hover:border-border/80"
+                  "transition-all duration-300",
+                  isExpanded ? "shadow-md ring-1 ring-primary/10" : "hover:shadow-lg hover:-translate-y-1"
                 )}
               >
-                {/* Smooth Background Transition */}
-                {color && (
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none -z-10"
-                    style={{ backgroundColor: color }}
-                  />
-                )}
-                
-                {/* Project header */}
                 <div
-                  className="flex flex-col p-5 cursor-pointer gap-4 relative flex-1 z-10"
+                  className="flex h-full cursor-pointer flex-col justify-between"
                   onClick={() => navigate(`/dashboard/projects/${p.id}`)}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="min-w-0 flex-1 pt-0.5">
+                      <div className="min-w-0 flex flex-1 flex-col pt-0.5">
                         {p.client_id && clientName(p.client_id) !== '-' ? (
                           <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-1.5", mColor)}>
                             {clientName(p.client_id)}
@@ -1125,34 +1173,23 @@ const ProjectsPage = () => {
                       </DropdownMenu>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/80 group-hover:border-black/10 dark:group-hover:border-white/10 shrink-0 transition-colors">
-                    <div className={cn("flex items-center gap-2 text-xs", mColor)}>
-                      {p.due_text ? (
-                        <>
-                          <CalendarIcon className="w-3.5 h-3.5" />
-                          <span className="font-medium">Prazo: {p.due_text}</span>
-                        </>
-                      ) : p.due_date ? (
-                        <>
-                          <CalendarIcon className="w-3.5 h-3.5" />
-                          <span className="font-medium">Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
-                        </>
-                      ) : (
-                        <span className="italic opacity-60">Sem prazo definido</span>
-                      )}
-                    </div>
-                    
-                    <div className={cn(
-                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                      isExpanded ? iconBoxActive : iconBox
-                    )}>
-                      <FolderKanban className="w-3.5 h-3.5" />
-                    </div>
+                  <div className={cn("flex items-center gap-2 pt-4 text-xs", mColor)}>
+                    {p.due_text ? (
+                      <>
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        <span className="font-medium">Prazo: {p.due_text}</span>
+                      </>
+                    ) : p.due_date ? (
+                      <>
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        <span className="font-medium">Prazo: {format(new Date(p.due_date + 'T12:00:00'), 'dd/MM/yyyy')}</span>
+                      </>
+                    ) : (
+                      <span className="italic opacity-60">Sem prazo definido</span>
+                    )}
                   </div>
                 </div>
-
-              </div>
+              </ProjectFolderFrame>
             );
           })}
         </div>

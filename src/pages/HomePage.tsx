@@ -481,17 +481,17 @@ const HomePage = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:gap-3">
             {data.projects.slice(0, 5).map(p => {
               const client = data.clients.find(c => c.id === p.client_id);
-              const projectColor = client?.color || p.color || 'hsl(var(--primary))';
+              const projectColor = client?.color || p.color || 'hsl(var(--muted))';
               const isHexColor = projectColor.startsWith('#');
-              const solidCol = isHexColor ? projectColor : 'hsl(var(--primary))';
-              const contrast = isHexColor ? getContrastYIQ(solidCol) : 'light';
+              const solidCol = isHexColor ? projectColor : 'hsl(var(--muted))';
+              const contrast = isHexColor ? getContrastYIQ(solidCol) : 'dark';
               const useLightText = contrast === 'light';
               const tColor = isHexColor
                 ? `text-foreground/90 transition-colors duration-300 ${useLightText ? 'group-hover:text-white' : 'group-hover:text-slate-900'}`
-                : 'text-foreground/90 transition-colors duration-300 group-hover:text-white dark:group-hover:text-black';
+                : 'text-foreground/90 transition-colors duration-300 group-hover:text-foreground';
               const mColor = isHexColor
                 ? `text-muted-foreground transition-colors duration-300 ${useLightText ? 'group-hover:text-white/80' : 'group-hover:text-slate-700'}`
-                : 'text-muted-foreground transition-colors duration-300 group-hover:text-white/80 dark:group-hover:text-black/70';
+                : 'text-muted-foreground transition-colors duration-300 group-hover:text-muted-foreground';
               const topMeta = client?.name || (isPt ? 'Sem cliente' : 'No client');
               const bottomMeta = p.due_date
                 ? `${isPt ? 'Entrega' : 'Due'} ${format(parseISO(p.due_date), 'dd/MM')}`
