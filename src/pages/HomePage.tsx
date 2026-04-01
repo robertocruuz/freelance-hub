@@ -366,17 +366,21 @@ const HomePage = () => {
 
         {/* 2. Calendário */}
         <section className="col-span-12 xl:col-span-8 bg-card p-6 rounded-2xl border border-border h-full">
-          <TaskCalendarCard tasks={data.tasks} isPt={isPt} navigate={navigate} />
+          <TaskCalendarCard tasks={data.tasks} invoices={data.invoices} expenses={data.expenses} isPt={isPt} navigate={navigate} />
         </section>
 
         {/* 3. Personal Checklist */}
         <div className="col-span-12 xl:col-span-4 flex flex-col pt-0.5 h-full">
-          <UserChecklist className="h-full" />
+          <div className="flex items-center gap-2.5 mb-6">
+            <ListTodo className="w-5 h-5 text-foreground" />
+            <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Checklist' : 'Checklist'}</h2>
+          </div>
+          <UserChecklist className="h-full" hideHeader />
         </div>
 
         {/* ROW 2: (3 CARDS) */}
         {/* 4. Notificações */}
-        <section className="col-span-12 xl:col-span-4 flex flex-col min-h-[300px] bg-card p-6 rounded-2xl border border-border h-full">
+        <section className="col-span-12 xl:col-span-4 flex flex-col min-h-[300px] h-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
               <Bell className="w-5 h-5 text-foreground" />
@@ -393,7 +397,8 @@ const HomePage = () => {
               </button>
             )}
           </div>
-          
+
+          <div className="flex flex-col flex-1 min-h-[300px] bg-card p-6 rounded-2xl border border-border">
           <div className="flex-1 overflow-y-auto minimal-scrollbar max-h-[400px] pr-1 -mr-1">
             {data.notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center opacity-60 py-12">
@@ -439,6 +444,7 @@ const HomePage = () => {
               {isPt ? 'Limpar todas' : 'Clear all'}
             </button>
           )}
+          </div>
         </section>
 
         {/* 5. Time Tracking */}
@@ -800,23 +806,96 @@ const ProjectFolderCard = ({
   );
 };
 
-const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boolean; navigate: (path: string) => void }) => {
+type HomeCalendarEvent =
+  | { id: string; kind: 'task'; date: string; title: string; status: string; priority?: string | null }
+  | { id: string; kind: 'invoice'; date: string; title: string; status: string; amount: number }
+  | { id: string; kind: 'expense'; date: string; title: string; status: string; amount: number };
+
+const TaskCalendarCard = ({
+  tasks,
+  invoices,
+  expenses,
+  isPt,
+  navigate,
+}: {
+  tasks: any[];
+  invoices: any[];
+  expenses: any[];
+  isPt: boolean;
+  navigate: (path: string, options?: any) => void;
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  const tasksByDate = useMemo(() => {
-    const map: Record<string, any[]> = {};
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, HomeCalendarEvent[]> = {};
+
     tasks.forEach(task => {
       const dateStr = task.due_date;
       if (!dateStr) return;
       if (!map[dateStr]) map[dateStr] = [];
-      map[dateStr].push(task);
+      map[dateStr].push({
+        id: task.id,
+        kind: 'task',
+        date: dateStr,
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+      });
     });
+
+    invoices.forEach(invoice => {
+      const dateStr = invoice.due_date;
+      if (!dateStr) return;
+      if (!map[dateStr]) map[dateStr] = [];
+      map[dateStr].push({
+        id: invoice.id,
+        kind: 'invoice',
+        date: dateStr,
+        title: invoice.name || (isPt ? 'Recebimento sem nome' : 'Untitled receivable'),
+        status: invoice.status,
+        amount: Number(invoice.total) || 0,
+      });
+    });
+
+    expenses.forEach(expense => {
+      const dateStr = expense.due_date;
+      if (!dateStr) return;
+      if (!map[dateStr]) map[dateStr] = [];
+      map[dateStr].push({
+        id: expense.id,
+        kind: 'expense',
+        date: dateStr,
+        title: expense.description || (isPt ? 'Despesa sem nome' : 'Untitled expense'),
+        status: expense.status,
+        amount: Number(expense.amount) || 0,
+      });
+    });
+
     return map;
-  }, [tasks]);
+  }, [tasks, invoices, expenses, isPt]);
+
+  const eventCountsByDate = useMemo(() => {
+    const map: Record<string, { tasks: number; receivables: number; payables: number }> = {};
+
+    Object.entries(eventsByDate).forEach(([dateStr, events]) => {
+      map[dateStr] = events.reduce(
+        (acc, event) => {
+          if (event.kind === 'task') acc.tasks += 1;
+          if (event.kind === 'invoice') acc.receivables += 1;
+          if (event.kind === 'expense') acc.payables += 1;
+          return acc;
+        },
+        { tasks: 0, receivables: 0, payables: 0 }
+      );
+    });
+
+    return map;
+  }, [eventsByDate]);
 
   const startDay = getDay(monthStart);
   const leadingBlanks = startDay === 0 ? 6 : startDay - 1;
@@ -831,95 +910,146 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
     low: 'bg-muted-foreground/40',
   };
 
-  const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const selectedTasks = tasksByDate[selectedDay] || [];
+  const selectedEvents = eventsByDate[selectedDay] || [];
+  const selectedTaskCount = selectedEvents.filter(event => event.kind === 'task').length;
+  const selectedReceivableCount = selectedEvents.filter(event => event.kind === 'invoice').length;
+  const selectedPayableCount = selectedEvents.filter(event => event.kind === 'expense').length;
+  const fmtCurrency = (value: number) =>
+    new Intl.NumberFormat(isPt ? 'pt-BR' : 'en-US', { style: 'currency', currency: isPt ? 'BRL' : 'USD' }).format(value);
+
+  const selectedSummary = !isPt
+    ? `${selectedEvents.length} ${selectedEvents.length === 1 ? 'event' : 'events'}`
+    : [
+        selectedTaskCount > 0 ? `${selectedTaskCount} ${selectedTaskCount === 1 ? 'tarefa' : 'tarefas'}` : null,
+        selectedReceivableCount > 0 ? `${selectedReceivableCount} a receber` : null,
+        selectedPayableCount > 0 ? `${selectedPayableCount} a pagar` : null,
+      ].filter(Boolean).join(' • ') || '0 eventos';
+
+  const handleEventClick = (event: HomeCalendarEvent) => {
+    if (event.kind === 'task') {
+      navigate('/dashboard/kanban', { state: { taskId: event.id } });
+      return;
+    }
+
+    navigate('/dashboard/finance');
+  };
+
+  const renderEventRow = (event: HomeCalendarEvent, compact = false) => {
+    const markerClassName =
+      event.kind === 'task'
+        ? priorityColor[event.priority || ''] || 'bg-primary'
+        : event.kind === 'invoice'
+          ? 'bg-primary'
+          : 'bg-destructive';
+
+    const subtitle =
+      event.kind === 'task'
+        ? event.status === 'done'
+          ? (isPt ? 'Concluída' : 'Done')
+          : event.status === 'in_progress'
+            ? (isPt ? 'Em andamento' : 'In progress')
+            : (isPt ? 'Pendente' : 'Pending')
+        : event.kind === 'invoice'
+          ? `${isPt ? 'A receber' : 'Receivable'} • ${fmtCurrency(event.amount)}`
+          : `${isPt ? 'A pagar' : 'Payable'} • ${fmtCurrency(event.amount)}`;
+
+    return (
+      <button
+        key={`${event.kind}-${event.id}`}
+        onClick={() => handleEventClick(event)}
+        className={`w-full flex items-start gap-3 text-left transition-colors ${
+          compact
+            ? 'rounded-xl bg-background hover:bg-muted/50 p-3 border border-border'
+            : 'py-3 hover:bg-transparent first:pt-0 border-b border-border/60 last:border-b-0'
+        }`}
+      >
+        <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${markerClassName}`} />
+        <div className="min-w-0 flex-1">
+          <span className="text-sm font-semibold text-foreground/90 block truncate">{event.title}</span>
+          <span className="text-[11px] text-muted-foreground">{subtitle}</span>
+        </div>
+        {event.kind === 'task' && event.status === 'done' && (
+          <span className="ml-auto text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 p-1 rounded shrink-0">
+            <CheckCheck className="w-3.5 h-3.5" />
+          </span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <div className="grid w-full h-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)]">
       <div className="min-w-0">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2.5">
-          <CalendarDays className="w-5 h-5 text-foreground" />
-          <div className="flex flex-col">
-            <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
-            <p className="text-[10px] font-medium text-muted-foreground capitalize mt-1">
-              {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
-            </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2.5">
+            <CalendarDays className="w-5 h-5 text-foreground" />
+            <div className="flex flex-col">
+              <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
+              <p className="text-[10px] font-medium text-muted-foreground capitalize mt-1">
+                {format(currentMonth, 'MMMM yyyy', { locale: isPt ? ptBR : enUS })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-1">
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="text-[10px] font-bold px-2 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors uppercase">
+              {isPt ? 'Hoje' : 'Today'}
+            </button>
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-1">
-          <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="text-[10px] font-bold px-2 py-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors uppercase">
-            {isPt ? 'Hoje' : 'Today'}
-          </button>
-          <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+
+        <div className="grid grid-cols-7 gap-1">
+          {weekDays.map(d => (
+            <div key={d} className="text-center text-[10px] font-bold text-muted-foreground/60 py-2">{d.charAt(0)}</div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1.5">
+          {Array.from({ length: leadingBlanks }).map((_, i) => (
+            <div key={`blank-${i}`} className="h-9" />
+          ))}
+          {days.map(day => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const counts = eventCountsByDate[dateStr] || { tasks: 0, receivables: 0, payables: 0 };
+            const today = isToday(day);
+            const isSelected = selectedDay === dateStr;
+
+            return (
+              <button
+                key={dateStr}
+                onClick={() => setSelectedDay(dateStr)}
+                className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
+                  ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
+                  ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
+                `}
+              >
+                <span className={`text-xs leading-none ${today ? 'font-bold' : 'font-semibold'}`}>{format(day, 'd')}</span>
+                {(counts.tasks > 0 || counts.receivables > 0 || counts.payables > 0) && (
+                  <div className="flex gap-0.5 mt-1.5">
+                    {counts.tasks > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-foreground/70'}`} />}
+                    {counts.receivables > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-primary'}`} />}
+                    {counts.payables > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-destructive'}`} />}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
-        {weekDays.map(d => (
-          <div key={d} className="text-center text-[10px] font-bold text-muted-foreground/60 py-2">{d.charAt(0)}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-1.5">
-        {Array.from({ length: leadingBlanks }).map((_, i) => (
-          <div key={`blank-${i}`} className="h-9" />
-        ))}
-        {days.map(day => {
-          const dateStr = format(day, 'yyyy-MM-dd');
-          const dayTasks = tasksByDate[dateStr] || [];
-          const today = isToday(day);
-          const isSelected = selectedDay === dateStr;
-
-          return (
-            <button
-              key={dateStr}
-              onClick={() => setSelectedDay(dateStr)}
-              className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
-                ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
-                ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
-              `}
-            >
-              <span className={`text-xs leading-none ${today ? 'font-bold' : 'font-semibold'}`}>{format(day, 'd')}</span>
-              {dayTasks.length > 0 && (
-                <div className="flex gap-0.5 mt-1.5">
-                  {dayTasks.slice(0, 3).map((task, i) => (
-                    <span key={i} className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : (priorityColor[task.priority] || 'bg-primary')}`} />
-                  ))}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      </div>
-
-      {selectedDay && selectedTasks.length > 0 && (
+      {selectedDay && selectedEvents.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/80 animate-fade-in fill-mode-forwards xl:hidden">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
-            {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
+            {' • '}{selectedSummary}
           </span>
           <div className="space-y-2 max-h-[180px] overflow-y-auto minimal-scrollbar pr-1 -mr-1">
-            {selectedTasks.map(task => (
-              <button
-                key={task.id}
-                onClick={() => navigate('/dashboard/kanban')}
-                className="w-full flex items-center gap-3 rounded-xl bg-background hover:bg-muted/50 p-3 transition-colors text-left border border-border"
-              >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${priorityColor[task.priority] || 'bg-primary'}`} />
-                <span className="text-xs font-semibold text-foreground/90 truncate flex-1">{task.title}</span>
-                {task.status === 'done' && (
-                  <span className="ml-auto text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 p-1 rounded shrink-0"><CheckCheck className="w-3.5 h-3.5" /></span>
-                )}
-              </button>
-            ))}
+            {selectedEvents.map(event => renderEventRow(event, true))}
           </div>
         </div>
       )}
@@ -928,38 +1058,17 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
         <div className="h-full flex flex-col">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
-            {' · '}{selectedTasks.length} {isPt ? (selectedTasks.length === 1 ? 'tarefa' : 'tarefas') : (selectedTasks.length === 1 ? 'task' : 'tasks')}
+            {' • '}{selectedSummary}
           </span>
           <h3 className="text-sm font-semibold text-foreground mb-4">
             {isPt ? 'Eventos do dia' : 'Day events'}
           </h3>
 
           <div className="overflow-y-auto minimal-scrollbar pr-1 -mr-1 flex-1">
-            {selectedTasks.length > 0 ? selectedTasks.map(task => (
-              <button
-                key={task.id}
-                onClick={() => navigate('/dashboard/kanban')}
-                className="w-full flex items-start gap-3 py-3 text-left transition-colors hover:bg-transparent first:pt-0 border-b border-border/60 last:border-b-0"
-              >
-                <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${priorityColor[task.priority] || 'bg-primary'}`} />
-                <div className="min-w-0 flex-1">
-                  <span className="text-sm font-semibold text-foreground/90 block truncate">{task.title}</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {task.status === 'done'
-                      ? (isPt ? 'Concluída' : 'Done')
-                      : task.status === 'in_progress'
-                        ? (isPt ? 'Em andamento' : 'In progress')
-                        : (isPt ? 'Pendente' : 'Pending')}
-                  </span>
-                </div>
-                {task.status === 'done' && (
-                  <span className="ml-auto text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 p-1 rounded shrink-0"><CheckCheck className="w-3.5 h-3.5" /></span>
-                )}
-              </button>
-            )) : (
+            {selectedEvents.length > 0 ? selectedEvents.map(event => renderEventRow(event)) : (
               <div className="h-full min-h-[220px] flex items-center justify-center p-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {isPt ? 'Nenhuma tarefa agendada para este dia.' : 'No tasks scheduled for this day.'}
+                  {isPt ? 'Nenhum evento agendado para este dia.' : 'No events scheduled for this day.'}
                 </p>
               </div>
             )}
@@ -969,5 +1078,6 @@ const TaskCalendarCard = ({ tasks, isPt, navigate }: { tasks: any[]; isPt: boole
     </div>
   );
 };
-
 export default HomePage;
+
+

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Plus, Trash2, X, Check } from 'lucide-react';
 
-export const UserChecklist = ({ projectId, className, accentColor }: { projectId?: string, className?: string, accentColor?: string | null }) => {
+export const UserChecklist = ({ projectId, className, accentColor, hideHeader = false }: { projectId?: string, className?: string, accentColor?: string | null, hideHeader?: boolean }) => {
   const { items, loading, addItem, toggleItem, deleteItem, updateItem, refresh } = useChecklist(projectId);
   const { t } = useI18n();
   const [newItem, setNewItem] = useState('');
@@ -36,7 +36,7 @@ export const UserChecklist = ({ projectId, className, accentColor }: { projectId
   if (loading && items.length === 0) {
     return (
       <div className={cn("bg-card p-6 rounded-2xl border border-border animate-pulse flex flex-col", className)}>
-        <div className="h-6 bg-muted/40 rounded w-32 mb-6" />
+        {!hideHeader && <div className="h-6 bg-muted/40 rounded w-32 mb-6" />}
         <div className="space-y-3">
           <div className="h-10 bg-muted/30 rounded w-full" />
           <div className="h-10 bg-muted/30 rounded w-full" />
@@ -46,16 +46,17 @@ export const UserChecklist = ({ projectId, className, accentColor }: { projectId
   }
 
   return (
-    <section className={cn("bg-card p-6 rounded-2xl border border-border flex flex-col space-y-4", className)}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <ListTodo className="w-5 h-5" style={accentColor ? { color: accentColor } : undefined} />
-          <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
+    <section className={cn("bg-card px-6 pt-6 pb-3 rounded-2xl border border-border flex flex-col gap-4", className)}>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <ListTodo className="w-5 h-5" style={accentColor ? { color: accentColor } : undefined} />
+            <h2 className="font-semibold text-lg text-foreground">{t.checklist}</h2>
+          </div>
         </div>
+      )}
 
-      </div>
-
-      <div className="flex-1 overflow-y-auto minimal-scrollbar max-h-[400px] pr-1 -mr-1">
+      <div className="flex-1 overflow-y-auto minimal-scrollbar max-h-[400px] min-h-0 pr-1 -mr-1">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center opacity-60 py-8">
             <span className="text-sm font-medium text-muted-foreground">{t.noChecklistItems}</span>
@@ -120,17 +121,17 @@ export const UserChecklist = ({ projectId, className, accentColor }: { projectId
         )}
       </div>
 
-      <form onSubmit={handleAdd} className="relative group/form pt-2">
+      <form onSubmit={handleAdd} className="relative group/form mt-auto pt-4">
         <Input
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder={t.addChecklistItem}
-          className="bg-transparent border-0 border-b border-border rounded-none px-0 pr-8 focus-visible:ring-0 focus-visible:border-primary/50 transition-all placeholder-[#676F7E] text-sm h-9"
+          className="bg-transparent border-0 rounded-none px-0 pr-8 focus-visible:ring-0 transition-all placeholder-[#676F7E] text-sm h-9 shadow-none"
         />
         {newItem.trim() && (
           <button 
             type="submit"
-            className="absolute right-0 bottom-2.5 p-1 text-primary hover:text-primary-foreground hover:bg-primary rounded-md transition-all animate-in fade-in zoom-in duration-200"
+            className="absolute right-0 top-[calc(1rem+0.35rem)] p-1 text-primary hover:text-primary-foreground hover:bg-primary rounded-md transition-all animate-in fade-in zoom-in duration-200"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
