@@ -87,7 +87,7 @@ export const UserChecklist = ({ projectId, className, accentColor, hideHeader = 
                         if (e.key === 'Enter') handleSaveEdit();
                         if (e.key === 'Escape') setEditingId(null);
                       }}
-                      className="h-8 py-1 px-0 text-sm bg-transparent border-0 rounded-none focus-visible:ring-0 flex-1"
+                      className="h-8 py-1 px-0 text-sm bg-transparent border-0 rounded-none shadow-none ring-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
                     />
                     <div className="flex items-center gap-1.5 shrink-0 px-1">
                       <button onClick={handleSaveEdit} className="text-emerald-500 hover:text-emerald-400 p-1 transition-colors">
@@ -126,7 +126,7 @@ export const UserChecklist = ({ projectId, className, accentColor, hideHeader = 
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder={t.addChecklistItem}
-          className="bg-transparent border-0 rounded-none px-0 pr-8 focus-visible:ring-0 transition-all placeholder-[#676F7E] text-sm h-9 shadow-none"
+          className="bg-transparent border-0 rounded-none px-0 pr-8 shadow-none ring-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 transition-all placeholder-[#676F7E] text-sm h-9"
         />
         {newItem.trim() && (
           <button 

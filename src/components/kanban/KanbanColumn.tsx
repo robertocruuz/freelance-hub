@@ -179,7 +179,7 @@ export const KanbanColumnComponent = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-[300px] flex flex-col rounded-[1.25rem] transition-all duration-200 snap-start ${
+      className={`flex-shrink-0 w-[300px] flex flex-col rounded-[12px] transition-all duration-200 snap-start ${
         isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-card border border-border shadow-sm'
       }`}
     >

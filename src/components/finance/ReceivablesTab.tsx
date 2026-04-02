@@ -872,7 +872,7 @@ export default function ReceivablesTab({
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
+                  'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border',
                   statusFilter === s
                     ? 'bg-primary text-primary-foreground border-primary shadow-none'
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
@@ -917,7 +917,9 @@ export default function ReceivablesTab({
                         const isLight = contrast === 'light';
                         const hoverText = color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
                         const hoverMuted = color ? (isLight ? 'group-hover:text-white/85' : 'group-hover:text-slate-700') : '';
+                        const hoverStrong = color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
                         const hoverIconButton = color ? (isLight ? 'group-hover:text-white group-hover:hover:bg-white/20' : 'group-hover:text-slate-900 group-hover:hover:bg-slate-900/10') : '';
+                        const hoverStatus = color ? (isLight ? 'group-hover:bg-white/20 group-hover:text-white' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900') : '';
                         return (
                           <div
                             key={inv.id}
@@ -950,7 +952,7 @@ export default function ReceivablesTab({
                                       <span className={cn("text-xs text-muted-foreground", hoverMuted)}>·</span>
                                       <span className={cn(
                                         "text-xs flex items-center gap-1",
-                                        isOverdue ? "text-destructive font-medium" : "text-muted-foreground",
+                                        isOverdue ? cn("text-destructive font-medium", hoverStrong) : "text-muted-foreground",
                                         !isOverdue && hoverMuted
                                       )}>
                                         <CalendarIcon className="w-3 h-3" />
@@ -978,7 +980,8 @@ export default function ReceivablesTab({
                                   <DropdownMenuTrigger asChild>
                                   <button className={cn(
                                     "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                                    statusColors[inv.status]
+                                    statusColors[inv.status],
+                                    hoverStatus
                                   )}>
                                       {statusLabel(inv.status)}
                                       <ChevronDown className="w-3 h-3" />
@@ -1009,14 +1012,14 @@ export default function ReceivablesTab({
                                       <MoreVertical className={cn("w-3.5 h-3.5 text-muted-foreground", color && hoverText)} />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2">
+                                  <DropdownMenuContent align="end" className="rounded-[8px]">
+                                    <DropdownMenuItem onClick={() => editInvoice(inv)} className="gap-2 rounded-[6px]">
                                       <Pencil className="w-4 h-4" />
                                       Editar
                                     </DropdownMenuItem>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive gap-2">
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-[6px] text-destructive focus:text-destructive gap-2">
                                           <Trash2 className="w-4 h-4" />
                                           Excluir
                                         </DropdownMenuItem>

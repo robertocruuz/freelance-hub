@@ -165,6 +165,16 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
     return dates;
   }, [eventDates]);
 
+  const getDayMarker = (date: Date): 'receivable' | 'payable' | 'mixed' | null => {
+    const key = format(date, 'yyyy-MM-dd');
+    const counts = eventDates.get(key);
+    if (!counts) return null;
+    if (counts.receivables > 0 && counts.payables > 0) return 'mixed';
+    if (counts.receivables > 0) return 'receivable';
+    if (counts.payables > 0) return 'payable';
+    return null;
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6">
@@ -175,7 +185,32 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
             onSelect={setSelectedDate}
             locale={ptBR}
             className="p-1 pointer-events-auto"
+            components={{
+              DayContent: ({ date }: any) => {
+                const marker = getDayMarker(date);
+                return (
+                  <div className="relative flex h-full w-full items-center justify-center">
+                    <span>{format(date, 'd')}</span>
+                    {marker === 'receivable' && (
+                      <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-500" />
+                    )}
+                    {marker === 'payable' && (
+                      <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-destructive" />
+                    )}
+                    {marker === 'mixed' && (
+                      <span className="absolute bottom-1 left-1/2 h-1.5 w-2 -translate-x-1/2 rounded-full bg-violet-500" />
+                    )}
+                  </div>
+                );
+              },
+            }}
             classNames={{
+              caption: "relative flex items-center justify-center px-10 pt-1",
+              caption_label: "text-sm font-medium capitalize",
+              nav: "absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center justify-between px-1 pointer-events-none",
+              nav_button: "pointer-events-auto",
+              nav_button_previous: "static",
+              nav_button_next: "static",
               day_today: "rounded-full border border-border/60 text-foreground font-semibold",
               day_selected:
                 "rounded-full bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-semibold",
@@ -185,15 +220,10 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
               payable: payableDates,
               mixed: mixedDates,
             }}
-            modifiersClassNames={{
-              receivable: 'finance-dot finance-dot--receivable',
-              payable: 'finance-dot finance-dot--payable',
-              mixed: 'finance-dot finance-dot--mixed',
-            }}
           />
           <div className="flex items-center gap-4 mt-4 px-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-full justify-center">
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               A receber
             </span>
             <span className="flex items-center gap-1.5">
@@ -201,7 +231,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
               A pagar
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1.5 rounded-full bg-black/50 dark:bg-white/50" />
+              <span className="w-2.5 h-1.5 rounded-full bg-violet-500" />
               Ambos
             </span>
           </div>

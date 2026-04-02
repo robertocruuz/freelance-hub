@@ -155,7 +155,7 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
         {...listeners}
         onClick={onClick}
         className={cn(
-          "border border-border/50 shadow-sm rounded-2xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative",
+          "border border-border/50 shadow-sm rounded-[8px] p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-border transition-all duration-200 group relative",
           clientColor ? "" : "bg-card",
           isDragging ? 'scale-[0.97] shadow-none ring-2 ring-primary/30 bg-muted/60 opacity-80' : '',
           isOverdue ? 'border-l-[3px] border-l-destructive' : ''
@@ -184,18 +184,18 @@ export const TaskCard = ({ task, onClick, onToggleComplete, onDelete, checklistP
               <DropdownMenuTrigger asChild>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
-                  className={cn("opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all", btnColor)}
+                  className={cn("opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 p-1 rounded-md transition-all", btnColor)}
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="rounded-[8px]">
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
                     fetchDeleteImpact();
                   }}
-                  className="text-destructive focus:text-destructive"
+                  className="rounded-[6px] text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" /> Excluir tarefa
                 </DropdownMenuItem>

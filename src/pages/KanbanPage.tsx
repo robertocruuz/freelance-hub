@@ -670,7 +670,7 @@ const KanbanPage = () => {
             <button
               key={board.id}
               onClick={() => setActiveBoardId(board.id)}
-              className={`group relative flex flex-col gap-1 rounded-xl border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+              className={`group relative flex flex-col gap-1 rounded-[12px] border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                 isActive
                   ? 'shadow-sm ring-1'
                   : 'border-border bg-card hover:bg-[var(--hover-bg)] hover:border-[var(--hover-border)]'
@@ -697,16 +697,21 @@ const KanbanPage = () => {
                         role="button"
                         tabIndex={0}
                         onClick={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 -mr-1 -mt-1 rounded-md hover:bg-muted cursor-pointer shrink-0"
+                        className={cn(
+                          "opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity p-1 -mr-1 -mt-1 rounded-md cursor-pointer shrink-0",
+                          isActive && color
+                            ? (contrast === 'light' ? 'hover:bg-white/20' : 'hover:bg-slate-900/10')
+                            : 'hover:bg-muted'
+                        )}
                       >
                         <MoreHorizontal className={cn("w-3.5 h-3.5", mColor)} />
                       </span>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenuItem onClick={() => openEditBoard(board)}>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="rounded-[8px]">
+                      <DropdownMenuItem onClick={() => openEditBoard(board)} className="rounded-[6px]">
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDeletingBoard(board)} className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={() => setDeletingBoard(board)} className="rounded-[6px] text-destructive focus:text-destructive">
                         <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -756,7 +761,7 @@ const KanbanPage = () => {
                 <button
                   key={board.id}
                   onClick={() => setActiveBoardId(board.id)}
-                  className={`group relative flex flex-col gap-1 rounded-xl border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
+                  className={`group relative flex flex-col gap-1 rounded-[12px] border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all duration-200 shrink-0 overflow-hidden ${
                     isActive
                       ? 'shadow-sm ring-1'
                       : 'border-border bg-card hover:bg-[var(--hover-bg)] hover:border-[var(--hover-border)]'
@@ -815,7 +820,7 @@ const KanbanPage = () => {
             setBoardColor(null);
             setShowBoardDialog(true);
           }}
-          className="flex flex-col items-center justify-center gap-1.5 bg-card shadow-sm rounded-xl border-2 border-dashed border-border px-3 py-2.5 w-[140px] min-h-[64px] text-muted-foreground hover:border-primary/40 hover:text-primary transition-all duration-200 shrink-0 cursor-pointer"
+          className="flex flex-col items-center justify-center gap-1.5 bg-card shadow-sm rounded-[12px] border-2 border-dashed border-border px-3 py-2.5 w-[140px] min-h-[64px] text-muted-foreground hover:border-primary/40 hover:text-primary transition-all duration-200 shrink-0 cursor-pointer"
         >
           <span className="flex items-center gap-1.5 text-xs font-medium">
             <Plus className="w-4 h-4" /> Novo painel

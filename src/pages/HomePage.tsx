@@ -993,8 +993,8 @@ const TaskCalendarCard = ({
   return (
     <div className="flex h-full flex-col">
       {headerOutside && (
-        <div className="mb-6 grid w-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)]">
-          <div className="min-w-0 flex items-center justify-between gap-4">
+        <div className="mb-6 flex w-full flex-col gap-6 xl:flex-row">
+          <div className="min-w-0 flex items-center justify-between gap-4 xl:w-[348px] xl:flex-none">
             <div className="flex items-center gap-2.5">
               <CalendarDays className="w-5 h-5 text-foreground" />
               <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
@@ -1011,12 +1011,12 @@ const TaskCalendarCard = ({
               </button>
             </div>
           </div>
-          <div className="hidden xl:block" />
+          <div className="hidden xl:block xl:flex-1" />
         </div>
       )}
 
-      <div className={`grid w-full h-full gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(460px,1fr)] ${headerOutside ? 'rounded-2xl border border-border bg-card p-6' : ''}`}>
-      <div className="min-w-0">
+      <div className={`flex h-full w-full flex-col gap-6 xl:flex-row ${headerOutside ? 'rounded-2xl border border-border bg-card p-6' : ''}`}>
+      <div className="min-w-0 xl:w-[300px] xl:flex-none">
         {!headerOutside && (
         <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2.5">
@@ -1054,14 +1054,14 @@ const TaskCalendarCard = ({
             const isSelected = selectedDay === dateStr;
 
             return (
-              <button
-                key={dateStr}
-                onClick={() => setSelectedDay(dateStr)}
-                className={`h-9 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200
-                  ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/60 text-foreground bg-background border border-transparent hover:border-border/60'}
-                  ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
-                `}
-              >
+                <button
+                  key={dateStr}
+                  onClick={() => setSelectedDay(dateStr)}
+                  className={`h-9 rounded-[8px] flex flex-col items-center justify-center relative transition-all duration-200
+                    ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/40 text-foreground bg-transparent border border-transparent hover:border-border/60'}
+                    ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
+                  `}
+                >
                 <span className={`text-xs leading-none ${today ? 'font-bold' : 'font-semibold'}`}>{format(day, 'd')}</span>
                 {(counts.tasks > 0 || counts.receivables > 0 || counts.payables > 0) && (
                   <div className="flex gap-0.5 mt-1.5">
@@ -1088,7 +1088,7 @@ const TaskCalendarCard = ({
         </div>
       )}
 
-      <div className="min-w-0 xl:border-l xl:border-border/80 xl:pl-6">
+      <div className="min-w-0 xl:flex-1 xl:border-l xl:border-border/80 xl:pl-6">
         <div className="h-full flex flex-col">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
             {format(parseISO(selectedDay), isPt ? "dd 'de' MMMM" : 'MMMM dd', { locale: isPt ? ptBR : enUS })}
