@@ -1000,13 +1000,13 @@ const TaskCalendarCard = ({
               <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
             </div>
             <div className="flex items-center gap-0.5 bg-background border border-border rounded-[8px] p-0.5">
-              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-colors">
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-muted-foreground hover:text-foreground transition-colors uppercase min-w-[72px] flex items-center justify-center">
+              <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground transition-colors uppercase min-w-[72px] flex items-center justify-center">
                 {format(currentMonth, 'MMMM', { locale: isPt ? ptBR : enUS })}
               </button>
-              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-colors">
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1024,13 +1024,13 @@ const TaskCalendarCard = ({
                 <h2 className="font-semibold text-lg text-foreground leading-none">{isPt ? 'Calendário' : 'Calendar'}</h2>
               </div>
               <div className="flex items-center gap-1 bg-background border border-border rounded-[8px] p-1">
-                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-colors">
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-muted-foreground hover:text-foreground transition-colors uppercase min-w-[92px] flex items-center justify-center">
+                <button onClick={() => { const today = new Date(); setCurrentMonth(today); setSelectedDay(format(today, 'yyyy-MM-dd')); }} className="h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground transition-colors uppercase min-w-[92px] flex items-center justify-center">
                   {format(currentMonth, 'MMMM', { locale: isPt ? ptBR : enUS })}
                 </button>
-                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-colors">
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>

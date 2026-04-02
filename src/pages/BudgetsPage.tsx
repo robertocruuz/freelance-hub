@@ -86,6 +86,17 @@ const getContrastYIQ = (hexcolor: string) => {
   return yiq >= 160 ? 'dark' : 'light';
 };
 
+const formatMoneyInput = (value: number) =>
+  new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
+const parseMoneyInput = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  return digits ? Number(digits) / 100 : 0;
+};
+
 const BudgetsPage = () => {
   const isDesktop = useIsDesktop();
   const { t } = useI18n();
@@ -121,12 +132,14 @@ const BudgetsPage = () => {
   const [newDesc, setNewDesc] = useState('');
   const [newQty, setNewQty] = useState(1);
   const [newPrice, setNewPrice] = useState(0);
+  const [newPriceInput, setNewPriceInput] = useState('');
 
   // Editing item inline
   const [editingItemIdx, setEditingItemIdx] = useState<number | null>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editQty, setEditQty] = useState(1);
   const [editPrice, setEditPrice] = useState(0);
+  const [editPriceInput, setEditPriceInput] = useState('');
 
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -198,6 +211,7 @@ const BudgetsPage = () => {
     setNewDesc('');
     setNewQty(1);
     setNewPrice(0);
+    setNewPriceInput('');
   };
 
   const removeItem = (idx: number) => setItems(prev => prev.filter((_, i) => i !== idx));
@@ -208,15 +222,20 @@ const BudgetsPage = () => {
     setEditDesc(item.description);
     setEditQty(item.quantity);
     setEditPrice(item.unitPrice);
+    setEditPriceInput(formatMoneyInput(item.unitPrice));
   };
 
   const saveEditItem = () => {
     if (editingItemIdx === null) return;
     setItems(prev => prev.map((item, i) => i === editingItemIdx ? { description: editDesc, quantity: editQty, unitPrice: editPrice } : item));
     setEditingItemIdx(null);
+    setEditPriceInput('');
   };
 
-  const cancelEditItem = () => setEditingItemIdx(null);
+  const cancelEditItem = () => {
+    setEditingItemIdx(null);
+    setEditPriceInput('');
+  };
 
   const saveBudget = async () => {
     if (!user) return;
@@ -690,11 +709,13 @@ const BudgetsPage = () => {
               <div className="space-y-1">
                 <label className="text-[11px] font-medium text-muted-foreground">Valor</label>
                 <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={newPrice || ''}
-                  onChange={(e) => setNewPrice(+e.target.value)}
+                  inputMode="numeric"
+                  value={newPriceInput}
+                  onChange={(e) => {
+                    const parsed = parseMoneyInput(e.target.value);
+                    setNewPrice(parsed);
+                    setNewPriceInput(e.target.value ? formatMoneyInput(parsed) : '');
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && addItem()}
                   className="rounded-[8px] h-9 text-sm text-right"
                 />
@@ -730,7 +751,16 @@ const BudgetsPage = () => {
                             <Input type="number" min={1} value={editQty} onChange={(e) => setEditQty(Math.max(1, +e.target.value))} className="h-8 rounded-[8px] text-sm text-center" />
                           </td>
                           <td className="py-2 px-3">
-                            <Input type="number" min={0} step={0.01} value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className="h-8 rounded-[8px] text-sm text-right" />
+                            <Input
+                              inputMode="numeric"
+                              value={editPriceInput}
+                              onChange={(e) => {
+                                const parsed = parseMoneyInput(e.target.value);
+                                setEditPrice(parsed);
+                                setEditPriceInput(e.target.value ? formatMoneyInput(parsed) : '');
+                              }}
+                              className="h-8 rounded-[8px] text-sm text-right"
+                            />
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-foreground tabular-nums">
                             {formatCurrency(editQty * editPrice)}
