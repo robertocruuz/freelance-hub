@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { HexColorPicker } from 'react-colorful';
 import { getContrastYIQ } from '@/pages/ProjectsPage';
@@ -114,6 +115,15 @@ const translateBillingStatus = (v: string) => {
     overdue: 'Atrasado',
   };
   return billingStatusMap[normalized] || v;
+};
+
+const copyToClipboard = async (value: string) => {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 // Shared dialog form component
@@ -259,6 +269,7 @@ const ClientsPage = () => {
   const [deleteConfirmClient, setDeleteConfirmClient] = useState<Client | null>(null);
   const [details, setDetails] = useState<ClientDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState({
     projects: true,
@@ -305,6 +316,20 @@ const ClientsPage = () => {
     setResponsible(c.responsible || '');
     setColor(c.color || null);
     setDialogOpen(true);
+  };
+
+  const handleCopyField = async (key: string, value: string, label: string) => {
+    const copied = await copyToClipboard(value);
+
+    if (!copied) {
+      toast.error(`Não foi possível copiar ${label.toLowerCase()}.`);
+      return;
+    }
+
+    setCopiedField(key);
+    window.setTimeout(() => {
+      setCopiedField((current) => (current === key ? null : current));
+    }, 1500);
   };
 
   const handleSave = async () => {
@@ -940,85 +965,155 @@ const ClientsPage = () => {
           <p className="max-w-sm text-muted-foreground">Adicione um cliente para começar.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-          {filtered.map((c) => {
-            const contrast = c.color ? getContrastYIQ(c.color) : 'dark';
-            const isLight = contrast === 'light';
-            
-            const tColor = `text-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : ''}`;
-            const mColor = `text-muted-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800') : ''}`;
-            const btnColor = `text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:text-white/80 hover:group-hover:bg-white/20 hover:group-hover:text-white' : 'group-hover:text-slate-700 hover:group-hover:bg-slate-900/10 hover:group-hover:text-slate-900') : ''}`;
-            const btnDestructive = btnColor;
-            
-            const initialsBg = `bg-muted text-muted-foreground transition-colors duration-300 ${c.color ? (isLight ? 'group-hover:bg-white/30 group-hover:text-white' : 'group-hover:bg-slate-900/15 group-hover:text-slate-900') : ''}`;
+        <div className="rounded-[12px] border bg-card shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-[980px]">
+              <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,1fr)_110px] gap-4 border-b px-6 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                <span>Cliente</span>
+                <span>Responsável</span>
+                <span>Email</span>
+                <span>Telefone</span>
+                <span>CNPJ</span>
+                <span>Ação</span>
+              </div>
 
-            return (
-              <div
-                key={c.id}
-                className={cn(
-                  "group rounded-xl border flex flex-col overflow-hidden transition-all duration-300 cursor-pointer relative box-border",
-                  "bg-card z-0",
-                  "hover:shadow-md hover:-translate-y-0.5",
-                  !c.color && "hover:border-border/80"
-                )}
-                onClick={() => openClient360(c)}
-              >
-                {/* Smooth Background Transition */}
-                {c.color && (
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none -z-10"
-                    style={{ backgroundColor: c.color }}
-                  />
-                )}
-                
-                <div className="flex flex-col p-4 h-full relative z-10">
-                  <div className="flex items-start justify-between gap-3 min-w-0 mb-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      {c.logo_url ? (
-                        <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden border border-border group-hover:border-transparent transition-colors duration-300">
-                          <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div
-                          className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-lg shadow-sm border border-transparent",
-                            initialsBg
-                          )}
-                        >
-                          {c.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      
-                      <div className="min-w-0">
-                        <p className={cn("font-bold truncate text-base", tColor)}>{c.name}</p>
+              {filtered.map((c) => {
+                const contrast = c.color ? getContrastYIQ(c.color) : 'dark';
+                const isLight = contrast === 'light';
+                const strongText = c.color ? (isLight ? 'group-hover:text-white' : 'group-hover:text-slate-900') : '';
+                const mutedText = c.color ? (isLight ? 'group-hover:text-white/80' : 'group-hover:text-slate-800') : '';
+                const editHover = c.color
+                  ? isLight
+                    ? 'group-hover:text-white/80 hover:group-hover:text-white hover:group-hover:bg-white/15'
+                    : 'group-hover:text-slate-700 hover:group-hover:text-slate-900 hover:group-hover:bg-slate-900/10'
+                  : 'hover:text-foreground hover:bg-muted';
+                const deleteHover = c.color
+                  ? isLight
+                    ? 'group-hover:text-white/80 hover:group-hover:text-white hover:group-hover:bg-white/15'
+                    : 'group-hover:text-slate-700 hover:group-hover:text-destructive hover:bg-transparent'
+                  : 'hover:text-destructive hover:bg-transparent';
+                return (
+                <div
+                  key={c.id}
+                  className={cn(
+                    "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,1fr)_110px] gap-4 border-b last:border-b-0 px-6 py-4 items-center transition-colors",
+                    !c.color && "hover:bg-muted/40"
+                  )}
+                >
+                  {c.color && (
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{ backgroundColor: c.color }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => openClient360(c)}
+                    className="relative z-10 min-w-0 text-left flex items-center gap-3"
+                  >
+                    {c.logo_url ? (
+                      <div className="w-11 h-11 rounded-[10px] bg-white shadow-sm flex items-center justify-center overflow-hidden border border-border shrink-0 group-hover:border-transparent transition-colors">
+                        <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-cover" />
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnColor)} onClick={() => openEdit(c)}>
-                        <Pencil className="w-3 h-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className={cn("w-7 h-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity", btnDestructive)} onClick={() => setDeleteConfirmClient(c)}>
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className={cn("flex flex-col gap-1.5 text-[11px] mt-auto", mColor)}>
-                    {c.responsible && (
-                      <span className="flex items-center gap-1.5 font-medium truncate"><User className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{c.responsible}</span></span>
+                    ) : (
+                      <div
+                        className={cn(
+                          "w-11 h-11 rounded-[10px] flex items-center justify-center bg-muted text-muted-foreground font-bold text-lg border border-border shrink-0 transition-colors",
+                          c.color && (isLight ? 'group-hover:bg-white/20 group-hover:text-white group-hover:border-white/20' : 'group-hover:bg-slate-900/10 group-hover:text-slate-900 group-hover:border-slate-900/10')
+                        )}
+                        style={c.color ? { backgroundColor: `${c.color}18`, color: c.color, borderColor: `${c.color}30` } : undefined}
+                      >
+                        {c.name.charAt(0).toUpperCase()}
+                      </div>
                     )}
-                    {c.email && (
-                      <span className="flex items-center gap-1.5 font-medium truncate"><Mail className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{c.email}</span></span>
-                    )}
-                    {c.phone && (
-                      <span className="flex items-center gap-1.5 font-medium truncate"><Phone className="w-3.5 h-3.5 shrink-0" />{maskPhone(c.phone)}</span>
-                    )}
+                    <p className={cn("truncate text-base font-semibold text-foreground transition-colors", strongText)}>{c.name}</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openClient360(c)}
+                    className={cn("relative z-10 min-w-0 text-left", c.color && (isLight ? 'group-hover:[&_p]:text-white' : 'group-hover:[&_p]:text-slate-900'))}
+                  >
+                    <p className="truncate text-sm text-foreground">{c.responsible || '—'}</p>
+                  </button>
+
+                  <Tooltip open={copiedField === `${c.id}-email`}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => c.email && handleCopyField(`${c.id}-email`, c.email, 'Email')}
+                        disabled={!c.email}
+                        className={cn(
+                          "relative z-10 min-w-0 text-left rounded-[8px] transition-colors",
+                          c.email ? "cursor-copy hover:opacity-80" : "cursor-default",
+                          c.color && (isLight ? 'group-hover:[&_p]:text-white/80' : 'group-hover:[&_p]:text-slate-800')
+                        )}
+                      >
+                        <p className="truncate text-sm text-muted-foreground">{c.email || '—'}</p>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs font-medium">Copiado!</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip open={copiedField === `${c.id}-phone`}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => c.phone && handleCopyField(`${c.id}-phone`, maskPhone(c.phone), 'Telefone')}
+                        disabled={!c.phone}
+                        className={cn(
+                          "relative z-10 min-w-0 text-left rounded-[8px] transition-colors",
+                          c.phone ? "cursor-copy hover:opacity-80" : "cursor-default",
+                          c.color && (isLight ? 'group-hover:[&_p]:text-white/80' : 'group-hover:[&_p]:text-slate-800')
+                        )}
+                      >
+                        <p className="truncate text-sm text-muted-foreground">{c.phone ? maskPhone(c.phone) : '—'}</p>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs font-medium">Copiado!</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip open={copiedField === `${c.id}-document`}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => c.document && handleCopyField(`${c.id}-document`, maskDocument(c.document), 'Documento')}
+                        disabled={!c.document}
+                        className={cn(
+                          "relative z-10 min-w-0 text-left rounded-[8px] transition-colors",
+                          c.document ? "cursor-copy hover:opacity-80" : "cursor-default",
+                          c.color && (isLight ? 'group-hover:[&_p]:text-white/80' : 'group-hover:[&_p]:text-slate-800')
+                        )}
+                      >
+                        <p className="truncate text-sm text-muted-foreground">{c.document ? maskDocument(c.document) : '—'}</p>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs font-medium">Copiado!</TooltipContent>
+                  </Tooltip>
+
+                  <div className="relative z-10 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("w-8 h-8 rounded-[8px] text-muted-foreground transition-colors", editHover)}
+                      onClick={() => openEdit(c)}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("w-8 h-8 rounded-[8px] text-muted-foreground transition-colors", deleteHover)}
+                      onClick={() => setDeleteConfirmClient(c)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
