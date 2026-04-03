@@ -116,15 +116,22 @@ const ProjectFolderFrame = ({
   return (
     <div className={cn("group relative w-full aspect-[637.6/467.1] overflow-hidden rounded-[18px]", className)}>
       <svg
-        viewBox="0 0 637.6 467.1"
+        viewBox="-2 -2 641.6 471.1"
         preserveAspectRatio="xMinYMin meet"
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full"
+        className="absolute inset-0 h-full w-full overflow-visible"
       >
         <path
           d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
           fill="hsl(var(--muted) / 0.65)"
-          className="transition-opacity duration-300"
+          className="transition-opacity duration-300 dark:[fill:hsl(var(--border))]"
+        />
+        <path
+          d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+          fill="none"
+          stroke="hsl(var(--border) / 0.95)"
+          strokeWidth="1.5"
+          className="opacity-0 dark:opacity-100 transition-opacity duration-300"
         />
         {color ? (
           <path

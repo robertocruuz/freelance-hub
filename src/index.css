@@ -93,8 +93,8 @@
     --destructive: 0 62% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 12% 20%;
-    --input: 225 12% 20%;
+    --border: 225 10% 30%;
+    --input: 225 10% 30%;
     --ring: 0 0% 34%;
 
     --sidebar-background: 240 3% 6%;
@@ -103,7 +103,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 225 15% 14%;
     --sidebar-accent-foreground: 220 18% 98%;
-    --sidebar-border: 225 12% 20%;
+    --sidebar-border: 225 10% 30%;
     --sidebar-ring: 0 0% 34%;
 
     /* Landing page tokens */
@@ -113,7 +113,7 @@
 
     /* Dark flat tokens instead of glass */
     --glass-bg: 240 3% 6%;
-    --glass-border: 225 12% 20%;
+    --glass-border: 225 10% 30%;
     --glass-shadow: none;
     --glass-shadow-lg: 0 4px 20px hsl(0 0% 0% / 0.4);
     --glass-highlight: none;

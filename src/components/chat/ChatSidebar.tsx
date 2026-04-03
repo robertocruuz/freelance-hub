@@ -25,6 +25,7 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
   const { channels, activeChannelId, setActiveChannelId, createDirectChannel, createTeamChannel, deleteChannel } = chatState;
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [openMenuChannelId, setOpenMenuChannelId] = useState<string | null>(null);
 
   const currentUserMember = members.find((m: any) => m.user_id === user?.id);
   const isAdmin = currentUserMember?.role === 'admin';
@@ -242,16 +243,28 @@ export default function ChatSidebar({ chatState, isMobile }: any) {
                   
                   {/* Deletion Dropdown Menu: Block non-admins from deleting the Team Chat */}
                   {(channel.type !== 'team' || isAdmin) && (
-                    <div className="absolute right-2 bottom-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
+                    <div className={`absolute right-2 bottom-1.5 transition-opacity ${openMenuChannelId === channel.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                      <DropdownMenu
+                        open={openMenuChannelId === channel.id}
+                        onOpenChange={(open) => setOpenMenuChannelId(open ? channel.id : null)}
+                      >
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className={`h-5 w-5 rounded-full hover:bg-background/80 hover:text-foreground ${isActive ? 'text-primary/70 dark:text-black/70 dark:hover:bg-black/10 dark:hover:text-black' : 'text-muted-foreground'}`}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-5 w-5 rounded-full ${
+                              openMenuChannelId === channel.id
+                                ? 'bg-background/90 text-foreground'
+                                : 'hover:bg-background/80 hover:text-foreground'
+                            } ${isActive ? 'text-primary/70 dark:text-black/70 dark:hover:bg-black/10 dark:hover:text-black' : 'text-muted-foreground'}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <ChevronDown className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 border-border shadow-md">
+                        <DropdownMenuContent align="end" className="w-40 border-border shadow-md rounded-[8px]">
                           <DropdownMenuItem 
-                            className="text-destructive focus:text-destructive cursor-pointer font-medium" 
+                            className="text-destructive focus:text-destructive cursor-pointer font-medium rounded-[6px]" 
                             onClick={(e) => { 
                               e.stopPropagation(); 
                               deleteChannel(channel.id); 

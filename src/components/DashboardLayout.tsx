@@ -80,7 +80,7 @@ const SidebarNotificationItem = ({ collapsed }: { collapsed: boolean }) => {
             <NotificationBell onUnreadChange={setUnreadCount} />
           </div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+        <TooltipContent side="right" className="rounded-[8px] text-xs font-medium">{label}</TooltipContent>
       </Tooltip>
     );
   }
@@ -270,7 +270,7 @@ const SidebarNav = ({
               return (
                 <Tooltip key={item.key}>
                   <TooltipTrigger asChild>{btn}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs font-medium">{label}</TooltipContent>
+                  <TooltipContent side="right" className="rounded-[8px] text-xs font-medium">{label}</TooltipContent>
                 </Tooltip>
               );
             }
@@ -313,7 +313,7 @@ const SidebarNav = ({
             return (
               <Tooltip>
                 <TooltipTrigger asChild>{settingsBtn}</TooltipTrigger>
-                <TooltipContent side="right" className="text-xs font-medium">{t.settings}</TooltipContent>
+                <TooltipContent side="right" className="rounded-[8px] text-xs font-medium">{t.settings}</TooltipContent>
               </Tooltip>
             );
           }
@@ -332,7 +332,7 @@ const SidebarNav = ({
             }
           }}
           className={cn(
-            'w-full flex items-center gap-3 rounded-xl p-2.5 transition-all',
+            'w-full flex items-center gap-3 rounded-[8px] p-2.5 transition-all',
             'hover:bg-sidebar-accent/50',
             collapsed && !isMobile && 'justify-center',
             userExpanded && (!collapsed || isMobile) && 'bg-sidebar-accent/40'
@@ -360,12 +360,12 @@ const SidebarNav = ({
           <div className="mt-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border overflow-hidden animate-accordion-down">
             <div className="px-4 py-3 space-y-2.5">
               <div className="space-y-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Email</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60 dark:text-sidebar-foreground/60">Email</p>
                 <p className="text-[12px] text-sidebar-foreground/80 truncate">{user?.email}</p>
               </div>
               {orgName && (
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">Empresa</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/60 dark:text-sidebar-foreground/60">Empresa</p>
                   <p className="text-[12px] text-sidebar-foreground/80 truncate">{orgName}</p>
                 </div>
               )}
@@ -516,7 +516,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
+    <div className="h-screen flex bg-background dark:bg-[#121214] overflow-hidden">
       {/* Desktop sidebar */}
       <aside
         className={cn(

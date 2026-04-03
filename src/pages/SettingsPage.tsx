@@ -179,7 +179,7 @@ const SettingsPage = () => {
           <div className="flex flex-col gap-3 mt-auto">
             <Button variant="outline" onClick={handleExportData} disabled={exportLoading} className="w-full justify-between rounded-xl h-11 px-4">
               <span className="flex items-center gap-2 text-sm font-semibold">
-                <Download className="w-4 h-4 text-muted-foreground" />
+                <Download className="w-4 h-4 text-muted-foreground dark:text-primary-foreground/80" />
                 {exportLoading ? (isPt ? 'Exportando...' : 'Exporting...') : (isPt ? 'Exportar dados' : 'Export data')}
               </span>
             </Button>
@@ -242,8 +242,8 @@ const SettingsPage = () => {
 const SettingsCard = ({ icon: Icon, title, description, className = '', children }: { icon: any; title: string; description: string; className?: string; children: React.ReactNode }) => (
   <div className={`flex flex-col p-6 rounded-2xl border border-border bg-card transition-colors ${className}`}>
     <div className="flex items-center gap-4 mb-5">
-      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5 text-primary" />
+      <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary-foreground/10 flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5 text-primary dark:text-primary-foreground" />
       </div>
       <div>
         <h2 className="text-base font-bold text-foreground">{title}</h2>
@@ -270,10 +270,14 @@ const NotificationRow = ({
 }) => (
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
-      <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary' : 'text-muted-foreground'}`} />
+      <Icon className={`w-4 h-4 transition-colors ${checked ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground dark:text-muted-foreground'}`} />
       <span className="text-sm font-medium text-foreground">{title}</span>
     </div>
-    <Switch checked={checked} onCheckedChange={onChange} />
+    <Switch
+      checked={checked}
+      onCheckedChange={onChange}
+      className="dark:border-border dark:data-[state=checked]:bg-primary-foreground dark:data-[state=unchecked]:bg-muted"
+    />
   </div>
 );
 

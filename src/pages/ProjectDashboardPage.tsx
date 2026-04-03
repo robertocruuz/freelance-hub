@@ -786,11 +786,21 @@ export default function ProjectDashboardPage() {
                       onClick={() => navigate('/dashboard/kanban', { state: { taskId: t.id } })}
                       className="w-full py-2.5 px-3 flex items-center justify-between hover:bg-muted/30 transition-colors text-left"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={cn("w-2 h-2 rounded-full shrink-0", isDone ? 'bg-green-500' : 'bg-primary')} />
+                      <div className="min-w-0">
                         <span className="font-medium text-sm truncate">{t.title}</span>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground uppercase ml-2 shrink-0">
+                      <span className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded border uppercase ml-2 shrink-0",
+                        (statusLabel || '').toLowerCase().includes('conclu')
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : (statusLabel || '').toLowerCase().includes('revis')
+                            ? 'bg-violet-50 text-violet-700 border-violet-200'
+                            : (statusLabel || '').toLowerCase().includes('bloque')
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : (statusLabel || '').toLowerCase().includes('andamento')
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                : 'bg-slate-50 text-slate-700 border-slate-200'
+                      )}>
                         {statusLabel}
                       </span>
                     </button>

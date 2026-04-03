@@ -259,7 +259,7 @@ const HomePage = () => {
         <div>
           <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">
             {isPt ? 'Olá, ' : 'Hello, '}
-            <span className="text-primary">{firstName || (isPt ? 'Usuário' : 'User')}</span> 👋
+            <span className="text-primary dark:text-foreground">{firstName || (isPt ? 'Usuário' : 'User')}</span> 👋
           </h1>
           <p className="text-muted-foreground text-sm font-medium mt-2">
             {isPt ? format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }) : format(now, 'EEEE, MMMM dd')}
@@ -290,7 +290,7 @@ const HomePage = () => {
               <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{isPt ? 'Saldo Atual' : 'Current Balance'}</span>
-                <span className={`text-2xl font-black leading-none mt-1 ${financeStats.balance >= 0 ? 'text-primary' : 'text-foreground'}`}>
+                <span className={`text-2xl font-black leading-none mt-1 ${financeStats.balance >= 0 ? 'text-primary dark:text-foreground' : 'text-foreground dark:text-foreground'}`}>
                   {fmtCurrency(financeStats.balance)}
                 </span>
               </div>
@@ -310,7 +310,7 @@ const HomePage = () => {
               <ListTodo className="w-5 h-5 text-foreground" />
               <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Minhas Tarefas' : 'My Tasks'}</h2>
             </div>
-            <button onClick={() => navigate('/dashboard/kanban')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            <button onClick={() => navigate('/dashboard/kanban')} className="flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 dark:text-primary-foreground dark:hover:text-primary-foreground/80">
                {isPt ? 'Ver todas' : 'View all'} <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
@@ -492,7 +492,7 @@ const HomePage = () => {
                <FolderKanban className="w-5 h-5 text-foreground" />
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Projetos' : 'Projects'}</h2>
             </div>
-            <button onClick={() => navigate('/dashboard/projects')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            <button onClick={() => navigate('/dashboard/projects')} className="flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 dark:text-primary-foreground dark:hover:text-primary-foreground/80">
               {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
@@ -541,7 +541,7 @@ const HomePage = () => {
                <Users className="w-5 h-5 text-foreground" />
                <h2 className="font-semibold text-lg text-foreground">{isPt ? 'Clientes Ativos' : 'Active Clients'}</h2>
             </div>
-            <button onClick={() => navigate('/dashboard/clients')} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            <button onClick={() => navigate('/dashboard/clients')} className="flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 dark:text-primary-foreground dark:hover:text-primary-foreground/80">
               {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
@@ -630,7 +630,7 @@ const HomePage = () => {
                    <h3 className="font-semibold text-sm text-foreground">Leads</h3>
                  </div>
                  <div className="flex flex-col mb-4">
-                    <span className="text-2xl font-black leading-tight text-primary">
+                    <span className="text-2xl font-black leading-tight text-primary dark:text-foreground">
                       {leadStats.open}
                     </span>
                     <span className="text-[10px] uppercase font-bold text-muted-foreground mt-1 mb-4">
@@ -768,14 +768,22 @@ const ProjectFolderCard = ({
       className="group relative block aspect-[637.6/480] w-full max-w-[96%] cursor-pointer text-left transition-all hover:-translate-y-0.5"
     >
       <svg
-        viewBox="0 0 637.6 480"
+        viewBox="-2 -2 641.6 484"
         preserveAspectRatio="xMinYMin meet"
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 h-full w-[calc(100%+1px)] max-w-none"
+        className="absolute inset-y-0 left-0 h-full w-[calc(100%+1px)] max-w-none overflow-visible"
       >
         <path
           d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
           fill="hsl(var(--muted) / 0.65)"
+          className="dark:[fill:hsl(var(--border))]"
+        />
+        <path
+          d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
+          fill="none"
+          stroke="hsl(var(--border) / 0.95)"
+          strokeWidth="1.5"
+          className="opacity-0 dark:opacity-100"
         />
         <path
           d="M594.6 466.6H43C19.5 466.6.5 447.6.5 424.1V43C.5 19.5 19.5.5 43 .5h164.1c15.3 0 29.8 3 47.2 22.9 20.2 23.2 35.8 21.5 48 21.5h292.3c23.5 0 42.5 19 42.5 42.5v336.6c0 23.5-19 42.5-42.5 42.5Z"
@@ -809,10 +817,10 @@ const ProjectFolderCard = ({
         />
       </svg>
 
-      <div className="absolute left-[11%] top-[41%] w-[70%] flex flex-col gap-1.5">
+      <div className="absolute left-[11%] top-[41%] bottom-[15%] flex w-[70%] flex-col">
         <div className={`text-[10px] font-black uppercase tracking-[0.22em] ${metaClassName}`}>{topMeta}</div>
-        <div className={`max-w-[78%] text-[16px] leading-[1.08] font-black ${titleClassName}`}>{title}</div>
-        {bottomMeta ? <div className={`text-[10px] font-black uppercase tracking-[0.18em] ${metaClassName}`}>{bottomMeta}</div> : null}
+        <div className={`mt-1.5 max-w-[78%] text-[16px] leading-[1.08] font-black ${titleClassName}`}>{title}</div>
+        {bottomMeta ? <div className={`mt-auto text-[10px] font-black uppercase tracking-[0.18em] ${metaClassName}`}>{bottomMeta}</div> : null}
       </div>
     </button>
   );
@@ -1057,9 +1065,9 @@ const TaskCalendarCard = ({
                 <button
                   key={dateStr}
                   onClick={() => setSelectedDay(dateStr)}
-                  className={`relative flex h-10 w-full flex-col items-center justify-center rounded-[9px] transition-all duration-200
-                    ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/40 text-foreground bg-transparent border border-transparent hover:border-border/60'}
-                    ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
+                  className={`relative flex h-10 w-full flex-col items-center justify-center rounded-[9px] border transition-all duration-200
+                    ${today ? 'border-primary bg-primary text-primary-foreground font-bold dark:border-white dark:bg-white dark:text-black' : 'text-foreground bg-transparent border-transparent hover:bg-muted/40 hover:border-border/60'}
+                    ${isSelected && !today ? 'border-border bg-muted/10 shadow-[inset_0_0_0_1px_hsl(var(--border))]' : ''}
                   `}
                 >
                 <span className={`text-xs leading-none ${today ? 'font-bold' : 'font-semibold'}`}>{format(day, 'd')}</span>
