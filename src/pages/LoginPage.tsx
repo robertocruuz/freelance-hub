@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
+import LoginMorphingBackground from '@/components/LoginMorphingBackground';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, CheckCircle, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -278,28 +279,19 @@ const LoginPage = () => {
       <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] p-4 lg:p-4 shrink-0">
         {/* The Boxed Gradient Container */}
         <div className="w-full h-full relative rounded-3xl overflow-hidden flex flex-col justify-end shadow-2xl">
-        
+
           <style dangerouslySetInnerHTML={{__html: `
-            @keyframes fluidGradient {
-              0% { background-position: 0% 50%; }
-              50% { background-position: 100% 50%; }
-              100% { background-position: 0% 50%; }
-            }
-            .animate-fluid-background {
-              background: linear-gradient(-45deg, hsl(var(--primary)), #1a1a1a, #2a2a2a, #0a0a0a);
-              background-size: 400% 400%;
-              animation: fluidGradient 15s ease infinite;
-            }
-            
             .glass-slider-enter { animation: sliderFadeIn 0.5s ease-out forwards; }
             @keyframes sliderFadeIn {
               from { opacity: 0; transform: translateY(10px); }
               to { opacity: 1; transform: translateY(0); }
             }
           `}} />
-          
-          {/* Animated Fluid Background */}
-          <div className="absolute inset-0 animate-fluid-background" />
+
+          {/* Animated Morphing Background */}
+          <LoginMorphingBackground />
+
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(0_0%_100%_/_0.08),transparent_42%)] pointer-events-none" />
 
           {/* Noise overlay for texture */}
           <div className="absolute inset-0 opacity-[0.035] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
@@ -310,7 +302,7 @@ const LoginPage = () => {
               
               <div className="flex flex-wrap gap-3 mb-8">
                 {tips[currentTip].tags.map((tag, i) => (
-                  <span key={i} className="px-5 py-2 rounded-full border border-white/20 text-[13px] font-medium bg-black/20 tracking-wide">
+                  <span key={i} className="px-5 py-2 rounded-full border border-white/25 text-[13px] font-medium bg-white/10 backdrop-blur-sm tracking-wide">
                     {tag}
                   </span>
                 ))}

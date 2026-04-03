@@ -1091,7 +1091,7 @@ const ClientsPage = () => {
                     <TooltipContent className="text-xs font-medium">Copiado!</TooltipContent>
                   </Tooltip>
 
-                  <div className="relative z-10 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div className="relative z-10 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="icon"

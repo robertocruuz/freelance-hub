@@ -358,7 +358,7 @@ export const KanbanColumnComponent = ({
         {addMode === null && (
           <button
             onClick={() => setAddMode('choice')}
-            className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent hover:border-border hover:bg-secondary hover:text-foreground transition shadow-sm"
+            className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent hover:rounded-[8px] hover:border-border hover:bg-secondary hover:text-foreground transition shadow-sm"
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar um cartão
           </button>

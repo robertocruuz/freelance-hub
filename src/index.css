@@ -428,6 +428,186 @@
   animation: float 3s ease-in-out infinite;
 }
 
+@keyframes login-morph-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes login-morph-vertical {
+  0% {
+    transform: translateY(-48%);
+  }
+  50% {
+    transform: translateY(48%);
+  }
+  100% {
+    transform: translateY(-48%);
+  }
+}
+
+@keyframes login-morph-horizontal {
+  0% {
+    transform: translateX(-42%) translateY(-10%);
+  }
+  50% {
+    transform: translateX(42%) translateY(10%);
+  }
+  100% {
+    transform: translateX(-42%) translateY(-10%);
+  }
+}
+
+@keyframes login-morph-hue {
+  0% {
+    filter: url(#login-goo) blur(40px) hue-rotate(0deg) saturate(115%);
+  }
+  50% {
+    filter: url(#login-goo) blur(44px) hue-rotate(14deg) saturate(135%);
+  }
+  100% {
+    filter: url(#login-goo) blur(40px) hue-rotate(0deg) saturate(115%);
+  }
+}
+
+.login-morph-bg {
+  --login-bg-1: 191 82% 22%;
+  --login-bg-2: 220 58% 20%;
+  --login-bg-3: 274 42% 22%;
+  --login-blob-1: 58, 244, 255;
+  --login-blob-2: 58, 134, 255;
+  --login-blob-3: 255, 191, 71;
+  --login-blob-4: 145, 88, 255;
+  --login-blob-5: 255, 106, 201;
+  --login-blob-6: 92, 226, 255;
+  --login-blob-7: 255, 176, 82;
+  --login-blob-interactive: 110, 232, 255;
+  --login-circle-size: 80%;
+  --login-blending: screen;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 18%, hsl(188 100% 62% / 0.18), transparent 28%),
+    radial-gradient(circle at 82% 24%, hsl(218 100% 66% / 0.2), transparent 30%),
+    radial-gradient(circle at 52% 78%, hsl(39 100% 69% / 0.14), transparent 26%),
+    linear-gradient(135deg, hsl(var(--login-bg-1)) 0%, hsl(var(--login-bg-2)) 55%, hsl(var(--login-bg-3)) 100%);
+}
+
+.login-morph-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 14% 16%, hsl(0 0% 100% / 0.12), transparent 22%),
+    radial-gradient(circle at 84% 18%, hsl(196 100% 78% / 0.16), transparent 26%),
+    radial-gradient(circle at 78% 80%, hsl(37 100% 74% / 0.14), transparent 26%),
+    radial-gradient(circle at 64% 28%, hsl(284 100% 78% / 0.12), transparent 24%),
+    radial-gradient(circle at 48% 42%, hsl(0 0% 100% / 0.06), transparent 32%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.login-morph-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.login-morph-blobs {
+  position: absolute;
+  inset: 0;
+  filter: url(#login-goo) blur(36px);
+  animation: login-morph-hue 22s ease-in-out infinite;
+}
+
+.login-morph-blob,
+.login-morph-interactive {
+  position: absolute;
+  mix-blend-mode: var(--login-blending);
+}
+
+.login-morph-blob {
+  width: var(--login-circle-size);
+  height: var(--login-circle-size);
+}
+
+.login-morph-blob-1 {
+  top: calc(50% - var(--login-circle-size) / 2);
+  left: calc(50% - var(--login-circle-size) / 2);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-1), 0.84) 0, rgba(var(--login-blob-1), 0) 50%) no-repeat;
+  transform-origin: center center;
+  animation: login-morph-vertical 28s ease infinite;
+}
+
+.login-morph-blob-2 {
+  top: calc(50% - var(--login-circle-size) / 2);
+  left: calc(50% - var(--login-circle-size) / 2);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-2), 0.82) 0, rgba(var(--login-blob-2), 0) 50%) no-repeat;
+  transform-origin: calc(50% - 320px);
+  animation: login-morph-rotate 18s reverse infinite;
+}
+
+.login-morph-blob-3 {
+  top: calc(50% - var(--login-circle-size) / 2 + 180px);
+  left: calc(50% - var(--login-circle-size) / 2 - 420px);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-3), 0.62) 0, rgba(var(--login-blob-3), 0) 48%) no-repeat;
+  transform-origin: calc(50% + 320px);
+  animation: login-morph-rotate 36s linear infinite;
+}
+
+.login-morph-blob-4 {
+  top: calc(50% - var(--login-circle-size) / 2);
+  left: calc(50% - var(--login-circle-size) / 2);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-4), 0.68) 0, rgba(var(--login-blob-4), 0) 52%) no-repeat;
+  transform-origin: calc(50% - 180px);
+  animation: login-morph-horizontal 32s ease infinite;
+  opacity: 0.85;
+}
+
+.login-morph-blob-5 {
+  width: calc(var(--login-circle-size) * 1.55);
+  height: calc(var(--login-circle-size) * 1.55);
+  top: calc(50% - var(--login-circle-size) * 0.8);
+  left: calc(50% - var(--login-circle-size) * 0.8);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-5), 0.28) 0, rgba(var(--login-blob-5), 0) 42%) no-repeat;
+  transform-origin: calc(50% - 600px) calc(50% + 160px);
+  animation: login-morph-rotate 24s ease infinite;
+}
+
+.login-morph-blob-6 {
+  width: calc(var(--login-circle-size) * 0.92);
+  height: calc(var(--login-circle-size) * 0.92);
+  top: calc(50% - var(--login-circle-size) / 2 - 220px);
+  left: calc(50% - var(--login-circle-size) / 2 + 260px);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-6), 0.62) 0, rgba(var(--login-blob-6), 0) 48%) no-repeat;
+  transform-origin: calc(50% + 160px) calc(50% - 180px);
+  animation: login-morph-horizontal 26s ease-in-out infinite reverse;
+}
+
+.login-morph-blob-7 {
+  width: calc(var(--login-circle-size) * 0.88);
+  height: calc(var(--login-circle-size) * 0.88);
+  top: calc(50% - var(--login-circle-size) / 2 + 120px);
+  left: calc(50% - var(--login-circle-size) / 2 + 360px);
+  background: radial-gradient(circle at center, rgba(var(--login-blob-7), 0.58) 0, rgba(var(--login-blob-7), 0) 48%) no-repeat;
+  transform-origin: calc(50% - 260px) calc(50% + 180px);
+  animation: login-morph-rotate 30s linear infinite reverse;
+}
+
+.login-morph-interactive {
+  inset: -50%;
+  background: radial-gradient(circle at center, rgba(var(--login-blob-interactive), 0.48) 0, rgba(var(--login-blob-interactive), 0) 36%) no-repeat;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 /* Finance calendar dot indicators */
 .finance-dot {
   position: relative;

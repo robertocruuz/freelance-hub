@@ -1037,15 +1037,15 @@ const TaskCalendarCard = ({
         </div>
         )}
 
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-x-1.5 gap-y-2">
           {weekDays.map(d => (
-            <div key={d} className="text-center text-[10px] font-bold text-muted-foreground/60 py-2">{d.charAt(0)}</div>
+            <div key={d} className="py-1.5 text-center text-[10px] font-bold text-muted-foreground/60">{d.charAt(0)}</div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-7 gap-x-1.5 gap-y-2">
           {Array.from({ length: leadingBlanks }).map((_, i) => (
-            <div key={`blank-${i}`} className="h-9" />
+            <div key={`blank-${i}`} className="h-10" />
           ))}
           {days.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
@@ -1057,17 +1057,17 @@ const TaskCalendarCard = ({
                 <button
                   key={dateStr}
                   onClick={() => setSelectedDay(dateStr)}
-                  className={`h-9 rounded-[8px] flex flex-col items-center justify-center relative transition-all duration-200
+                  className={`relative flex h-10 w-full flex-col items-center justify-center rounded-[9px] transition-all duration-200
                     ${today ? 'bg-primary text-primary-foreground font-bold dark:bg-white dark:text-black' : 'hover:bg-muted/40 text-foreground bg-transparent border border-transparent hover:border-border/60'}
                     ${isSelected && !today ? 'bg-primary/5 ring-1 ring-primary/30 border-primary/20' : ''}
                   `}
                 >
                 <span className={`text-xs leading-none ${today ? 'font-bold' : 'font-semibold'}`}>{format(day, 'd')}</span>
                 {(counts.tasks > 0 || counts.receivables > 0 || counts.payables > 0) && (
-                  <div className="flex gap-0.5 mt-1.5">
-                    {counts.tasks > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-foreground/70'}`} />}
-                    {counts.receivables > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-primary'}`} />}
-                    {counts.payables > 0 && <span className={`w-1 h-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-destructive'}`} />}
+                  <div className="mt-1 flex gap-0.5">
+                    {counts.tasks > 0 && <span className={`h-1 w-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-foreground/70'}`} />}
+                    {counts.receivables > 0 && <span className={`h-1 w-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-primary'}`} />}
+                    {counts.payables > 0 && <span className={`h-1 w-1 rounded-full ${today ? 'bg-primary-foreground/80 dark:bg-black/70' : 'bg-destructive'}`} />}
                   </div>
                 )}
               </button>
