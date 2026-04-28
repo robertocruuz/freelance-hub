@@ -917,16 +917,16 @@ const ClientsPage = () => {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in">
       {/* Header & Actions */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.clients}</h1>
+          <h1 className="text-3xl sm:text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">{t.clients}</h1>
           <p className="text-sm text-muted-foreground">
             {clients.length} {clients.length === 1 ? 'cliente' : 'clientes'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           {/* Expandable Search w/ Default Label */}
-          <div className="relative group flex items-center h-10">
+          <div className="relative group flex h-10 flex-1 items-center sm:flex-none">
             <Search className="absolute left-3 w-4 h-4 z-10 pointer-events-none transition-all duration-300 text-muted-foreground group-focus-within:text-primary" />
             <Input
               placeholder={t.search}
@@ -935,8 +935,8 @@ const ClientsPage = () => {
               className={cn(
                 "pl-9 pr-8 rounded-[10px] transition-all duration-300 ease-out h-full border bg-background border-border shadow-sm focus-visible:ring-1 focus-visible:ring-ring text-foreground placeholder:text-muted-foreground text-sm font-medium",
                 search 
-                  ? "w-[180px] sm:w-[250px]" 
-                  : "w-[130px] sm:w-[140px] cursor-pointer hover:w-[180px] sm:hover:w-[250px] focus:w-[180px] sm:focus:w-[250px] focus:cursor-text"
+                  ? "w-full sm:w-[250px]" 
+                  : "w-full sm:w-[140px] cursor-pointer sm:hover:w-[250px] focus:w-full sm:focus:w-[250px] focus:cursor-text"
               )}
             />
             {search && (
@@ -965,7 +965,77 @@ const ClientsPage = () => {
           <p className="max-w-sm text-muted-foreground">Adicione um cliente para começar.</p>
         </div>
       ) : (
-        <div className="rounded-[12px] border bg-card shadow-sm overflow-hidden">
+        <>
+        <div className="grid gap-3 md:hidden">
+          {filtered.map((c) => (
+            <div key={c.id} className="rounded-[12px] border border-border bg-card p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <button
+                  type="button"
+                  onClick={() => openClient360(c)}
+                  className="min-w-0 flex-1 text-left flex items-center gap-3"
+                >
+                  {c.logo_url ? (
+                    <div className="w-12 h-12 rounded-[10px] bg-white shadow-sm flex items-center justify-center overflow-hidden border border-border shrink-0">
+                      <img src={c.logo_url} alt={`${c.name} logo`} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-12 h-12 rounded-[10px] flex items-center justify-center bg-muted text-muted-foreground font-bold text-lg border border-border shrink-0"
+                      style={c.color ? { backgroundColor: `${c.color}18`, color: c.color, borderColor: `${c.color}30` } : undefined}
+                    >
+                      {c.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold text-foreground">{c.name}</p>
+                    <p className="truncate text-sm text-muted-foreground">{c.responsible || 'Sem responsavel'}</p>
+                  </div>
+                </button>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="w-10 h-10 rounded-[8px] text-muted-foreground" onClick={() => openEdit(c)}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="w-10 h-10 rounded-[8px] text-muted-foreground hover:text-destructive" onClick={() => setDeleteConfirmClient(c)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-2 text-sm">
+                <button
+                  type="button"
+                  onClick={() => c.email && handleCopyField(`${c.id}-email`, c.email, 'Email')}
+                  disabled={!c.email}
+                  className="flex min-h-10 items-center gap-2 rounded-[8px] bg-muted/40 px-3 text-left text-muted-foreground disabled:opacity-60"
+                >
+                  <Mail className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{c.email || 'Sem email'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => c.phone && handleCopyField(`${c.id}-phone`, maskPhone(c.phone), 'Telefone')}
+                  disabled={!c.phone}
+                  className="flex min-h-10 items-center gap-2 rounded-[8px] bg-muted/40 px-3 text-left text-muted-foreground disabled:opacity-60"
+                >
+                  <Phone className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{c.phone ? maskPhone(c.phone) : 'Sem telefone'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => c.document && handleCopyField(`${c.id}-document`, maskDocument(c.document), 'Documento')}
+                  disabled={!c.document}
+                  className="flex min-h-10 items-center gap-2 rounded-[8px] bg-muted/40 px-3 text-left text-muted-foreground disabled:opacity-60"
+                >
+                  <DocIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{c.document ? maskDocument(c.document) : 'Sem documento'}</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden rounded-[12px] border bg-card shadow-sm overflow-hidden md:block">
           <div className="overflow-x-auto">
             <div className="min-w-[980px]">
               <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,1fr)_110px] gap-4 border-b px-6 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1115,6 +1185,7 @@ const ClientsPage = () => {
             </div>
           </div>
         </div>
+        </>
       )}
 
       <ClientFormDialog

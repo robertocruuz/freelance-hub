@@ -634,16 +634,16 @@ const KanbanPage = () => {
         <div className="flex flex-col gap-3 mb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Tarefas</h1>
+              <h1 className="text-3xl sm:text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Tarefas</h1>
               <p className="text-sm text-muted-foreground">Gerencie seus projetos em formato Kanban</p>
             </div>
 
-            <TabsList className="bg-card shadow-sm border border-border p-1 rounded-[12px]">
-              <TabsTrigger value="my-boards" className="gap-1.5 text-xs rounded-[8px]">
+            <TabsList className="w-full bg-card shadow-sm border border-border p-1 rounded-[12px] sm:w-auto">
+              <TabsTrigger value="my-boards" className="flex-1 gap-1.5 text-xs rounded-[8px] sm:flex-none">
                 <Kanban className="w-3.5 h-3.5" />
                 Meus Painéis
               </TabsTrigger>
-              <TabsTrigger value="shared" className="gap-1.5 text-xs rounded-[8px]">
+              <TabsTrigger value="shared" className="flex-1 gap-1.5 text-xs rounded-[8px] sm:flex-none">
                 <Share2 className="w-3.5 h-3.5" />
                 Compartilhadas comigo
               </TabsTrigger>
@@ -698,7 +698,7 @@ const KanbanPage = () => {
                         tabIndex={0}
                         onClick={(e) => e.stopPropagation()}
                         className={cn(
-                          "opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity p-1 -mr-1 -mt-1 rounded-md cursor-pointer shrink-0",
+                          "opacity-100 transition-opacity p-2.5 -mr-2 -mt-2 rounded-md cursor-pointer shrink-0 sm:p-1 sm:-mr-1 sm:-mt-1 sm:opacity-0 sm:group-hover:opacity-100 sm:data-[state=open]:opacity-100",
                           isActive && color
                             ? (contrast === 'light' ? 'hover:bg-white/20' : 'hover:bg-slate-900/10')
                             : 'hover:bg-muted'
@@ -965,13 +965,13 @@ const KanbanPage = () => {
         <div className="flex items-center gap-1 bg-secondary rounded-[8px] p-0.5 ml-auto">
           <button
             onClick={() => setView('kanban')}
-            className={`p-1.5 rounded-[8px] transition ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-[8px] transition sm:h-auto sm:w-auto sm:p-1.5 ${view === 'kanban' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setView('list')}
-            className={`p-1.5 rounded-[8px] transition ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-[8px] transition sm:h-auto sm:w-auto sm:p-1.5 ${view === 'list' ? 'bg-card shadow-sm' : 'hover:bg-card/50'}`}
           >
             <List className="w-4 h-4" />
           </button>
@@ -1020,7 +1020,7 @@ const KanbanPage = () => {
                   <button
                     key={p.value}
                     onClick={() => toggleFilter(filterPriorities, setFilterPriorities, p.value)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterPriorities.has(p.value)
                         ? `${p.color} shadow-sm ring-1 ring-current/20`
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1044,7 +1044,7 @@ const KanbanPage = () => {
                   <button
                     key={c.id}
                     onClick={() => toggleFilter(filterClients, setFilterClients, c.id)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterClients.has(c.id)
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1069,7 +1069,7 @@ const KanbanPage = () => {
                   <button
                     key={p.id}
                     onClick={() => toggleFilter(filterProjects, setFilterProjects, p.id)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterProjects.has(p.id)
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1100,7 +1100,7 @@ const KanbanPage = () => {
                   <button
                     key={d.value}
                     onClick={() => toggleFilter(filterDeadlines, setFilterDeadlines, d.value)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterDeadlines.has(d.value)
                         ? `${d.color} shadow-sm ring-1 ring-current/20`
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1114,7 +1114,7 @@ const KanbanPage = () => {
                 <div className="flex items-center gap-1">
                   <PopoverTrigger asChild>
                     <button
-                      className={`px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium ${
+                      className={`min-h-9 px-3 py-1.5 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium sm:min-h-0 sm:px-2 sm:py-1 ${
                         filterDeadlineDate
                           ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                           : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1153,7 +1153,7 @@ const KanbanPage = () => {
                     <button
                       key={type}
                       onClick={() => toggleFilter(filterTypes, setFilterTypes, type)}
-                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                      className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                         filterTypes.has(type)
                           ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                           : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1178,7 +1178,7 @@ const KanbanPage = () => {
                   <button
                     key={c}
                     onClick={() => setFilterComplexities(prev => { const next = new Set(prev); if (next.has(c)) next.delete(c); else next.add(c); return next; })}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterComplexities.has(c)
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1207,7 +1207,7 @@ const KanbanPage = () => {
                   <button
                     key={t.value}
                     onClick={() => toggleFilter(filterEstimatedTime, setFilterEstimatedTime, t.value)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       filterEstimatedTime.has(t.value)
                         ? `${t.color} shadow-sm ring-1 ring-current/20`
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'
@@ -1237,7 +1237,7 @@ const KanbanPage = () => {
                   <button
                     key={s.value}
                     onClick={() => setSortBy(s.value)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all ${
+                    className={`min-h-9 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-all sm:min-h-0 sm:px-2 sm:py-0.5 ${
                       sortBy === s.value
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                         : 'bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary'

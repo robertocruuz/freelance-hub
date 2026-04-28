@@ -117,7 +117,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex lg:flex-row-reverse bg-background">
       {/* Right side (Visually) — Form */}
-      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-8 sm:px-16 lg:px-20 xl:px-32 relative bg-background">
+      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-start lg:justify-center px-6 sm:px-16 lg:px-20 xl:px-32 pt-20 pb-8 lg:py-0 relative bg-background">
         <button
           onClick={() => isForgotPassword ? setIsForgotPassword(false) : isRegister ? setIsRegister(false) : navigate('/')}
           className="absolute top-6 left-6 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -213,7 +213,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-xs text-primary hover:text-primary/80 transition-colors"
+                className="text-xs text-primary hover:text-primary/80 transition-colors mobile-safe-primary"
               >
                 Esqueci minha senha
               </button>
@@ -224,7 +224,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading || (isRegister && !isPasswordValid)}
-              className="w-full py-3 rounded-[0.85rem] bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-all"
+              className="w-full py-3 rounded-[0.85rem] bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:opacity-90 transition-all mobile-safe-primary-button"
             >
               {loading ? '...' : isForgotPassword ? 'Enviar link' : isRegister ? 'Criar conta' : 'Entrar'}
             </button>
@@ -267,7 +267,7 @@ const LoginPage = () => {
             {isRegister ? 'Já tem uma conta? ' : 'Não tem uma conta? '}
             <button
               onClick={() => setIsRegister(!isRegister)}
-              className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors"
+              className="text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors mobile-safe-primary"
             >
               {isRegister ? 'Entrar' : 'Criar conta'}
             </button>
@@ -278,7 +278,7 @@ const LoginPage = () => {
       {/* Card Slider Section (Visually on Left side) */}
       <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] p-4 lg:p-4 shrink-0">
         {/* The Boxed Gradient Container */}
-        <div className="w-full h-full relative rounded-3xl overflow-hidden flex flex-col justify-end shadow-2xl">
+        <div className="login-showcase-shell w-full h-full relative rounded-3xl overflow-hidden flex flex-col justify-end">
 
           <style dangerouslySetInnerHTML={{__html: `
             .glass-slider-enter { animation: sliderFadeIn 0.5s ease-out forwards; }

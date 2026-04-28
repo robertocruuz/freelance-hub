@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
@@ -209,6 +209,21 @@
     -webkit-text-fill-color: currentcolor;
     background-clip: border-box;
     color: hsl(0 0% 100%);
+  }
+
+  @media (max-width: 767px) {
+    .dark .mobile-safe-primary {
+      color: hsl(var(--foreground)) !important;
+    }
+
+    .dark .mobile-safe-primary:hover {
+      color: hsl(var(--foreground) / 0.82) !important;
+    }
+
+    .dark .mobile-safe-primary-button {
+      background-color: hsl(var(--foreground)) !important;
+      color: hsl(var(--background)) !important;
+    }
   }
 
   .sidebar-glass {
@@ -477,9 +492,6 @@
 }
 
 .login-morph-bg {
-  --login-bg-1: 191 82% 22%;
-  --login-bg-2: 220 58% 20%;
-  --login-bg-3: 274 42% 22%;
   --login-blob-1: 58, 244, 255;
   --login-blob-2: 58, 134, 255;
   --login-blob-3: 255, 191, 71;
@@ -494,10 +506,33 @@
   inset: 0;
   overflow: hidden;
   background:
+    radial-gradient(circle at 50% 50%, #685bcc 0%, #685bcc 100%),
     radial-gradient(circle at 18% 18%, hsl(188 100% 62% / 0.18), transparent 28%),
     radial-gradient(circle at 82% 24%, hsl(218 100% 66% / 0.2), transparent 30%),
     radial-gradient(circle at 52% 78%, hsl(39 100% 69% / 0.14), transparent 26%),
-    linear-gradient(135deg, hsl(var(--login-bg-1)) 0%, hsl(var(--login-bg-2)) 55%, hsl(var(--login-bg-3)) 100%);
+    #685bcc;
+}
+
+.login-showcase-shell {
+  position: relative;
+  border: 1px solid hsl(0 0% 100% / 0.58);
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.22), hsl(0 0% 100% / 0.08));
+  box-shadow:
+    0 30px 80px hsl(219 52% 18% / 0.12),
+    inset 0 1px 0 hsl(0 0% 100% / 0.8),
+    inset 0 -1px 0 hsl(210 60% 92% / 0.32);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.login-showcase-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(0 0% 100% / 0.22), transparent 28%, transparent 72%, hsl(0 0% 100% / 0.14));
+  pointer-events: none;
+  z-index: 1;
 }
 
 .login-morph-bg::before {

@@ -114,11 +114,11 @@ const CompactClientSelect = ({ clients, value, onChange, placeholder = 'Cliente'
   }, []);
 
   return (
-    <div ref={ref} className={`relative ${fullWidth ? 'w-full' : 'max-w-[160px]'}`}>
+    <div ref={ref} className={`relative ${fullWidth ? 'w-full' : 'w-full sm:w-auto sm:max-w-[160px]'}`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`flex items-center justify-between gap-1 rounded-[8px] border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring ${fullWidth ? 'w-full px-4 py-2 bg-background text-sm' : 'px-2 py-1.5 bg-transparent'}`}
+        className={`flex items-center justify-between gap-1 rounded-[8px] border border-border focus:outline-none focus:ring-1 focus:ring-ring ${fullWidth ? 'w-full px-4 py-2 bg-background text-sm' : 'w-full px-3 py-2 bg-background text-sm sm:w-auto sm:px-2 sm:py-1.5 sm:bg-transparent sm:text-xs'}`}
       >
         <span className="flex items-center gap-1.5 min-w-0 truncate">
           {selected ? (
@@ -876,7 +876,7 @@ const TimeTrackingPage = () => {
       <div className="flex flex-col gap-3 mb-1">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Cronômetro</h1>
+            <h1 className="text-3xl sm:text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Cronômetro</h1>
             <p className="text-sm text-muted-foreground">Gerencie seu tempo gasto em tarefas, projetos e clientes. Gere relatórios e exporte em pdf.</p>
           </div>
         </div>
@@ -885,8 +885,8 @@ const TimeTrackingPage = () => {
       {/* Header section */}
       <div className="rounded-xl border border-border bg-card shadow-sm flex-shrink-0 relative z-40">
         {/* Timer bar - Toggl style */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
-        <div className="relative flex-1 min-w-[150px]">
+        <div className="flex flex-col gap-3 px-4 py-3 border-b border-border/50 sm:flex-row sm:items-center sm:gap-2">
+        <div className="relative w-full min-w-0 sm:flex-1 sm:min-w-[150px]">
           <input
             ref={descInputRef}
             placeholder="No que você está trabalhando?"
@@ -933,13 +933,13 @@ const TimeTrackingPage = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-1.5">
           <CompactClientSelect clients={clients} value={clientId} onChange={(v) => { setClientId(v); setProjectId(''); setTaskId(''); }} placeholder="Cliente" />
           <select
             value={projectId}
             onChange={(e) => { setProjectId(e.target.value); setTaskId(''); }}
             disabled={!clientId}
-            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
+            className="w-full max-w-none px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40 sm:max-w-[160px] sm:px-2 sm:py-1.5 sm:bg-transparent sm:text-xs"
           >
             <option value="">{clientId ? t.project : 'Cliente primeiro'}</option>
             {filteredProjects.map((p) => (
@@ -950,7 +950,7 @@ const TimeTrackingPage = () => {
             value={taskId}
             onChange={(e) => setTaskId(e.target.value)}
             disabled={!projectId}
-            className="max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40"
+            className="w-full max-w-none px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-40 sm:max-w-[160px] sm:px-2 sm:py-1.5 sm:bg-transparent sm:text-xs"
           >
             <option value="">{projectId ? 'Tarefa' : 'Projeto primeiro'}</option>
             {filteredTasks.map((t) => (
@@ -958,8 +958,8 @@ const TimeTrackingPage = () => {
             ))}
           </select>
         </div>
-        <div className="flex items-center gap-3 ml-2">
-          <span className="font-mono text-lg font-semibold text-foreground tabular-nums min-w-[80px] text-right">
+        <div className="flex w-full items-center justify-between gap-3 sm:ml-2 sm:w-auto sm:justify-start">
+          <span className="font-mono text-xl sm:text-lg font-semibold text-foreground tabular-nums min-w-[80px] text-left sm:text-right">
             {formatDuration(elapsed)}
           </span>
           {running ? (
@@ -981,30 +981,32 @@ const TimeTrackingPage = () => {
       </div>
 
         {/* Navigation bar */}
-        <div className="flex items-center justify-between px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigateDate(-1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+        <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-2.5">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+          <button onClick={() => navigateDate(-1)} className="p-2 sm:p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button onClick={() => setSelectedDate(new Date())} className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted text-sm font-medium text-foreground transition-colors">
+          <button onClick={() => setSelectedDate(new Date())} className="flex flex-1 items-center justify-center gap-2 px-3 py-2 sm:py-1.5 rounded-lg hover:bg-muted text-sm font-medium text-foreground transition-colors sm:flex-none">
             <CalendarIcon className="w-4 h-4" />
             <span className="capitalize">{dateLabel()}</span>
           </button>
-          <button onClick={() => navigateDate(1)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => navigateDate(1)} className="p-2 sm:p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
-          <span className="ml-3 text-sm text-muted-foreground font-medium">
+          </div>
+          <span className="text-center text-sm text-muted-foreground font-medium sm:ml-3 sm:text-left">
             TOTAL: <span className="text-foreground font-semibold">{formatDuration(totalFiltered)}</span>
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           {/* Time range selector */}
-          <div className="flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5">
+          <div className="grid w-full grid-cols-3 bg-muted/50 rounded-lg p-0.5 gap-0.5 sm:flex sm:w-auto sm:items-center">
             {([['daily', 'Dia'], ['weekly', 'Semana'], ['monthly', 'Mês']] as const).map(([value, label]) => (
               <button
                 key={value}
                 onClick={() => setTimeRange(value)}
-                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                className={`px-2 py-2 sm:px-3.5 sm:py-1.5 rounded-md text-sm font-medium transition-all ${
                   timeRange === value
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -1015,7 +1017,7 @@ const TimeTrackingPage = () => {
             ))}
           </div>
           {/* View mode toggle */}
-          <div className="flex items-center rounded-lg border border-border overflow-hidden">
+          <div className="grid w-full grid-cols-4 rounded-lg border border-border overflow-hidden sm:flex sm:w-auto sm:items-center">
             {([
               { key: 'calendar' as ViewMode, label: 'Calendário', icon: LayoutGrid },
               { key: 'list' as ViewMode, label: 'Lista', icon: List },
@@ -1025,14 +1027,16 @@ const TimeTrackingPage = () => {
               <button
                 key={key}
                 onClick={() => setViewMode(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${
+                aria-label={label}
+                title={label}
+                className={`flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 sm:min-h-0 sm:px-3 sm:py-1.5 text-sm font-medium transition-all ${
                   viewMode === key
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
-                {label}
+                <span className="sr-only sm:not-sr-only">{label}</span>
               </button>
             ))}
           </div>
@@ -1040,7 +1044,7 @@ const TimeTrackingPage = () => {
           <div className="relative" ref={calendarSettingsRef}>
             <button
               onClick={() => setShowCalendarSettings(!showCalendarSettings)}
-              className={`p-1.5 rounded-md transition-colors ${showCalendarSettings ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              className={`inline-flex h-10 w-10 items-center justify-center sm:h-auto sm:w-auto sm:p-1.5 rounded-md transition-colors ${showCalendarSettings ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
               title="Configurações do calendário"
             >
               <Settings className="w-4 h-4" />

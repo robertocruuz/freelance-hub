@@ -26,6 +26,7 @@ import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import FinancePage from "./pages/FinancePage";
+import ReceivablesPage from "./pages/ReceivablesPage";
 import LeadsPage from "./pages/LeadsPage";
 import ChatPage from "./pages/ChatPage";
 
@@ -59,6 +60,7 @@ const App = () => (
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="team" element={<TeamPage />} />
                   <Route path="finance" element={<FinancePage />} />
+                  <Route path="finance/receivables" element={<ReceivablesPage />} />
                   <Route path="leads" element={<LeadsPage />} />
                   <Route path="chat" element={<ChatPage />} />
                 </Route>

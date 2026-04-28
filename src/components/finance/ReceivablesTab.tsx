@@ -37,7 +37,7 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import ClientSelect from '@/components/ClientSelect';
 import { useClients } from '@/hooks/useClients';
-import type { FinanceInvoice, InvoicePrefillDraft } from '@/pages/FinancePage';
+import type { FinanceInvoice, InvoicePrefillDraft } from '@/types/finance';
 
 interface InvoiceItem {
   description: string;

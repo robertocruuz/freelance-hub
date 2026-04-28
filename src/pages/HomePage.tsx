@@ -255,42 +255,45 @@ const HomePage = () => {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6 relative z-10 space-y-8 sm:space-y-10 animate-fade-in fill-mode-forwards opacity-0">
       {/* 1. Dashboard Header Strip */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-border/80">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 sm:gap-6 pb-0 sm:pb-6 sm:border-b border-border/80">
         <div>
-          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">
+          <h1 className="text-3xl sm:text-[2.3rem] font-extrabold text-foreground tracking-tight leading-tight sm:leading-none">
             {isPt ? 'Olá, ' : 'Hello, '}
             <span className="text-primary dark:text-foreground">{firstName || (isPt ? 'Usuário' : 'User')}</span> 👋
           </h1>
-          <p className="text-muted-foreground text-sm font-medium mt-2">
+          <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-1.5 sm:mt-2">
             {isPt ? format(now, "EEEE, dd 'de' MMMM", { locale: ptBR }) : format(now, 'EEEE, MMMM dd')}
           </p>
         </div>
 
         {/* Executive KPI Overview */}
-        <div className="flex flex-wrap items-center gap-6 xl:gap-10">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{isPt ? 'Tarefas Pendentes' : 'Pending Tasks'}</span>
-            <div className="flex items-center gap-2 mt-1">
-               <span className="text-2xl font-black text-foreground leading-none">{taskStats.todo}</span>
-               {taskStats.overdue > 0 && <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">{taskStats.overdue} {isPt ? 'atrasadas' : 'overdue'}</span>}
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-6 xl:gap-10">
+          <div className="flex min-w-0 flex-col rounded-xl border border-border/70 bg-card/70 p-3 shadow-sm sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+            <span className="truncate text-[9px] uppercase tracking-[0.12em] font-bold text-muted-foreground sm:text-[10px] sm:tracking-wider">{isPt ? 'Tarefas Pendentes' : 'Pending Tasks'}</span>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-1 sm:gap-2">
+               <span className="text-xl sm:text-2xl font-black text-foreground leading-none">{taskStats.todo}</span>
+               {taskStats.overdue > 0 && <span className="text-[9px] sm:text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">{taskStats.overdue} {isPt ? 'atrasadas' : 'overdue'}</span>}
             </div>
           </div>
           <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{isPt ? 'Projetos Ativos' : 'Active Projects'}</span>
-            <span className="text-2xl font-black text-foreground leading-none mt-1">{data.projects.length}</span>
+          <div className="flex min-w-0 flex-col rounded-xl border border-border/70 bg-card/70 p-3 shadow-sm sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+            <span className="truncate text-[9px] uppercase tracking-[0.12em] font-bold text-muted-foreground sm:text-[10px] sm:tracking-wider">{isPt ? 'Projetos Ativos' : 'Active Projects'}</span>
+            <span className="text-xl sm:text-2xl font-black text-foreground leading-none mt-1.5 sm:mt-1">{data.projects.length}</span>
           </div>
           <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{isPt ? 'Valor Estimado (Leads)' : 'Estimated Leads Value'}</span>
-            <span className="text-2xl font-black text-foreground leading-none mt-1">{fmtCurrency(leadStats.totalValue)}</span>
+          <div className="flex min-w-0 flex-col rounded-xl border border-border/70 bg-card/70 p-3 shadow-sm sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+            <span className="truncate text-[9px] uppercase tracking-[0.12em] font-bold text-muted-foreground sm:text-[10px] sm:tracking-wider">
+              <span className="sm:hidden">{isPt ? 'Valor Leads' : 'Lead Value'}</span>
+              <span className="hidden sm:inline">{isPt ? 'Valor Estimado (Leads)' : 'Estimated Leads Value'}</span>
+            </span>
+            <span className="truncate text-lg sm:text-2xl font-black text-foreground leading-none mt-1.5 sm:mt-1">{fmtCurrency(leadStats.totalValue)}</span>
           </div>
           {isAdminUser && (
             <>
               <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{isPt ? 'Saldo Atual' : 'Current Balance'}</span>
-                <span className={`text-2xl font-black leading-none mt-1 ${financeStats.balance >= 0 ? 'text-primary dark:text-foreground' : 'text-foreground dark:text-foreground'}`}>
+              <div className="flex min-w-0 flex-col rounded-xl border border-border/70 bg-card/70 p-3 shadow-sm sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+                <span className="truncate text-[9px] uppercase tracking-[0.12em] font-bold text-muted-foreground sm:text-[10px] sm:tracking-wider">{isPt ? 'Saldo Atual' : 'Current Balance'}</span>
+                <span className={`truncate text-lg sm:text-2xl font-black leading-none mt-1.5 sm:mt-1 ${financeStats.balance >= 0 ? 'text-primary dark:text-foreground' : 'text-foreground dark:text-foreground'}`}>
                   {fmtCurrency(financeStats.balance)}
                 </span>
               </div>
@@ -467,11 +470,11 @@ const HomePage = () => {
             {timeStats.activeTimer && <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse ml-2 ring-4 ring-green-500/20" />}
           </div>
           
-          <div className="flex flex-col bg-card border border-border rounded-2xl p-6 h-full justify-between gap-6 cursor-pointer hover:bg-card transition-colors" onClick={() => navigate('/dashboard/time')}>
+          <div className="flex flex-col bg-card border border-border rounded-2xl p-4 sm:p-6 h-full justify-between gap-4 sm:gap-6 cursor-pointer hover:bg-card transition-colors" onClick={() => navigate('/dashboard/time')}>
             <div className="flex justify-between items-start">
                <div className="flex flex-col">
                   <span className="text-[10px] text-muted-foreground font-bold mb-1 block uppercase tracking-wide">{isPt ? 'Hoje' : 'Today'}</span>
-                  <div className="text-4xl font-black tracking-tighter text-foreground">{fmtTime(timeStats.todayMin)}</div>
+                  <div className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">{fmtTime(timeStats.todayMin)}</div>
                </div>
                {timeStats.activeTimer && (
                  <div className="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 text-[8px] font-bold uppercase tracking-wider animate-pulse">
@@ -479,7 +482,7 @@ const HomePage = () => {
                  </div>
                )}
             </div>
-            <div className="w-full pt-4 border-t border-border/60">
+            <div className="w-full pt-3 sm:pt-4 border-t border-border/60">
                <MiniBarChart data={timeStats.last7} />
             </div>
           </div>
@@ -496,7 +499,7 @@ const HomePage = () => {
               {isPt ? 'Ver todos' : 'View all'} <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5 xl:gap-3">
             {data.projects.slice(0, 5).map(p => {
               const client = data.clients.find(c => c.id === p.client_id);
               const projectColor = client?.color || p.color || 'hsl(var(--muted))';
@@ -516,7 +519,7 @@ const HomePage = () => {
                 : undefined;
 
               return (
-              <div key={p.id} className="flex justify-center first:justify-start last:justify-end">
+              <div key={p.id} className="flex justify-center xl:first:justify-start xl:last:justify-end">
                 <ProjectFolderCard
                   title={p.name}
                   topMeta={topMeta}
@@ -725,17 +728,17 @@ const HomePage = () => {
 const MiniBarChart = ({ data }: { data: { label: string; minutes: number; hours: number; isToday: boolean }[] }) => {
   const maxMin = Math.max(...data.map(d => d.minutes), 1);
   return (
-    <div className="flex items-end justify-between h-20 w-full mt-2">
+    <div className="flex items-end justify-between h-14 w-full mt-1 sm:mt-2 sm:h-20">
       {data.map((d, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-          <div className="w-full relative flex items-end justify-center" style={{ height: '54px' }}>
+        <div key={i} className="flex-1 flex flex-col items-center gap-1 sm:gap-2">
+          <div className="w-full relative flex h-9 items-end justify-center sm:h-[54px]">
             <div
-              className={`w-full max-w-[14px] rounded-lg transition-all duration-300 ${d.isToday ? 'bg-primary' : 'bg-muted-foreground/20 hover:bg-primary/40'}`}
-              style={{ height: `${Math.max((d.minutes / maxMin) * 54, d.minutes > 0 ? 6 : 4)}px` }}
+              className={`w-full max-w-[10px] rounded-lg transition-all duration-300 sm:max-w-[14px] ${d.isToday ? 'bg-primary' : 'bg-muted-foreground/20 hover:bg-primary/40'}`}
+              style={{ height: `${Math.max((d.minutes / maxMin) * 100, d.minutes > 0 ? 12 : 8)}%` }}
               title={`${d.hours}h`}
             />
           </div>
-          <span className={`text-[10px] uppercase font-bold tracking-wider ${d.isToday ? 'text-primary' : 'text-muted-foreground/70'}`}>
+          <span className={`text-[9px] uppercase font-bold tracking-wider sm:text-[10px] ${d.isToday ? 'text-primary' : 'text-muted-foreground/70'}`}>
             {d.label.charAt(0)}
           </span>
         </div>
@@ -765,7 +768,7 @@ const ProjectFolderCard = ({
     <button
       type="button"
       onClick={onClick}
-      className="group relative block aspect-[637.6/480] w-full max-w-[96%] cursor-pointer text-left transition-all hover:-translate-y-0.5"
+      className="group relative block aspect-[637.6/480] w-full max-w-full cursor-pointer text-left transition-all hover:-translate-y-0.5 sm:max-w-[96%]"
     >
       <svg
         viewBox="-2 -2 641.6 484"
@@ -817,10 +820,10 @@ const ProjectFolderCard = ({
         />
       </svg>
 
-      <div className="absolute left-[11%] top-[41%] bottom-[15%] flex w-[70%] flex-col">
-        <div className={`text-[10px] font-black uppercase tracking-[0.22em] ${metaClassName}`}>{topMeta}</div>
-        <div className={`mt-1.5 max-w-[78%] text-[16px] leading-[1.08] font-black ${titleClassName}`}>{title}</div>
-        {bottomMeta ? <div className={`mt-auto text-[10px] font-black uppercase tracking-[0.18em] ${metaClassName}`}>{bottomMeta}</div> : null}
+      <div className="absolute left-[12%] top-[39%] bottom-[14%] flex w-[74%] flex-col sm:left-[11%] sm:top-[41%] sm:bottom-[15%] sm:w-[70%]">
+        <div className={`text-[7px] font-black uppercase tracking-[0.18em] sm:text-[10px] sm:tracking-[0.22em] ${metaClassName}`}>{topMeta}</div>
+        <div className={`mt-1 max-w-[92%] text-[10px] leading-[1.05] font-black sm:mt-1.5 sm:max-w-[78%] sm:text-[16px] sm:leading-[1.08] ${titleClassName}`}>{title}</div>
+        {bottomMeta ? <div className={`mt-auto text-[7px] font-black uppercase tracking-[0.14em] sm:text-[10px] sm:tracking-[0.18em] ${metaClassName}`}>{bottomMeta}</div> : null}
       </div>
     </button>
   );

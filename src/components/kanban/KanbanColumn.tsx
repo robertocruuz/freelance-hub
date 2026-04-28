@@ -179,7 +179,7 @@ export const KanbanColumnComponent = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-[300px] flex flex-col rounded-[12px] transition-all duration-200 snap-start ${
+      className={`flex-shrink-0 w-[min(78vw,300px)] sm:w-[300px] flex flex-col rounded-[12px] transition-all duration-200 snap-start ${
         isOver ? 'bg-primary/10 ring-2 ring-primary/30 ring-inset shadow-inner' : 'bg-card border border-border shadow-sm'
       }`}
     >
@@ -193,11 +193,11 @@ export const KanbanColumnComponent = ({
               onBlur={handleRename}
               onKeyDown={(e) => e.key === 'Enter' && handleRename()}
               autoFocus
-              className="h-7 text-xs font-bold bg-background border border-input shadow-sm"
+              className="h-10 text-sm font-bold bg-background border border-input shadow-sm sm:h-7 sm:text-xs"
             />
             <button
               onMouseDown={(e) => { e.preventDefault(); handleRename(); }}
-              className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary/20 transition shrink-0"
+              className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary/20 transition shrink-0"
             >
               <Check className="w-3.5 h-3.5" />
             </button>
@@ -219,7 +219,7 @@ export const KanbanColumnComponent = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary transition opacity-60 hover:opacity-100">
+            <button className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center hover:bg-secondary transition opacity-80 hover:opacity-100 sm:opacity-60">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
@@ -260,7 +260,7 @@ export const KanbanColumnComponent = ({
                 className="text-sm bg-background border border-input shadow-sm"
               />
               {newTitle.trim() && (
-                <Button size="sm" onClick={handleAdd} className="text-xs h-7 w-full shadow-sm">
+                <Button size="sm" onClick={handleAdd} className="text-xs h-10 w-full shadow-sm sm:h-7">
                   Criar tarefa
                 </Button>
               )}
@@ -276,7 +276,7 @@ export const KanbanColumnComponent = ({
             >
               <FolderKanban className="w-3.5 h-3.5 text-primary" /> A partir de um projeto
             </button>
-            <Button size="sm" variant="ghost" onClick={() => { setAddMode(null); setNewTitle(''); }} className="w-full text-xs h-7">
+            <Button size="sm" variant="ghost" onClick={() => { setAddMode(null); setNewTitle(''); }} className="w-full text-xs h-10 sm:h-7">
               Cancelar
             </Button>
           </div>
@@ -306,7 +306,7 @@ export const KanbanColumnComponent = ({
                 </button>
               ))
             )}
-            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-10 sm:h-7">
               Cancelar
             </Button>
           </div>
@@ -349,7 +349,7 @@ export const KanbanColumnComponent = ({
                 </button>
               ))
             )}
-            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-7">
+            <Button size="sm" variant="ghost" onClick={() => setAddMode(null)} className="w-full text-xs h-10 sm:h-7">
               Cancelar
             </Button>
           </div>
@@ -358,7 +358,7 @@ export const KanbanColumnComponent = ({
         {addMode === null && (
           <button
             onClick={() => setAddMode('choice')}
-            className="w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent hover:rounded-[8px] hover:border-border hover:bg-secondary hover:text-foreground transition shadow-sm"
+            className="w-full flex min-h-10 items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent hover:rounded-[8px] hover:border-border hover:bg-secondary hover:text-foreground transition shadow-sm sm:min-h-0"
           >
             <Plus className="w-3.5 h-3.5" /> Adicionar um cartão
           </button>

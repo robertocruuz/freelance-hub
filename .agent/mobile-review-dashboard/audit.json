@@ -1,0 +1,3940 @@
+[
+  {
+    "theme": "light",
+    "name": "home",
+    "route": "/dashboard",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-home.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Olá, Roberto 👋"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Ver toda ",
+          "w": 72,
+          "h": 16,
+          "x": 316,
+          "y": 362,
+          "cls": "flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 dark:text-primary-for"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 24,
+          "h": 24,
+          "x": 261,
+          "y": 754,
+          "cls": "w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-c"
+        },
+        {
+          "tag": "button",
+          "text": "ABRIL",
+          "w": 72,
+          "h": 24,
+          "x": 287,
+          "y": 754,
+          "cls": "h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground transition-colors uppe"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 24,
+          "h": 24,
+          "x": 361,
+          "y": 754,
+          "cls": "w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-c"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "TAREFAS PENDENTES",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "2 atra ada ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full"
+        },
+        {
+          "text": "PROJETOS ATIVOS",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "VALOR ESTIMADO (LEADS)",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "SALDO ATUAL",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "Manutenção de  ite",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors group-hover:text-whi"
+        },
+        {
+          "text": "26/03",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-destructive/10 text-destruc"
+        },
+        {
+          "text": "Video Segurança",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors group-hover:text-whi"
+        },
+        {
+          "text": "10/04",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-destructive/10 text-destruc"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "ABRIL",
+          "size": 10,
+          "tag": "button",
+          "cls": "h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground tr"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "T",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "Q",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "Q",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "D",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nOlá, Roberto 👋\n\nterça-feira, 28 de abril\n\nTAREFAS PENDENTES\n6\n2 atra ada \nPROJETOS ATIVOS\n6\nVALOR ESTIMADO (LEADS)\nR$ 4.200,00\nSALDO ATUAL\nR$ 0,00\nMinha  Tarefa \nVer toda \n\nManutuenção web 10\n\nManutenção de  ite\n26/03\n\nRoteiro\n\nVideo Segurança\n10/04\n\nte te\n\n-\n\nTe te\n\n-\n\nDe ign - Catalogo 2027\n\n-\nCalendário\nABRIL\nS\nT\nQ\nQ\nS\nS\nD\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n28 DE ABRIL • 0 EVENTOS\n\nNenhum evento agendado para e te dia.\n\nCheckli t\nTe te\nlembrar de tal coi a\nNotificaçõe \nNenhuma notificação\nGe tão de tempo\nHOJE\n0h 00m\nQ\nQ\nS\nS\nD\nS\nT\nProjeto \nVer todo \nFUTURO\nCatalogo\nENTREGA 30/06\nCESAP\nVídeo In titucional + Fotografia \nCESAP\nCriação de Per onagen  3D\nSEM CLIENTE\nProjeto de te te\nENTREGA 25/03\nCESAP\nVideo Segurança\nENTREGA 10/04\nClie"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "projects",
+    "route": "/dashboard/projects",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-projects.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/projects",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Projetos"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 242,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 242,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 495,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 495,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 748,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 748,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "FUTURO",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        },
+        {
+          "text": "CESAP",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        },
+        {
+          "text": "FCDL/SC",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nProjeto \n\n6 projeto  ativo \n\nFUTURO\n\nCatalogo\n\nPrazo: 30/06/2026\n\nCESAP\n\nCriação de Per onagen  3D\n\nPrazo: 45 dia \n\nFCDL/SC\n\nManutenção de  ite\n\nSem prazo definido\n\nSEM CLIENTE\n\nProjeto de te te\n\nPrazo: 25/03/2026\n\nCESAP\n\nVídeo In titucional + Fotografia \n\nPrazo: 30 dia \n\nCESAP\n\nVideo Segurança\n\nPrazo: 10/04/2026"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "clients",
+    "route": "/dashboard/clients",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-clients.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/clients",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Clientes"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Camila",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 259,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Marinna",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 336,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Jo i",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 413,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Sylvia Kokubo",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 490,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Evely e",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 567,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Txai",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 644,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-slate-900"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO",
+          "size": 11,
+          "tag": "div",
+          "cls": "grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(1"
+        },
+        {
+          "text": "CLIENTE",
+          "size": 11,
+          "tag": "span",
+          "cls": ""
+        },
+        {
+          "text": "RESPONSÁVEL",
+          "size": 11,
+          "tag": "span",
+          "cls": ""
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO\n\nCESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 335",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "min-w-[980px]"
+        },
+        {
+          "tag": "div",
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,1fr)_110px] gap"
+        },
+        {
+          "tag": "span",
+          "text": "RESPONSÁVEL",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": ""
+        },
+        {
+          "tag": "div",
+          "text": "CESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 33539-100\n\n04.955.586/0001-07",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Camila",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Camila",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "CSC Energia\n\nMarinna\n\ncomunicacao. ocial@c cenergia.com.br\n\n(48) 33310-000\n\n10.853.480/0001-97",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Marinna",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Marinna",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "FCDL/SC\n\nJo i\n\njo i. ilva@fcdl- c.org.br\n\n(48) 99927-8250\n\n82.777.301/0001-90",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Jo i",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Jo i",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "FUTURO\n\nSylvia Kokubo\n\n ylvia.kokubo@ oumai futuro.com\n\n(48) 99151-4290\n\n64.606.287/0001-80",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Sylvia Kokubo",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Sylvia Kokubo",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "Gracie Barra HQ\n\nEvely e\n\nvivi@gbfloripa.com.br\n\n(48) 99140-9252\n\n30.985.570/0001-49",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Evely e",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Evely e",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "Ke tal\n\nTxai\n\nde ign2@gmail.com\n\n(48) 99652-3551\n\n09.408.413/0001-84",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Txai",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-slate-900"
+        },
+        {
+          "tag": "p",
+          "text": "Txai",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nCliente \n\n6 cliente \n\nCLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO\n\nCESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 33539-100\n\n04.955.586/0001-07\n\nCSC Energia\n\nMarinna\n\ncomunicacao. ocial@c cenergia.com.br\n\n(48) 33310-000\n\n10.853.480/0001-97\n\nFCDL/SC\n\nJo i\n\njo i. ilva@fcdl- c.org.br\n\n(48) 99927-8250\n\n82.777.301/0001-90\n\nFUTURO\n\nSylvia Kokubo\n\n ylvia.kokubo@ oumai futuro.com\n\n(48) 99151-4290\n\n64.606.287/0001-80\n\nGracie Barra HQ\n\nEvely e\n\nvivi@gbfloripa.com.br\n\n(48) 99140-9252\n\n30.985.570/0001-49\n\nKe tal\n\nTxai\n\nde ign2@gmail.com\n\n(48) 99652-3551\n\n09.408.413/0001-84"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "kanban",
+    "route": "/dashboard/kanban",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-kanban.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/kanban",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Tarefas"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Meu  Painéi ",
+          "w": 120,
+          "h": 28,
+          "x": 41,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhada  comigo",
+          "w": 181,
+          "h": 28,
+          "x": 161,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "input",
+          "text": "Bu car tarefa ...",
+          "w": 205,
+          "h": 36,
+          "x": 36,
+          "y": 316,
+          "cls": "flex w-full px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-f"
+        },
+        {
+          "tag": "button",
+          "text": "Filtro ",
+          "w": 106,
+          "h": 36,
+          "x": 249,
+          "y": 316,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhar\n1",
+          "w": 148,
+          "h": 36,
+          "x": 36,
+          "y": 360,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none "
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 292,
+          "y": 364,
+          "cls": "p-1.5 rounded-[8px] transition bg-card shadow-sm"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 324,
+          "y": 364,
+          "cls": "p-1.5 rounded-[8px] transition hover:bg-card/50"
+        },
+        {
+          "tag": "button",
+          "text": "Urgente",
+          "w": 60,
+          "h": 23,
+          "x": 53,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Alta",
+          "w": 39,
+          "h": 23,
+          "x": 119,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Média",
+          "w": 50,
+          "h": 23,
+          "x": 164,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Baixa",
+          "w": 47,
+          "h": 23,
+          "x": 220,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "CESAP",
+          "w": 54,
+          "h": 23,
+          "x": 53,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "CSC Energia",
+          "w": 84,
+          "h": 23,
+          "x": 113,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "FCDL/SC",
+          "w": 66,
+          "h": 23,
+          "x": 203,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "FUTURO",
+          "w": 63,
+          "h": 23,
+          "x": 53,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Gracie Barra HQ",
+          "w": 103,
+          "h": 23,
+          "x": 122,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Ke tal",
+          "w": 50,
+          "h": 23,
+          "x": 231,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Catalogo",
+          "w": 65,
+          "h": 23,
+          "x": 53,
+          "y": 635,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Criação de Per onagen  3D",
+          "w": 164,
+          "h": 23,
+          "x": 124,
+          "y": 635,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Manutenção de  ite",
+          "w": 122,
+          "h": 23,
+          "x": 53,
+          "y": 663,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Projeto de te te",
+          "w": 102,
+          "h": 23,
+          "x": 181,
+          "y": 663,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Vídeo In titucional + Fotografia ",
+          "w": 188,
+          "h": 23,
+          "x": 53,
+          "y": 692,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Video Segurança",
+          "w": 108,
+          "h": 23,
+          "x": 53,
+          "y": 720,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Atra ada ",
+          "w": 71,
+          "h": 23,
+          "x": 53,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Hoje",
+          "w": 42,
+          "h": 23,
+          "x": 130,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "w": 60,
+          "h": 23,
+          "x": 178,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Mê ",
+          "w": 40,
+          "h": 23,
+          "x": 244,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Sem prazo",
+          "w": 74,
+          "h": 23,
+          "x": 53,
+          "y": 782,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Data",
+          "w": 63,
+          "h": 27,
+          "x": 53,
+          "y": 813,
+          "cls": "px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium bg-secondary"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 295,
+          "y": 421,
+          "cls": "w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary transition opacity-60 hover:opacity-100"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "w": 282,
+          "h": 34,
+          "x": 45,
+          "y": 521,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "w": 282,
+          "h": 34,
+          "x": 357,
+          "y": 521,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "Manutenção de  ite",
+          "size": 11,
+          "tag": "span",
+          "cls": "text-[11px] truncate flex items-center gap-1 mb-0.5 flex-1 pr-2 text-white/80"
+        },
+        {
+          "text": "1",
+          "size": 10,
+          "tag": "div",
+          "cls": "inline-flex items-center rounded-full border py-0.5 font-semibold transition-colors focus:outline-no"
+        },
+        {
+          "text": "1 de 1 tarefa ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full"
+        },
+        {
+          "text": "PRIORIDADE",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Urgente",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Alta",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Média",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Baixa",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "CLIENTE",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "CESAP",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "CSC Energia",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "FCDL/SC",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "FUTURO",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Gracie Barra HQ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Ke tal",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "PROJETO",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Catalogo",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Criação de Per onagen  3D",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Manutenção de  ite",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Projeto de te te",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Vídeo In titucional + Fotografia ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Video Segurança",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "PRAZO",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Atra ada ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Hoje",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Semana",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Mê ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Sem prazo",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Data",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font"
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "button",
+          "text": "Catalogo",
+          "left": 228,
+          "right": 408,
+          "w": 180,
+          "cls": "group relative flex flex-col gap-1 rounded-[12px] border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all dur"
+        },
+        {
+          "tag": "div",
+          "text": "Catalogo",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex items-start justify-between gap-2 w-full"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex flex-col flex-1 w-full justify-end mt-0.5"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex items-end justify-between mt-auto"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 371,
+          "right": 395,
+          "w": 24,
+          "cls": "flex items-center justify-center w-6 h-6 rounded-lg shrink-0"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO\nAdicionar um cartão",
+          "left": 348,
+          "right": 648,
+          "w": 300,
+          "cls": "flex-shrink-0 w-[300px] flex flex-col rounded-[12px] transition-all duration-200 snap-start bg-card border border-border"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "flex items-center justify-between px-3 py-3"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO",
+          "left": 361,
+          "right": 468,
+          "w": 107,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "h3",
+          "text": "EM ANDAMENTO",
+          "left": 361,
+          "right": 468,
+          "w": 107,
+          "cls": "text-xs font-bold uppercase tracking-wider text-foreground cursor-pointer hover:text-primary transition-colors"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "flex-1 px-2 pb-2 space-y-2 min-h-[60px]"
+        },
+        {
+          "tag": "div",
+          "text": "Adicionar um cartão",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "px-2 pb-3"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "left": 357,
+          "right": 639,
+          "w": 282,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nTarefa \n\nGerencie  eu  projeto  em formato Kanban\n\nMeu  Painéi \nCompartilhada  comigo\nManutenção de  ite\nManutenção de  ite\nCatalogo\nCESAP\nPaulo\nNovo painel\nFiltro \nCompartilhar\n1\nFiltro  e ordenação\n1 de 1 tarefa \nPRIORIDADE\nUrgente\nAlta\nMédia\nBaixa\nCLIENTE\nCESAP\nCSC Energia\nFCDL/SC\nFUTURO\nGracie Barra HQ\nKe tal\nPROJETO\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In titucional + Fotografia \nVideo Segurança\nPRAZO\nAtra ada \nHoje\nSemana\nMê \nSem prazo\nData\nCOMPLEXIDADE\n1\n2\n3\n4\n5\nTEMPO ESTIMADO\nSem e timativa\n≤ 2h\n2h–8h\n> 8h\nORDENAR POR\nPo ição\n↑ Valor\n↓ Valor\n↑ Complexa\n↓ Complexa\nPrazo\nPARA FAZER\nAdicionar um cartão\nEM ANDAMENTO\nAdicionar um cartão\nALTERAÇÃO\nManutuenção web 10\nMédia\n25 mar\nAdicionar um cartão\nCONCLUÍDO\nAdicionar um cartão\nARQUIVADO\n"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "budgets",
+    "route": "/dashboard/budgets",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-budgets.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/budgets",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Orçamentos"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Todo ",
+          "w": 62,
+          "h": 30,
+          "x": 36,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-primary text-primary-foreground border-primary"
+        },
+        {
+          "tag": "button",
+          "text": "Ra cunho",
+          "w": 84,
+          "h": 30,
+          "x": 104,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 72,
+          "h": 30,
+          "x": 193,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Aprovado",
+          "w": 82,
+          "h": 30,
+          "x": 271,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Recu ado",
+          "w": 83,
+          "h": 30,
+          "x": 36,
+          "y": 273,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Todo  o  cliente ",
+          "w": 318,
+          "h": 36,
+          "x": 36,
+          "y": 319,
+          "cls": "flex w-full items-center justify-between border py-2 ring-offset-background placeholder:text-muted-foreground focus:outl"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 74,
+          "h": 23,
+          "x": 183,
+          "y": 461,
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 curso"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 265,
+          "y": 457,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 305,
+          "y": 457,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 74,
+          "h": 23,
+          "x": 183,
+          "y": 669,
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 curso"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 265,
+          "y": 665,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 305,
+          "y": 665,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "Enviado",
+          "size": 10,
+          "tag": "button",
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all ho"
+        },
+        {
+          "text": "Enviado",
+          "size": 10,
+          "tag": "button",
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all ho"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nOrçamento \n\n5 orçamento \n\nTodo \nRa cunho\nEnviado\nAprovado\nRecu ado\nTodo  o  cliente \n\nVídeo In titucional + Fotografia \n\nCESAP\n·\n09/03/2026\n·\nVal: 19/03/2026\nR$ 24.700,00\nEnviado\n\nCriação de Per onagen  3D\n\nCESAP\n·\n11/02/2026\n·\nVal: 02/03/2026\nR$ 16.055,00\nEnviado\n\nVideo Segurança\n\nCESAP\n·\n22/03/2026\n·\nVal: 31/01/2026\nR$ 6.000,00\nEnviado\n\nManutenção de  ite\n\nFCDL/SC\n·\n01/12/2025\n·\nVal: 10/12/2025\nR$ 750,00\nAprovado\n\nCatalogo\n\nFUTURO\n·\n23/03/2026\n·\nVal: 02/04/2026\nR$ 8.000,00\nRa cunho"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "time",
+    "route": "/dashboard/time",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-time.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/time",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Cronômetro"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "input",
+          "text": "No que você e tá trabalhando?",
+          "w": 150,
+          "h": 36,
+          "x": 53,
+          "y": 210,
+          "cls": "w-full px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+        },
+        {
+          "tag": "button",
+          "text": "Cliente",
+          "w": 74,
+          "h": 30,
+          "x": 211,
+          "y": 213,
+          "cls": "flex items-center justify-between gap-1 rounded-[8px] border border-border text-xs focus:outline-none focus:ring-1 focus"
+        },
+        {
+          "tag": "select",
+          "text": "Cliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto d",
+          "w": 160,
+          "h": 31,
+          "x": 291,
+          "y": 212,
+          "cls": "max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focu"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 53,
+          "y": 295,
+          "cls": "p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 199,
+          "y": 295,
+          "cls": "p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        },
+        {
+          "tag": "button",
+          "text": "Dia",
+          "w": 50,
+          "h": 32,
+          "x": 313,
+          "y": 293,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-muted"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "w": 82,
+          "h": 32,
+          "x": 365,
+          "y": 293,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all bg-primary text-primary-foreground shadow-sm"
+        }
+      ],
+      "tinyText": [],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "Cliente\nCliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVíde",
+          "left": 211,
+          "right": 617,
+          "w": 406,
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "tag": "select",
+          "text": "Cliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In tit",
+          "left": 291,
+          "right": 451,
+          "w": 160,
+          "cls": "max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focu"
+        },
+        {
+          "tag": "div",
+          "text": "Dia\nSemana\nMê \nCalendário\nLi ta\nTime heet\nRelatório",
+          "left": 311,
+          "right": 964,
+          "w": 652,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "div",
+          "text": "Dia\nSemana\nMê ",
+          "left": 311,
+          "right": 507,
+          "w": 196,
+          "cls": "flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "left": 365,
+          "right": 447,
+          "w": 82,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all bg-primary text-primary-foreground shadow-sm"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nCronômetro\n\nGerencie  eu tempo ga to em tarefa , projeto  e cliente . Gere relatório  e exporte em pdf.\n\nCliente\nCliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In titucional + Fotografia \nVideo Segurança\nProjeto primeiro\nDe ign - Catalogo 2027\nManutuenção web 10\nRoteiro\nte te\nTe te\nTe te de tarefa\n00:00:00\nE ta Semana · S18\nTOTAL: 00:00:00\nDia\nSemana\nMê \nCalendário\nLi ta\nTime heet\nRelatório\nNenhum regi tro ainda.\n\nInicie o timer para regi trar  eu tempo"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "finance",
+    "route": "/dashboard/finance",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-finance.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/finance",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Financeiro"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Vi ão Geral",
+          "w": 132,
+          "h": 32,
+          "x": 41,
+          "y": 193,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap py-1.5 ring-offset-background transition-all data-[state=activ"
+        },
+        {
+          "tag": "button",
+          "text": "Vi ão Men al",
+          "w": 145,
+          "h": 32,
+          "x": 173,
+          "y": 193,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap py-1.5 ring-offset-background transition-all data-[state=activ"
+        },
+        {
+          "tag": "button",
+          "text": "Mê  anterior",
+          "w": 32,
+          "h": 32,
+          "x": 41,
+          "y": 249,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        },
+        {
+          "tag": "button",
+          "text": "Abril De 2026",
+          "w": 124,
+          "h": 32,
+          "x": 73,
+          "y": 249,
+          "cls": "text-sm font-medium capitalize px-4 h-8 flex items-center justify-center transition-colors text-foreground hover:bg-mute"
+        },
+        {
+          "tag": "button",
+          "text": "Próximo mê ",
+          "w": 32,
+          "h": 32,
+          "x": 197,
+          "y": 249,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "BALANÇO DO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "RECEBIDO NO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "DESPESAS DO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "A RECEBER",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "VENCIMENTOS (7D)",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nFinanceiro\n\nabril de 2026\n\nVi ão Geral\nVi ão Men al\nAbril De 2026\n\nBALANÇO DO MÊS\n\n+R$ 0,00\n\ne te mê \n\nRECEBIDO NO MÊS\n\nR$ 0,00\n\ne te mê \n\nDESPESAS DO MÊS\n\nR$ 0,00\n\ne te mê \n\nA RECEBER\n\nR$ 0,00\n\ne te mê \n\nVENCIMENTOS (7D)\n\nNenhum\n\nAbril 2026\ndom\n eg\nter\nqua\nqui\n ex\n ab\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n1\n2\nA RECEBER\nA PAGAR\nAMBOS\n28 de abril\n\nNenhum evento ne ta data\n\nData  com evento  ficam de tacada  no calendário\n\nAdicionar evento\nA Receber\nNova Fatura\n\nNenhuma fatura criada ainda\n\nClique em \"Nova Fatura\" para começar.\n\nA Pagar\nNova De pe a\nToda  categoria \nTodo  (0)\n\nNenhuma de pe a encontrada\n\nClique em \"Nova De pe a\" para começar.\n\nFluxo de Caixa\n\nA RECEBER\n\nR$ 0,00\n\nA PAGAR\n\nR$ 0,00\n\nSALDO PREVISTO\n\nR$ 0,00\n\nSALDO ATU"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "leads",
+    "route": "/dashboard/leads",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-leads.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/leads",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Pipeline de Leads"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Meu  Lead ",
+          "w": 113,
+          "h": 28,
+          "x": 41,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhado  comigo",
+          "w": 181,
+          "h": 28,
+          "x": 154,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhar",
+          "w": 100,
+          "h": 36,
+          "x": 36,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-[color,backgroun"
+        },
+        {
+          "tag": "button",
+          "text": "Etapa ",
+          "w": 84,
+          "h": 36,
+          "x": 144,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "Novo Negócio",
+          "w": 118,
+          "h": 36,
+          "x": 236,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "input",
+          "text": "Bu car negócio ...",
+          "w": 318,
+          "h": 36,
+          "x": 36,
+          "y": 457,
+          "cls": "flex w-full border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-m"
+        },
+        {
+          "tag": "button",
+          "text": "Toda ",
+          "w": 82,
+          "h": 36,
+          "x": 36,
+          "y": 501,
+          "cls": "h-9 px-5 rounded-[8px] text-sm font-normal leading-none shadow-sm transition-colors bg-primary text-primary-foreground b"
+        },
+        {
+          "tag": "button",
+          "text": "Pro pecção",
+          "w": 120,
+          "h": 36,
+          "x": 124,
+          "y": 501,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Qualificação",
+          "w": 123,
+          "h": 36,
+          "x": 36,
+          "y": 543,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Propo ta",
+          "w": 101,
+          "h": 36,
+          "x": 165,
+          "y": 543,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Negociação",
+          "w": 121,
+          "h": 36,
+          "x": 36,
+          "y": 585,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Fechamento",
+          "w": 124,
+          "h": 36,
+          "x": 163,
+          "y": 585,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "w": 282,
+          "h": 32,
+          "x": 47,
+          "y": 694,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "w": 282,
+          "h": 32,
+          "x": 359,
+          "y": 694,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "R$ 0,00",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-medium text-muted-foreground"
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "PROSPECÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nQUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nPROPOSTA\n\nR$ 0,00\n\nP",
+          "left": 36,
+          "right": 1588,
+          "w": 1552,
+          "cls": "flex gap-3 h-full items-start w-max px-0.5"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio",
+          "left": 350,
+          "right": 650,
+          "w": 300,
+          "cls": "flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-xl border border-border/50 transition-all duration-200 snap-sta"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO\n\nR$ 0,00",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "flex items-center justify-between px-3 py-3"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO",
+          "left": 363,
+          "right": 462,
+          "w": 99,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "h3",
+          "text": "QUALIFICAÇÃO",
+          "left": 363,
+          "right": 462,
+          "w": 99,
+          "cls": "text-xs font-bold uppercase tracking-wider text-foreground hover:opacity-80 transition-colors flex-1 truncate"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "flex-1 p-2 space-y-2 overflow-y-auto scrollbar-thin"
+        },
+        {
+          "tag": "div",
+          "text": "Adicionar negócio",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "px-2 pb-3"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "left": 359,
+          "right": 641,
+          "w": 282,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nPipeline de Lead \n\nGerencie  eu  negócio  pelo funil de venda \n\nMeu  Lead \nCompartilhado  comigo\nCompartilhar\nEtapa \nNovo Negócio\nPipeline Total\n\nR$ 4.000,00\n\nValor Ponderado\n\nR$ 2.000,00\n\nGanho \n\n2\n\nPerdido \n\n0\n\nToda \nPro pecção\nQualificação\nPropo ta\nNegociação\nFechamento\nPROSPECÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nQUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nPROPOSTA\n\nR$ 0,00\n\nPVC Rev\n1\n\nAlfredo\n\nR$ 0,00\n50%\nAdicionar negócio\nNEGOCIAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nFECHAMENTO\n\nR$ 4.000,00\n\nTechTwo\n1\n\nPedro\n\nR$ 4.000,00\n50%\nAdicionar negócio"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "chat",
+    "route": "/dashboard/chat",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-chat.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/chat",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Mensagens"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 304,
+          "y": 190,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 20,
+          "h": 20,
+          "x": 316,
+          "y": 337,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 20,
+          "h": 20,
+          "x": 316,
+          "y": 405,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "há cerca de 1 mê ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] whitespace-nowrap shrink-0 text-muted-foreground"
+        },
+        {
+          "text": "há cerca de 1 mê ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] whitespace-nowrap shrink-0 text-muted-foreground"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nMen agen \n\nComunicação direta com equipe e cliente \n\nConver a \n\nGri  E túdio Co.\n\nhá cerca de 1 mê \n\nVocê: oopa paulo\n\nPaulo\n\nhá cerca de 1 mê \n\noi"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "team",
+    "route": "/dashboard/team",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-team.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/team",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Equipe"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Convidar Membro",
+          "w": 150,
+          "h": 32,
+          "x": 36,
+          "y": 278,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-[color,background-color,bord"
+        },
+        {
+          "tag": "button",
+          "text": "Colaborador",
+          "w": 127,
+          "h": 32,
+          "x": 57,
+          "y": 637,
+          "cls": "flex items-center justify-between border py-2 ring-offset-background placeholder:text-muted-foreground focus:outline-non"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 57,
+          "y": 685,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "PROPRIETÁRIO",
+          "size": 9,
+          "tag": "span",
+          "cls": "text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foregrou"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nEquipe\n\nGerencie o  membro  da  ua organização\n\nGri  E túdio Co.\nConvidar Membro\n\nRoberto Cruz\n\nroberto@gri e tudio.co\n\nPROPRIETÁRIO\n\nroberto@gri e tudio.co\n\nAdmin\n\nPaulo\n\ncruzrondan@gmail.com\n\ncruzrondan@gmail.com\n\nColaborador"
+    }
+  },
+  {
+    "theme": "light",
+    "name": "settings",
+    "route": "/dashboard/settings",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\light-settings.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/settings",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Configurações"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Claro",
+          "w": 79,
+          "h": 32,
+          "x": 62,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "E curo",
+          "w": 90,
+          "h": 32,
+          "x": 141,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "Si tema",
+          "w": 98,
+          "h": 32,
+          "x": 231,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "🇧🇷\nPortuguê ",
+          "w": 129,
+          "h": 32,
+          "x": 66,
+          "y": 481,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "🇺🇸\nEngli h",
+          "w": 129,
+          "h": 32,
+          "x": 195,
+          "y": 481,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        }
+      ],
+      "tinyText": [],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nPreferência \nConfiguraçõe \n\nPer onalize  ua experiência no Freelaz\n\nAparência\n\nE colha como o Freelaz  e parece\n\nClaro\nE curo\nSi tema\nIdioma\n\nDefina o idioma da interface\n\n🇧🇷\nPortuguê \n🇺🇸\nEngli h\nDado  e Exportação\n\nExporte ou limpe dado  locai \n\nExportar dado \nLimpar cache local\nNotificaçõe \n\nGerencie  ua  preferência  de notificação\n\nNotificaçõe  por e-mail\nTarefa  e prazo \nConvite  de organização\nNovo  lead  e conver õe \nAlerta  financeiro "
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "home",
+    "route": "/dashboard",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-home.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Olá, Roberto 👋"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Ver toda ",
+          "w": 72,
+          "h": 16,
+          "x": 316,
+          "y": 362,
+          "cls": "flex items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-primary/80 dark:text-primary-for"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 24,
+          "h": 24,
+          "x": 261,
+          "y": 754,
+          "cls": "w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-c"
+        },
+        {
+          "tag": "button",
+          "text": "ABRIL",
+          "w": 72,
+          "h": 24,
+          "x": 287,
+          "y": 754,
+          "cls": "h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground transition-colors uppe"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 24,
+          "h": 24,
+          "x": 361,
+          "y": 754,
+          "cls": "w-6 h-6 rounded-[6px] hover:bg-muted flex items-center justify-center text-foreground hover:text-foreground transition-c"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "TAREFAS PENDENTES",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "2 atra ada ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full"
+        },
+        {
+          "text": "PROJETOS ATIVOS",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "VALOR ESTIMADO (LEADS)",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "SALDO ATUAL",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] uppercase tracking-wider font-bold text-muted-foreground"
+        },
+        {
+          "text": "Manutenção de  ite",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors group-hover:text-whi"
+        },
+        {
+          "text": "26/03",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-destructive/10 text-destruc"
+        },
+        {
+          "text": "Video Segurança",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground font-medium mt-0.5 truncate transition-colors group-hover:text-whi"
+        },
+        {
+          "text": "10/04",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-destructive/10 text-destruc"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "-",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-bold px-2 py-1 rounded-md shrink-0 transition-colors bg-background border border-bo"
+        },
+        {
+          "text": "ABRIL",
+          "size": 10,
+          "tag": "button",
+          "cls": "h-6 text-[10px] font-bold px-2 rounded-[6px] hover:bg-muted text-foreground hover:text-foreground tr"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "T",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "Q",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "Q",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "S",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        },
+        {
+          "text": "D",
+          "size": 10,
+          "tag": "div",
+          "cls": "py-1.5 text-center text-[10px] font-bold text-muted-foreground/60"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nOlá, Roberto 👋\n\nterça-feira, 28 de abril\n\nTAREFAS PENDENTES\n6\n2 atra ada \nPROJETOS ATIVOS\n6\nVALOR ESTIMADO (LEADS)\nR$ 4.200,00\nSALDO ATUAL\nR$ 0,00\nMinha  Tarefa \nVer toda \n\nManutuenção web 10\n\nManutenção de  ite\n26/03\n\nRoteiro\n\nVideo Segurança\n10/04\n\nte te\n\n-\n\nTe te\n\n-\n\nDe ign - Catalogo 2027\n\n-\nCalendário\nABRIL\nS\nT\nQ\nQ\nS\nS\nD\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n28 DE ABRIL • 0 EVENTOS\n\nNenhum evento agendado para e te dia.\n\nCheckli t\nTe te\nlembrar de tal coi a\nNotificaçõe \nNenhuma notificação\nGe tão de tempo\nHOJE\n0h 00m\nQ\nQ\nS\nS\nD\nS\nT\nProjeto \nVer todo \nFUTURO\nCatalogo\nENTREGA 30/06\nCESAP\nVídeo In titucional + Fotografia \nCESAP\nCriação de Per onagen  3D\nSEM CLIENTE\nProjeto de te te\nENTREGA 25/03\nCESAP\nVideo Segurança\nENTREGA 10/04\nClie"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "projects",
+    "route": "/dashboard/projects",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-projects.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/projects",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Projetos"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 242,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 242,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 495,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 495,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 274,
+          "y": 748,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 310,
+          "y": 748,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "FUTURO",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        },
+        {
+          "text": "CESAP",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        },
+        {
+          "text": "FCDL/SC",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold uppercase tracking-widest mb-1.5 text-muted-foreground transition-colors durat"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nProjeto \n\n6 projeto  ativo \n\nFUTURO\n\nCatalogo\n\nPrazo: 30/06/2026\n\nCESAP\n\nCriação de Per onagen  3D\n\nPrazo: 45 dia \n\nFCDL/SC\n\nManutenção de  ite\n\nSem prazo definido\n\nSEM CLIENTE\n\nProjeto de te te\n\nPrazo: 25/03/2026\n\nCESAP\n\nVídeo In titucional + Fotografia \n\nPrazo: 30 dia \n\nCESAP\n\nVideo Segurança\n\nPrazo: 10/04/2026"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "clients",
+    "route": "/dashboard/clients",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-clients.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/clients",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Clientes"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Camila",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 259,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Marinna",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 336,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Jo i",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 413,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Sylvia Kokubo",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 490,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Evely e",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 567,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "button",
+          "text": "Txai",
+          "w": 160,
+          "h": 20,
+          "x": 297,
+          "y": 644,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-slate-900"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO",
+          "size": 11,
+          "tag": "div",
+          "cls": "grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(1"
+        },
+        {
+          "text": "CLIENTE",
+          "size": 11,
+          "tag": "span",
+          "cls": ""
+        },
+        {
+          "text": "RESPONSÁVEL",
+          "size": 11,
+          "tag": "span",
+          "cls": ""
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO\n\nCESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 335",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "min-w-[980px]"
+        },
+        {
+          "tag": "div",
+          "text": "CLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,1fr)_110px] gap"
+        },
+        {
+          "tag": "span",
+          "text": "RESPONSÁVEL",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": ""
+        },
+        {
+          "tag": "div",
+          "text": "CESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 33539-100\n\n04.955.586/0001-07",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Camila",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Camila",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "CSC Energia\n\nMarinna\n\ncomunicacao. ocial@c cenergia.com.br\n\n(48) 33310-000\n\n10.853.480/0001-97",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Marinna",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Marinna",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "FCDL/SC\n\nJo i\n\njo i. ilva@fcdl- c.org.br\n\n(48) 99927-8250\n\n82.777.301/0001-90",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Jo i",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Jo i",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "FUTURO\n\nSylvia Kokubo\n\n ylvia.kokubo@ oumai futuro.com\n\n(48) 99151-4290\n\n64.606.287/0001-80",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Sylvia Kokubo",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Sylvia Kokubo",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "Gracie Barra HQ\n\nEvely e\n\nvivi@gbfloripa.com.br\n\n(48) 99140-9252\n\n30.985.570/0001-49",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Evely e",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-white"
+        },
+        {
+          "tag": "p",
+          "text": "Evely e",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        },
+        {
+          "tag": "div",
+          "text": "Ke tal\n\nTxai\n\nde ign2@gmail.com\n\n(48) 99652-3551\n\n09.408.413/0001-84",
+          "left": 37,
+          "right": 1017,
+          "w": 980,
+          "cls": "group relative grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_minmax(220px,1.4fr)_minmax(150px,1fr)_minmax(180px,"
+        },
+        {
+          "tag": "button",
+          "text": "Txai",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "relative z-10 min-w-0 text-left group-hover:[&_p]:text-slate-900"
+        },
+        {
+          "tag": "p",
+          "text": "Txai",
+          "left": 297,
+          "right": 457,
+          "w": 160,
+          "cls": "truncate text-sm text-foreground"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nCliente \n\n6 cliente \n\nCLIENTE\nRESPONSÁVEL\nEMAIL\nTELEFONE\nCNPJ\nAÇÃO\n\nCESAP\n\nCamila\n\ncamila@u ina altopilao.com.br\n\n(47) 33539-100\n\n04.955.586/0001-07\n\nCSC Energia\n\nMarinna\n\ncomunicacao. ocial@c cenergia.com.br\n\n(48) 33310-000\n\n10.853.480/0001-97\n\nFCDL/SC\n\nJo i\n\njo i. ilva@fcdl- c.org.br\n\n(48) 99927-8250\n\n82.777.301/0001-90\n\nFUTURO\n\nSylvia Kokubo\n\n ylvia.kokubo@ oumai futuro.com\n\n(48) 99151-4290\n\n64.606.287/0001-80\n\nGracie Barra HQ\n\nEvely e\n\nvivi@gbfloripa.com.br\n\n(48) 99140-9252\n\n30.985.570/0001-49\n\nKe tal\n\nTxai\n\nde ign2@gmail.com\n\n(48) 99652-3551\n\n09.408.413/0001-84"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "kanban",
+    "route": "/dashboard/kanban",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-kanban.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/kanban",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Tarefas"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Meu  Painéi ",
+          "w": 120,
+          "h": 28,
+          "x": 41,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhada  comigo",
+          "w": 181,
+          "h": 28,
+          "x": 161,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "input",
+          "text": "Bu car tarefa ...",
+          "w": 205,
+          "h": 36,
+          "x": 36,
+          "y": 316,
+          "cls": "flex w-full px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-f"
+        },
+        {
+          "tag": "button",
+          "text": "Filtro ",
+          "w": 106,
+          "h": 36,
+          "x": 249,
+          "y": 316,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhar\n1",
+          "w": 148,
+          "h": 36,
+          "x": 36,
+          "y": 360,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background focus-visible:outline-none "
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 292,
+          "y": 364,
+          "cls": "p-1.5 rounded-[8px] transition bg-card shadow-sm"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 324,
+          "y": 364,
+          "cls": "p-1.5 rounded-[8px] transition hover:bg-card/50"
+        },
+        {
+          "tag": "button",
+          "text": "Urgente",
+          "w": 60,
+          "h": 23,
+          "x": 53,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Alta",
+          "w": 39,
+          "h": 23,
+          "x": 119,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Média",
+          "w": 50,
+          "h": 23,
+          "x": 164,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Baixa",
+          "w": 47,
+          "h": 23,
+          "x": 220,
+          "y": 483,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "CESAP",
+          "w": 54,
+          "h": 23,
+          "x": 53,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "CSC Energia",
+          "w": 84,
+          "h": 23,
+          "x": 113,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "FCDL/SC",
+          "w": 66,
+          "h": 23,
+          "x": 203,
+          "y": 545,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "FUTURO",
+          "w": 63,
+          "h": 23,
+          "x": 53,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Gracie Barra HQ",
+          "w": 103,
+          "h": 23,
+          "x": 122,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Ke tal",
+          "w": 50,
+          "h": 23,
+          "x": 231,
+          "y": 573,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Catalogo",
+          "w": 65,
+          "h": 23,
+          "x": 53,
+          "y": 635,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Criação de Per onagen  3D",
+          "w": 164,
+          "h": 23,
+          "x": 124,
+          "y": 635,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Manutenção de  ite",
+          "w": 122,
+          "h": 23,
+          "x": 53,
+          "y": 663,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Projeto de te te",
+          "w": 102,
+          "h": 23,
+          "x": 181,
+          "y": 663,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Vídeo In titucional + Fotografia ",
+          "w": 188,
+          "h": 23,
+          "x": 53,
+          "y": 692,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Video Segurança",
+          "w": 108,
+          "h": 23,
+          "x": 53,
+          "y": 720,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Atra ada ",
+          "w": 71,
+          "h": 23,
+          "x": 53,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Hoje",
+          "w": 42,
+          "h": 23,
+          "x": 130,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "w": 60,
+          "h": 23,
+          "x": 178,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Mê ",
+          "w": 40,
+          "h": 23,
+          "x": 244,
+          "y": 754,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Sem prazo",
+          "w": 74,
+          "h": 23,
+          "x": 53,
+          "y": 782,
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-foreground border-transp"
+        },
+        {
+          "tag": "button",
+          "text": "Data",
+          "w": 63,
+          "h": 27,
+          "x": 53,
+          "y": 813,
+          "cls": "px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font-medium bg-secondary"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 295,
+          "y": 421,
+          "cls": "w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary transition opacity-60 hover:opacity-100"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "w": 282,
+          "h": 34,
+          "x": 45,
+          "y": 521,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "w": 282,
+          "h": 34,
+          "x": 357,
+          "y": 521,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "Manutenção de  ite",
+          "size": 11,
+          "tag": "span",
+          "cls": "text-[11px] truncate flex items-center gap-1 mb-0.5 flex-1 pr-2 text-white/80"
+        },
+        {
+          "text": "1",
+          "size": 10,
+          "tag": "div",
+          "cls": "inline-flex items-center rounded-full border py-0.5 font-semibold transition-colors focus:outline-no"
+        },
+        {
+          "text": "1 de 1 tarefa ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full"
+        },
+        {
+          "text": "PRIORIDADE",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Urgente",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Alta",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Média",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Baixa",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "CLIENTE",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "CESAP",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "CSC Energia",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "FCDL/SC",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "FUTURO",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Gracie Barra HQ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Ke tal",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "PROJETO",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Catalogo",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Criação de Per onagen  3D",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Manutenção de  ite",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Projeto de te te",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Vídeo In titucional + Fotografia ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Video Segurança",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "PRAZO",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] font-semibold uppercase tracking-wider"
+        },
+        {
+          "text": "Atra ada ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Hoje",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Semana",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Mê ",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Sem prazo",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all bg-secondary/50 text-muted-fore"
+        },
+        {
+          "text": "Data",
+          "size": 11,
+          "tag": "button",
+          "cls": "px-2 py-1 rounded-md border transition-all flex items-center gap-1.5 justify-center text-[11px] font"
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "button",
+          "text": "Catalogo",
+          "left": 228,
+          "right": 408,
+          "w": 180,
+          "cls": "group relative flex flex-col gap-1 rounded-[12px] border px-3 py-2.5 w-[180px] min-h-[64px] text-left transition-all dur"
+        },
+        {
+          "tag": "div",
+          "text": "Catalogo",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex items-start justify-between gap-2 w-full"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex flex-col flex-1 w-full justify-end mt-0.5"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 241,
+          "right": 395,
+          "w": 154,
+          "cls": "flex items-end justify-between mt-auto"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 371,
+          "right": 395,
+          "w": 24,
+          "cls": "flex items-center justify-center w-6 h-6 rounded-lg shrink-0"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO\nAdicionar um cartão",
+          "left": 348,
+          "right": 648,
+          "w": 300,
+          "cls": "flex-shrink-0 w-[300px] flex flex-col rounded-[12px] transition-all duration-200 snap-start bg-card border border-border"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "flex items-center justify-between px-3 py-3"
+        },
+        {
+          "tag": "div",
+          "text": "EM ANDAMENTO",
+          "left": 361,
+          "right": 468,
+          "w": 107,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "h3",
+          "text": "EM ANDAMENTO",
+          "left": 361,
+          "right": 468,
+          "w": 107,
+          "cls": "text-xs font-bold uppercase tracking-wider text-foreground cursor-pointer hover:text-primary transition-colors"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "flex-1 px-2 pb-2 space-y-2 min-h-[60px]"
+        },
+        {
+          "tag": "div",
+          "text": "Adicionar um cartão",
+          "left": 349,
+          "right": 647,
+          "w": 298,
+          "cls": "px-2 pb-3"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar um cartão",
+          "left": 357,
+          "right": 639,
+          "w": 282,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground bg-card border border-transparent ho"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nTarefa \n\nGerencie  eu  projeto  em formato Kanban\n\nMeu  Painéi \nCompartilhada  comigo\nManutenção de  ite\nManutenção de  ite\nCatalogo\nCESAP\nPaulo\nNovo painel\nFiltro \nCompartilhar\n1\nFiltro  e ordenação\n1 de 1 tarefa \nPRIORIDADE\nUrgente\nAlta\nMédia\nBaixa\nCLIENTE\nCESAP\nCSC Energia\nFCDL/SC\nFUTURO\nGracie Barra HQ\nKe tal\nPROJETO\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In titucional + Fotografia \nVideo Segurança\nPRAZO\nAtra ada \nHoje\nSemana\nMê \nSem prazo\nData\nCOMPLEXIDADE\n1\n2\n3\n4\n5\nTEMPO ESTIMADO\nSem e timativa\n≤ 2h\n2h–8h\n> 8h\nORDENAR POR\nPo ição\n↑ Valor\n↓ Valor\n↑ Complexa\n↓ Complexa\nPrazo\nPARA FAZER\nAdicionar um cartão\nEM ANDAMENTO\nAdicionar um cartão\nALTERAÇÃO\nManutuenção web 10\nMédia\n25 mar\nAdicionar um cartão\nCONCLUÍDO\nAdicionar um cartão\nARQUIVADO\n"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "budgets",
+    "route": "/dashboard/budgets",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-budgets.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/budgets",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Orçamentos"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Todo ",
+          "w": 62,
+          "h": 30,
+          "x": 36,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-primary text-primary-foreground border-primary"
+        },
+        {
+          "tag": "button",
+          "text": "Ra cunho",
+          "w": 84,
+          "h": 30,
+          "x": 104,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 72,
+          "h": 30,
+          "x": 193,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Aprovado",
+          "w": 82,
+          "h": 30,
+          "x": 271,
+          "y": 237,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Recu ado",
+          "w": 83,
+          "h": 30,
+          "x": 36,
+          "y": 273,
+          "cls": "px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border bg-card text-muted-foreground border-border hover:"
+        },
+        {
+          "tag": "button",
+          "text": "Todo  o  cliente ",
+          "w": 318,
+          "h": 36,
+          "x": 36,
+          "y": 319,
+          "cls": "flex w-full items-center justify-between border py-2 ring-offset-background placeholder:text-muted-foreground focus:outl"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 74,
+          "h": 23,
+          "x": 183,
+          "y": 461,
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 curso"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 265,
+          "y": 457,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 305,
+          "y": 457,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "Enviado",
+          "w": 74,
+          "h": 23,
+          "x": 183,
+          "y": 669,
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 curso"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 265,
+          "y": 665,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 305,
+          "y": 665,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "Enviado",
+          "size": 10,
+          "tag": "button",
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all ho"
+        },
+        {
+          "text": "Enviado",
+          "size": 10,
+          "tag": "button",
+          "cls": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all ho"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nOrçamento \n\n5 orçamento \n\nTodo \nRa cunho\nEnviado\nAprovado\nRecu ado\nTodo  o  cliente \n\nVídeo In titucional + Fotografia \n\nCESAP\n·\n09/03/2026\n·\nVal: 19/03/2026\nR$ 24.700,00\nEnviado\n\nCriação de Per onagen  3D\n\nCESAP\n·\n11/02/2026\n·\nVal: 02/03/2026\nR$ 16.055,00\nEnviado\n\nVideo Segurança\n\nCESAP\n·\n22/03/2026\n·\nVal: 31/01/2026\nR$ 6.000,00\nEnviado\n\nManutenção de  ite\n\nFCDL/SC\n·\n01/12/2025\n·\nVal: 10/12/2025\nR$ 750,00\nAprovado\n\nCatalogo\n\nFUTURO\n·\n23/03/2026\n·\nVal: 02/04/2026\nR$ 8.000,00\nRa cunho"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "time",
+    "route": "/dashboard/time",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-time.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/time",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Cronômetro"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "input",
+          "text": "No que você e tá trabalhando?",
+          "w": 150,
+          "h": 36,
+          "x": 53,
+          "y": 210,
+          "cls": "w-full px-3 py-2 bg-transparent text-foreground placeholder:text-muted-foreground text-sm focus:outline-none"
+        },
+        {
+          "tag": "button",
+          "text": "Cliente",
+          "w": 74,
+          "h": 30,
+          "x": 211,
+          "y": 213,
+          "cls": "flex items-center justify-between gap-1 rounded-[8px] border border-border text-xs focus:outline-none focus:ring-1 focus"
+        },
+        {
+          "tag": "select",
+          "text": "Cliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto d",
+          "w": 160,
+          "h": 31,
+          "x": 291,
+          "y": 212,
+          "cls": "max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focu"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 53,
+          "y": 295,
+          "cls": "p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 28,
+          "h": 28,
+          "x": 199,
+          "y": 295,
+          "cls": "p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        },
+        {
+          "tag": "button",
+          "text": "Dia",
+          "w": 50,
+          "h": 32,
+          "x": 313,
+          "y": 293,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-muted"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "w": 82,
+          "h": 32,
+          "x": 365,
+          "y": 293,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all bg-primary text-primary-foreground shadow-sm"
+        }
+      ],
+      "tinyText": [],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "Cliente\nCliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVíde",
+          "left": 211,
+          "right": 617,
+          "w": 406,
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "tag": "select",
+          "text": "Cliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In tit",
+          "left": 291,
+          "right": 451,
+          "w": 160,
+          "cls": "max-w-[160px] px-2 py-1.5 rounded-lg bg-transparent border border-border text-foreground text-xs focus:outline-none focu"
+        },
+        {
+          "tag": "div",
+          "text": "Dia\nSemana\nMê \nCalendário\nLi ta\nTime heet\nRelatório",
+          "left": 311,
+          "right": 964,
+          "w": 652,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "div",
+          "text": "Dia\nSemana\nMê ",
+          "left": 311,
+          "right": 507,
+          "w": 196,
+          "cls": "flex items-center bg-muted/50 rounded-lg p-0.5 gap-0.5"
+        },
+        {
+          "tag": "button",
+          "text": "Semana",
+          "left": 365,
+          "right": 447,
+          "w": 82,
+          "cls": "px-3.5 py-1.5 rounded-md text-sm font-medium transition-all bg-primary text-primary-foreground shadow-sm"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nCronômetro\n\nGerencie  eu tempo ga to em tarefa , projeto  e cliente . Gere relatório  e exporte em pdf.\n\nCliente\nCliente primeiro\nCatalogo\nCriação de Per onagen  3D\nManutenção de  ite\nProjeto de te te\nVídeo In titucional + Fotografia \nVideo Segurança\nProjeto primeiro\nDe ign - Catalogo 2027\nManutuenção web 10\nRoteiro\nte te\nTe te\nTe te de tarefa\n00:00:00\nE ta Semana · S18\nTOTAL: 00:00:00\nDia\nSemana\nMê \nCalendário\nLi ta\nTime heet\nRelatório\nNenhum regi tro ainda.\n\nInicie o timer para regi trar  eu tempo"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "finance",
+    "route": "/dashboard/finance",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-finance.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/finance",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Financeiro"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Vi ão Geral",
+          "w": 132,
+          "h": 32,
+          "x": 41,
+          "y": 193,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap py-1.5 ring-offset-background transition-all data-[state=activ"
+        },
+        {
+          "tag": "button",
+          "text": "Vi ão Men al",
+          "w": 145,
+          "h": 32,
+          "x": 173,
+          "y": 193,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap py-1.5 ring-offset-background transition-all data-[state=activ"
+        },
+        {
+          "tag": "button",
+          "text": "Mê  anterior",
+          "w": 32,
+          "h": 32,
+          "x": 41,
+          "y": 249,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        },
+        {
+          "tag": "button",
+          "text": "Abril De 2026",
+          "w": 124,
+          "h": 32,
+          "x": 73,
+          "y": 249,
+          "cls": "text-sm font-medium capitalize px-4 h-8 flex items-center justify-center transition-colors text-foreground hover:bg-mute"
+        },
+        {
+          "tag": "button",
+          "text": "Próximo mê ",
+          "w": 32,
+          "h": 32,
+          "x": 197,
+          "y": 249,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "BALANÇO DO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "RECEBIDO NO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "DESPESAS DO MÊS",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "A RECEBER",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        },
+        {
+          "text": "VENCIMENTOS (7D)",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nFinanceiro\n\nabril de 2026\n\nVi ão Geral\nVi ão Men al\nAbril De 2026\n\nBALANÇO DO MÊS\n\n+R$ 0,00\n\ne te mê \n\nRECEBIDO NO MÊS\n\nR$ 0,00\n\ne te mê \n\nDESPESAS DO MÊS\n\nR$ 0,00\n\ne te mê \n\nA RECEBER\n\nR$ 0,00\n\ne te mê \n\nVENCIMENTOS (7D)\n\nNenhum\n\nAbril 2026\ndom\n eg\nter\nqua\nqui\n ex\n ab\n29\n30\n31\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n1\n2\nA RECEBER\nA PAGAR\nAMBOS\n28 de abril\n\nNenhum evento ne ta data\n\nData  com evento  ficam de tacada  no calendário\n\nAdicionar evento\nA Receber\nNova Fatura\n\nNenhuma fatura criada ainda\n\nClique em \"Nova Fatura\" para começar.\n\nA Pagar\nNova De pe a\nToda  categoria \nTodo  (0)\n\nNenhuma de pe a encontrada\n\nClique em \"Nova De pe a\" para começar.\n\nFluxo de Caixa\n\nA RECEBER\n\nR$ 0,00\n\nA PAGAR\n\nR$ 0,00\n\nSALDO PREVISTO\n\nR$ 0,00\n\nSALDO ATU"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "leads",
+    "route": "/dashboard/leads",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-leads.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/leads",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Pipeline de Leads"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Meu  Lead ",
+          "w": 113,
+          "h": 28,
+          "x": 41,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhado  comigo",
+          "w": 181,
+          "h": 28,
+          "x": 154,
+          "y": 175,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-medium ring-offset-background transition-all "
+        },
+        {
+          "tag": "button",
+          "text": "Compartilhar",
+          "w": 100,
+          "h": 36,
+          "x": 36,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-[color,backgroun"
+        },
+        {
+          "tag": "button",
+          "text": "Etapa ",
+          "w": 84,
+          "h": 36,
+          "x": 144,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "Novo Negócio",
+          "w": 118,
+          "h": 36,
+          "x": 236,
+          "y": 221,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "input",
+          "text": "Bu car negócio ...",
+          "w": 318,
+          "h": 36,
+          "x": 36,
+          "y": 457,
+          "cls": "flex w-full border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-m"
+        },
+        {
+          "tag": "button",
+          "text": "Toda ",
+          "w": 82,
+          "h": 36,
+          "x": 36,
+          "y": 501,
+          "cls": "h-9 px-5 rounded-[8px] text-sm font-normal leading-none shadow-sm transition-colors bg-primary text-primary-foreground b"
+        },
+        {
+          "tag": "button",
+          "text": "Pro pecção",
+          "w": 120,
+          "h": 36,
+          "x": 124,
+          "y": 501,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Qualificação",
+          "w": 123,
+          "h": 36,
+          "x": 36,
+          "y": 543,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Propo ta",
+          "w": 101,
+          "h": 36,
+          "x": 165,
+          "y": 543,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Negociação",
+          "w": 121,
+          "h": 36,
+          "x": 36,
+          "y": 585,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Fechamento",
+          "w": 124,
+          "h": 36,
+          "x": 163,
+          "y": 585,
+          "cls": "h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors bg-card text"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "w": 282,
+          "h": 32,
+          "x": 47,
+          "y": 694,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "w": 282,
+          "h": 32,
+          "x": 359,
+          "y": 694,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "R$ 0,00",
+          "size": 10,
+          "tag": "p",
+          "cls": "text-[10px] font-medium text-muted-foreground"
+        }
+      ],
+      "overflowing": [
+        {
+          "tag": "div",
+          "text": "PROSPECÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nQUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nPROPOSTA\n\nR$ 0,00\n\nP",
+          "left": 36,
+          "right": 1588,
+          "w": 1552,
+          "cls": "flex gap-3 h-full items-start w-max px-0.5"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio",
+          "left": 350,
+          "right": 650,
+          "w": 300,
+          "cls": "flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-xl border border-border/50 transition-all duration-200 snap-sta"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO\n\nR$ 0,00",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "flex items-center justify-between px-3 py-3"
+        },
+        {
+          "tag": "div",
+          "text": "QUALIFICAÇÃO",
+          "left": 363,
+          "right": 462,
+          "w": 99,
+          "cls": "flex items-center gap-2"
+        },
+        {
+          "tag": "h3",
+          "text": "QUALIFICAÇÃO",
+          "left": 363,
+          "right": 462,
+          "w": 99,
+          "cls": "text-xs font-bold uppercase tracking-wider text-foreground hover:opacity-80 transition-colors flex-1 truncate"
+        },
+        {
+          "tag": "div",
+          "text": "",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "flex-1 p-2 space-y-2 overflow-y-auto scrollbar-thin"
+        },
+        {
+          "tag": "div",
+          "text": "Adicionar negócio",
+          "left": 351,
+          "right": 649,
+          "w": 298,
+          "cls": "px-2 pb-3"
+        },
+        {
+          "tag": "button",
+          "text": "Adicionar negócio",
+          "left": 359,
+          "right": 641,
+          "w": 282,
+          "cls": "w-full flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-muted-foreground hover:bg-secondary hover:text-foregr"
+        }
+      ],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nPipeline de Lead \n\nGerencie  eu  negócio  pelo funil de venda \n\nMeu  Lead \nCompartilhado  comigo\nCompartilhar\nEtapa \nNovo Negócio\nPipeline Total\n\nR$ 4.000,00\n\nValor Ponderado\n\nR$ 2.000,00\n\nGanho \n\n2\n\nPerdido \n\n0\n\nToda \nPro pecção\nQualificação\nPropo ta\nNegociação\nFechamento\nPROSPECÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nQUALIFICAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nPROPOSTA\n\nR$ 0,00\n\nPVC Rev\n1\n\nAlfredo\n\nR$ 0,00\n50%\nAdicionar negócio\nNEGOCIAÇÃO\n\nR$ 0,00\n\nAdicionar negócio\nFECHAMENTO\n\nR$ 4.000,00\n\nTechTwo\n1\n\nPedro\n\nR$ 4.000,00\n50%\nAdicionar negócio"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "chat",
+    "route": "/dashboard/chat",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-chat.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/chat",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Mensagens"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 304,
+          "y": 190,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 20,
+          "h": 20,
+          "x": 316,
+          "y": 337,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 20,
+          "h": 20,
+          "x": 316,
+          "y": 405,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[c"
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "há cerca de 1 mê ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] whitespace-nowrap shrink-0 text-muted-foreground"
+        },
+        {
+          "text": "há cerca de 1 mê ",
+          "size": 10,
+          "tag": "span",
+          "cls": "text-[10px] whitespace-nowrap shrink-0 text-muted-foreground"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nMen agen \n\nComunicação direta com equipe e cliente \n\nConver a \n\nGri  E túdio Co.\n\nhá cerca de 1 mê \n\nVocê: oopa paulo\n\nPaulo\n\nhá cerca de 1 mê \n\noi"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "team",
+    "route": "/dashboard/team",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-team.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/team",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Equipe"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Convidar Membro",
+          "w": 150,
+          "h": 32,
+          "x": 36,
+          "y": 278,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-[color,background-color,bord"
+        },
+        {
+          "tag": "button",
+          "text": "Colaborador",
+          "w": 127,
+          "h": 32,
+          "x": 57,
+          "y": 637,
+          "cls": "flex items-center justify-between border py-2 ring-offset-background placeholder:text-muted-foreground focus:outline-non"
+        },
+        {
+          "tag": "button",
+          "text": "BUTTON",
+          "w": 32,
+          "h": 32,
+          "x": 57,
+          "y": 685,
+          "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background duration-300 "
+        }
+      ],
+      "tinyText": [
+        {
+          "text": "PROPRIETÁRIO",
+          "size": 9,
+          "tag": "span",
+          "cls": "text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-[8px] bg-muted text-muted-foregrou"
+        }
+      ],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nEquipe\n\nGerencie o  membro  da  ua organização\n\nGri  E túdio Co.\nConvidar Membro\n\nRoberto Cruz\n\nroberto@gri e tudio.co\n\nPROPRIETÁRIO\n\nroberto@gri e tudio.co\n\nAdmin\n\nPaulo\n\ncruzrondan@gmail.com\n\ncruzrondan@gmail.com\n\nColaborador"
+    }
+  },
+  {
+    "theme": "dark",
+    "name": "settings",
+    "route": "/dashboard/settings",
+    "screenshot": "C:\\Users\\Roberto\\Documents\\freelance-hub\\freelance-hub\\.agent\\mobile-review-dashboard\\dark-settings.png",
+    "audit": {
+      "url": "http://127.0.0.1:8080/dashboard/settings",
+      "title": "Freelaz - Gestão Completa para Freelancers",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "dpr": 2
+      },
+      "scroll": {
+        "bodyScrollWidth": 390,
+        "docScrollWidth": 390,
+        "innerWidth": 390
+      },
+      "h1": [
+        "Configurações"
+      ],
+      "smallTapTargets": [
+        {
+          "tag": "button",
+          "text": "Claro",
+          "w": 79,
+          "h": 32,
+          "x": 62,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "E curo",
+          "w": 90,
+          "h": 32,
+          "x": 141,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "Si tema",
+          "w": 98,
+          "h": 32,
+          "x": 231,
+          "y": 307,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "🇧🇷\nPortuguê ",
+          "w": 129,
+          "h": 32,
+          "x": 66,
+          "y": 481,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        },
+        {
+          "tag": "button",
+          "text": "🇺🇸\nEngli h",
+          "w": 129,
+          "h": 32,
+          "x": 195,
+          "y": 481,
+          "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 ring-offset-background transition-all data-[state="
+        }
+      ],
+      "tinyText": [],
+      "overflowing": [],
+      "lowContrast": [],
+      "visibleText": "F\nFreelaz\nPreferência \nConfiguraçõe \n\nPer onalize  ua experiência no Freelaz\n\nAparência\n\nE colha como o Freelaz  e parece\n\nClaro\nE curo\nSi tema\nIdioma\n\nDefina o idioma da interface\n\n🇧🇷\nPortuguê \n🇺🇸\nEngli h\nDado  e Exportação\n\nExporte ou limpe dado  locai \n\nExportar dado \nLimpar cache local\nNotificaçõe \n\nGerencie  ua  preferência  de notificação\n\nNotificaçõe  por e-mail\nTarefa  e prazo \nConvite  de organização\nNovo  lead  e conver õe \nAlerta  financeiro "
+    }
+  }
+]

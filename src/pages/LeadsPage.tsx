@@ -367,31 +367,31 @@ export default function LeadsPage() {
       <div className="flex flex-col gap-3 shrink-0">
         {/* Title and subtitle */}
         <div>
-          <h1 className="text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Pipeline de Leads</h1>
+          <h1 className="text-3xl sm:text-[2.3rem] font-extrabold text-foreground tracking-tight leading-none">Pipeline de Leads</h1>
           <p className="text-sm text-muted-foreground">Gerencie seus negócios pelo funil de vendas</p>
         </div>
 
         {/* Tabs and action buttons in one row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
-            <TabsList className="bg-card border border-border/50 shadow-sm p-1 rounded-[12px]">
-              <TabsTrigger value="my-leads" className="gap-1.5 text-xs rounded-[8px]">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-fit">
+            <TabsList className="w-full bg-card border border-border/50 shadow-sm p-1 rounded-[12px] sm:w-auto">
+              <TabsTrigger value="my-leads" className="flex-1 gap-1.5 text-xs rounded-[8px] sm:flex-none">
                 <DollarSign className="w-3.5 h-3.5" />
                 Meus Leads
               </TabsTrigger>
-              <TabsTrigger value="shared" className="gap-1.5 text-xs rounded-[8px]">
+              <TabsTrigger value="shared" className="flex-1 gap-1.5 text-xs rounded-[8px] sm:flex-none">
                 <Share2 className="w-3.5 h-3.5" />
                 Compartilhados comigo
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          <div className="flex items-center gap-2">
-            {user && <ShareButton resourceType="pipeline" resourceId={user.id} className="bg-card border-border/50 shadow-sm" />}
-            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)} className="bg-card border-border/50 shadow-sm">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+            {user && <ShareButton resourceType="pipeline" resourceId={user.id} className="w-full justify-center bg-card border-border/50 shadow-sm sm:w-auto" />}
+            <Button variant="outline" size="sm" onClick={() => setStageSettings(true)} className="w-full justify-center bg-card border-border/50 shadow-sm sm:w-auto">
               <Settings2 className="w-4 h-4 mr-1.5" /> Etapas
             </Button>
-            <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)}>
+            <Button size="sm" onClick={() => handleOpenForm(stages[0]?.id)} className="col-span-2 w-full justify-center sm:col-span-1 sm:w-auto">
               <Plus className="w-4 h-4 mr-1.5" /> Novo Negócio
             </Button>
           </div>
@@ -429,8 +429,8 @@ export default function LeadsPage() {
           </div>
 
           {/* Search & filter */}
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <div className="flex flex-col gap-2 shrink-0 sm:flex-row sm:items-center sm:flex-wrap">
+            <div className="relative w-full min-w-0 sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar negócios..."
@@ -447,10 +447,10 @@ export default function LeadsPage() {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-1.5 sm:flex-wrap">
               <button
                 onClick={() => setStageFilter(null)}
-                className={`h-9 px-5 rounded-[8px] text-sm font-normal leading-none shadow-sm transition-colors ${
+                className={`h-10 sm:h-9 px-5 rounded-[8px] text-sm font-normal leading-none shadow-sm transition-colors ${
                   !stageFilter
                     ? 'bg-primary text-primary-foreground border border-primary'
                     : 'bg-card border border-border/50 text-muted-foreground hover:bg-muted/80'
@@ -462,7 +462,7 @@ export default function LeadsPage() {
                 <button
                   key={s.id}
                   onClick={() => setStageFilter(s.id === stageFilter ? null : s.id)}
-                  className={`h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors ${
+                  className={`h-10 sm:h-9 px-5 rounded-[8px] border border-border/50 shadow-sm text-sm font-normal leading-none transition-colors ${
                     stageFilter === s.id ? 'text-white' : 'bg-card text-muted-foreground hover:bg-muted/80'
                   }`}
                   style={stageFilter === s.id ? { backgroundColor: s.color, borderColor: s.color } : undefined}
@@ -483,7 +483,7 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className={`flex-shrink-0 w-[300px] flex flex-col max-h-full rounded-xl border border-border/50 transition-all duration-200 snap-start ${
+                    className={`flex-shrink-0 w-[min(78vw,300px)] sm:w-[300px] flex flex-col max-h-full rounded-xl border border-border/50 transition-all duration-200 snap-start ${
                       dragOverStageId === stage.id
                         ? 'ring-2 ring-primary/30 ring-inset shadow-inner'
                         : ''

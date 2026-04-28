@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Notification {
   id: string;
@@ -65,6 +66,7 @@ export function NotificationBell({
 }) {
   const { user } = useAuth();
   const { lang } = useI18n();
+  const isMobile = useIsMobile();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const isPt = lang === 'pt-BR';
@@ -171,9 +173,9 @@ export function NotificationBell({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        side="right"
-        className="w-[380px] p-0 rounded-2xl border border-border bg-card shadow-xl overflow-hidden"
-        sideOffset={12}
+        side={isMobile ? 'bottom' : 'right'}
+        className="w-[calc(100vw-2rem)] max-w-[360px] p-0 rounded-2xl border border-border bg-card shadow-xl overflow-hidden sm:w-[380px] sm:max-w-none"
+        sideOffset={isMobile ? 8 : 12}
       >
         {/* Header */}
         <div className="relative px-5 pt-5 pb-4">

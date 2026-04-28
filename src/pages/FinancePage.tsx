@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { startOfMonth, endOfMonth, addMonths, subMonths, addDays, isPast, isBefore, format } from 'date-fns';
+import { useState, useEffect, useRef } from 'react';
+import { addMonths, subMonths, addDays, isPast, isBefore, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useFinanceInvoices } from '@/hooks/useFinanceInvoices';
 import FinanceSummaryCards from '@/components/finance/FinanceSummaryCards';
 import ReceivablesTab from '@/components/finance/ReceivablesTab';
 import ExpensesTab from '@/components/finance/ExpensesTab';
@@ -14,31 +15,7 @@ import FinanceOverviewTab from '@/components/finance/FinanceOverviewTab';
 import { BarChart3, ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, LayoutDashboard, Filter, CalendarIcon } from 'lucide-react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-export interface FinanceInvoice {
-  id: string;
-  name: string | null;
-  client_id: string | null;
-  project_id: string | null;
-  total: number;
-  status: string;
-  due_date: string | null;
-  payment_method: string | null;
-  created_at: string;
-}
-
-export interface InvoicePrefillDraft {
-  sourceTaskId: string;
-  invoiceName: string;
-  clientId: string;
-  projectId: string;
-  dueDate: string | null;
-  items: {
-    description: string;
-    quantity: number;
-    unitPrice: number;
-  }[];
-}
+import type { InvoicePrefillDraft } from '@/types/finance';
 
 type ViewMode = 'month' | 'overview';
 type AutoEditTarget = { type: 'receivable' | 'expense'; id: string; token: number } | null;
@@ -46,8 +23,8 @@ type AutoEditTarget = { type: 'receivable' | 'expense'; id: string; token: numbe
 export default function FinancePage() {
   const { user } = useAuth();
   const { expenses } = useExpenses();
+  const { invoices, fetchInvoices } = useFinanceInvoices();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
   const [roleChecked, setRoleChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -81,17 +58,6 @@ export default function FinancePage() {
     };
     checkRole();
   }, [user]);
-
-  const fetchInvoices = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('invoices')
-      .select('id, name, client_id, project_id, total, status, due_date, payment_method, created_at')
-      .order('due_date', { ascending: true, nullsFirst: false });
-    setInvoices((data as FinanceInvoice[]) || []);
-  }, [user]);
-
-  useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
 
   useEffect(() => {
     const fromTask = searchParams.get('from_task');

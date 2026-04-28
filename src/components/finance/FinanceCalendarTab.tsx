@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CalendarDays, ArrowDownLeft, ArrowUpRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
-import type { FinanceInvoice } from '@/pages/FinancePage';
+import type { FinanceInvoice } from '@/types/finance';
 
 type EventType = 'receivable' | 'expense' | null;
 
@@ -22,9 +22,15 @@ interface Props {
   invoices: FinanceInvoice[];
   onRefresh?: () => void;
   onEventClick?: (type: 'receivable' | 'expense', id: string) => void;
+  eventScope?: 'all' | 'receivables' | 'expenses';
 }
 
-export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }: Props) {
+export default function FinanceCalendarTab({
+  invoices,
+  onRefresh,
+  onEventClick,
+  eventScope = 'all',
+}: Props) {
   const { user } = useAuth();
   const { expenses, addExpense, fetchExpenses } = useExpenses();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -54,6 +60,22 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
     setEventType(type);
     setChooserOpen(false);
     setFormOpen(true);
+  };
+
+  const openCreateFlow = () => {
+    if (eventScope === 'receivables') {
+      setEventType('receivable');
+      setFormOpen(true);
+      return;
+    }
+
+    if (eventScope === 'expenses') {
+      setEventType('expense');
+      setFormOpen(true);
+      return;
+    }
+
+    setChooserOpen(true);
   };
 
   const handleSave = async () => {
@@ -113,29 +135,33 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
 
   const eventDates = useMemo(() => {
     const map = new Map<string, { receivables: number; payables: number }>();
-    invoices.forEach(i => {
-      if (!i.due_date) return;
-      const existing = map.get(i.due_date) || { receivables: 0, payables: 0 };
-      existing.receivables += 1;
-      map.set(i.due_date, existing);
-    });
-    expenses.forEach(e => {
-      if (!e.due_date) return;
-      const existing = map.get(e.due_date) || { receivables: 0, payables: 0 };
-      existing.payables += 1;
-      map.set(e.due_date, existing);
-    });
+    if (eventScope !== 'expenses') {
+      invoices.forEach(i => {
+        if (!i.due_date) return;
+        const existing = map.get(i.due_date) || { receivables: 0, payables: 0 };
+        existing.receivables += 1;
+        map.set(i.due_date, existing);
+      });
+    }
+    if (eventScope !== 'receivables') {
+      expenses.forEach(e => {
+        if (!e.due_date) return;
+        const existing = map.get(e.due_date) || { receivables: 0, payables: 0 };
+        existing.payables += 1;
+        map.set(e.due_date, existing);
+      });
+    }
     return map;
-  }, [expenses, invoices]);
+  }, [eventScope, expenses, invoices]);
 
   const selectedEvents = useMemo(() => {
     if (!selectedDate) return { expenses: [] as Expense[], invoices: [] as FinanceInvoice[] };
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     return {
-      expenses: expenses.filter(e => e.due_date === dateStr),
-      invoices: invoices.filter(i => i.due_date === dateStr),
+      expenses: eventScope === 'receivables' ? [] : expenses.filter(e => e.due_date === dateStr),
+      invoices: eventScope === 'expenses' ? [] : invoices.filter(i => i.due_date === dateStr),
     };
-  }, [selectedDate, expenses, invoices]);
+  }, [selectedDate, eventScope, expenses, invoices]);
 
   const totalReceivables = selectedEvents.invoices.reduce((s, i) => s + i.total, 0);
   const totalPayables = selectedEvents.expenses.reduce((s, e) => s + e.amount, 0);
@@ -174,6 +200,20 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
     if (counts.payables > 0) return 'payable';
     return null;
   };
+
+  const emptyStateTitle =
+    eventScope === 'receivables'
+      ? 'Nenhum recebimento nesta data'
+      : eventScope === 'expenses'
+        ? 'Nenhuma despesa nesta data'
+        : 'Nenhum evento nesta data';
+
+  const emptyStateDescription =
+    eventScope === 'receivables'
+      ? 'Datas com recebimentos ficam destacadas no calendário'
+      : eventScope === 'expenses'
+        ? 'Datas com despesas ficam destacadas no calendário'
+        : 'Datas com eventos ficam destacadas no calendário';
 
   return (
     <>
@@ -222,18 +262,24 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
             }}
           />
           <div className="flex items-center gap-4 mt-4 px-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground w-full justify-center">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              A receber
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-              A pagar
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-1.5 rounded-full bg-violet-500" />
-              Ambos
-            </span>
+            {eventScope !== 'expenses' && (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                A receber
+              </span>
+            )}
+            {eventScope !== 'receivables' && (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                A pagar
+              </span>
+            )}
+            {eventScope === 'all' && (
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-1.5 rounded-full bg-violet-500" />
+                Ambos
+              </span>
+            )}
           </div>
         </div>
 
@@ -258,7 +304,7 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 rounded-[8px] bg-transparent text-black hover:bg-black hover:text-white transition-all border-transparent shadow-none"
-                  onClick={() => setChooserOpen(true)}
+                  onClick={openCreateFlow}
                   title="Adicionar evento"
                 >
                   <Plus className="w-4 h-4" />
@@ -272,17 +318,17 @@ export default function FinanceCalendarTab({ invoices, onRefresh, onEventClick }
                 <div className="w-14 h-14 rounded-2xl bg-transparent flex items-center justify-center mb-2">
                   <CalendarDays className="w-8 h-8 text-muted-foreground/70" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">Nenhum evento nesta data</p>
-                <p className="text-xs text-muted-foreground/60 mt-0.5 mb-4">Datas com eventos ficam destacadas no calendÃ¡rio</p>
+                <p className="text-sm font-medium text-muted-foreground">{emptyStateTitle}</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5 mb-4">{emptyStateDescription}</p>
                 {selectedDate && (
                   <Button
                     variant="outline"
                     size="sm"
                     className="gap-1.5 border-border hover:bg-black hover:text-white"
-                    onClick={() => setChooserOpen(true)}
+                    onClick={openCreateFlow}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Adicionar evento
+                    {eventScope === 'receivables' ? 'Novo recebimento' : eventScope === 'expenses' ? 'Nova despesa' : 'Adicionar evento'}
                   </Button>
                 )}
               </div>

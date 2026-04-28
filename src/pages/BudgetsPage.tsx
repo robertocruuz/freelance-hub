@@ -561,7 +561,7 @@ const BudgetsPage = () => {
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={cn(
-                  'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-all border',
+                  'min-h-10 px-3 py-2 rounded-[8px] text-xs font-semibold transition-all border sm:min-h-0 sm:py-1.5',
                   statusFilter === s
                     ? 'bg-primary text-primary-foreground border-primary '
                     : 'bg-card text-muted-foreground border-border hover:bg-muted'
@@ -940,7 +940,7 @@ const isExpanded = expandedBudget === b.id;
                           {/* Budget header */}
                           <div
                             className={cn(
-                              "flex items-center justify-between p-4 cursor-pointer relative z-10",
+                              "flex flex-col gap-3 p-4 cursor-pointer relative z-10 sm:flex-row sm:items-center sm:justify-between",
                               !isExpanded && "transition-colors duration-300",
                               isExpanded && "border-b border-border/50",
                               isExpanded && !color && "bg-muted/20"
@@ -948,9 +948,9 @@ const isExpanded = expandedBudget === b.id;
                             style={activeColorStyle}
                             onClick={() => setExpandedBudget(isExpanded ? null : b.id)}
                           >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex w-full items-start gap-3 min-w-0 sm:w-auto sm:flex-1 sm:items-center">
                               <div className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                "w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
                                 highlightColor
                               )}>
                                 {isExpanded ? (
@@ -983,58 +983,62 @@ const isExpanded = expandedBudget === b.id;
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 ml-2 shrink-0" onClick={e => e.stopPropagation()}>
-                              <span className={cn("font-semibold tabular-nums text-sm", color ? tColor : isExpanded ? "text-primary dark:text-foreground" : "text-primary group-hover:text-white dark:text-foreground dark:group-hover:text-black")}>
-                                {formatCurrency(b.total)}
-                              </span>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <button className={cn(
-                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 z-20 relative",
-                                    statusColors[normalizeBudgetStatus(b.status)],
-                                    !color && 'focus-visible:ring-ring',
-                                    stColorHover,
-                                    stColorActive,
-                                    color && (isLight ? 'focus-visible:ring-white/50' : 'focus-visible:ring-slate-900/50')
-                                  )}>
-                                    {statusLabel(b.status)}
-                                    <ChevronDown className="w-3 h-3" />
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-[12px]">
-                                  {statuses.map((s) => (
-                                    <DropdownMenuItem
-                                      key={s}
-                                      onClick={() => changeStatus(b.id, s)}
-                                      className={cn("gap-2 rounded-[8px]", b.status === s && 'font-bold')}
-                                    >
-                                      <span className={cn("w-2 h-2 rounded-full shrink-0", statusColors[s])} />
-                                      {statusLabel(s)}
+                            <div className="flex w-full flex-col gap-2 sm:ml-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2 sm:shrink-0" onClick={e => e.stopPropagation()}>
+                              <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
+                                <span className={cn("font-semibold tabular-nums text-base sm:text-sm", color ? tColor : isExpanded ? "text-primary dark:text-foreground" : "text-primary group-hover:text-white dark:text-foreground dark:group-hover:text-black")}>
+                                  {formatCurrency(b.total)}
+                                </span>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button className={cn(
+                                      "inline-flex min-h-9 items-center gap-1 rounded-[6px] px-3 text-xs font-semibold transition-all hover:opacity-80 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 z-20 relative sm:min-h-0 sm:rounded-[4px] sm:px-2.5 sm:py-1 sm:text-[10px]",
+                                      statusColors[normalizeBudgetStatus(b.status)],
+                                      !color && 'focus-visible:ring-ring',
+                                      stColorHover,
+                                      stColorActive,
+                                      color && (isLight ? 'focus-visible:ring-white/50' : 'focus-visible:ring-slate-900/50')
+                                    )}>
+                                      {statusLabel(b.status)}
+                                      <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="rounded-[12px]">
+                                    {statuses.map((s) => (
+                                      <DropdownMenuItem
+                                        key={s}
+                                        onClick={() => changeStatus(b.id, s)}
+                                        className={cn("gap-2 rounded-[8px]", b.status === s && 'font-bold')}
+                                      >
+                                        <span className={cn("w-2 h-2 rounded-full shrink-0", statusColors[s])} />
+                                        {statusLabel(s)}
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button variant="ghost" size="icon" className={cn("w-10 h-10 sm:w-8 sm:h-8 rounded-lg shrink-0", btnColor)} onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
+                                  <Download className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className={cn("w-10 h-10 sm:w-8 sm:h-8 rounded-lg shrink-0", btnColor)}>
+                                      <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="rounded-[8px]">
+                                    <DropdownMenuItem onClick={() => createProjectFromBudget(b)} className="rounded-[4px]">
+                                      <FolderInput className="w-4 h-4 mr-2" /> Criar projeto
                                     </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)} onClick={() => exportBudgetPdf(b)} title="Exportar PDF">
-                                <Download className="w-3.5 h-3.5" />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className={cn("w-8 h-8 rounded-lg shrink-0", btnColor)}>
-                                    <MoreVertical className="w-3.5 h-3.5" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-[8px]">
-                                  <DropdownMenuItem onClick={() => createProjectFromBudget(b)} className="rounded-[4px]">
-                                    <FolderInput className="w-4 h-4 mr-2" /> Criar projeto
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => startEditing(b)} className="rounded-[4px]">
-                                    <Pencil className="w-4 h-4 mr-2" /> Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="rounded-[4px] text-destructive focus:text-destructive">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                                    <DropdownMenuItem onClick={() => startEditing(b)} className="rounded-[4px]">
+                                      <Pencil className="w-4 h-4 mr-2" /> Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setDeleteConfirmId(b.id)} className="rounded-[4px] text-destructive focus:text-destructive">
+                                      <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
                             </div>
                           </div>
 
@@ -1042,6 +1046,8 @@ const isExpanded = expandedBudget === b.id;
                           {isExpanded && b.items.length > 0 && (
                             <div className="border-t border-border/50 px-4 pb-4 pt-3">
                               <div className="rounded-xl border border-border overflow-hidden">
+                                {isDesktop ? (
+                                  <>
                                 <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 text-[11px] font-semibold text-muted-foreground px-3 py-2 bg-muted/50">
                                   <span>{t.description}</span>
                                   <span className="text-center">Qtd</span>
@@ -1056,17 +1062,50 @@ const isExpanded = expandedBudget === b.id;
                                     <span className="text-right font-medium text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</span>
                                   </div>
                                 ))}
+                                  </>
+                                ) : (
+                                  <div className="divide-y divide-border/50">
+                                    {b.items.map((item, idx) => (
+                                      <div key={idx} className="space-y-2 px-3 py-3 text-sm">
+                                        <p className="font-medium text-foreground break-words">{item.description || 'Sem descricao'}</p>
+                                        <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2 text-xs">
+                                          <div>
+                                            <span className="block text-[10px] uppercase text-muted-foreground">Qtd</span>
+                                            <span className="font-medium text-foreground tabular-nums">{item.quantity}</span>
+                                          </div>
+                                          <div>
+                                            <span className="block text-[10px] uppercase text-muted-foreground">Unit.</span>
+                                            <span className="font-medium text-foreground tabular-nums">{formatCurrency(item.unitPrice)}</span>
+                                          </div>
+                                          <div className="text-right">
+                                            <span className="block text-[10px] uppercase text-muted-foreground">Subtotal</span>
+                                            <span className="font-semibold text-foreground tabular-nums">{formatCurrency(item.quantity * item.unitPrice)}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                               {(b.discount > 0 || b.notes) && (
                                 <div className="mt-3 space-y-1.5">
                                   {b.discount > 0 && (
-                                    <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 items-center text-xs px-3">
-                                      <div className="col-span-2"></div>
-                                      <span className="text-right text-muted-foreground tabular-nums">Desconto {b.discount}%</span>
-                                      <span className="text-right text-destructive font-medium tabular-nums">
-                                        - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (b.discount / 100))}
-                                      </span>
-                                    </div>
+                                    isDesktop ? (
+                                      <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 items-center text-xs px-3">
+                                        <div className="col-span-2"></div>
+                                        <span className="text-right text-muted-foreground tabular-nums">Desconto {b.discount}%</span>
+                                        <span className="text-right text-destructive font-medium tabular-nums">
+                                          - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (b.discount / 100))}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-xs">
+                                        <span className="text-muted-foreground tabular-nums">Desconto {b.discount}%</span>
+                                        <span className="text-destructive font-medium tabular-nums">
+                                          - {formatCurrency(b.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * (b.discount / 100))}
+                                        </span>
+                                      </div>
+                                    )
                                   )}
                                   {b.notes && (
                                     <p className="text-xs text-muted-foreground bg-muted/50 rounded-[8px] px-3 py-2">

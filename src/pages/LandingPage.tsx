@@ -129,7 +129,7 @@ const LandingPage = () => {
       <header className="sticky top-0 z-50 bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           <h2 className="text-xl font-extrabold tracking-tight text-foreground">
-            Logo<span className="text-primary">*</span>
+            Logo<span className="text-primary mobile-safe-primary">*</span>
           </h2>
           <nav className="hidden md:flex items-center gap-1">
             {[
@@ -180,18 +180,18 @@ const LandingPage = () => {
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight tracking-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight tracking-tight mb-6">
               {lang === 'pt-BR' ? (
                 <>
                   Gerencie seu negócio
                   <br />
-                  <span className="text-primary">freelancer</span> como um pro
+                  <span className="text-primary mobile-safe-primary">freelancer</span> como um pro
                 </>
               ) : (
                 <>
                   Manage your freelance
                   <br />
-                  business <span className="text-primary">like a pro</span>
+                  business <span className="text-primary mobile-safe-primary">like a pro</span>
                 </>
               )}
             </h1>
@@ -549,7 +549,7 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-extrabold text-foreground">
-                Logo<span className="text-primary">*</span>
+                Logo<span className="text-primary mobile-safe-primary">*</span>
               </h2>
               <span className="text-sm text-muted-foreground">
                 © 2024. {lang === 'pt-BR' ? 'Todos os direitos reservados.' : 'All rights reserved.'}

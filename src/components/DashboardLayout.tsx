@@ -18,6 +18,21 @@ import NotificationBell from '@/components/NotificationBell';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
+type SidebarChildItem = {
+  key: string;
+  path: string;
+  label: string;
+};
+
+type SidebarItem = {
+  key: string;
+  icon: any;
+  path: string;
+  label?: string;
+  bgColor?: string;
+  children?: SidebarChildItem[];
+};
+
 const navGroups = [
   {
     group: '',
@@ -35,7 +50,14 @@ const navGroups = [
       { key: 'leads', icon: Target, path: '/dashboard/leads' },
       { key: 'clients', icon: Users, path: '/dashboard/clients' },
       { key: 'budgets', icon: FileText, path: '/dashboard/budgets' },
-      { key: 'finance', icon: Wallet, path: '/dashboard/finance' },
+      {
+        key: 'finance',
+        icon: Wallet,
+        path: '/dashboard/finance',
+        children: [
+          { key: 'finance-receivables', path: '/dashboard/finance/receivables', label: 'Contas a Receber' },
+        ],
+      },
       { key: 'team', icon: UsersRound, path: '/dashboard/team' },
     ]
   }
@@ -226,44 +248,72 @@ const SidebarNav = ({
               {group.group}
             </div>
           )}
-          {group.items.map((item: any) => {
+          {group.items.map((item: SidebarItem) => {
             const active = isActive(item.path);
             const label = item.label || (labelMap[item.key] ? labelMap[item.key](t) : '');
             const isFav = item.bgColor !== undefined;
             const contrast = isFav && item.bgColor ? getContrastYIQ(item.bgColor) : null;
             const favHoverColor = contrast === 'light' ? '#ffffff' : '#0f172a';
+            const hasActiveChild = item.children?.some((child) => location.pathname === child.path) || false;
 
             const btn = (
-              <button
-                onClick={() => {
-                  navigate(item.path);
-                  if (isMobile) setMobileOpen(false);
-                }}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-[8px] transition-all duration-150 hover:shadow-sm',
-                  collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
-                  isFav && item.bgColor 
-                    ? (active 
-                        ? 'font-bold shadow-sm' 
-                        : 'text-sidebar-foreground/75 hover:bg-[var(--fav-bg)] hover:text-[var(--fav-color)] font-medium')
-                    : (active
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-bold'
-                        : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium')
-                )}
-                style={isFav && item.bgColor ? { 
-                  '--fav-bg': item.bgColor,
-                  '--fav-color': favHoverColor,
-                  ...(active ? { backgroundColor: item.bgColor, color: favHoverColor } : {})
-                } as React.CSSProperties : {}}
-              >
-                <div className="relative shrink-0 flex items-center justify-center">
-                  <item.icon className="w-[18px] h-[18px]" strokeWidth={active ? 2.2 : 1.8} />
-                  {item.key === 'chat' && hasUnreadChat && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-card" />
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    navigate(item.path);
+                    if (isMobile) setMobileOpen(false);
+                  }}
+                  className={cn(
+                    'w-full flex items-center gap-3 rounded-[8px] transition-all duration-150 hover:shadow-sm',
+                    collapsed && !isMobile ? 'justify-center p-2.5' : 'px-3 py-2.5',
+                    isFav && item.bgColor
+                      ? (active
+                          ? 'font-bold shadow-sm'
+                          : 'text-sidebar-foreground/75 hover:bg-[var(--fav-bg)] hover:text-[var(--fav-color)] font-medium')
+                      : (active || hasActiveChild
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground font-bold'
+                          : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 font-medium')
                   )}
-                </div>
-                {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
-              </button>
+                  style={isFav && item.bgColor ? {
+                    '--fav-bg': item.bgColor,
+                    '--fav-color': favHoverColor,
+                    ...(active ? { backgroundColor: item.bgColor, color: favHoverColor } : {})
+                  } as React.CSSProperties : {}}
+                >
+                  <div className="relative shrink-0 flex items-center justify-center">
+                    <item.icon className="w-[18px] h-[18px]" strokeWidth={active || hasActiveChild ? 2.2 : 1.8} />
+                    {item.key === 'chat' && hasUnreadChat && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-card" />
+                    )}
+                  </div>
+                  {(!collapsed || isMobile) && <span className="text-[13px] truncate">{label}</span>}
+                </button>
+
+                {item.children && item.children.length > 0 && (!collapsed || isMobile) && (
+                  <div className="flex flex-col gap-1 pl-8">
+                    {item.children.map((child) => {
+                      const childActive = location.pathname === child.path;
+                      return (
+                        <button
+                          key={child.key}
+                          onClick={() => {
+                            navigate(child.path);
+                            if (isMobile) setMobileOpen(false);
+                          }}
+                          className={cn(
+                            'w-full rounded-[8px] px-3 py-2.5 text-left text-[13px] transition-all font-medium',
+                            childActive
+                              ? 'bg-transparent text-sidebar-foreground font-semibold'
+                              : 'text-sidebar-foreground/55 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground'
+                          )}
+                        >
+                          {child.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
 
             if (collapsed && !isMobile) {
@@ -610,7 +660,7 @@ const DashboardLayout = () => {
           <NotificationBell />
         </header>
 
-        <main className="flex-1 p-5 md:p-6 overflow-y-auto scrollbar-thin">
+        <main className="flex-1 p-4 sm:p-5 md:p-6 overflow-y-auto scrollbar-thin">
           <Outlet />
         </main>
       </div>
